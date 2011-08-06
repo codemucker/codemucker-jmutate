@@ -3,7 +3,9 @@ package com.bertvanbrakel.test.bean;
 import static com.bertvanbrakel.test.TestUtils.sorted;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -82,14 +84,55 @@ public class BeanTesterTest {
     public void test_infinite_recursion_passes(){
 	//TODO:set option = no fail
 	BeanTester tester = new BeanTester();
-	tester.getOptions().setFailOnRecursiveBeanCreation(false);
+	tester.getOptions().failOnRecursiveBeanCreation(false);
 	
 	TstBeanSelf bean = tester.populate(TstBeanSelf.class);
 	assertNotNull(bean);
 	assertNotNull(bean.getFieldSelf());
-	Assert.assertNull(bean.getFieldSelf().getFieldSelf());	
+	assertNull(bean.getFieldSelf().getFieldSelf());	
+    }
+   
+    @Test
+    public void test_complex_property(){
+	TstBeanComplexProperty bean = new BeanTester().populate(TstBeanComplexProperty.class);
+	assertNotNull(bean);
+	assertNotNull(bean.getFieldComplex());
+	assertNotNull(bean.getFieldComplex().getFieldA());
+	assertNotNull(bean.getFieldComplex().getFieldB());	
     }
 
+    @Test
+    public void test_ignore_property(){
+	BeanTester tester = new BeanTester();
+	tester.getOptions()
+		.ignoreProperty("fieldB")
+		.failOnRecursiveBeanCreation(false);
+	
+	TstBeanIgnoreProperty bean = tester.populate(TstBeanIgnoreProperty.class);
+	assertNotNull(bean);
+	assertNotNull(bean.getFieldA());
+	assertNull(bean.getFieldB());
+	assertNotNull(bean.getFieldC());	
+    }
+    
+    @Test
+    public void test_ignore_deep_property(){
+	BeanTester tester = new BeanTester();
+	tester.getOptions()
+		.ignoreProperty("fieldC.fieldB")
+		.failOnRecursiveBeanCreation(false);
+	
+	TstBeanIgnoreProperty bean = tester.populate(TstBeanIgnoreProperty.class);
+	assertNotNull(bean);
+	assertNotNull(bean.getFieldA());
+	assertNotNull(bean.getFieldB());
+	assertNotNull(bean.getFieldC());
+	assertNotNull(bean.getFieldC().getFieldA());
+	assertNull(bean.getFieldC().getFieldB());
+	assertNull(bean.getFieldC().getFieldC());
+	
+    }
+    
     @Test
     public void test_infinite_recursion_fails(){
 	try {
@@ -117,6 +160,45 @@ public class BeanTesterTest {
 	for (T ele : arr) {
 	    assertNotNull("array element is null", ele);
 	}
+    }
+    
+    static class TstBeanIgnoreProperty {
+	private String fieldA;
+	private String fieldB;
+	private TstBeanIgnoreProperty fieldC;
+	
+	public TstBeanIgnoreProperty getFieldC() {
+            return fieldC;
+        }
+	public void setFieldC(TstBeanIgnoreProperty fieldC) {
+            this.fieldC = fieldC;
+        }
+	public String getFieldA() {
+            return fieldA;
+        }
+	public void setFieldA(String fieldA) {
+            this.fieldA = fieldA;
+        }
+	public String getFieldB() {
+            return fieldB;
+        }
+	public void setFieldB(String fieldB) {
+            this.fieldB = fieldB;
+        }
+	
+    }
+    
+    static class TstBeanComplexProperty {
+	private TstBeanMultiArgCtor fieldComplex;
+
+	public TstBeanMultiArgCtor getFieldComplex() {
+            return fieldComplex;
+        }
+
+	public void setFieldComplex(TstBeanMultiArgCtor fieldComplex) {
+            this.fieldComplex = fieldComplex;
+        }
+	
     }
     
     static class TstBeanSelf{

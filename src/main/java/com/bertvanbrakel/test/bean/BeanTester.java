@@ -34,6 +34,8 @@ public class BeanTester implements RandomDataProvider {
     
     private EnumProvider enumProvider = new EnumProvider();
     
+    private Stack<String> parentPropertes = new Stack<String>();
+    
     //to prevent infinite recursion
     private Stack<Class<?>> parentBeansTypesCreated = new Stack<Class<?>>();
     
@@ -52,37 +54,62 @@ public class BeanTester implements RandomDataProvider {
 	private boolean failOnAdditionalSetters = false;
 	private boolean failOnNonSupportedPropertyType = false;
 	private boolean failOnRecursiveBeanCreation = true;
+	private Collection<String> ignoreProperties = new HashSet<String>();
+	
+	public void setFailSilently(){
+	    failOnAdditionalSetters = false;
+	    failOnMissingSetters = false;
+	    failOnInvalidGetters = false;
+	    failOnNonSupportedPropertyType = false;
+	    failOnRecursiveBeanCreation = false;
+	}
 	
 	public boolean isFailOnRecursiveBeanCreation() {
             return failOnRecursiveBeanCreation;
         }
-	public void setFailOnRecursiveBeanCreation(boolean failOnRecursiveBeanCreation) {
+	public Options failOnRecursiveBeanCreation(boolean failOnRecursiveBeanCreation) {
             this.failOnRecursiveBeanCreation = failOnRecursiveBeanCreation;
-        }
+            return this;
+	}
 	public boolean isFailOnNonSupportedPropertyType() {
             return failOnNonSupportedPropertyType;
         }
-	public void setFailOnNonSupportedPropertyType(boolean failOnNonSupportedPropertyType) {
+	public Options failOnNonSupportedPropertyType(boolean failOnNonSupportedPropertyType) {
             this.failOnNonSupportedPropertyType = failOnNonSupportedPropertyType;
+            return this;
         }
 	public boolean isFailOnInvalidGetters() {
             return failOnInvalidGetters;
         }
-	public void setFailOnInvalidGetters(boolean failOnInvalidGetters) {
+	public Options failOnInvalidGetters(boolean failOnInvalidGetters) {
             this.failOnInvalidGetters = failOnInvalidGetters;
-        }
+            return this;
+	}
 	public boolean isFailOnMissingSetters() {
             return failOnMissingSetters;
         }
-	public void setFailOnMissingSetters(boolean failOnMissingSetters) {
+	public Options failOnMissingSetters(boolean failOnMissingSetters) {
             this.failOnMissingSetters = failOnMissingSetters;
-        }
+            return this;
+	}
 	public boolean isFailOnAdditionalSetters() {
             return failOnAdditionalSetters;
         }
-	public void setFailOnAdditionalSetters(boolean failOnAdditionalSetters) {
+	public Options failOnAdditionalSetters(boolean failOnAdditionalSetters) {
             this.failOnAdditionalSetters = failOnAdditionalSetters;
+            return this;
+	}
+
+	public Options ignoreProperty(String propertyPath) {
+	    ignoreProperties.add(propertyPath);
+	    return this;
+	}
+
+	public Collection<String> getIgnoreProperties() {
+            return ignoreProperties;
         }
+	
+	
 
     }
     
@@ -335,19 +362,21 @@ public class BeanTester implements RandomDataProvider {
 	// find getters
 	for (Method m : methods) {
 	    if (isReaderMethod(m)) {
-		if (Void.class.equals(m.getReturnType())) {
-		    if (options.isFailOnInvalidGetters()) {
-			throw new BeanException("Getter method %s returns void instead of a value for class %s", m.toGenericString(),beanClass.getName());
-		    }
-		} else {
-		    String propertyName = extractPropertyName(m);
-		    Property p = new Property();
-		    p.setName(propertyName);
-		    p.setRead(m);
-		    p.setType(m.getReturnType());
-		    p.setGenericType(m.getGenericReturnType());
-		    
-		    properties.put(p.getName(), p);
+		String propertyName = extractPropertyName(m);
+		if( !isIgnoreProperty(propertyName)){
+        		if (Void.class.equals(m.getReturnType())) {
+        		    if (options.isFailOnInvalidGetters()) {
+        			throw new BeanException("Getter method %s returns void instead of a value for class %s", m.toGenericString(),beanClass.getName());
+        		    }
+        		} else {
+        		    Property p = new Property();
+        		    p.setName(propertyName);
+        		    p.setRead(m);
+        		    p.setType(m.getReturnType());
+        		    p.setGenericType(m.getGenericReturnType());
+        		    
+        		    properties.put(p.getName(), p);
+        		}
 		}
 	    }
 	}
@@ -373,39 +402,44 @@ public class BeanTester implements RandomDataProvider {
 	for( Method m:methods){
 	    if( isWriterMethod(m)){
 		String propertyName = extractPropertyName(m);
-		Property p = properties.get(propertyName);
-		if( p == null ){
-		    if( options.isFailOnAdditionalSetters() ){
-			throw new BeanException("Found additional setter %s with no corresponding getter for property '%s' on class %s",m.toGenericString(),propertyName,beanClass.getName() );
-		    } else {
-			p = new Property();
-			p.setName(propertyName);
-			p.setWrite(m);
-			p.setType(m.getParameterTypes()[0]);
-			p.setGenericType(m.getGenericParameterTypes()[0]); 
-			
-			properties.put(p.getName(), p);
-		    }
-		} else {
-		    if( p.getWrite()==null){
-			p.setWrite(m);
-		    } else if( p.getWrite() != m){
-			if (options.isFailOnAdditionalSetters()) {
-			    throw new BeanException(
-        			    "Found additional setter %s for property '%s' on class %s, an existin setter %s already exsist",
-        			    m.toGenericString(), 
-        			    propertyName, 
-        			    beanClass.getName(), 
-        			    p.getWrite().toGenericString()
-        		   );
-			}
-		    }
+		if( !isIgnoreProperty(propertyName)){
+        		Property p = properties.get(propertyName);
+        		if( p == null ){
+        		    if( options.isFailOnAdditionalSetters() ){
+        			throw new BeanException("Found additional setter %s with no corresponding getter for property '%s' on class %s",m.toGenericString(),propertyName,beanClass.getName() );
+        		    } else {
+        			p = new Property();
+        			p.setName(propertyName);
+        			p.setWrite(m);
+        			p.setType(m.getParameterTypes()[0]);
+        			p.setGenericType(m.getGenericParameterTypes()[0]); 
+        			
+        			properties.put(p.getName(), p);
+        		    }
+        		} else {
+        		    if( p.getWrite()==null){
+        			p.setWrite(m);
+        		    } else if( p.getWrite() != m){
+        			if (options.isFailOnAdditionalSetters()) {
+        			    throw new BeanException(
+                			    "Found additional setter %s for property '%s' on class %s, an existin setter %s already exsist",
+                			    m.toGenericString(), 
+                			    propertyName, 
+                			    beanClass.getName(), 
+                			    p.getWrite().toGenericString()
+                		   );
+        			}
+        		    }
+        		}
 		}
 	    }
 	}	
 	return properties;
     }
     
+    private boolean isIgnoreProperty(String propertyName){
+	return options.getIgnoreProperties().contains(propertyName);
+    }
     private boolean isReaderMethod(Method m){
 	return m.getParameterTypes().length==0 && ( m.getName().startsWith("get") || m.getName().startsWith("is"));
     }
