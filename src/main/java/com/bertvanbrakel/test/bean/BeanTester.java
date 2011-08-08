@@ -164,8 +164,8 @@ public class BeanTester implements RandomDataProvider {
     }
 
     public <T> T populate(Class<T> beanClass) {
-	BeanCache cache = beanCache.get(beanClass.getName());
-	if(cache == null){
+	BeanCache cache = getOrCreateCache(beanClass);
+	if (cache.getCtor() == null) {
 	    Constructor<T> ctor = getNoArgCtor(beanClass, false);
 	    if (ctor == null) {
 		ctor = getLongestCtor(beanClass);
@@ -178,25 +178,28 @@ public class BeanTester implements RandomDataProvider {
 		        "Could not find a valid ctor for bean class %s. Are you sure your bean ctor is public (or if you have no ctor that your bean is public) and the bean is not a non static inner class?",
 		        beanClass.getName());
 	    }
-	    cache = new BeanCache(beanClass);
 	    cache.setCtor(ctor);
-	    beanCache.put(beanClass.getName(), cache);
 	}
-	T bean = invokeCtor((Constructor<T>)cache.getCtor());
+	T bean = invokeCtor((Constructor<T>) cache.getCtor());
 	populatePropertiesWithRandomData(bean);
 	return bean;
     }
 
     public Map<String, Property> extractAndCacheProperties(Class<?> beanClass) {
-	BeanCache cache = beanCache.get(beanClass.getName());
-	if (cache == null) {
-	    cache = new BeanCache(beanClass);
-	    beanCache.put(beanClass.getName(), cache);
-	}
+	BeanCache cache = getOrCreateCache(beanClass);
 	if (cache.getPropertyMap() == null) {
 	    cache.setPropertyMap(extractProperties(beanClass));
 	}
 	return cache.getPropertyMap();
+    }
+    
+    private BeanCache getOrCreateCache(Class<?> beanClass){
+	BeanCache cache = beanCache.get(beanClass.getName());
+	if(cache == null){
+	    cache = new BeanCache(beanClass);
+	    beanCache.put(beanClass.getName(), cache);
+	}
+	return cache;
     }
     
     public Map<String, Property> extractProperties(Class<?> beanClass) {
