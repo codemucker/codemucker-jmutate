@@ -11,75 +11,85 @@ public class Options {
     private boolean failOnAdditionalSetters = false;
     private boolean failOnNonSupportedPropertyType = false;
     private boolean failOnRecursiveBeanCreation = true;
+    
     private Collection<String> ignoreProperties = new HashSet<String>();
     private Map<String, Collection<String>> ignorePropertiesOnClass = new HashMap<String, Collection<String>>();
 
-    public void setFailSilently(){
-        failOnAdditionalSetters = false;
-        failOnMissingSetters = false;
-        failOnInvalidGetters = false;
-        failOnNonSupportedPropertyType = false;
-        failOnRecursiveBeanCreation = false;
+    public void setFailSilently() {
+	failOnAdditionalSetters = false;
+	failOnMissingSetters = false;
+	failOnInvalidGetters = false;
+	failOnNonSupportedPropertyType = false;
+	failOnRecursiveBeanCreation = false;
     }
-    
+
     public boolean isFailOnRecursiveBeanCreation() {
-        return failOnRecursiveBeanCreation;
+	return failOnRecursiveBeanCreation;
     }
+
     public Options failOnRecursiveBeanCreation(boolean failOnRecursiveBeanCreation) {
-        this.failOnRecursiveBeanCreation = failOnRecursiveBeanCreation;
-        return this;
+	this.failOnRecursiveBeanCreation = failOnRecursiveBeanCreation;
+	return this;
     }
+
     public boolean isFailOnNonSupportedPropertyType() {
-        return failOnNonSupportedPropertyType;
+	return failOnNonSupportedPropertyType;
     }
+
     public Options failOnNonSupportedPropertyType(boolean failOnNonSupportedPropertyType) {
-        this.failOnNonSupportedPropertyType = failOnNonSupportedPropertyType;
-        return this;
+	this.failOnNonSupportedPropertyType = failOnNonSupportedPropertyType;
+	return this;
     }
+
     public boolean isFailOnInvalidGetters() {
-        return failOnInvalidGetters;
+	return failOnInvalidGetters;
     }
+
     public Options failOnInvalidGetters(boolean failOnInvalidGetters) {
-        this.failOnInvalidGetters = failOnInvalidGetters;
-        return this;
+	this.failOnInvalidGetters = failOnInvalidGetters;
+	return this;
     }
+
     public boolean isFailOnMissingSetters() {
-        return failOnMissingSetters;
+	return failOnMissingSetters;
     }
+
     public Options failOnMissingSetters(boolean failOnMissingSetters) {
-        this.failOnMissingSetters = failOnMissingSetters;
-        return this;
+	this.failOnMissingSetters = failOnMissingSetters;
+	return this;
     }
+
     public boolean isFailOnAdditionalSetters() {
-        return failOnAdditionalSetters;
+	return failOnAdditionalSetters;
     }
+
     public Options failOnAdditionalSetters(boolean failOnAdditionalSetters) {
-        this.failOnAdditionalSetters = failOnAdditionalSetters;
-        return this;
+	this.failOnAdditionalSetters = failOnAdditionalSetters;
+	return this;
     }
 
     public Options ignoreProperty(String propertyPath) {
-        ignoreProperties.add(propertyPath);
-        return this;
+	ignoreProperties.add(propertyPath);
+	return this;
     }
 
     public Collection<String> getIgnoreProperties() {
-        return ignoreProperties;
+	return ignoreProperties;
     }
 
     public Options ignoreProperty(Class<?> beanClass, String propertyName) {
-        String key = beanClass.getName();
-        Collection<String> propertiesToIgnore = ignorePropertiesOnClass.get(key);
-        if( propertiesToIgnore == null){
-    	propertiesToIgnore = new HashSet<String>();
-    	ignorePropertiesOnClass.put(key, propertiesToIgnore);
-        }
-        propertiesToIgnore.add(propertyName);
-        return this;
+	String key = beanClass.getName();
+	Collection<String> propertiesToIgnore = ignorePropertiesOnClass.get(key);
+	if (propertiesToIgnore == null) {
+	    propertiesToIgnore = new HashSet<String>();
+	    ignorePropertiesOnClass.put(key, propertiesToIgnore);
+	}
+	propertiesToIgnore.add(propertyName);
+	return this;
     }
 
     public Map<String, Collection<String>> getIgnorePropertiesOnClass() {
-        return ignorePropertiesOnClass;
+	return ignorePropertiesOnClass;
     }
 
 }

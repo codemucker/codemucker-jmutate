@@ -313,7 +313,7 @@ public class BeanTester implements RandomDataProvider {
     private void populatePropertyWithRandomData(Property p, Object bean) {
 	if (p.getWrite() != null) {
 	    Method setter = p.getWrite();
-	    Object propertyValue = getRandom(p.getName(), p.getType(), p.genericType);
+	    Object propertyValue = getRandom(p.getName(), p.getType(), p.getGenericType());
 	    // TODO:option to ignore errors?
 	    try {
 		setter.invoke(bean, new Object[] { propertyValue });
@@ -335,21 +335,21 @@ public class BeanTester implements RandomDataProvider {
     }
     
     private boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
-	if( "class".equals(propertyName)){
+	if ("class".equals(propertyName)) {
 	    return false;
 	}
 	if (options.getIgnoreProperties().contains(propertyName)) {
 	    return false;
 	}
-	if( parentPropertyPath != null ){
+	if (parentPropertyPath != null) {
 	    String fullPath = parentPropertyPath + propertyName;
 	    if (options.getIgnoreProperties().contains(fullPath)) {
 		return false;
 	    }
 	}
 	Collection<String> properties = options.getIgnorePropertiesOnClass().get(beanClass.getName());
-	if (properties != null ) {
-	    if(properties.contains(propertyName)) {
+	if (properties != null) {
+	    if (properties.contains(propertyName)) {
 		return false;
 	    }
 	}

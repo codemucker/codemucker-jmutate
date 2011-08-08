@@ -8,44 +8,55 @@ public class Property {
     private Method write;
     private String name;
     private Class<?> type;
-    Type genericType;
+    private Type genericType;
     private boolean ignore;
-    
+
     public boolean isIgnore() {
-        return ignore;
+	return ignore;
     }
+
     public void setIgnore(boolean ignore) {
-        this.ignore = ignore;
+	this.ignore = ignore;
     }
+
     public Method getRead() {
-        return read;
+	return read;
     }
+
     public void setRead(Method read) {
-        this.read = read;
+	this.read = read;
     }
+
     public Method getWrite() {
-        return write;
+	return write;
     }
+
     public void setWrite(Method write) {
-        this.write = write;
+	this.write = write;
     }
+
     public String getName() {
-        return name;
+	return name;
     }
+
     public void setName(String name) {
-        this.name = name;
+	this.name = name;
     }
+
     public Class<?> getType() {
-        return type;
+	return type;
     }
+
     public void setType(Class<?> type) {
-        this.type = type;
+	this.type = type;
     }
+
     public Type getGenericType() {
-        return genericType;
+	return genericType;
     }
+
     public void setGenericType(Type genericType) {
-        this.genericType = genericType;
+	this.genericType = genericType;
     }
-    
+
 }
