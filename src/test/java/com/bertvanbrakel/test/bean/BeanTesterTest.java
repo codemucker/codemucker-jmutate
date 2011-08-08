@@ -17,7 +17,6 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.test.bean.BeanTester.BeanException;
 
 public class BeanTesterTest {
 
@@ -120,6 +119,9 @@ public class BeanTesterTest {
 	BeanTester tester = new BeanTester();
 	tester.getOptions()
 		.ignoreProperty("fieldC.fieldB")
+	//	.ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
+	//	.ignoreProperty("*A")
+		
 		.failOnRecursiveBeanCreation(false);
 	
 	TstBeanIgnoreProperty bean = tester.populate(TstBeanIgnoreProperty.class);
@@ -130,7 +132,38 @@ public class BeanTesterTest {
 	assertNotNull(bean.getFieldC().getFieldA());
 	assertNull(bean.getFieldC().getFieldB());
 	assertNull(bean.getFieldC().getFieldC());
+    }
+
+    @Test
+    public void test_get_properties_ignore(){
+	BeanTester tester = new BeanTester();
+	tester.getOptions()
+		.ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
+		.ignoreProperty(TstBeanIgnoreProperty.class, "fieldC");
+
+	Map<String, Property> properties = tester.extractProperties(TstBeanIgnoreProperty.class);
 	
+	assertNotNull(properties);
+	Property p = properties.get("fieldC");
+	assertNotNull(p);
+	assertTrue(p.isIgnore());
+    }
+    
+    @Test
+    public void test_ignore_field_on_bean_type(){
+	BeanTester tester = new BeanTester();
+	tester.getOptions()
+		.ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
+		.ignoreProperty(TstBeanIgnoreProperty.class, "fieldC");
+
+	TstBeanIgnoreBeanPropertyType bean = tester.populate(TstBeanIgnoreBeanPropertyType.class);
+	assertNotNull(bean);
+	assertNotNull(bean.getFieldA());
+	assertNotNull(bean.getFieldB());
+	assertNotNull(bean.getFieldB().getFieldB());
+
+	assertNull(bean.getFieldB().getFieldA());
+	assertNull(bean.getFieldB().getFieldC());
     }
     
     @Test
@@ -160,6 +193,23 @@ public class BeanTesterTest {
 	for (T ele : arr) {
 	    assertNotNull("array element is null", ele);
 	}
+    }
+    
+    static class TstBeanIgnoreBeanPropertyType {
+	private String fieldA;
+	private TstBeanIgnoreProperty fieldB;
+	public String getFieldA() {
+            return fieldA;
+        }
+	public void setFieldA(String fieldA) {
+            this.fieldA = fieldA;
+        }
+	public TstBeanIgnoreProperty getFieldB() {
+            return fieldB;
+        }
+	public void setFieldB(TstBeanIgnoreProperty fieldB) {
+            this.fieldB = fieldB;
+        }
     }
     
     static class TstBeanIgnoreProperty {
