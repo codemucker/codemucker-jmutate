@@ -9,8 +9,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-import com.bertvanbrakel.test.bean.BeanException;
-
 /**
  * Utility class to find classes in ones project
  */
@@ -18,7 +16,7 @@ public class ClassFinder {
 
 	final FinderOptions options;
 	
-	ClassFinder(){
+	public ClassFinder(){
 		options = new FinderOptions();
 	}
 
@@ -31,7 +29,7 @@ public class ClassFinder {
 				return dir;
 			}
 		}
-		throw new BeanException("Can't find test classes build dir");
+		throw new ClassFinderException("Can't find test classes build dir");
 	}
 	
 	public File findClassesDir() {
@@ -43,7 +41,7 @@ public class ClassFinder {
 				return dir;
 			}
 		}
-		throw new BeanException("Can't find classes build dir");
+		throw new ClassFinderException("Can't find classes build dir");
 	}
 
 	private File findMavenTargetDir() {
@@ -72,9 +70,9 @@ public class ClassFinder {
 			String msg = String
 			        .format("Can't find project dir. Started looking in %s, looking for any parent directory containing one of %s",
 			                new File("./").getCanonicalPath(), PROJECT_FILES);
-			throw new BeanException(msg);
+			throw new ClassFinderException(msg);
 		} catch (IOException e) {
-			throw new BeanException("Error while looking for project dir", e);
+			throw new ClassFinderException("Error while looking for project dir", e);
 		}
 	}
 
@@ -109,7 +107,7 @@ public class ClassFinder {
 	}
 
 	public Collection<File> findClassFiles(File rootDir) {
-		DirWalker walker = new DirWalker();
+		FileWalker walker = new FileWalker();
 		Collection<File> classFiles = walker.findFiles(rootDir);
 		return classFiles;
 	}
@@ -129,7 +127,7 @@ public class ClassFinder {
 			}
 			return paths;
 		} catch (IOException e) {
-			throw new RuntimeException("error converting to relative paths", e);
+			throw new ClassFinderException("error converting to relative paths", e);
 		}
 	}
 
@@ -144,7 +142,7 @@ public class ClassFinder {
 				Class<?> klass = cl.loadClass(className);
 				foundClasses.add(klass);
 			} catch (ClassNotFoundException e) {
-				throw new RuntimeException("couldn't load class " + className, e);
+				throw new ClassFinderException("couldn't load class " + className, e);
 				// todo:should never happen...
 			}
 		}
@@ -167,11 +165,11 @@ public class ClassFinder {
 		return path.replace('/', '.');
 	}
 
-	private static class DirWalker {
+	private static class FileWalker {
 		FileFilter DIR_FILTER = new FileFilter() {
 			@Override
 			public boolean accept(File f) {
-				return f.isDirectory();
+				return f.isDirectory() && f.getName().charAt(0) != '.';
 			}
 		};
 		FileFilter CLASS_FILE_FILTER = new FileFilter() {
@@ -212,40 +210,41 @@ public class ClassFinder {
 
 	}
 
-
 	public FinderOptions getOptions() {
 	    return options;
     }
 	
 	public static class FinderOptions {
-		private Collection<File> classPathsDir = new HashSet<File>();
+		private final Collection<File> classPathsDir = new HashSet<File>();
 		private boolean includeClassesDir = true;
 		private boolean includeTestDir = false;
-		
-		public void includeClassesDir(boolean b){
+
+		public FinderOptions includeClassesDir(boolean b) {
 			this.includeClassesDir = b;
+			return this;
 		}
-		
-		public void includeTestDir(boolean b) {
+
+		public FinderOptions includeTestDir(boolean b) {
 			this.includeTestDir = b;
+			return this;
 		}
 
 		public Collection<File> getClassPathsDir() {
-        	return classPathsDir;
-        }
+			return classPathsDir;
+		}
 
 		public boolean isIncludeClassesDir() {
-        	return includeClassesDir;
-        }
+			return includeClassesDir;
+		}
 
 		public boolean isIncludeTestDir() {
-        	return includeTestDir;
-        }
-		
-		public void addClassPath(File dir) {
-			classPathsDir.add(dir);
+			return includeTestDir;
 		}
-		
+
+		public FinderOptions addClassPath(File dir) {
+			classPathsDir.add(dir);
+			return this;
+		}
 	}
 
 }
