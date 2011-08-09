@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 
 import com.bertvanbrakel.test.bean.BeanException;
 
@@ -15,6 +16,24 @@ import com.bertvanbrakel.test.bean.BeanException;
  */
 public class ClassFinder {
 
+	final FinderOptions options;
+	
+	ClassFinder(){
+		options = new FinderOptions();
+	}
+
+	public File findTestClassesDir() {
+		File projectDir = findMavenTargetDir();
+		String[] options = { "target/test-classes" };
+		for (String option : options) {
+			File dir = new File(projectDir, option);
+			if (dir.exists() && dir.isDirectory()) {
+				return dir;
+			}
+		}
+		throw new BeanException("Can't find test classes build dir");
+	}
+	
 	public File findClassesDir() {
 		File projectDir = findMavenTargetDir();
 		String[] options = { "target/classes" };
@@ -60,10 +79,21 @@ public class ClassFinder {
 	}
 
 	public Collection<Class<?>> findClasses() {
-		File rootDir = findClassesDir();
+		Collection<File> classPathDirs = new HashSet<File>(options.getClassPathsDir());
+		if( options.isIncludeClassesDir()){
+			classPathDirs.add(findClassesDir());
+		}
+		if( options.isIncludeTestDir()){
+			classPathDirs.add(findTestClassesDir());
+		}
+		
+		Collection<String> foundClassPaths = new HashSet<String>();
+		for( File classPath:classPathDirs){
+			Collection<String> paths = findClassFilePaths(classPath);
+			foundClassPaths.addAll(paths);
+		}
 
-		Collection<String> paths = findClassFilePaths(rootDir);
-		Collection<Class<?>> foundClasses = pathsToClasses(paths);
+		Collection<Class<?>> foundClasses = pathsToClasses(foundClassPaths);
 
 		return foundClasses;
 	}
@@ -180,6 +210,42 @@ public class ClassFinder {
 			return true;
 		}
 
+	}
+
+
+	public FinderOptions getOptions() {
+	    return options;
+    }
+	
+	public static class FinderOptions {
+		private Collection<File> classPathsDir = new HashSet<File>();
+		private boolean includeClassesDir = true;
+		private boolean includeTestDir = false;
+		
+		public void includeClassesDir(boolean b){
+			this.includeClassesDir = b;
+		}
+		
+		public void includeTestDir(boolean b) {
+			this.includeTestDir = b;
+		}
+
+		public Collection<File> getClassPathsDir() {
+        	return classPathsDir;
+        }
+
+		public boolean isIncludeClassesDir() {
+        	return includeClassesDir;
+        }
+
+		public boolean isIncludeTestDir() {
+        	return includeTestDir;
+        }
+		
+		public void addClassPath(File dir) {
+			classPathsDir.add(dir);
+		}
+		
 	}
 
 }

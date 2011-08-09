@@ -35,5 +35,20 @@ public class ClassFinderTest {
 		assertTrue(found.contains(ClassFinder.class));
 		assertTrue(found.contains(BeanException.class));
 		assertTrue(found.contains(RandomDataProvider.class));
+
+		assertFalse(found.contains(ClassFinderTest.class));
 	}
+	
+	@Test
+	public void test_find_test_classes() {
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions().includeTestDir(true);
+		
+		Collection<Class<?>> found = finder.findClasses();
+
+		assertNotNull(found);
+		assertTrue(found.contains(ClassFinder.class));
+		assertTrue(found.contains(ClassFinderTest.class));
+	}
+		
 }
