@@ -21,27 +21,22 @@ public class ClassFinder {
 	}
 
 	public File findTestClassesDir() {
-		File projectDir = findMavenTargetDir();
-		String[] options = { "target/test-classes" };
-		for (String option : options) {
-			File dir = new File(projectDir, option);
-			if (dir.exists() && dir.isDirectory()) {
-				return dir;
-			}
-		}
-		throw new ClassFinderException("Can't find test classes build dir");
+		return findMavenDirOneOf(new String[] { "target/test-classes" });
+	}
+
+	public File findClassesDir() {
+		return findMavenDirOneOf(new String[] { "target/classes" });
 	}
 	
-	public File findClassesDir() {
+	private File findMavenDirOneOf(String[] options){
 		File projectDir = findMavenTargetDir();
-		String[] options = { "target/classes" };
 		for (String option : options) {
 			File dir = new File(projectDir, option);
 			if (dir.exists() && dir.isDirectory()) {
 				return dir;
 			}
 		}
-		throw new ClassFinderException("Can't find classes build dir");
+		throw new ClassFinderException("Can't find dir");	
 	}
 
 	private File findMavenTargetDir() {
