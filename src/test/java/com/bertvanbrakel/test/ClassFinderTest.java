@@ -5,6 +5,7 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class ClassFinderTest {
 	public void test_find_classes() {
 		ClassFinder finder = new ClassFinder();
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertNotNull(found);
 		assertTrue(found.contains(ClassFinder.class));
@@ -46,7 +47,7 @@ public class ClassFinderTest {
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions().includeTestDir(true);
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertTrue(found.contains(ClassFinder.class));
 		assertTrue(found.contains(ClassFinderException.class));
@@ -59,7 +60,7 @@ public class ClassFinderTest {
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions().excludeFileName("*Exception*.class");
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertTrue(found.contains(ClassFinder.class));
 		assertFalse(found.contains(ClassFinderException.class));		
@@ -72,7 +73,7 @@ public class ClassFinderTest {
 			.includeTestDir(true)
 			.excludeFileName("*/b/*");
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertTrue(found.contains(ClassFinder.class));
 		assertTrue(found.contains(TstBeanOne.class));		
@@ -84,7 +85,7 @@ public class ClassFinderTest {
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions().excludeFileName("*/target/*");
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertTrue(found.contains(ClassFinder.class));
 	}
@@ -96,7 +97,7 @@ public class ClassFinderTest {
 			.includeTestDir(true)
 			.includeFileName("*/a/*");
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertFalse(found.contains(TstBeanTwo.class));
 	}
@@ -109,7 +110,7 @@ public class ClassFinderTest {
 			.includeFileName("*/a/*")
 			.includeFileName("*/b/*");
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertTrue(found.contains(TstBeanTwo.class));
 	}
@@ -122,7 +123,7 @@ public class ClassFinderTest {
 			.includeFileName("*/a/*")
 			.excludeFileName("*/a/*");
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertFalse(found.contains(TstBeanOne.class));
 	}
@@ -134,7 +135,7 @@ public class ClassFinderTest {
 			.includeTestDir(true)
 			.classImplements(TstInterface.class);
 		
-		Collection<Class<?>> found = finder.findClasses();
+		Collection<Class<?>> found = list(finder.findClasses());
 
 		assertTrue(found.contains(TstInterface.class));
 		assertTrue(found.contains(TstBeanOne.class));
@@ -146,12 +147,20 @@ public class ClassFinderTest {
 	public void test_ClassImplementsMatcher(){
 		ClassImplementsMatcher matcher = new ClassImplementsMatcher(TstInterface.class);
 		
-		assertFalse(matcher.match(Object.class));
-		assertFalse(matcher.match(ClassFinder.class));
-		assertFalse(matcher.match(TstBeanTwo.class));
+		assertFalse(matcher.matchClass(Object.class));
+		assertFalse(matcher.matchClass(ClassFinder.class));
+		assertFalse(matcher.matchClass(TstBeanTwo.class));
 		
-		assertTrue(matcher.match(TstInterface.class));
-		assertTrue(matcher.match(TstBeanOne.class));
+		assertTrue(matcher.matchClass(TstInterface.class));
+		assertTrue(matcher.matchClass(TstBeanOne.class));
+	}
+	
+	private <T> Collection<T> list(Iterable<T> iter){
+		Collection<T> col = new ArrayList<T>();
+		for( T item:iter){
+			col.add(item);
+		}
+		return col;
 	}
 		
 		

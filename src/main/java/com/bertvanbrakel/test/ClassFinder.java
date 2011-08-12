@@ -1,14 +1,13 @@
 package com.bertvanbrakel.test;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.regex.Pattern;
 
 /**
@@ -16,10 +15,10 @@ import java.util.regex.Pattern;
  */
 public class ClassFinder {
 
-	final FinderOptions options;
+	final ClassFinderOptions options;
 	
 	public ClassFinder(){
-		options = new FinderOptions();
+		options = new ClassFinderOptions();
 	}
 
 	public File findTestClassesDir() {
@@ -73,58 +72,56 @@ public class ClassFinder {
 		}
 	}
 
-	public Collection<Class<?>> findClasses() {
-		//todo:move this into options
+	public Iterable<Class<?>> findClasses() {
+		final Collection<String> foundClassNames = findClassNames();
+		return new Iterable<Class<?>>() {
+			@Override
+			public Iterator<Class<?>> iterator() {
+				return new ClassLoadingIterator(foundClassNames.iterator(), options);
+			}
+		};
+	}
+	
+	public Collection<String> findClassNames() {
 		Collection<File> classPathDirs = new HashSet<File>(options.getClassPathsDir());
-		if( options.isIncludeClassesDir()){
+		if (options.isIncludeClassesDir()) {
 			classPathDirs.add(findClassesDir());
 		}
-		if( options.isIncludeTestDir()){
+		if (options.isIncludeTestDir()) {
 			classPathDirs.add(findTestClassesDir());
 		}
-		
-		Collection<String> foundClassPaths = new HashSet<String>();
-		for( File classPath:classPathDirs){
-			foundClassPaths.addAll(findClassFiles(classPath));
+		final Collection<String> foundClassNames = new HashSet<String>();
+		for (File classPath : classPathDirs) {
+			for (String resource : findClassResourcePaths(classPath)) {
+				if (resource.endsWith(".class")) {
+					String className = pathToClassName(resource);
+					foundClassNames.add(className);
+				}
+			}
 		}
-
-		Collection<Class<?>> foundClasses = pathsToClassesAndFilter(foundClassPaths);
-		return foundClasses;
+		return foundClassNames;
 	}
 
-	public Collection<String> findClassFilePaths() {
-		return findClassFiles(findClassesDir());
+	public Collection<String> findClassResourcePaths() {
+		return findClassResourcePaths(findClassesDir());
 	}
 
-	public Collection<String> findClassFiles(File rootDir) {
+	public Collection<String> findClassResourcePaths(File rootDir) {
 		FileWalker walker = new FileWalker(){
 			@Override
             public boolean isIncludeFile(String relPath, File file) {
-				return options.isIncludeFile(relPath, file);
+				return options.matchFile(file, relPath);
             }
 		};
 	
-		Collection<String> classFiles = walker.findFiles(rootDir);
-		return classFiles;
+		Collection<String> resources = walker.findFiles(rootDir);
+		return resources;
 	}
-
-	private Collection<Class<?>> pathsToClassesAndFilter(Collection<String> paths) {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-
-		Collection<Class<?>> foundClasses = new ArrayList<Class<?>>();
-		for (String path : paths) {
-			String classPath = stripExtension(path);
-			String className = convertFilePathToClassPath(classPath);
-			try {
-				Class<?> klass = cl.loadClass(className);
-				if (options.isIncludeClass(klass)) {
-					foundClasses.add(klass);
-				}
-			} catch (ClassNotFoundException e) {
-				throw new ClassFinderException("couldn't load class " + className, e);
-			}
-		}
-		return foundClasses;
+	
+	private String pathToClassName(String relFilePath) {
+		String classPath = stripExtension(relFilePath);
+		String className = convertFilePathToClassPath(classPath);
+		return className;
 	}
 
 	private static String stripExtension(String path) {
@@ -143,192 +140,67 @@ public class ClassFinder {
 		}
 	}
 
-	private static class FileWalker {
-		FileFilter DIR_FILTER = new FileFilter() {
-			@Override
-			public boolean accept(File f) {
-				return f.isDirectory() && f.getName().charAt(0) != '.';
-			}
-		};
-		FileFilter CLASS_FILE_FILTER = new FileFilter() {
-			@Override
-			public boolean accept(File f) {
-				return f.isFile() && f.getName().endsWith(".class");
-			}
-		};
+	private static class ClassLoadingIterator implements Iterator<Class<?>>{
+		private final ClassMatcher classMatcher;
+		private final Iterator<String> classNames;
+		
+		private Class<?> nextClass;
 
-		public final Collection<String> findFiles(File dir) {
-			Collection<String> foundFiles = new ArrayList<String>();
-			walkDir("", dir, 0, foundFiles);
-			return foundFiles;
+		public ClassLoadingIterator(Iterator<String> classNames, ClassMatcher classMatcher) {
+			super();
+			this.classNames = classNames;
+			this.classMatcher = classMatcher;
+			nextClass = nextClass();
 		}
 
-		private void walkDir(String parentPath, File dir, int depth, Collection<String> foundFiles) {
-			File[] files = dir.listFiles(CLASS_FILE_FILTER);
-			for (File f : files) {
-				String path = parentPath + "/" + f.getName();
-				if (isIncludeFile(path, f)) {
-					foundFiles.add(path);
+		@Override
+		public boolean hasNext() {
+			return nextClass != null;
+		}
+
+		@Override
+		public Class<?> next() {
+			if (nextClass == null) {
+				throw new NoSuchElementException();
+			}
+			Class<?> ret = nextClass;
+			nextClass = nextClass();
+			return ret;
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+		
+		private Class<?> nextClass() {
+			while (classNames.hasNext()) {
+				String className = classNames.next();
+				Class<?> klass = loadClass(className);
+				if (classMatcher.matchClass(klass)) {
+					return klass;
 				}
 			}
-			File[] childDirs = dir.listFiles(DIR_FILTER);
-			for (File childDir : childDirs) {
-				if (isWalkDir(childDir)) {
-					walkDir(parentPath + "/" + childDir.getName(), childDir, depth + 1, foundFiles);
-				}
+			return null;
+		}
+		private Class<?> loadClass(String className) {
+			try {
+				return getCLassLoader().loadClass(className);
+			} catch (ClassNotFoundException e) {
+				throw new ClassFinderException("couldn't load class " + className, e);
 			}
 		}
-
-		public boolean isWalkDir(File dir) {
-			return true;
-		}
-
-		public boolean isIncludeFile(String relativePath, File file) {
-			return true;
+		
+		private ClassLoader getCLassLoader(){
+			return Thread.currentThread().getContextClassLoader();
 		}
 	}
-
-	public FinderOptions getOptions() {
+	
+	public ClassFinderOptions getOptions() {
 	    return options;
     }
 	
-	public static class FinderOptions {
-		private final Collection<File> classPathsDir = new HashSet<File>();
-		private boolean includeClassesDir = true;
-		private boolean includeTestDir = false;
-
-		private Collection<FileNameMatcher> excludeFileNameMatchers = new ArrayList<FileNameMatcher>();
-		private Collection<FileNameMatcher> includeFileNameMatchers = new ArrayList<FileNameMatcher>();
-		
-		private Collection<ClassMatcher> includeClassMatchers = new ArrayList<ClassMatcher>();
-		
-		
-		public FinderOptions includeClassesDir(boolean b) {
-			this.includeClassesDir = b;
-			return this;
-		}
-
-		public FinderOptions includeTestDir(boolean b) {
-			this.includeTestDir = b;
-			return this;
-		}
-
-		public Collection<File> getClassPathsDir() {
-			return classPathsDir;
-		}
-
-		public boolean isIncludeClassesDir() {
-			return includeClassesDir;
-		}
-
-		public boolean isIncludeTestDir() {
-			return includeTestDir;
-		}
-
-		public FinderOptions addClassPath(File dir) {
-			classPathsDir.add(dir);
-			return this;
-		}
-
-		boolean isIncludeFile(String relPath, File f){
-			boolean include = true;
-			if (includeFileNameMatchers!= null && includeFileNameMatchers.size() > 0) {
-				include = false;//by default if we have includes we exclude all except matches
-				for (FileNameMatcher matcher : includeFileNameMatchers) {
-					if (matcher.match(relPath)) {
-						include = true;
-						break;
-					}
-				}
-			}
-			if (include && (excludeFileNameMatchers != null && excludeFileNameMatchers.size() > 0)) {
-				for (FileNameMatcher matcher : excludeFileNameMatchers) {
-					if (matcher.match(relPath)) {
-						include = false;
-					}
-				}
-			}
-			return include;
-		}
-
-		public FinderOptions excludeFileName(String path) {
-			String regExp = antToRegExp(path);
-			excludeFileName(Pattern.compile(regExp));
-			return this;
-		}
-		
-		public FinderOptions excludeFileName(Pattern pattern) {
-			excludeFileName(new RegExpPatternFileNameMatcher(pattern));
-			return this;
-		}
-
-		public FinderOptions excludeFileName(FileNameMatcher matcher) {
-			this.excludeFileNameMatchers.add(matcher);
-			return this;
-		}
-
-		public FinderOptions includeFileName(String pattern) {
-			String regExp = antToRegExp(pattern);
-			includeFileName(Pattern.compile(regExp));
-			return this;
-		}
-
-		public FinderOptions includeFileName(Pattern pattern) {
-			includeFileName(new RegExpPatternFileNameMatcher(pattern));
-			return this;
-		}
-		
-		public FinderOptions includeFileName(FileNameMatcher matcher) {
-			this.includeFileNameMatchers.add(matcher);
-			return this;
-		}
-		private String antToRegExp(String antPattern) {
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < antPattern.length(); i++) {
-				char c = antPattern.charAt(i);
-				if (c == '.') {
-					sb.append("\\.");
-				} else if (c == '*') {
-					sb.append(".*");
-				} else if (c == '?') {
-					sb.append(".?");
-				} else {
-					sb.append(c);
-				}
-			}
-			return sb.toString();
-		}
-
-		public FinderOptions classImplements(Class<?> superclass) {
-			addIncludeClassMatcher(new ClassImplementsMatcher(superclass));
-			return this;
-		}
-		
-		public FinderOptions addIncludeClassMatcher(ClassMatcher matcher) {
-			this.includeClassMatchers.add(matcher);
-			return this;
-		}
-		
-		boolean isIncludeClass(Class<?> klass) {
-			boolean include = true;
-			if (includeClassMatchers != null && includeClassMatchers.size() > 0) {
-				include = false;
-				for (ClassMatcher matcher : includeClassMatchers) {
-					if (matcher.match(klass)) {
-						include = true;
-						break;
-					}
-				}
-			}
-			return include;
-		}
-	}
-	
-	private static interface FileNameMatcher {
-		public boolean match(String path);
-	}
-	
-	private static class RegExpPatternFileNameMatcher implements FileNameMatcher {
+	static class RegExpPatternFileNameMatcher implements FileMatcher {
 		private final Pattern pattern;
 		
 		RegExpPatternFileNameMatcher(Pattern pattern) {
@@ -336,13 +208,9 @@ public class ClassFinder {
 		}
 
 		@Override
-		public boolean match(String path) {
+		public boolean matchFile(File file, String path) {
 			return pattern.matcher(path).matches();
 		}
-	}
-	
-	private static interface ClassMatcher {
-		public boolean match(Class found);
 	}
 	
 	protected static class ClassImplementsMatcher implements ClassMatcher{
@@ -354,8 +222,9 @@ public class ClassFinder {
         }
 
 		@Override
-        public boolean match(Class found) {
+        public boolean matchClass(Class found) {
 	        return superclass.isAssignableFrom(found);
         }
 	}
+
 }
