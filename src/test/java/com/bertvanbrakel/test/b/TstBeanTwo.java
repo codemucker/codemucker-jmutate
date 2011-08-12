@@ -1,5 +1,7 @@
 package com.bertvanbrakel.test.b;
 
-public class TstBeanTwo {
+import com.bertvanbrakel.test.TstInterface2;
+
+public class TstBeanTwo implements TstInterface2 {
 
 }

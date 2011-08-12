@@ -1,6 +1,7 @@
 package com.bertvanbrakel.test;
 
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
@@ -10,7 +11,7 @@ import java.util.Collection;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.test.ClassFinder.ClassImplementsMatcher;
+import com.bertvanbrakel.test.ClassFinderOptions.ClassImplementsMatcher;
 import com.bertvanbrakel.test.a.TstBeanOne;
 import com.bertvanbrakel.test.b.TstBeanTwo;
 
@@ -133,29 +134,67 @@ public class ClassFinderTest {
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions()
 			.includeTestDir(true)
-			.classImplements(TstInterface.class);
+			.classImplements(TstInterface1.class);
 		
 		Collection<Class<?>> found = list(finder.findClasses());
 
-		assertTrue(found.contains(TstInterface.class));
+		assertTrue(found.contains(TstInterface1.class));
 		assertTrue(found.contains(TstBeanOne.class));
-		assertEquals(2, found.size());
+		assertTrue(found.contains(TstBeanOneAndTwo.class));
+		
+		assertEquals(3, found.size());
+	}
+
+	@Test
+	public void test_multiple_implements(){
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions()
+			.includeTestDir(true)
+			.classImplements(TstInterface1.class)
+			.classImplements(TstInterface2.class)
+			;
+		
+		Collection<Class<?>> found = list(finder.findClasses());
+
+		assertTrue(found.contains(TstInterface1.class));
+		assertTrue(found.contains(TstInterface2.class));
+		assertTrue(found.contains(TstBeanOne.class));
+		assertTrue(found.contains(TstBeanTwo.class));
+		assertTrue(found.contains(TstBeanOneAndTwo.class));
+		
+		assertEquals(5, found.size());
+	}
+
+	@Test
+	public void test_class_must_match_multiple_matchers(){
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions()
+			.includeTestDir(true)
+			.classImplements(TstInterface1.class, TstInterface2.class)
+			;
+		
+		Collection<Class<?>> found = list(finder.findClasses());
+
+		assertTrue(found.contains(TstBeanOneAndTwo.class));
+
+		assertEquals(1, found.size());
 	}
 	
-		
+	
 	@Test
 	public void test_ClassImplementsMatcher(){
-		ClassImplementsMatcher matcher = new ClassImplementsMatcher(TstInterface.class);
+		ClassImplementsMatcher matcher = new ClassImplementsMatcher(TstInterface1.class);
 		
 		assertFalse(matcher.matchClass(Object.class));
 		assertFalse(matcher.matchClass(ClassFinder.class));
+		assertFalse(matcher.matchClass(TstInterface2.class));
 		assertFalse(matcher.matchClass(TstBeanTwo.class));
 		
-		assertTrue(matcher.matchClass(TstInterface.class));
+		assertTrue(matcher.matchClass(TstInterface1.class));
 		assertTrue(matcher.matchClass(TstBeanOne.class));
 	}
 	
-	private <T> Collection<T> list(Iterable<T> iter){
+	private static <T> Collection<T> list(Iterable<T> iter){
 		Collection<T> col = new ArrayList<T>();
 		for( T item:iter){
 			col.add(item);

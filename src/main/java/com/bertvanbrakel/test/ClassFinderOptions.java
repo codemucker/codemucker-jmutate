@@ -2,14 +2,25 @@ package com.bertvanbrakel.test;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
-import com.bertvanbrakel.test.ClassFinder.ClassImplementsMatcher;
-import com.bertvanbrakel.test.ClassFinder.RegExpPatternFileNameMatcher;
-
 public class ClassFinderOptions implements ClassMatcher, FileMatcher {
+	
+	private final Collection<String> projectFiles = Arrays.asList(
+		"pom.xml", // maven2
+        "project.xml", // maven1
+        "build.xml", // ant
+        ".project", // eclipse
+        ".classpath" // eclipse
+	);
+	
+	public Collection<String> getProjectFiles() {
+    	return projectFiles;
+    }
+
 	private final Collection<File> classPathsDir = new HashSet<File>();
 	private boolean includeClassesDir = true;
 	private boolean includeTestDir = false;
@@ -19,6 +30,17 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 	
 	private final Collection<ClassMatcher> includeClassMatchers = new ArrayList<ClassMatcher>();
 	
+	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+	
+	public ClassLoader getClassLoader() {
+    	return classLoader;
+    }
+
+	public ClassFinderOptions classLoader(ClassLoader classLoader) {
+    	this.classLoader = classLoader;
+    	return this;
+    }
+
 	public ClassFinderOptions includeClassesDir(boolean b) {
 		this.includeClassesDir = b;
 		return this;
@@ -117,7 +139,7 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 		return sb.toString();
 	}
 
-	public ClassFinderOptions classImplements(Class<?> superclass) {
+	public ClassFinderOptions classImplements(Class<?>... superclass) {
 		addIncludeClassMatcher(new ClassImplementsMatcher(superclass));
 		return this;
 	}
@@ -140,5 +162,38 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 			}
 		}
 		return include;
+	}
+	
+	
+	protected static class RegExpPatternFileNameMatcher implements FileMatcher {
+		private final Pattern pattern;
+		
+		RegExpPatternFileNameMatcher(Pattern pattern) {
+			this.pattern = pattern;
+		}
+
+		@Override
+		public boolean matchFile(File file, String path) {
+			return pattern.matcher(path).matches();
+		}
+	}
+	
+	protected static class ClassImplementsMatcher implements ClassMatcher {
+		private final Class<?>[] superclass;
+
+		public ClassImplementsMatcher(Class<?>... superclass) {
+	        super();
+	        this.superclass = superclass;
+        }
+
+		@Override
+		public boolean matchClass(Class found) {
+			for (Class<?> require : superclass) {
+				if (!require.isAssignableFrom(found)) {
+					return false;
+				}
+			}
+			return true;
+		}
 	}
 }

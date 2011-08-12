@@ -3,7 +3,6 @@ package com.bertvanbrakel.test;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,17 +40,11 @@ public class ClassFinder {
 	}
 
 	private File findProjectDir() {
-		final Collection<String> PROJECT_FILES = Arrays.asList(
-				"pom.xml", // maven2
-		        "project.xml", // maven1
-		        "build.xml", // ant
-		        ".project", // eclipse
-		        ".classpath" // eclipse
-		);
+		final Collection<String> projectFiles = options.getProjectFiles();
 		FilenameFilter projectDirFilter = new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
-				return PROJECT_FILES.contains(name);
+				return projectFiles.contains(name);
 			}
 		};
 
@@ -65,7 +58,7 @@ public class ClassFinder {
 			}
 			String msg = String
 			        .format("Can't find project dir. Started looking in %s, looking for any parent directory containing one of %s",
-			                new File("./").getCanonicalPath(), PROJECT_FILES);
+			                new File("./").getCanonicalPath(), projectFiles);
 			throw new ClassFinderException(msg);
 		} catch (IOException e) {
 			throw new ClassFinderException("Error while looking for project dir", e);
@@ -77,7 +70,7 @@ public class ClassFinder {
 		return new Iterable<Class<?>>() {
 			@Override
 			public Iterator<Class<?>> iterator() {
-				return new ClassLoadingIterator(foundClassNames.iterator(), options);
+				return new ClassLoadingIterator(foundClassNames.iterator(), options, options.getClassLoader());
 			}
 		};
 	}
@@ -113,7 +106,6 @@ public class ClassFinder {
 				return options.matchFile(file, relPath);
             }
 		};
-	
 		Collection<String> resources = walker.findFiles(rootDir);
 		return resources;
 	}
@@ -143,13 +135,14 @@ public class ClassFinder {
 	private static class ClassLoadingIterator implements Iterator<Class<?>>{
 		private final ClassMatcher classMatcher;
 		private final Iterator<String> classNames;
-		
+		private final ClassLoader classLoader;
 		private Class<?> nextClass;
 
-		public ClassLoadingIterator(Iterator<String> classNames, ClassMatcher classMatcher) {
+		public ClassLoadingIterator(Iterator<String> classNames, ClassMatcher classMatcher, ClassLoader classLoader) {
 			super();
 			this.classNames = classNames;
 			this.classMatcher = classMatcher;
+			this.classLoader = classLoader;
 			nextClass = nextClass();
 		}
 
@@ -185,46 +178,14 @@ public class ClassFinder {
 		}
 		private Class<?> loadClass(String className) {
 			try {
-				return getCLassLoader().loadClass(className);
+				return classLoader.loadClass(className);
 			} catch (ClassNotFoundException e) {
 				throw new ClassFinderException("couldn't load class " + className, e);
 			}
-		}
-		
-		private ClassLoader getCLassLoader(){
-			return Thread.currentThread().getContextClassLoader();
 		}
 	}
 	
 	public ClassFinderOptions getOptions() {
 	    return options;
     }
-	
-	static class RegExpPatternFileNameMatcher implements FileMatcher {
-		private final Pattern pattern;
-		
-		RegExpPatternFileNameMatcher(Pattern pattern) {
-			this.pattern = pattern;
-		}
-
-		@Override
-		public boolean matchFile(File file, String path) {
-			return pattern.matcher(path).matches();
-		}
-	}
-	
-	protected static class ClassImplementsMatcher implements ClassMatcher{
-		private final Class<?> superclass;
-
-		public ClassImplementsMatcher(Class<?> superclass) {
-	        super();
-	        this.superclass = superclass;
-        }
-
-		@Override
-        public boolean matchClass(Class found) {
-	        return superclass.isAssignableFrom(found);
-        }
-	}
-
 }
