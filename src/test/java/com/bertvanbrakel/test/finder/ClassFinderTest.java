@@ -1,18 +1,16 @@
 package com.bertvanbrakel.test.finder;
 
+import static com.bertvanbrakel.test.TestUtils.list;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.test.finder.ClassFinder;
-import com.bertvanbrakel.test.finder.ClassFinderException;
 import com.bertvanbrakel.test.finder.ClassFinderOptions.ClassImplementsMatcher;
 import com.bertvanbrakel.test.finder.a.TstBeanOne;
 import com.bertvanbrakel.test.finder.b.TstBeanTwo;
@@ -195,14 +193,5 @@ public class ClassFinderTest {
 		assertTrue(matcher.matchClass(TstInterface1.class));
 		assertTrue(matcher.matchClass(TstBeanOne.class));
 	}
-	
-	private static <T> Collection<T> list(Iterable<T> iter){
-		Collection<T> col = new ArrayList<T>();
-		for( T item:iter){
-			col.add(item);
-		}
-		return col;
-	}
-		
 		
 }
