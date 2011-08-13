@@ -11,11 +11,13 @@ import java.util.Collection;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.test.finder.ClassFinderOptions.ClassImplementsMatcher;
+import com.bertvanbrakel.test.finder.ClassFinderOptions.ClassAssignableMatcher;
 import com.bertvanbrakel.test.finder.a.TstBeanOne;
 import com.bertvanbrakel.test.finder.b.TstBeanTwo;
 import com.bertvanbrakel.test.finder.c.TstAnonymous;
 import com.bertvanbrakel.test.finder.d.TstInner;
+import com.bertvanbrakel.test.finder.e.TstAnnotation;
+import com.bertvanbrakel.test.finder.e.TstAnnotationBean;
 
 public class ClassFinderTest {
 
@@ -185,7 +187,7 @@ public class ClassFinderTest {
 	
 	@Test
 	public void test_ClassImplementsMatcher(){
-		ClassImplementsMatcher matcher = new ClassImplementsMatcher(TstInterface1.class);
+		ClassAssignableMatcher matcher = new ClassAssignableMatcher(TstInterface1.class);
 		
 		assertFalse(matcher.matchClass(Object.class));
 		assertFalse(matcher.matchClass(ClassFinder.class));
@@ -257,5 +259,18 @@ public class ClassFinderTest {
 		assertFalse(found.contains(TstInterface2.class));
 
 		assertTrue(found.contains(TstBeanOneAndTwo.class));
-	}	
+	}
+	
+	@Test
+	public void test_find_has_annotations(){
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions()
+			.includeTestDir(true)
+			.hasAnnotation(TstAnnotation.class)
+		;
+
+		Collection<Class<?>> found = list(finder.findClasses());
+
+		assertEquals(list(TstAnnotationBean.class), found);
+	}
 }

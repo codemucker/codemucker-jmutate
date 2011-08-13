@@ -1,6 +1,7 @@
 package com.bertvanbrakel.test.finder;
 
 import java.io.File;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -147,7 +148,12 @@ public class ClassFinderOptions {
 	}
 	
 	public ClassFinderOptions assignableTo(Class<?>... superclass) {
-		includeClassMatching(new ClassImplementsMatcher(superclass));
+		includeClassMatching(new ClassAssignableMatcher(superclass));
+		return this;
+	}
+	
+	public <T extends Annotation> ClassFinderOptions hasAnnotation(Class<T>... annotations){
+		includeClassMatching(new ContainsAnnotationsMatcher(annotations));
 		return this;
 	}
 	
@@ -248,10 +254,10 @@ public class ClassFinderOptions {
 		}
 	}
 	
-	protected static class ClassImplementsMatcher implements ClassMatcher {
+	protected static class ClassAssignableMatcher implements ClassMatcher {
 		private final Class<?>[] superclass;
 
-		public ClassImplementsMatcher(Class<?>... superclass) {
+		public ClassAssignableMatcher(Class<?>... superclass) {
 	        super();
 	        this.superclass = superclass;
         }
@@ -260,6 +266,25 @@ public class ClassFinderOptions {
 		public boolean matchClass(Class found) {
 			for (Class<?> require : superclass) {
 				if (!require.isAssignableFrom(found)) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+	
+	protected static class ContainsAnnotationsMatcher implements ClassMatcher {
+		private final Class<? extends Annotation>[] annotations;
+
+		public ContainsAnnotationsMatcher(Class<? extends Annotation>... annotations) {
+	        super();
+	        this.annotations = annotations;
+        }
+
+		@Override
+		public boolean matchClass(Class found) {
+			for (Class<?> anon : annotations) {
+				if (found.getAnnotation(anon) == null) {
 					return false;
 				}
 			}
