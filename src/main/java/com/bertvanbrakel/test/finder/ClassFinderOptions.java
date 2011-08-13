@@ -45,10 +45,6 @@ public class ClassFinderOptions {
 		}
 	};
 
-	public Collection<String> getProjectFiles() {
-    	return projectFiles;
-    }
-
 	private final Collection<File> classPathsDir = new HashSet<File>();
 	private boolean includeClassesDir = true;
 	private boolean includeTestDir = false;
@@ -61,6 +57,10 @@ public class ClassFinderOptions {
 	
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	
+	public Collection<String> getProjectFiles() {
+    	return projectFiles;
+    }
+
 	public ClassLoader getClassLoader() {
     	return classLoader;
     }
