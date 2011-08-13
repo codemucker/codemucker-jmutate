@@ -197,6 +197,20 @@ public class ClassFinderTest {
 		assertTrue(matcher.matchClass(TstInterface1.class));
 		assertTrue(matcher.matchClass(TstBeanOne.class));
 	}
+
+	@Test
+	public void test_find_enums(){
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions()
+			.includeTestDir(true)
+			;
+		
+		Collection<Class<?>> found = list(finder.findClasses());
+
+		assertTrue(found.contains(TstEnum.class));
+		assertTrue(found.contains(TstBeanOneAndTwo.InstanceEnum.class));
+		assertTrue(found.contains(TstBeanOneAndTwo.StaticEnum.class));
+	}
 	
 	@Test
 	public void test_filter_enum(){
