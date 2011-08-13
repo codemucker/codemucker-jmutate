@@ -136,7 +136,7 @@ public class BeanTesterTest {
 
     @Test
     public void test_get_properties_ignore(){
-	BeanTester tester = new BeanTester();
+	PropertiesExtractor tester = new BeanTester();
 	tester.getOptions()
 		.ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
 		.ignoreProperty(TstBeanIgnoreProperty.class, "fieldC");
