@@ -70,7 +70,7 @@ public class ClassFinder {
 		return new Iterable<Class<?>>() {
 			@Override
 			public Iterator<Class<?>> iterator() {
-				return new ClassLoadingIterator(foundClassNames.iterator(), options, options.getClassLoader());
+				return new ClassLoadingIterator(foundClassNames.iterator(), options.toClassMatcher(), options.getClassLoader());
 			}
 		};
 	}
@@ -100,11 +100,12 @@ public class ClassFinder {
 	}
 
 	public Collection<String> findClassResourcePaths(File rootDir) {
-		FileWalker walker = new FileWalker(){
+		final FileMatcher fileMatcher = options.toFileMatcher();
+		FileWalker walker = new FileWalker() {
 			@Override
-            public boolean isIncludeFile(String relPath, File file) {
-				return options.matchFile(file, relPath);
-            }
+			public boolean isIncludeFile(String relPath, File file) {
+				return fileMatcher.matchFile(file, relPath);
+			}
 		};
 		Collection<String> resources = walker.findFiles(rootDir);
 		return resources;

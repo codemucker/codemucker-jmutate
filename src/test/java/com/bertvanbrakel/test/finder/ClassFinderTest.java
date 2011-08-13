@@ -136,7 +136,7 @@ public class ClassFinderTest {
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions()
 			.includeTestDir(true)
-			.classImplements(TstInterface1.class);
+			.assignableTo(TstInterface1.class);
 		
 		Collection<Class<?>> found = list(finder.findClasses());
 
@@ -152,8 +152,8 @@ public class ClassFinderTest {
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions()
 			.includeTestDir(true)
-			.classImplements(TstInterface1.class)
-			.classImplements(TstInterface2.class)
+			.assignableTo(TstInterface1.class)
+			.assignableTo(TstInterface2.class)
 			;
 		
 		Collection<Class<?>> found = list(finder.findClasses());
@@ -172,7 +172,7 @@ public class ClassFinderTest {
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions()
 			.includeTestDir(true)
-			.classImplements(TstInterface1.class, TstInterface2.class)
+			.assignableTo(TstInterface1.class, TstInterface2.class)
 			;
 		
 		Collection<Class<?>> found = list(finder.findClasses());

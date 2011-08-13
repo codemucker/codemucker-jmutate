@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
-public class ClassFinderOptions implements ClassMatcher, FileMatcher {
+public class ClassFinderOptions {
 	
 	private final Collection<String> projectFiles = Arrays.asList(
 		"pom.xml", // maven2
@@ -97,28 +97,6 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 		return this;
 	}
 
-	@Override
-	public boolean matchFile(File file, String relPath){
-		boolean include = true;
-		if (includeFileNameMatchers!= null && includeFileNameMatchers.size() > 0) {
-			include = false;//by default if we have includes we exclude all except matches
-			for (FileMatcher matcher : includeFileNameMatchers) {
-				if (matcher.matchFile(null, relPath)) {
-					include = true;
-					break;
-				}
-			}
-		}
-		if (include && (excludeFileNameMatchers != null && excludeFileNameMatchers.size() > 0)) {
-			for (FileMatcher matcher : excludeFileNameMatchers) {
-				if (matcher.matchFile(null, relPath)) {
-					include = false;
-				}
-			}
-		}
-		return include;
-	}
-
 	public ClassFinderOptions excludeFileName(String path) {
 		String regExp = antToRegExp(path);
 		excludeFileName(Pattern.compile(regExp));
@@ -168,7 +146,7 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 		return sb.toString();
 	}
 	
-	public ClassFinderOptions classImplements(Class<?>... superclass) {
+	public ClassFinderOptions assignableTo(Class<?>... superclass) {
 		includeClassMatching(new ClassImplementsMatcher(superclass));
 		return this;
 	}
@@ -203,29 +181,60 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 		return this;
 	}
 	
-	@Override
-	public boolean matchClass(Class klass) {
-		boolean include = true;
-		if (includeClassMatchers != null && includeClassMatchers.size() > 0) {
-			include = false;
-			for (ClassMatcher matcher : includeClassMatchers) {
-				if (matcher.matchClass(klass)) {
-					include = true;
-					break;
+	public FileMatcher toFileMatcher() {
+		return new FileMatcher() {
+			@Override
+			public boolean matchFile(File file, String relPath) {
+				boolean include = true;
+				if (includeFileNameMatchers != null && includeFileNameMatchers.size() > 0) {
+					include = false;// by default if we have includes we exclude
+									// all except matches
+					for (FileMatcher matcher : includeFileNameMatchers) {
+						if (matcher.matchFile(null, relPath)) {
+							include = true;
+							break;
+						}
+					}
 				}
-			}
-		}
-		if (excludeClassMatchers != null && excludeClassMatchers.size() > 0) {
-			for (ClassMatcher matcher : excludeClassMatchers) {
-				if (matcher.matchClass(klass)) {
-					include = false;
-					break;
+				if (include && (excludeFileNameMatchers != null && excludeFileNameMatchers.size() > 0)) {
+					for (FileMatcher matcher : excludeFileNameMatchers) {
+						if (matcher.matchFile(null, relPath)) {
+							include = false;
+						}
+					}
 				}
+				return include;
 			}
-		}
-		return include;
+		};
 	}
 	
+	public ClassMatcher toClassMatcher() {
+		return new ClassMatcher() {
+			@Override
+			public boolean matchClass(Class klass) {
+				boolean include = true;
+				if (includeClassMatchers != null && includeClassMatchers.size() > 0) {
+					include = false;
+					for (ClassMatcher matcher : includeClassMatchers) {
+						if (matcher.matchClass(klass)) {
+							include = true;
+							break;
+						}
+					}
+				}
+				if (excludeClassMatchers != null && excludeClassMatchers.size() > 0) {
+					for (ClassMatcher matcher : excludeClassMatchers) {
+						if (matcher.matchClass(klass)) {
+							include = false;
+							break;
+						}
+					}
+				}
+				return include;
+			}
+		};
+	}
+
 	protected static class RegExpPatternFileNameMatcher implements FileMatcher {
 		private final Pattern pattern;
 		
@@ -257,8 +266,4 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 			return true;
 		}
 	}
-
-
-
-	
 }
