@@ -152,7 +152,7 @@ public class ClassFinderOptions {
 		return this;
 	}
 	
-	public <T extends Annotation> ClassFinderOptions hasAnnotation(Class<T>... annotations){
+	public <T extends Annotation> ClassFinderOptions withAnnotation(Class<T>... annotations){
 		includeClassMatching(new ContainsAnnotationsMatcher(annotations));
 		return this;
 	}

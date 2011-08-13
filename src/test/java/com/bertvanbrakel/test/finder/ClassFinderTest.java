@@ -266,7 +266,7 @@ public class ClassFinderTest {
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions()
 			.includeTestDir(true)
-			.hasAnnotation(TstAnnotation.class)
+			.withAnnotation(TstAnnotation.class)
 		;
 
 		Collection<Class<?>> found = list(finder.findClasses());
