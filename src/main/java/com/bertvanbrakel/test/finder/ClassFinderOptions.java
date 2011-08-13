@@ -17,6 +17,34 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
         ".classpath" // eclipse
 	);
 	
+	public static final ClassMatcher MATCHER_ANONYMOUS = new ClassMatcher() {
+		@Override
+		public boolean matchClass(Class found) {
+			return found.isAnonymousClass();
+		}
+	};
+	
+	public static final ClassMatcher MATCHER_ENUM = new ClassMatcher() {
+		@Override
+		public boolean matchClass(Class found) {
+			return found.isEnum();
+		}
+	};
+	
+	public static final ClassMatcher MATCHER_INNER_CLASS = new ClassMatcher() {
+		@Override
+		public boolean matchClass(Class found) {
+			return found.isMemberClass();
+		}
+	};
+
+	public static final ClassMatcher MATCHER_INTERFACE = new ClassMatcher() {
+		@Override
+		public boolean matchClass(Class found) {
+			return found.isInterface();
+		}
+	};
+
 	public Collection<String> getProjectFiles() {
     	return projectFiles;
     }
@@ -151,25 +179,25 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 	}
 	
 	public ClassFinderOptions excludeEnum() {
-		excludeClassMatching(new EnumMatcher());
+		excludeClassMatching(MATCHER_ENUM);
 		return this;
-    }
+	}
 
 	public ClassFinderOptions excludeAnonymous() {
-		excludeClassMatching(new AnonymousMatcher());
+		excludeClassMatching(MATCHER_ANONYMOUS);
 		return this;
 	}
 
 	public ClassFinderOptions excludeInner() {
-		excludeClassMatching(new InnerClassMatcher());
+		excludeClassMatching(MATCHER_INNER_CLASS);
 		return this;
 	}
-	
+
 	public ClassFinderOptions excludeInterfaces() {
-		excludeClassMatching(new InterfaceClassMatcher());
+		excludeClassMatching(MATCHER_INTERFACE);
 		return this;
 	}
-	
+
 	public ClassFinderOptions excludeClassMatching(ClassMatcher matcher) {
 		this.excludeClassMatchers.add(matcher);
 		return this;
@@ -230,48 +258,7 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 		}
 	}
 
-	protected static class AnonymousMatcher implements ClassMatcher {
-		
-		public AnonymousMatcher() {
-        }
-		@Override
-        public boolean matchClass(Class found) {
-			return found.isAnonymousClass();
-        }
-	}
-	
-	protected static class EnumMatcher implements ClassMatcher {
-		
-		public EnumMatcher() {
-        }
-		
-		@Override
-        public boolean matchClass(Class found) {
-			return found.isEnum();
-        }
-	}
-	
-	protected static class InnerClassMatcher implements ClassMatcher {
-		
-		public InnerClassMatcher() {
-        }
-		
-		@Override
-        public boolean matchClass(Class found) {
-			return found.isMemberClass();
-        }
-	}
 
-	protected static class InterfaceClassMatcher implements ClassMatcher {
-
-		public InterfaceClassMatcher() {
-		}
-
-		@Override
-		public boolean matchClass(Class found) {
-			return found.isInterface();
-		}
-	}
 
 	
 }
