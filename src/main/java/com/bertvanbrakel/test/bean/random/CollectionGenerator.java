@@ -12,18 +12,18 @@ import java.util.Set;
 
 import com.bertvanbrakel.test.bean.BeanException;
 
-public class CollectionProvider implements RandomDataProvider {
+public class CollectionGenerator implements RandomGenerator {
 
 	private final Random RANDOM = new Random();
 
-	private final RandomDataProvider provider;
+	private final RandomGenerator provider;
 
-	public CollectionProvider(RandomDataProvider<?> provider) {
+	public CollectionGenerator(RandomGenerator<?> provider) {
 		this.provider = provider;
 	}
 
 	@Override
-	public Object getRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
+	public Object generateRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
 		if (propertyType.isArray()) {
 			int randomLen = randomLen();
 			Object[] arr = (Object[]) Array.newInstance(propertyType.getComponentType(), randomLen);
@@ -58,7 +58,7 @@ public class CollectionProvider implements RandomDataProvider {
 		}
 		int randomLen = randomLen();
 		for (int i = 0; i < randomLen; i++) {
-			Object eleVal = provider.getRandom(beanClass, propertyName, elementType, null);
+			Object eleVal = provider.generateRandom(beanClass, propertyName, elementType, null);
 			col.add(eleVal);
 		}
 		return col;
@@ -66,7 +66,7 @@ public class CollectionProvider implements RandomDataProvider {
 
 	public Object[] fillArray(Class beanClass, String propertyName, Object[] arr, Class<?> elementType) {
 		for (int i = 0; i < arr.length; i++) {
-			Object eleVal = provider.getRandom(beanClass, propertyName, elementType, null);
+			Object eleVal = provider.generateRandom(beanClass, propertyName, elementType, null);
 			arr[i] = eleVal;
 		}
 		return arr;

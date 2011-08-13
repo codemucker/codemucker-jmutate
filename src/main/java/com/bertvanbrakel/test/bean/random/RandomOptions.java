@@ -14,7 +14,7 @@ public class RandomOptions extends BeanOptions {
 	private static final Collection<String> defaultExcludePackages = Arrays.asList("java.", "javax.", "sun.","oracle.", "ibm.");
 	private final Collection<String> excludePackages = new ArrayList<String>();
 
-	private final Map<Class<?>, RandomDataProvider<?>> randomProviders = new HashMap<Class<?>, RandomDataProvider<?>>();
+	private final Map<Class<?>, RandomGenerator<?>> randomProviders = new HashMap<Class<?>, RandomGenerator<?>>();
 
 	private boolean failOnNonSupportedPropertyType = false;
 	private boolean failOnRecursiveBeanCreation = true;
@@ -24,13 +24,13 @@ public class RandomOptions extends BeanOptions {
 		return this;
 	}
 	
-	public <T> RandomOptions addProvider(Class<T> type, RandomDataProvider<T> provider) {
+	public <T> RandomOptions addProvider(Class<T> type, RandomGenerator<T> provider) {
 		randomProviders.put(type, provider);
 		return this;
 	}
 	
-	public <T> RandomDataProvider<T> getProvider(Class<T> type){
-		return (RandomDataProvider<T>) randomProviders.get(type);
+	public <T> RandomGenerator<T> getProvider(Class<T> type){
+		return (RandomGenerator<T>) randomProviders.get(type);
 	}
 	
 	public boolean isGeneratePropertyType(Object bean, String propertyName, Class<?> type, Type genericType){

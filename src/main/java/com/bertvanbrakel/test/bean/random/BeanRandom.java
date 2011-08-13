@@ -18,15 +18,15 @@ import com.bertvanbrakel.test.bean.BeanException;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
 import com.bertvanbrakel.test.bean.Property;
 
-public class BeanRandom implements RandomDataProvider {
+public class BeanRandom implements RandomGenerator {
 
 	private final PropertiesExtractor extractor = new PropertiesExtractor();
 
-	private static Map<Class<?>, RandomDataProvider<?>> builtInProviders = new HashMap<Class<?>, RandomDataProvider<?>>();
+	private static Map<Class<?>, RandomGenerator<?>> builtInProviders = new HashMap<Class<?>, RandomGenerator<?>>();
 
-	private final PrimitiveProvider primitiveProvider = new PrimitiveProvider();
-	private final CollectionProvider collectionProvider = new CollectionProvider(this);
-	private final EnumProvider enumProvider = new EnumProvider();
+	private final PrimitiveGenerator primitiveProvider = new PrimitiveGenerator();
+	private final CollectionGenerator collectionProvider = new CollectionGenerator(this);
+	private final EnumGenerator enumProvider = new EnumGenerator();
 
 	private Stack<String> parentPropertes = new Stack<String>();
 
@@ -66,7 +66,7 @@ public class BeanRandom implements RandomDataProvider {
 	private void populatePropertyWithRandomValue(Property p, Object bean) {
 		if (p.getWrite() != null) {
 			Method setter = p.getWrite();
-			Object propertyValue = getRandom(null, p.getName(), p.getType(), p.getGenericType());
+			Object propertyValue = generateRandom(null, p.getName(), p.getType(), p.getGenericType());
 			// TODO:option to ignore errors?
 			try {
 				setter.invoke(bean, new Object[] { propertyValue });
@@ -123,15 +123,15 @@ public class BeanRandom implements RandomDataProvider {
 		int len = ctor.getParameterTypes().length;
 		Object[] args = new Object[len];
 		for (int i = 0; i < len; i++) {
-			args[i] = getRandom(ctor.getDeclaringClass(), null, ctor.getParameterTypes()[i], ctor.getGenericParameterTypes()[i]);
+			args[i] = generateRandom(ctor.getDeclaringClass(), null, ctor.getParameterTypes()[i], ctor.getGenericParameterTypes()[i]);
 		}
 		T bean = invokeCtorWith(ctor, args);
 		return bean;
 	}
 	
 	@Override
-	public Object getRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
-		RandomDataProvider<?> provider = getOptions().getProvider(propertyType);
+	public Object generateRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
+		RandomGenerator<?> provider = getOptions().getProvider(propertyType);
 		if (provider == null) {
 			provider = builtInProviders.get(propertyType);
 			if (provider == null) {
@@ -168,7 +168,7 @@ public class BeanRandom implements RandomDataProvider {
 				return null;
 			}
 		}
-		return provider.getRandom(beanClass, propertyName, propertyType, genericType);
+		return provider.generateRandom(beanClass, propertyName, propertyType, genericType);
 	}
 
 	private boolean isGenerateBeanPropertyOfType(Object bean, String propertyName, Class<?> type, Type genericType) {

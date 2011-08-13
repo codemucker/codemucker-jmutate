@@ -5,12 +5,12 @@ import java.util.Random;
 
 import com.bertvanbrakel.test.bean.BeanException;
 
-public class EnumProvider implements RandomDataProvider {
+public class EnumGenerator implements RandomGenerator {
 
 	private final Random RANDOM = new Random();
 
 	@Override
-	public Object getRandom(Class bean, String propertyName, Class propertyType, Type genericType) {
+	public Object generateRandom(Class bean, String propertyName, Class propertyType, Type genericType) {
 		if (propertyType.isEnum()) {
 			Object[] enums = propertyType.getEnumConstants();
 			int idx = RANDOM.nextInt(enums.length);
