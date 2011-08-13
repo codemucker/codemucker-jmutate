@@ -155,7 +155,7 @@ public class PropertiesExtractor {
 		}
 	}
 
-	public boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
+	private boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
 		if ("class".equals(propertyName)) {
 			return false;
 		}

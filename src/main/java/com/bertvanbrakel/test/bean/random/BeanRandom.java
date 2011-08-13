@@ -15,23 +15,18 @@ import java.util.Stack;
 
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.BeanException;
-import com.bertvanbrakel.test.bean.BeanOptions;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
 import com.bertvanbrakel.test.bean.Property;
 
 public class BeanRandom implements RandomDataProvider {
 
+	private final PropertiesExtractor extractor = new PropertiesExtractor();
+
 	private static Map<Class<?>, RandomDataProvider<?>> builtInProviders = new HashMap<Class<?>, RandomDataProvider<?>>();
+
+	private final PrimitiveRandomProvider primitiveProvider = new PrimitiveRandomProvider();
 	private final CollectionProvider collectionProvider = new CollectionProvider(this);
-	private final Map<Class<?>, RandomDataProvider<?>> customProviders = new HashMap<Class<?>, RandomDataProvider<?>>();
-
-	private static final Collection<String> defaultExcludePackages = Arrays.asList("java.", "javax.", "sun.",
-	        "oracle.", "ibm.");
-	private final Collection<String> customExcludePackages = new ArrayList<String>();
-
-	private PrimitiveRandomProvider primitiveProvider = new PrimitiveRandomProvider();
-	
-	private EnumProvider enumProvider = new EnumProvider();
+	private final EnumProvider enumProvider = new EnumProvider();
 
 	private Stack<String> parentPropertes = new Stack<String>();
 
@@ -39,11 +34,9 @@ public class BeanRandom implements RandomDataProvider {
 	private Stack<Class<?>> parentBeansTypesCreated = new Stack<Class<?>>();
 
 	private String parentPropertyPath;
-	
-	private PropertiesExtractor extractor = new PropertiesExtractor();
 
-	public <T> void registerProvider(Class<T> type, RandomDataProvider<T> provider) {
-		customProviders.put(type, provider);
+	public BeanRandom() {
+		extractor.setOptions(new RandomOptions());
 	}
 
 	public <T> T populate(Class<T> beanClass) {
@@ -91,10 +84,6 @@ public class BeanRandom implements RandomDataProvider {
 	}
 
 	private boolean isGenerateRandomPropertyValue(Class<?> beanClass, String propertyName, Class<?> propertyType) {
-		boolean include = extractor.isIncludeProperty(beanClass, propertyName, propertyType);
-		if (!include) {
-			return false;
-		}
 		if (parentPropertyPath != null) {
 			String fullPath = parentPropertyPath + propertyName;
 			if (getOptions().getIgnoreProperties().contains(fullPath)) {
@@ -130,9 +119,19 @@ public class BeanRandom implements RandomDataProvider {
 		}
 	}
 
+	protected <T> T invokeCtorWithRandomArgs(Constructor<T> ctor) {
+		int len = ctor.getParameterTypes().length;
+		Object[] args = new Object[len];
+		for (int i = 0; i < len; i++) {
+			args[i] = getRandom(null, ctor.getParameterTypes()[i], ctor.getGenericParameterTypes()[i]);
+		}
+		T bean = invokeCtorWith(ctor, args);
+		return bean;
+	}
+	
 	@Override
 	public Object getRandom(String propertyName, Class propertyType, Type genericType) {
-		RandomDataProvider<?> provider = customProviders.get(propertyType);
+		RandomDataProvider<?> provider = getOptions().getProvider(propertyType);
 		if (provider == null) {
 			provider = builtInProviders.get(propertyType);
 			if (provider == null) {
@@ -140,7 +139,7 @@ public class BeanRandom implements RandomDataProvider {
 					provider = collectionProvider;
 				} else if (propertyType.isEnum()) {
 					provider = enumProvider;
-				} else if (primitiveProvider.supportsType(propertyType)){
+				} else if (primitiveProvider.supportsType(propertyType)) {
 					provider = primitiveProvider;
 				}
 			}
@@ -171,40 +170,16 @@ public class BeanRandom implements RandomDataProvider {
 		}
 		return provider.getRandom(propertyName, propertyType, genericType);
 	}
-	
-	public BeanOptions getOptions(){
-		return extractor.getOptions();
-	}
 
 	private boolean isGenerateBeanPropertyOfType(Class<?> type) {
-		String name = type.getName();
-		if (isTypeInPackages(name, defaultExcludePackages)) {
-			return false;
-		}
-		if (isTypeInPackages(name, customExcludePackages)) {
-			return false;
-		}
-
-		return true;
+		return getOptions().isCreatePropertyType(type);
 	}
 
-	private boolean isTypeInPackages(String fullyQualifiedTypeName, Iterable<String> packages) {
-		for (String pkg : packages) {
-			if (fullyQualifiedTypeName.startsWith(pkg)) {
-				return true;
-			}
-		}
-		return false;
+	public RandomOptions getOptions() {
+		return (RandomOptions) extractor.getOptions();
 	}
 
-	protected <T> T invokeCtorWithRandomArgs(Constructor<T> ctor) {
-		int len = ctor.getParameterTypes().length;
-		Object[] args = new Object[len];
-		for (int i = 0; i < len; i++) {
-			args[i] = getRandom(null, ctor.getParameterTypes()[i], ctor.getGenericParameterTypes()[i]);
-		}
-		T bean = invokeCtorWith(ctor, args);
-		return bean;
+	public void setOptions(RandomOptions options) {
+		extractor.setOptions(options);
 	}
-
 }

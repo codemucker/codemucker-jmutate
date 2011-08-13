@@ -101,7 +101,9 @@ public class BeanRandomTest {
 	@Test
 	public void test_ignore_property() {
 		BeanRandom tester = new BeanRandom();
-		tester.getOptions().ignoreProperty("fieldB").failOnRecursiveBeanCreation(false);
+		tester.getOptions()
+		.failOnRecursiveBeanCreation(false)
+		.ignoreProperty("fieldB");
 
 		TstBeanIgnoreProperty bean = tester.populate(TstBeanIgnoreProperty.class);
 		assertNotNull(bean);
@@ -113,11 +115,13 @@ public class BeanRandomTest {
 	@Test
 	public void test_ignore_deep_property() {
 		BeanRandom tester = new BeanRandom();
-		tester.getOptions().ignoreProperty("fieldC.fieldB")
+		tester.getOptions()
+			.failOnRecursiveBeanCreation(false)
+			.ignoreProperty("fieldC.fieldB")
 		// .ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
 		// .ignoreProperty("*A")
 
-		        .failOnRecursiveBeanCreation(false);
+		        ;
 
 		TstBeanIgnoreProperty bean = tester.populate(TstBeanIgnoreProperty.class);
 		assertNotNull(bean);
