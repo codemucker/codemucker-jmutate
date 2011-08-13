@@ -1,5 +1,6 @@
 package com.bertvanbrakel.test.bean.random;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,7 +33,7 @@ public class RandomOptions extends BeanOptions {
 		return (RandomDataProvider<T>) randomProviders.get(type);
 	}
 	
-	public boolean isCreatePropertyType(Class<?> type){
+	public boolean isGeneratePropertyType(Object bean, String propertyName, Class<?> type, Type genericType){
 		String name = type.getName();
 		if (isTypeInPackages(name, defaultExcludePackages)) {
 			return false;

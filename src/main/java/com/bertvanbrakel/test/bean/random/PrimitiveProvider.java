@@ -9,7 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class PrimitiveRandomProvider implements RandomDataProvider<Object>{
+public class PrimitiveProvider implements RandomDataProvider<Object>{
 	
 	private static Map<Class<?>, RandomDataProvider<?>> builtInProviders = new HashMap<Class<?>, RandomDataProvider<?>>();
 
@@ -17,67 +17,67 @@ public class PrimitiveRandomProvider implements RandomDataProvider<Object>{
 
 	static {
 		internalRegisterPrimitiveProvider(Boolean.class, Boolean.TYPE, new RandomDataProvider<Boolean>() {
-			public Boolean getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public Boolean getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextBoolean();
 			}
 		});
 		internalRegisterPrimitiveProvider(Byte.class, Byte.TYPE, new RandomDataProvider<Byte>() {
-			public Byte getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public Byte getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextByte();
 			}
 		});
 		internalRegisterPrimitiveProvider(Character.class, Character.TYPE, new RandomDataProvider<Character>() {
-			public Character getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public Character getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextChar();
 			}
 		});
 		internalRegisterPrimitiveProvider(Short.class, Short.TYPE, new RandomDataProvider<Short>() {
-			public Short getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public Short getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextShort();
 			}
 		});
 		internalRegisterPrimitiveProvider(Integer.class, Integer.TYPE, new RandomDataProvider<Integer>() {
-			public Integer getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public Integer getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextInt();
 			}
 		});
 		internalRegisterPrimitiveProvider(Long.class, Long.TYPE, new RandomDataProvider<Long>() {
-			public Long getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public Long getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextLong();
 			}
 		});
 		internalRegisterPrimitiveProvider(Float.class, Float.TYPE, new RandomDataProvider<Float>() {
-			public Float getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public Float getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextFloat();
 			}
 		});
 		internalRegisterPrimitiveProvider(Double.class, Double.TYPE, new RandomDataProvider<Double>() {
-			public Double getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public Double getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextDouble();
 			}
 		});
 		internalRegisterProvider(BigDecimal.class, new RandomDataProvider<BigDecimal>() {
-			public BigDecimal getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public BigDecimal getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextBigDecimal();
 			}
 		});
 		internalRegisterProvider(BigInteger.class, new RandomDataProvider<BigInteger>() {
-			public BigInteger getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public BigInteger getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return RANDOM.nextBigInteger();
 			}
 		});
 		internalRegisterProvider(AtomicInteger.class, new RandomDataProvider<AtomicInteger>() {
-			public AtomicInteger getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public AtomicInteger getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return new AtomicInteger(RANDOM.nextInt());
 			}
 		});
 		internalRegisterProvider(AtomicLong.class, new RandomDataProvider<AtomicLong>() {
-			public AtomicLong getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public AtomicLong getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return new AtomicLong(RANDOM.nextLong());
 			}
 		});
 		internalRegisterProvider(String.class, new RandomDataProvider<String>() {
-			public String getRandom(String propertyName, Class<?> propertyType, Type genericType) {
+			public String getRandom(Class bean, String propertyName, Class<?> propertyType, Type genericType) {
 				return UUID.randomUUID().toString();
 			}
 		});
@@ -94,9 +94,9 @@ public class PrimitiveRandomProvider implements RandomDataProvider<Object>{
 	}
 	
 	@Override
-	public Object getRandom(String propertyName, Class propertyType, Type genericType) {
+	public Object getRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
 		RandomDataProvider<?> provider = builtInProviders.get(propertyType);
-		return provider.getRandom(propertyName, propertyType, genericType);
+		return provider.getRandom(null, propertyName, propertyType, genericType);
 	}
 
 	public boolean supportsType(Class<?> type){

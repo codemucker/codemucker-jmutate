@@ -24,7 +24,7 @@ public class BeanRandom implements RandomDataProvider {
 
 	private static Map<Class<?>, RandomDataProvider<?>> builtInProviders = new HashMap<Class<?>, RandomDataProvider<?>>();
 
-	private final PrimitiveRandomProvider primitiveProvider = new PrimitiveRandomProvider();
+	private final PrimitiveProvider primitiveProvider = new PrimitiveProvider();
 	private final CollectionProvider collectionProvider = new CollectionProvider(this);
 	private final EnumProvider enumProvider = new EnumProvider();
 
@@ -66,7 +66,7 @@ public class BeanRandom implements RandomDataProvider {
 	private void populatePropertyWithRandomValue(Property p, Object bean) {
 		if (p.getWrite() != null) {
 			Method setter = p.getWrite();
-			Object propertyValue = getRandom(p.getName(), p.getType(), p.getGenericType());
+			Object propertyValue = getRandom(null, p.getName(), p.getType(), p.getGenericType());
 			// TODO:option to ignore errors?
 			try {
 				setter.invoke(bean, new Object[] { propertyValue });
@@ -123,14 +123,14 @@ public class BeanRandom implements RandomDataProvider {
 		int len = ctor.getParameterTypes().length;
 		Object[] args = new Object[len];
 		for (int i = 0; i < len; i++) {
-			args[i] = getRandom(null, ctor.getParameterTypes()[i], ctor.getGenericParameterTypes()[i]);
+			args[i] = getRandom(ctor.getDeclaringClass(), null, ctor.getParameterTypes()[i], ctor.getGenericParameterTypes()[i]);
 		}
 		T bean = invokeCtorWith(ctor, args);
 		return bean;
 	}
 	
 	@Override
-	public Object getRandom(String propertyName, Class propertyType, Type genericType) {
+	public Object getRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
 		RandomDataProvider<?> provider = getOptions().getProvider(propertyType);
 		if (provider == null) {
 			provider = builtInProviders.get(propertyType);
@@ -146,7 +146,7 @@ public class BeanRandom implements RandomDataProvider {
 		}
 		if (provider == null) {
 			// lets create the bean
-			if (isGenerateBeanPropertyOfType(propertyType)) {
+			if (isGenerateBeanPropertyOfType(beanClass, propertyName, propertyType, genericType)) {
 				if (parentBeansTypesCreated.contains(propertyType)) {
 					if (getOptions().isFailOnRecursiveBeanCreation()) {
 						throw new BeanException("Recursive bean creation for type %s for property %s",
@@ -168,11 +168,11 @@ public class BeanRandom implements RandomDataProvider {
 				return null;
 			}
 		}
-		return provider.getRandom(propertyName, propertyType, genericType);
+		return provider.getRandom(beanClass, propertyName, propertyType, genericType);
 	}
 
-	private boolean isGenerateBeanPropertyOfType(Class<?> type) {
-		return getOptions().isCreatePropertyType(type);
+	private boolean isGenerateBeanPropertyOfType(Object bean, String propertyName, Class<?> type, Type genericType) {
+		return getOptions().isGeneratePropertyType(bean, propertyName, type, genericType);
 	}
 
 	public RandomOptions getOptions() {

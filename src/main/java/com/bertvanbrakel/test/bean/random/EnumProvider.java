@@ -10,7 +10,7 @@ public class EnumProvider implements RandomDataProvider {
 	private final Random RANDOM = new Random();
 
 	@Override
-	public Object getRandom(String propertyName, Class propertyType, Type genericType) {
+	public Object getRandom(Class bean, String propertyName, Class propertyType, Type genericType) {
 		if (propertyType.isEnum()) {
 			Object[] enums = propertyType.getEnumConstants();
 			int idx = RANDOM.nextInt(enums.length);
