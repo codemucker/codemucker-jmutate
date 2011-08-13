@@ -7,7 +7,6 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
-import java.util.Map;
 import java.util.Map.Entry;
 
 import junit.framework.Assert;
@@ -15,8 +14,7 @@ import junit.framework.Assert;
 import org.junit.Test;
 
 import com.bertvanbrakel.test.bean.BeanException;
-import com.bertvanbrakel.test.bean.PropertiesExtractor;
-import com.bertvanbrakel.test.bean.Property;
+import com.bertvanbrakel.test.bean.TstBeanIgnoreProperty;
 
 public class BeanRandomTest {
 
@@ -129,20 +127,6 @@ public class BeanRandomTest {
 		assertNotNull(bean.getFieldC().getFieldA());
 		assertNull(bean.getFieldC().getFieldB());
 		assertNull(bean.getFieldC().getFieldC());
-	}
-
-	@Test
-	public void test_get_properties_ignore() {
-		PropertiesExtractor tester = new BeanRandom();
-		tester.getOptions().ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
-		        .ignoreProperty(TstBeanIgnoreProperty.class, "fieldC");
-
-		Map<String, Property> properties = tester.extractProperties(TstBeanIgnoreProperty.class);
-
-		assertNotNull(properties);
-		Property p = properties.get("fieldC");
-		assertNotNull(p);
-		assertTrue(p.isIgnore());
 	}
 
 	@Test

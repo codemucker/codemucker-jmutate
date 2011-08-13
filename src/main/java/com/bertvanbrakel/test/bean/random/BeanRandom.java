@@ -1,7 +1,5 @@
 package com.bertvanbrakel.test.bean.random;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.getLongestCtor;
-import static com.bertvanbrakel.test.bean.ClassUtils.getNoArgCtor;
 import static com.bertvanbrakel.test.bean.ClassUtils.invokeCtorWith;
 
 import java.lang.reflect.Constructor;
@@ -17,10 +15,11 @@ import java.util.Stack;
 
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.BeanException;
+import com.bertvanbrakel.test.bean.BeanOptions;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
 import com.bertvanbrakel.test.bean.Property;
 
-public class BeanRandom extends PropertiesExtractor implements RandomDataProvider {
+public class BeanRandom implements RandomDataProvider {
 
 	private static Map<Class<?>, RandomDataProvider<?>> builtInProviders = new HashMap<Class<?>, RandomDataProvider<?>>();
 	private final CollectionProvider collectionProvider = new CollectionProvider(this);
@@ -40,36 +39,29 @@ public class BeanRandom extends PropertiesExtractor implements RandomDataProvide
 	private Stack<Class<?>> parentBeansTypesCreated = new Stack<Class<?>>();
 
 	private String parentPropertyPath;
+	
+	private PropertiesExtractor extractor = new PropertiesExtractor();
 
 	public <T> void registerProvider(Class<T> type, RandomDataProvider<T> provider) {
 		customProviders.put(type, provider);
 	}
 
 	public <T> T populate(Class<T> beanClass) {
-		BeanDefinition cache = getOrCreateCache(beanClass);
-		if (cache.getCtor() == null) {
-			Constructor<T> ctor = getNoArgCtor(beanClass, false);
-			if (ctor == null) {
-				ctor = getLongestCtor(beanClass);
-			}
-			if (ctor == null) {
-				ctor = getNoArgCtor(beanClass, true);
-			}
-			if (ctor == null) {
-				throw new BeanException(
-				        "Could not find a valid ctor for bean class %s. Are you sure your bean ctor is public (or if you have no ctor that your bean is public) and the bean is not a non static inner class?",
-				        beanClass.getName());
-			}
-			cache.setCtor(ctor);
+		BeanDefinition def = extractor.extractBean(beanClass);
+		if (def.getCtor() == null) {
+			throw new BeanException(
+			        "Could not find a valid ctor for bean class %s. Are you sure your bean ctor is public (or if you have no ctor that your bean is public) and the bean is not a non static inner class?",
+			        beanClass.getName());
+
 		}
-		T bean = invokeCtorWithRandomArgs((Constructor<T>) cache.getCtor());
+		T bean = invokeCtorWithRandomArgs((Constructor<T>) def.getCtor());
 		populatePropertiesWithRandomValues(bean);
 		return bean;
 	}
 
 	private void populatePropertiesWithRandomValues(Object bean) {
-		Map<String, Property> properties = extractAndCacheProperties(bean.getClass());
-		for (Property p : properties.values()) {
+		BeanDefinition def = extractor.getOrExtractProperties(bean.getClass());
+		for (Property p : def.getProperties()) {
 			if (!p.isIgnore()) {
 				if (isGenerateRandomPropertyValue(bean.getClass(), p.getName(), p.getType())) {
 					populatePropertyWithRandomValue(p, bean);
@@ -99,13 +91,13 @@ public class BeanRandom extends PropertiesExtractor implements RandomDataProvide
 	}
 
 	private boolean isGenerateRandomPropertyValue(Class<?> beanClass, String propertyName, Class<?> propertyType) {
-		boolean include = isIncludeProperty(beanClass, propertyName, propertyType);
+		boolean include = extractor.isIncludeProperty(beanClass, propertyName, propertyType);
 		if (!include) {
 			return false;
 		}
 		if (parentPropertyPath != null) {
 			String fullPath = parentPropertyPath + propertyName;
-			if (options.getIgnoreProperties().contains(fullPath)) {
+			if (getOptions().getIgnoreProperties().contains(fullPath)) {
 				return false;
 			}
 		}
@@ -157,7 +149,7 @@ public class BeanRandom extends PropertiesExtractor implements RandomDataProvide
 			// lets create the bean
 			if (isGenerateBeanPropertyOfType(propertyType)) {
 				if (parentBeansTypesCreated.contains(propertyType)) {
-					if (options.isFailOnRecursiveBeanCreation()) {
+					if (getOptions().isFailOnRecursiveBeanCreation()) {
 						throw new BeanException("Recursive bean creation for type %s for property %s",
 						        propertyType.getName(), propertyName);
 					} else {
@@ -171,13 +163,17 @@ public class BeanRandom extends PropertiesExtractor implements RandomDataProvide
 					popBeanProperty();
 				}
 			} else {
-				if (options.isFailOnNonSupportedPropertyType()) {
+				if (getOptions().isFailOnNonSupportedPropertyType()) {
 					throw new BeanException("no provider for type %s for property '%s'", propertyType, propertyName);
 				}
 				return null;
 			}
 		}
 		return provider.getRandom(propertyName, propertyType, genericType);
+	}
+	
+	public BeanOptions getOptions(){
+		return extractor.getOptions();
 	}
 
 	private boolean isGenerateBeanPropertyOfType(Class<?> type) {

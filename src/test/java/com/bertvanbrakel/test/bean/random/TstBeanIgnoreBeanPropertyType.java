@@ -1,5 +1,8 @@
 package com.bertvanbrakel.test.bean.random;
 
+import com.bertvanbrakel.test.bean.TstBeanIgnoreProperty;
+
+
 
 class TstBeanIgnoreBeanPropertyType {
 	private String fieldA;

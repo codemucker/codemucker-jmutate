@@ -1,6 +1,6 @@
-package com.bertvanbrakel.test.bean.random;
+package com.bertvanbrakel.test.bean;
 
-class TstBeanIgnoreProperty {
+public class TstBeanIgnoreProperty {
 	private String fieldA;
 	private String fieldB;
 	private TstBeanIgnoreProperty fieldC;

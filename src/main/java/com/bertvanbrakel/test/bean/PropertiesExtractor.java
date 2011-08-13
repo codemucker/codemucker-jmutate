@@ -1,10 +1,13 @@
 package com.bertvanbrakel.test.bean;
 
 import static com.bertvanbrakel.test.bean.ClassUtils.extractPropertyName;
+import static com.bertvanbrakel.test.bean.ClassUtils.getLongestCtor;
+import static com.bertvanbrakel.test.bean.ClassUtils.getNoArgCtor;
 import static com.bertvanbrakel.test.bean.ClassUtils.isReaderMethod;
 import static com.bertvanbrakel.test.bean.ClassUtils.isWriterMethod;
 import static com.bertvanbrakel.test.bean.ClassUtils.upperFirstChar;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,15 +26,30 @@ public class PropertiesExtractor {
 		this.options = options;
 	}
 
-	public Map<String, Property> extractAndCacheProperties(Class<?> beanClass) {
-		BeanDefinition cache = getOrCreateCache(beanClass);
-		if (cache.getPropertyMap() == null) {
-			cache.setPropertyMap(extractProperties(beanClass));
+	public BeanDefinition extractBean(Class<?> beanClass){
+		BeanDefinition def = getOrExtractProperties(beanClass);
+		if (def.getCtor() == null) {
+			Constructor<?> ctor = getNoArgCtor(beanClass, false);
+			if (ctor == null) {
+				ctor = getLongestCtor(beanClass);
+			}
+			if (ctor == null) {
+				ctor = getNoArgCtor(beanClass, true);
+			}
+			def.setCtor(ctor);
 		}
-		return cache.getPropertyMap();
+		return def;
+	}
+	
+	public BeanDefinition getOrExtractProperties(Class<?> beanClass) {
+		BeanDefinition def = getOrCreateCache(beanClass);
+		if (def.getPropertyMap() == null) {
+			def.setPropertyMap(extractProperties(beanClass));
+		}
+		return def;
 	}
 
-	protected BeanDefinition getOrCreateCache(Class<?> beanClass) {
+	private BeanDefinition getOrCreateCache(Class<?> beanClass) {
 		BeanDefinition cache = beanCache.get(beanClass.getName());
 		if (cache == null) {
 			cache = new BeanDefinition(beanClass);
@@ -137,7 +155,7 @@ public class PropertiesExtractor {
 		}
 	}
 
-	protected boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
+	public boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
 		if ("class".equals(propertyName)) {
 			return false;
 		}
