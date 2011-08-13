@@ -1,22 +1,19 @@
 package com.bertvanbrakel.test.bean;
 
+import static com.bertvanbrakel.test.bean.ClassUtils.getLongestCtor;
+import static com.bertvanbrakel.test.bean.ClassUtils.getNoArgCtor;
+import static com.bertvanbrakel.test.bean.ClassUtils.invokeCtorWith;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static com.bertvanbrakel.test.bean.ClassUtils.*;
 
 public class BeanTester extends PropertiesExtractor implements RandomDataProvider {
 

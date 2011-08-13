@@ -1,12 +1,14 @@
 package com.bertvanbrakel.test.bean;
 
-import java.lang.reflect.Constructor;
+import static com.bertvanbrakel.test.bean.ClassUtils.extractPropertyName;
+import static com.bertvanbrakel.test.bean.ClassUtils.isReaderMethod;
+import static com.bertvanbrakel.test.bean.ClassUtils.isWriterMethod;
+import static com.bertvanbrakel.test.bean.ClassUtils.upperFirstChar;
+
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import static com.bertvanbrakel.test.bean.ClassUtils.*;
 
 public class PropertiesExtractor {
 

@@ -1,7 +1,5 @@
 package com.bertvanbrakel.test.bean;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.lowerFirstChar;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
