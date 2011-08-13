@@ -12,14 +12,14 @@ import java.util.Map;
 
 public class PropertiesExtractor {
 
-	protected Options options = new Options();
+	protected BeanOptions options = new BeanOptions();
 	private final Map<String, BeanDefinition> beanCache = new HashMap<String, BeanDefinition>();
 
-	public Options getOptions() {
+	public BeanOptions getOptions() {
 		return options;
 	}
 
-	public void setOptions(Options options) {
+	public void setOptions(BeanOptions options) {
 		this.options = options;
 	}
 

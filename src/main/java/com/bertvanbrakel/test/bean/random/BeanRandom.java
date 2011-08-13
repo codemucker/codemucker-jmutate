@@ -20,7 +20,7 @@ import com.bertvanbrakel.test.bean.BeanException;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
 import com.bertvanbrakel.test.bean.Property;
 
-public class BeanTester extends PropertiesExtractor implements RandomDataProvider {
+public class BeanRandom extends PropertiesExtractor implements RandomDataProvider {
 
 	private static Map<Class<?>, RandomDataProvider<?>> builtInProviders = new HashMap<Class<?>, RandomDataProvider<?>>();
 	private final CollectionProvider collectionProvider = new CollectionProvider(this);

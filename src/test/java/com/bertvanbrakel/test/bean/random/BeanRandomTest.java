@@ -21,23 +21,23 @@ import com.bertvanbrakel.test.bean.BeanException;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
 import com.bertvanbrakel.test.bean.Property;
 
-public class BeanTesterTest {
+public class BeanRandomTest {
 
 	@Test
 	public void test_no_arg_ctor() {
-		TstBeanNoArgCtor bean = new BeanTester().populate(TstBeanNoArgCtor.class);
+		TstBeanNoArgCtor bean = new BeanRandom().populate(TstBeanNoArgCtor.class);
 		assertNotNull(bean);
 	}
 
 	@Test
 	public void test_private_no_arg_ctor() {
-		TstBeanPrivateNoArgCtor bean = new BeanTester().populate(TstBeanPrivateNoArgCtor.class);
+		TstBeanPrivateNoArgCtor bean = new BeanRandom().populate(TstBeanPrivateNoArgCtor.class);
 		assertNotNull(bean);
 	}
 
 	@Test
 	public void test_multi_arg_ctor() {
-		TstBeanMultiArgCtor bean = new BeanTester().populate(TstBeanMultiArgCtor.class);
+		TstBeanMultiArgCtor bean = new BeanRandom().populate(TstBeanMultiArgCtor.class);
 		assertNotNull(bean);
 		assertNotNull(bean.getFieldA());
 		assertNotNull(bean.getFieldB());
@@ -45,7 +45,7 @@ public class BeanTesterTest {
 
 	@Test
 	public void test_fields_populated_via_setters() {
-		TstBeanSetters bean = new BeanTester().populate(TstBeanSetters.class);
+		TstBeanSetters bean = new BeanRandom().populate(TstBeanSetters.class);
 		assertNotNull(bean);
 
 		String[] expectFieldsSet = { "boolean", "byte", "char", "short", "int", "long", "double", "float", "String",
@@ -61,7 +61,7 @@ public class BeanTesterTest {
 
 	@Test
 	public void test_array_property() {
-		TestBeanArray bean = new BeanTester().populate(TestBeanArray.class);
+		TestBeanArray bean = new BeanRandom().populate(TestBeanArray.class);
 		assertNotNull(bean);
 		assertArrayIsPopulated(bean.getStringArray());
 		assertArrayIsPopulated(bean.getFloatArray());
@@ -77,7 +77,7 @@ public class BeanTesterTest {
 
 	@Test
 	public void test_enum_property() {
-		TstBeanEnum bean = new BeanTester().populate(TstBeanEnum.class);
+		TstBeanEnum bean = new BeanRandom().populate(TstBeanEnum.class);
 		assertNotNull(bean);
 		assertNotNull(bean.getEnumField());
 	}
@@ -85,7 +85,7 @@ public class BeanTesterTest {
 	@Test
 	public void test_infinite_recursion_passes() {
 		// TODO:set option = no fail
-		BeanTester tester = new BeanTester();
+		BeanRandom tester = new BeanRandom();
 		tester.getOptions().failOnRecursiveBeanCreation(false);
 
 		TstBeanSelf bean = tester.populate(TstBeanSelf.class);
@@ -96,7 +96,7 @@ public class BeanTesterTest {
 
 	@Test
 	public void test_complex_property() {
-		TstBeanComplexProperty bean = new BeanTester().populate(TstBeanComplexProperty.class);
+		TstBeanComplexProperty bean = new BeanRandom().populate(TstBeanComplexProperty.class);
 		assertNotNull(bean);
 		assertNotNull(bean.getFieldComplex());
 		assertNotNull(bean.getFieldComplex().getFieldA());
@@ -105,7 +105,7 @@ public class BeanTesterTest {
 
 	@Test
 	public void test_ignore_property() {
-		BeanTester tester = new BeanTester();
+		BeanRandom tester = new BeanRandom();
 		tester.getOptions().ignoreProperty("fieldB").failOnRecursiveBeanCreation(false);
 
 		TstBeanIgnoreProperty bean = tester.populate(TstBeanIgnoreProperty.class);
@@ -117,7 +117,7 @@ public class BeanTesterTest {
 
 	@Test
 	public void test_ignore_deep_property() {
-		BeanTester tester = new BeanTester();
+		BeanRandom tester = new BeanRandom();
 		tester.getOptions().ignoreProperty("fieldC.fieldB")
 		// .ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
 		// .ignoreProperty("*A")
@@ -136,7 +136,7 @@ public class BeanTesterTest {
 
 	@Test
 	public void test_get_properties_ignore() {
-		PropertiesExtractor tester = new BeanTester();
+		PropertiesExtractor tester = new BeanRandom();
 		tester.getOptions().ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
 		        .ignoreProperty(TstBeanIgnoreProperty.class, "fieldC");
 
@@ -150,7 +150,7 @@ public class BeanTesterTest {
 
 	@Test
 	public void test_ignore_field_on_bean_type() {
-		BeanTester tester = new BeanTester();
+		BeanRandom tester = new BeanRandom();
 		tester.getOptions().ignoreProperty(TstBeanIgnoreProperty.class, "fieldA")
 		        .ignoreProperty(TstBeanIgnoreProperty.class, "fieldC");
 
@@ -167,7 +167,7 @@ public class BeanTesterTest {
 	@Test
 	public void test_infinite_recursion_fails() {
 		try {
-			TstBeanSelf bean = new BeanTester().populate(TstBeanSelf.class);
+			TstBeanSelf bean = new BeanRandom().populate(TstBeanSelf.class);
 			Assert.fail("Expected exception");
 		} catch (BeanException e) {
 			assertMsgContainsAll(e, "fieldSelf", "recursive", TstBeanSelf.class.getName());

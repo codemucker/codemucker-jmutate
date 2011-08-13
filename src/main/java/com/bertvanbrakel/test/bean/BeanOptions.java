@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-public class Options {
+public class BeanOptions {
     private boolean failOnInvalidGetters = false;
     private boolean failOnMissingSetters = false;
     private boolean failOnAdditionalSetters = false;
@@ -27,7 +27,7 @@ public class Options {
 	return failOnRecursiveBeanCreation;
     }
 
-    public Options failOnRecursiveBeanCreation(boolean failOnRecursiveBeanCreation) {
+    public BeanOptions failOnRecursiveBeanCreation(boolean failOnRecursiveBeanCreation) {
 	this.failOnRecursiveBeanCreation = failOnRecursiveBeanCreation;
 	return this;
     }
@@ -36,7 +36,7 @@ public class Options {
 	return failOnNonSupportedPropertyType;
     }
 
-    public Options failOnNonSupportedPropertyType(boolean failOnNonSupportedPropertyType) {
+    public BeanOptions failOnNonSupportedPropertyType(boolean failOnNonSupportedPropertyType) {
 	this.failOnNonSupportedPropertyType = failOnNonSupportedPropertyType;
 	return this;
     }
@@ -45,7 +45,7 @@ public class Options {
 	return failOnInvalidGetters;
     }
 
-    public Options failOnInvalidGetters(boolean failOnInvalidGetters) {
+    public BeanOptions failOnInvalidGetters(boolean failOnInvalidGetters) {
 	this.failOnInvalidGetters = failOnInvalidGetters;
 	return this;
     }
@@ -54,7 +54,7 @@ public class Options {
 	return failOnMissingSetters;
     }
 
-    public Options failOnMissingSetters(boolean failOnMissingSetters) {
+    public BeanOptions failOnMissingSetters(boolean failOnMissingSetters) {
 	this.failOnMissingSetters = failOnMissingSetters;
 	return this;
     }
@@ -63,12 +63,12 @@ public class Options {
 	return failOnAdditionalSetters;
     }
 
-    public Options failOnAdditionalSetters(boolean failOnAdditionalSetters) {
+    public BeanOptions failOnAdditionalSetters(boolean failOnAdditionalSetters) {
 	this.failOnAdditionalSetters = failOnAdditionalSetters;
 	return this;
     }
 
-    public Options ignoreProperty(String propertyPath) {
+    public BeanOptions ignoreProperty(String propertyPath) {
 	ignoreProperties.add(propertyPath);
 	return this;
     }
@@ -77,7 +77,7 @@ public class Options {
 	return ignoreProperties;
     }
 
-    public Options ignoreProperty(Class<?> beanClass, String propertyName) {
+    public BeanOptions ignoreProperty(Class<?> beanClass, String propertyName) {
 	String key = beanClass.getName();
 	Collection<String> propertiesToIgnore = ignorePropertiesOnClass.get(key);
 	if (propertiesToIgnore == null) {
