@@ -9,7 +9,6 @@ import static com.bertvanbrakel.test.bean.ClassUtils.upperFirstChar;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,8 +25,8 @@ public class PropertiesExtractor {
 		this.options = options;
 	}
 
-	public BeanDefinition extractBean(Class<?> beanClass){
-		BeanDefinition def = getOrExtractProperties(beanClass);
+	public BeanDefinition extractBeanDefWithCtor(Class<?> beanClass){
+		BeanDefinition def = extractBeanDef(beanClass);
 		if (def.getCtor() == null) {
 			Constructor<?> ctor = getNoArgCtor(beanClass, false);
 			if (ctor == null) {
@@ -41,15 +40,15 @@ public class PropertiesExtractor {
 		return def;
 	}
 	
-	public BeanDefinition getOrExtractProperties(Class<?> beanClass) {
-		BeanDefinition def = getOrCreateCache(beanClass);
+	public BeanDefinition extractBeanDef(Class<?> beanClass) {
+		BeanDefinition def = getOrCreateBeanDef(beanClass);
 		if (def.getPropertyMap() == null) {
 			def.setPropertyMap(extractProperties(beanClass));
 		}
 		return def;
 	}
 
-	private BeanDefinition getOrCreateCache(Class<?> beanClass) {
+	private BeanDefinition getOrCreateBeanDef(Class<?> beanClass) {
 		BeanDefinition cache = beanCache.get(beanClass.getName());
 		if (cache == null) {
 			cache = new BeanDefinition(beanClass);
@@ -58,7 +57,7 @@ public class PropertiesExtractor {
 		return cache;
 	}
 
-	public Map<String, Property> extractProperties(Class<?> beanClass) {
+	private Map<String, Property> extractProperties(Class<?> beanClass) {
 		Map<String, Property> properties = new HashMap<String, Property>();
 		extractGetters(beanClass, properties);
 		extractSettersFromGetters(beanClass, properties);
@@ -159,15 +158,6 @@ public class PropertiesExtractor {
 		if ("class".equals(propertyName)) {
 			return false;
 		}
-		if (options.getIgnoreProperties().contains(propertyName)) {
-			return false;
-		}
-		Collection<String> properties = options.getIgnorePropertiesOnClass().get(beanClass.getName());
-		if (properties != null) {
-			if (properties.contains(propertyName)) {
-				return false;
-			}
-		}
-		return true;
+		return options.isIncludeProperty(beanClass, propertyName, propertyType);
 	}
 }

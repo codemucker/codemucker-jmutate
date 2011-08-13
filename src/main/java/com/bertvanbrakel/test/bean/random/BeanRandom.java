@@ -40,7 +40,7 @@ public class BeanRandom implements RandomDataProvider {
 	}
 
 	public <T> T populate(Class<T> beanClass) {
-		BeanDefinition def = extractor.extractBean(beanClass);
+		BeanDefinition def = extractor.extractBeanDefWithCtor(beanClass);
 		if (def.getCtor() == null) {
 			throw new BeanException(
 			        "Could not find a valid ctor for bean class %s. Are you sure your bean ctor is public (or if you have no ctor that your bean is public) and the bean is not a non static inner class?",
@@ -53,7 +53,7 @@ public class BeanRandom implements RandomDataProvider {
 	}
 
 	private void populatePropertiesWithRandomValues(Object bean) {
-		BeanDefinition def = extractor.getOrExtractProperties(bean.getClass());
+		BeanDefinition def = extractor.extractBeanDef(bean.getClass());
 		for (Property p : def.getProperties()) {
 			if (!p.isIgnore()) {
 				if (isGenerateRandomPropertyValue(bean.getClass(), p.getName(), p.getType())) {

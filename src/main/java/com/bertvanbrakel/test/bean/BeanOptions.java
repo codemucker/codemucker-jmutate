@@ -69,5 +69,18 @@ public class BeanOptions {
 	public Map<String, Collection<String>> getIgnorePropertiesOnClass() {
 		return ignorePropertiesOnClass;
 	}
+	
+	public boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
+		if (ignoreProperties.contains(propertyName)) {
+			return false;
+		}
+		Collection<String> properties = ignorePropertiesOnClass.get(beanClass.getName());
+		if (properties != null) {
+			if (properties.contains(propertyName)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 }

@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import org.hamcrest.generator.qdox.model.BeanProperty;
+
 public class BeanDefinition {
 	
 	private final Class<?> beanType;
@@ -31,6 +33,14 @@ public class BeanDefinition {
 		return properties == null ? Collections.EMPTY_LIST : properties.values();
 	}
 
+	public Property getProperty(String name){
+		return properties.get(name);
+	}
+	
+	public Collection<String> getPropertyNames(){
+		return properties.keySet();
+	}
+	
 	public void setPropertyMap(Map<String, Property> properties) {
 		this.properties = properties;
 	}
