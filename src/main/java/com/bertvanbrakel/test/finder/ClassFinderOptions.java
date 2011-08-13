@@ -160,6 +160,15 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 		return this;
 	}
 
+	public ClassFinderOptions excludeInner() {
+		excludeClassMatching(new InnerClassMatcher());
+		return this;
+	}
+	
+	public ClassFinderOptions excludeInterfaces() {
+		excludeClassMatching(new InterfaceClassMatcher());
+		return this;
+	}
 	
 	public ClassFinderOptions excludeClassMatching(ClassMatcher matcher) {
 		this.excludeClassMatchers.add(matcher);
@@ -232,7 +241,7 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 	}
 	
 	protected static class EnumMatcher implements ClassMatcher {
-	
+		
 		public EnumMatcher() {
         }
 		
@@ -241,5 +250,28 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 			return found.isEnum();
         }
 	}
+	
+	protected static class InnerClassMatcher implements ClassMatcher {
+		
+		public InnerClassMatcher() {
+        }
+		
+		@Override
+        public boolean matchClass(Class found) {
+			return found.isMemberClass();
+        }
+	}
+
+	protected static class InterfaceClassMatcher implements ClassMatcher {
+
+		public InterfaceClassMatcher() {
+		}
+
+		@Override
+		public boolean matchClass(Class found) {
+			return found.isInterface();
+		}
+	}
+
 	
 }

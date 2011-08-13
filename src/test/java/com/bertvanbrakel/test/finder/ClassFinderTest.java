@@ -15,6 +15,7 @@ import com.bertvanbrakel.test.finder.ClassFinderOptions.ClassImplementsMatcher;
 import com.bertvanbrakel.test.finder.a.TstBeanOne;
 import com.bertvanbrakel.test.finder.b.TstBeanTwo;
 import com.bertvanbrakel.test.finder.c.TstAnonymous;
+import com.bertvanbrakel.test.finder.d.TstInner;
 
 public class ClassFinderTest {
 
@@ -105,7 +106,7 @@ public class ClassFinderTest {
 	}
 	
 	@Test
-	public void test_filename_include_multiple(){
+	public void test_filename_include_multiple_packages(){
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions()
 			.includeTestDir(true)
@@ -131,7 +132,7 @@ public class ClassFinderTest {
 	}
 	
 	@Test
-	public void test_superClass(){
+	public void test_include_instance_of(){
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions()
 			.includeTestDir(true)
@@ -196,7 +197,7 @@ public class ClassFinderTest {
 	}
 	
 	@Test
-	public void test_filter_on_enum(){
+	public void test_filter_enum(){
 		ClassFinder finder = new ClassFinder();
 		finder.getOptions()
 			.includeTestDir(true)
@@ -226,6 +227,35 @@ public class ClassFinderTest {
 		assertEquals(list(TstAnonymous.class),list(found));
 	}
 	
+	@Test
+	public void test_filter_inner_class(){
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions()
+			.includeTestDir(true)
+			.includeFileName("*/d/*")
+			.excludeInner()
+			;
 		
+		Collection<Class<?>> found = list(finder.findClasses());
+
+		assertEquals(list(TstInner.class),list(found));
+	}	
+	
+	@Test
+	public void test_filter_interfaces(){
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions()
+			.includeTestDir(true)
+			.excludeInterfaces()
+			;
 		
+		Collection<Class<?>> found = list(finder.findClasses());
+
+		
+		assertFalse(found.contains(TstInterface.class));
+		assertFalse(found.contains(TstInterface1.class));
+		assertFalse(found.contains(TstInterface2.class));
+
+		assertTrue(found.contains(TstBeanOneAndTwo.class));
+	}	
 }
