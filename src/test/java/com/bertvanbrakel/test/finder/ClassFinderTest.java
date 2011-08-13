@@ -14,6 +14,7 @@ import org.junit.Test;
 import com.bertvanbrakel.test.finder.ClassFinderOptions.ClassImplementsMatcher;
 import com.bertvanbrakel.test.finder.a.TstBeanOne;
 import com.bertvanbrakel.test.finder.b.TstBeanTwo;
+import com.bertvanbrakel.test.finder.c.TstAnonymous;
 
 public class ClassFinderTest {
 
@@ -193,5 +194,38 @@ public class ClassFinderTest {
 		assertTrue(matcher.matchClass(TstInterface1.class));
 		assertTrue(matcher.matchClass(TstBeanOne.class));
 	}
+	
+	@Test
+	public void test_filter_on_enum(){
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions()
+			.includeTestDir(true)
+			.excludeEnum()
+			;
+		
+		Collection<Class<?>> found = list(finder.findClasses());
+
+		assertFalse(found.contains(TstEnum.class));
+		assertFalse(found.contains(TstBeanOneAndTwo.InstanceEnum.class));
+		assertFalse(found.contains(TstBeanOneAndTwo.StaticEnum.class));
+
+		assertTrue(found.size() > 1);
+	}
+	
+	@Test
+	public void test_filter_anonymous(){
+		ClassFinder finder = new ClassFinder();
+		finder.getOptions()
+			.includeTestDir(true)
+			.includeFileName("*/c/*")
+			.excludeAnonymous()
+			;
+		
+		Collection<Class<?>> found = list(finder.findClasses());
+
+		assertEquals(list(TstAnonymous.class),list(found));
+	}
+	
+		
 		
 }

@@ -29,6 +29,7 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 	private final Collection<FileMatcher> includeFileNameMatchers = new ArrayList<FileMatcher>();
 	
 	private final Collection<ClassMatcher> includeClassMatchers = new ArrayList<ClassMatcher>();
+	private final Collection<ClassMatcher> excludeClassMatchers = new ArrayList<ClassMatcher>();
 	
 	private ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	
@@ -138,14 +139,30 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 		}
 		return sb.toString();
 	}
-
+	
 	public ClassFinderOptions classImplements(Class<?>... superclass) {
-		addIncludeClassMatcher(new ClassImplementsMatcher(superclass));
+		includeClassMatching(new ClassImplementsMatcher(superclass));
 		return this;
 	}
 	
-	public ClassFinderOptions addIncludeClassMatcher(ClassMatcher matcher) {
+	public ClassFinderOptions includeClassMatching(ClassMatcher matcher) {
 		this.includeClassMatchers.add(matcher);
+		return this;
+	}
+	
+	public ClassFinderOptions excludeEnum() {
+		excludeClassMatching(new EnumMatcher());
+		return this;
+    }
+
+	public ClassFinderOptions excludeAnonymous() {
+		excludeClassMatching(new AnonymousMatcher());
+		return this;
+	}
+
+	
+	public ClassFinderOptions excludeClassMatching(ClassMatcher matcher) {
+		this.excludeClassMatchers.add(matcher);
 		return this;
 	}
 	
@@ -161,9 +178,16 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 				}
 			}
 		}
+		if (excludeClassMatchers != null && excludeClassMatchers.size() > 0) {
+			for (ClassMatcher matcher : excludeClassMatchers) {
+				if (matcher.matchClass(klass)) {
+					include = false;
+					break;
+				}
+			}
+		}
 		return include;
 	}
-	
 	
 	protected static class RegExpPatternFileNameMatcher implements FileMatcher {
 		private final Pattern pattern;
@@ -196,4 +220,26 @@ public class ClassFinderOptions implements ClassMatcher, FileMatcher {
 			return true;
 		}
 	}
+
+	protected static class AnonymousMatcher implements ClassMatcher {
+		
+		public AnonymousMatcher() {
+        }
+		@Override
+        public boolean matchClass(Class found) {
+			return found.isAnonymousClass();
+        }
+	}
+	
+	protected static class EnumMatcher implements ClassMatcher {
+	
+		public EnumMatcher() {
+        }
+		
+		@Override
+        public boolean matchClass(Class found) {
+			return found.isEnum();
+        }
+	}
+	
 }
