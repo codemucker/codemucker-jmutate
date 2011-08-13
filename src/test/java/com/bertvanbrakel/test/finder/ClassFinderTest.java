@@ -1,4 +1,4 @@
-package com.bertvanbrakel.test;
+package com.bertvanbrakel.test.finder;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -11,9 +11,11 @@ import java.util.Collection;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.test.ClassFinderOptions.ClassImplementsMatcher;
-import com.bertvanbrakel.test.a.TstBeanOne;
-import com.bertvanbrakel.test.b.TstBeanTwo;
+import com.bertvanbrakel.test.finder.ClassFinder;
+import com.bertvanbrakel.test.finder.ClassFinderException;
+import com.bertvanbrakel.test.finder.ClassFinderOptions.ClassImplementsMatcher;
+import com.bertvanbrakel.test.finder.a.TstBeanOne;
+import com.bertvanbrakel.test.finder.b.TstBeanTwo;
 
 public class ClassFinderTest {
 

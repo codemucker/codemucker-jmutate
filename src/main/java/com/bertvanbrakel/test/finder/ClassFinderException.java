@@ -1,4 +1,4 @@
-package com.bertvanbrakel.test;
+package com.bertvanbrakel.test.finder;
 
 public class ClassFinderException extends RuntimeException {
 

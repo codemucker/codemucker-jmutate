@@ -1,4 +1,4 @@
-package com.bertvanbrakel.test;
+package com.bertvanbrakel.test.finder;
 
 import java.io.File;
 import java.io.FileFilter;
