@@ -14,9 +14,10 @@ import java.util.Map;
 
 public class PropertiesExtractor {
 
-	protected BeanOptions options = new BeanOptions();
-	private final Map<String, BeanDefinition> beanCache = new HashMap<String, BeanDefinition>();
+	private final Map<String, BeanDefinition> beanDefsByType = new HashMap<String, BeanDefinition>();
 
+	protected BeanOptions options = new BeanOptions();
+	
 	public BeanOptions getOptions() {
 		return options;
 	}
@@ -49,10 +50,10 @@ public class PropertiesExtractor {
 	}
 
 	private BeanDefinition getOrCreateBeanDef(Class<?> beanClass) {
-		BeanDefinition cache = beanCache.get(beanClass.getName());
+		BeanDefinition cache = beanDefsByType.get(beanClass.getName());
 		if (cache == null) {
 			cache = new BeanDefinition(beanClass);
-			beanCache.put(beanClass.getName(), cache);
+			beanDefsByType.put(beanClass.getName(), cache);
 		}
 		return cache;
 	}
