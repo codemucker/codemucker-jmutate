@@ -48,13 +48,13 @@ public class ClassUtils {
 			T bean = ctor.newInstance(args);
 			return bean;
 		} catch (IllegalArgumentException e) {
-			throw new BeanException("Error invoking ctor for type %s", ctor.getDeclaringClass().getName(), e);
+			throw new BeanException("Error invoking ctor for type %s", e, ctor.getDeclaringClass().getName());
 		} catch (InstantiationException e) {
-			throw new BeanException("Error invoking ctor for type %s", ctor.getDeclaringClass().getName(), e);
+			throw new BeanException("Error invoking ctor for type %s", e, ctor.getDeclaringClass().getName());
 		} catch (IllegalAccessException e) {
-			throw new BeanException("Error invoking ctor for type %s", ctor.getDeclaringClass().getName(), e);
+			throw new BeanException("Error invoking ctor for type %s", e, ctor.getDeclaringClass().getName());
 		} catch (InvocationTargetException e) {
-			throw new BeanException("Error invoking ctor for type %s", ctor.getDeclaringClass().getName(), e);
+			throw new BeanException("Error invoking ctor for type %s", e, ctor.getDeclaringClass().getName());
 		}
 	}
 	

@@ -1,4 +1,4 @@
-package com.bertvanbrakel.test.bean;
+package com.bertvanbrakel.test.bean.random;
 
 import static com.bertvanbrakel.test.bean.ClassUtils.getLongestCtor;
 import static com.bertvanbrakel.test.bean.ClassUtils.getNoArgCtor;
@@ -14,6 +14,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+
+import com.bertvanbrakel.test.bean.BeanDefinition;
+import com.bertvanbrakel.test.bean.BeanException;
+import com.bertvanbrakel.test.bean.PropertiesExtractor;
+import com.bertvanbrakel.test.bean.Property;
 
 public class BeanTester extends PropertiesExtractor implements RandomDataProvider {
 

@@ -1,4 +1,4 @@
-package com.bertvanbrakel.test.bean;
+package com.bertvanbrakel.test.bean.random;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import com.bertvanbrakel.test.bean.BeanException;
 
 public class CollectionProvider implements RandomDataProvider {
 

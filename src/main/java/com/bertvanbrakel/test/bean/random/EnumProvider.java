@@ -1,7 +1,9 @@
-package com.bertvanbrakel.test.bean;
+package com.bertvanbrakel.test.bean.random;
 
 import java.lang.reflect.Type;
 import java.util.Random;
+
+import com.bertvanbrakel.test.bean.BeanException;
 
 public class EnumProvider implements RandomDataProvider {
 

@@ -1,4 +1,4 @@
-package com.bertvanbrakel.test.bean;
+package com.bertvanbrakel.test.bean.random;
 
 import java.lang.reflect.Type;
 
