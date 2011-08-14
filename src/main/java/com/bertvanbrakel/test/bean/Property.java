@@ -36,6 +36,6 @@ public class Property {
 			setFieldValue(bean, def.getField(), val, def.isMakeAccessible());
 			return;
 		}
-		throw new BeanException("No mutator for proeprty '%s'", def.getName());
+		throw new BeanException("No mutator for property '%s'", def.getName());
 	}
 }

@@ -43,26 +43,6 @@ public class ClassUtils {
 		return null;
 	}
 
-	public static boolean isPublic(Class<?> type) {
-		return Modifier.isPublic(type.getModifiers());
-	}
-	
-	public static boolean isPublic(Member member) {
-		return Modifier.isPublic(member.getModifiers());
-	}
-
-	public static boolean isStatic(Member member) {
-		return Modifier.isStatic(member.getModifiers());
-	}
-
-	public static boolean isTransient(Member member) {
-		return Modifier.isTransient(member.getModifiers());
-	}
-
-	public static boolean isVolatile(Member member) {
-		return Modifier.isVolatile(member.getModifiers());
-	}
-
 	public static <T> T invokeCtorWith(Constructor<T> ctor, Object[] args) {
 		try {
 			T bean = ctor.newInstance(args);
@@ -201,7 +181,26 @@ public class ClassUtils {
 		return name;
 	}
 
+	public static boolean isPublic(Class<?> type) {
+		return Modifier.isPublic(type.getModifiers());
+	}
 	
+	public static boolean isPublic(Member member) {
+		return Modifier.isPublic(member.getModifiers());
+	}
+
+	public static boolean isStatic(Member member) {
+		return Modifier.isStatic(member.getModifiers());
+	}
+
+	public static boolean isTransient(Member member) {
+		return Modifier.isTransient(member.getModifiers());
+	}
+
+	public static boolean isVolatile(Member member) {
+		return Modifier.isVolatile(member.getModifiers());
+	}
+
 	public static String lowerFirstChar(String name) {
 		if (name.length() > 1) {
 			return Character.toLowerCase(name.charAt(0)) + name.substring(1);
