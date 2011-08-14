@@ -16,7 +16,7 @@ public class CollectionGenerator implements RandomGenerator {
 
 	private final Random RANDOM = new Random();
 
-	private final RandomGenerator provider;
+	private final RandomGenerator<?> provider;
 
 	public CollectionGenerator(RandomGenerator<?> provider) {
 		this.provider = provider;
@@ -24,34 +24,48 @@ public class CollectionGenerator implements RandomGenerator {
 
 	@Override
 	public Object generateRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
-		if (propertyType.isArray()) {
-			int randomLen = randomLen();
-			Object[] arr = (Object[]) Array.newInstance(propertyType.getComponentType(), randomLen);
-			return fillArray(beanClass, propertyName, arr, propertyType.getComponentType());
-		} else if (Collection.class.equals(propertyType)) {
-			return fillCollection(beanClass, propertyName, new ArrayList(), genericType);
-		} else if (List.class.equals(propertyType)) {
-			return fillCollection(beanClass, propertyName, new ArrayList(), genericType);
-		} else if (Set.class.equals(propertyType)) {
-			return fillCollection(beanClass, propertyName, new HashSet(), genericType);
-		} else if (Collection.class.isAssignableFrom(propertyType)) {
+		try {
+			if (propertyType.isArray()) {
+				int randomLen = randomLen();
+				Object[] array = (Object[]) Array.newInstance(propertyType.getComponentType(), randomLen);
+				fillArray(beanClass, propertyName, array, propertyType.getComponentType());
+				return array;
+			} else {
+				Collection<?> col = createCollectionOfType(propertyType);
+				fillCollection(beanClass, propertyName, col, genericType);
+				return col;
+			}
+		} catch (BeanException e) {
+			throw new BeanException("Error creating collection or array for property '%s' of type %s on bean %s", e,
+			        propertyName, propertyType.getName(), beanClass.getName());
+		}
+	}
+	
+	private Collection<?> createCollectionOfType(Class propertyType) {
+		if (Collection.class.equals(propertyType)) {
+			return new ArrayList();
+		}
+		if (List.class.equals(propertyType)) {
+			return new ArrayList();
+		}
+		if (Set.class.equals(propertyType)) {
+			return new HashSet();
+		}
+		if (Collection.class.isAssignableFrom(propertyType)) {
 			try {
 				Collection col = (Collection) propertyType.newInstance();
-				return fillCollection(beanClass, propertyName, col, genericType);
+				return col;
 			} catch (InstantiationException e) {
-				throw new BeanException("Don't know how to create collection of type " + propertyType.getName()
-				        + ", for property '" + propertyName + "'", e);
+				throw new BeanException("Don't know how to create collection of type %s", e, propertyType.getName());
 			} catch (IllegalAccessException e) {
-				throw new BeanException("Don't know how to create collection of type " + propertyType.getName()
-				        + ", for property '" + propertyName + "'", e);
+				throw new BeanException("Don't know how to create collection of type %s", e, propertyType.getName());
 			}
 		} else {
-			throw new BeanException("Don't know how to create collection of type " + propertyType.getName()
-			        + ", for property '" + propertyName + "'");
+			throw new BeanException("Don't know how to create collection of type %s", propertyType.getName());
 		}
 	}
 
-	public <T extends Collection> T fillCollection(Class beanClass, String propertyName, T col, Type genericType) {
+	public <T extends Collection> void fillCollection(Class beanClass, String propertyName, T col, Type genericType) {
 		Class<?> elementType = extractConcreteType(genericType);
 		if (elementType == null) {
 			throw new BeanException("Can't create collection elements using non concrete type:" + genericType);
@@ -61,21 +75,19 @@ public class CollectionGenerator implements RandomGenerator {
 			Object eleVal = provider.generateRandom(beanClass, propertyName, elementType, null);
 			col.add(eleVal);
 		}
-		return col;
 	}
 
-	public Object[] fillArray(Class beanClass, String propertyName, Object[] arr, Class<?> elementType) {
+	public void fillArray(Class beanClass, String propertyName, Object[] arr, Class<?> elementType) {
 		for (int i = 0; i < arr.length; i++) {
 			Object eleVal = provider.generateRandom(beanClass, propertyName, elementType, null);
 			arr[i] = eleVal;
 		}
-		return arr;
 	}
 
-	Class<?> extractConcreteType(Type type) {
+	private Class<?> extractConcreteType(Type type) {
 		if (type instanceof ParameterizedType) {
 			ParameterizedType pType = (ParameterizedType) type;
-			if (pType.getActualTypeArguments().length == 0) {
+			if (pType.getActualTypeArguments().length == 1) {
 				Type subType = pType.getActualTypeArguments()[0];
 				if (subType instanceof Class) {
 					return (Class) subType;
