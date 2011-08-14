@@ -1,13 +1,10 @@
 package com.bertvanbrakel.test.bean.random;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.*;
+import static com.bertvanbrakel.test.bean.ClassUtils.invokeCtorWith;
+import static com.bertvanbrakel.test.bean.ClassUtils.invokeMethod;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,8 +17,8 @@ import com.bertvanbrakel.test.bean.PropertyDefinition;
 
 public class BeanRandom implements RandomGenerator {
 
-	private final PropertiesExtractor extractor = new PropertiesExtractor();
-
+	private final PropertiesExtractor extractor;
+	
 	private static Map<Class<?>, RandomGenerator<?>> builtInProviders = new HashMap<Class<?>, RandomGenerator<?>>();
 
 	private final PrimitiveGenerator primitiveProvider = new PrimitiveGenerator();
@@ -34,9 +31,16 @@ public class BeanRandom implements RandomGenerator {
 	private Stack<Class<?>> parentBeansTypesCreated = new Stack<Class<?>>();
 
 	private String parentPropertyPath;
+	
+	private final RandomOptions options;
 
 	public BeanRandom() {
-		extractor.setOptions(new RandomOptions());
+		this(new RandomOptions());
+	}
+
+	public BeanRandom(RandomOptions options) {
+		extractor = new PropertiesExtractor(options);
+		this.options = options;
 	}
 
 	public <T> T populate(Class<T> beanClass) {
@@ -79,7 +83,7 @@ public class BeanRandom implements RandomGenerator {
 	private boolean isGenerateRandomPropertyValue(Class<?> beanClass, String propertyName, Class<?> propertyType) {
 		if (parentPropertyPath != null) {
 			String fullPath = parentPropertyPath + propertyName;
-			if (getOptions().getIgnoreProperties().contains(fullPath)) {
+			if (options.getIgnoreProperties().contains(fullPath)) {
 				return false;
 			}
 		}
@@ -124,7 +128,7 @@ public class BeanRandom implements RandomGenerator {
 	
 	@Override
 	public Object generateRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
-		RandomGenerator<?> provider = getOptions().getProvider(propertyType);
+		RandomGenerator<?> provider = options.getProvider(propertyType);
 		if (provider == null) {
 			provider = builtInProviders.get(propertyType);
 			if (provider == null) {
@@ -141,7 +145,7 @@ public class BeanRandom implements RandomGenerator {
 			// lets create the bean
 			if (isGenerateBeanPropertyOfType(beanClass, propertyName, propertyType, genericType)) {
 				if (parentBeansTypesCreated.contains(propertyType)) {
-					if (getOptions().isFailOnRecursiveBeanCreation()) {
+					if (options.isFailOnRecursiveBeanCreation()) {
 						throw new BeanException("Recursive bean creation for type %s for property %s",
 						        propertyType.getName(), propertyName);
 					} else {
@@ -155,7 +159,7 @@ public class BeanRandom implements RandomGenerator {
 					popBeanProperty();
 				}
 			} else {
-				if (getOptions().isFailOnNonSupportedPropertyType()) {
+				if (options.isFailOnNonSupportedPropertyType()) {
 					throw new BeanException("no provider for type %s for property '%s'", propertyType, propertyName);
 				}
 				return null;
@@ -165,14 +169,10 @@ public class BeanRandom implements RandomGenerator {
 	}
 
 	private boolean isGenerateBeanPropertyOfType(Object bean, String propertyName, Class<?> type, Type genericType) {
-		return getOptions().isGeneratePropertyType(bean, propertyName, type, genericType);
+		return options.isGeneratePropertyType(bean, propertyName, type, genericType);
 	}
 
 	public RandomOptions getOptions() {
-		return (RandomOptions) extractor.getOptions();
-	}
-
-	public void setOptions(RandomOptions options) {
-		extractor.setOptions(options);
+		return options;
 	}
 }

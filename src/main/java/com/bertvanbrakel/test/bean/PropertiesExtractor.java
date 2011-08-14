@@ -22,14 +22,18 @@ public class PropertiesExtractor {
 	
 	private static final Collection<String> ignoreMethodNames = Arrays.asList("getClass", "toString", "hashcode", "equals");
 
-	protected BeanOptions options = new BeanOptions();
+	private final BeanOptions options;
+
+	public PropertiesExtractor() {
+		this(new BeanOptions());
+	}
+	
+	public PropertiesExtractor(BeanOptions options) {
+		this.options = options;
+	}
 	
 	public BeanOptions getOptions() {
 		return options;
-	}
-
-	public void setOptions(BeanOptions options) {
-		this.options = options;
 	}
 
 	public BeanDefinition extractBeanDefWithCtor(Class<?> beanClass){
