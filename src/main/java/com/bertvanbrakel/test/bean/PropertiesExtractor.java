@@ -11,12 +11,16 @@ import static com.bertvanbrakel.test.bean.ClassUtils.upperFirstChar;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PropertiesExtractor {
 
 	private final Map<String, BeanDefinition> beanDefsByType = new HashMap<String, BeanDefinition>();
+	
+	private static final Collection<String> ignoreMethodNames = Arrays.asList("getClass", "toString", "hashcode", "equals");
 
 	protected BeanOptions options = new BeanOptions();
 	
@@ -70,7 +74,7 @@ public class PropertiesExtractor {
 	private void extractMethodGetters(Class<?> beanClass, BeanDefinition def) {
 		Method[] methods = beanClass.getMethods();
 		for (Method m : methods) {
-			if (isReaderMethod(m)) {
+			if (isIncludeMethod(m) && isReaderMethod(m)) {
 				String propertyName = extractPropertyName(m);
 				Class<?> propertyType = m.getReturnType();
 				boolean isInclude = isIncludeProperty(beanClass, propertyName, propertyType);
@@ -114,7 +118,7 @@ public class PropertiesExtractor {
 	private void extractMethodSetters(Class<?> beanClass, BeanDefinition def) {
 		Method[] methods = beanClass.getMethods();
 		for (Method m : methods) {
-			if (isWriterMethod(m)) {
+			if (isIncludeMethod(m) && isWriterMethod(m)) {
 				extractAdditionalSetterMethod(beanClass, def, m);
 			}
 		}
@@ -193,6 +197,10 @@ public class PropertiesExtractor {
 			
 			}
 		}
+	}
+	
+	private boolean isIncludeMethod(Method m){
+		return !ignoreMethodNames.contains(m.getName());
 	}
 
 	private boolean isIncludeField(Field f){

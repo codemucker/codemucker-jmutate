@@ -9,6 +9,8 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.bertvanbrakel.test.bean.annotation.BeanProperty;
+
 public class ClassUtils {
 
 	public static <T> Constructor<T> getLongestCtor(Class<T> beanClass) {
@@ -155,7 +157,11 @@ public class ClassUtils {
 	}
 	
 	public static String extractPropertyName(Method m) {
-		String name = m.getName();
+		String name = getNameFromAnnotation(m);
+		if( name != null ){
+			return name;
+		}
+		name = m.getName();
 		if (name.startsWith("get")) {
 			return lowerFirstChar(name.substring(3));
 		} else if (name.startsWith("is")) {
@@ -163,24 +169,53 @@ public class ClassUtils {
 		} else if (name.startsWith("set")) {
 			return lowerFirstChar(name.substring(3));
 		}
-		throw new BeanException("Don't know how to extract the property name from method name " + name);
+		throw new BeanException("Don't know how to extract the property name from method '%s', no property annotations either ", m.getName());
 	}
 
 	public static String extractPropertyName(Field f) {
-		String name = f.getName();
-		//todo:handle hungarian annotation
+		String name = getNameFromAnnotation(f);
+		if (name == null) {
+			name = f.getName();
+		}
+		return removeHungarianNotation(name);
+	}
+	
+	private static String removeHungarianNotation(String name){
 		if( name.startsWith("_")){
 			return name.substring(1);
 		}
 		if( name.startsWith("m_")){
 			return name.substring(2);
 		}
-		//todo:handle json field name annotations...
-		//todo:allow custom annotations for field names...
-		
 		return name;
 	}
+	
+	public static String getNameFromAnnotation(Field f) {
+		// todo:handle json field name annotations...
+		// todo:allow custom annotations for field names...
+		BeanProperty annon = f.getAnnotation(BeanProperty.class);
+		if (annon != null) {
+			String name = annon.name().trim();
+			if (name.length() > 0) {
+				return name;
+			}
+		}
+		return null;
+	}
 
+	public static String getNameFromAnnotation(Method m) {
+		// todo:handle json field name annotations...
+		// todo:allow custom annotations for field names...
+		BeanProperty annon = m.getAnnotation(BeanProperty.class);
+		if (annon != null) {
+			String name = annon.name().trim();
+			if (name.length() > 0) {
+				return name;
+			}
+		}
+		return null;
+	}
+	
 	public static boolean isPublic(Class<?> type) {
 		return Modifier.isPublic(type.getModifiers());
 	}

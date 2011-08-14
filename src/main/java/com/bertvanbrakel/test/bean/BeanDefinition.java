@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.hamcrest.generator.qdox.model.BeanProperty;
 
 public class BeanDefinition {
@@ -48,5 +50,10 @@ public class BeanDefinition {
 	
 	public void addProperty(PropertyDefinition p) {
 		this.properties.put(p.getName(), p);
+	}
+	
+	@Override
+	public String toString(){
+		return ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
 	}
 }

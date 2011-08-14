@@ -4,6 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+
 public class PropertyDefinition {
 	
 	private String name;
@@ -80,4 +83,8 @@ public class PropertyDefinition {
 		this.genericType = genericType;
 	}
 
+	@Override
+	public String toString(){
+		return ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
+	}
 }
