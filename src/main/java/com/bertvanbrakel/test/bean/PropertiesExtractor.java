@@ -4,10 +4,12 @@ import static com.bertvanbrakel.test.bean.ClassUtils.extractPropertyName;
 import static com.bertvanbrakel.test.bean.ClassUtils.getLongestCtor;
 import static com.bertvanbrakel.test.bean.ClassUtils.getNoArgCtor;
 import static com.bertvanbrakel.test.bean.ClassUtils.isReaderMethod;
+import static com.bertvanbrakel.test.bean.ClassUtils.isStatic;
 import static com.bertvanbrakel.test.bean.ClassUtils.isWriterMethod;
 import static com.bertvanbrakel.test.bean.ClassUtils.upperFirstChar;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,44 +31,43 @@ public class PropertiesExtractor {
 	public BeanDefinition extractBeanDefWithCtor(Class<?> beanClass){
 		BeanDefinition def = extractBeanDef(beanClass);
 		if (def.getCtor() == null) {
-			Constructor<?> ctor = getNoArgCtor(beanClass, false);
-			if (ctor == null) {
-				ctor = getLongestCtor(beanClass);
-			}
-			if (ctor == null) {
-				ctor = getNoArgCtor(beanClass, true);
-			}
+			Constructor<?> ctor = findCtorFor(beanClass);
 			def.setCtor(ctor);
 		}
 		return def;
 	}
 	
+	private Constructor<?> findCtorFor(Class<?> beanClass) {
+		Constructor<?> ctor = getNoArgCtor(beanClass, false);
+		if (ctor == null) {
+			ctor = getLongestCtor(beanClass);
+		}
+		if (ctor == null) {
+			ctor = getNoArgCtor(beanClass, true);
+		}
+		return ctor;
+	}
+
 	public BeanDefinition extractBeanDef(Class<?> beanClass) {
-		BeanDefinition def = getOrCreateBeanDef(beanClass);
-		if (def.getPropertyMap() == null) {
-			def.setPropertyMap(extractProperties(beanClass));
+		BeanDefinition def = beanDefsByType.get(beanClass.getName());
+		if (def == null) {
+			def = new BeanDefinition(beanClass);
+			beanDefsByType.put(beanClass.getName(), def);
+			extractProperties(def);
 		}
 		return def;
 	}
-
-	private BeanDefinition getOrCreateBeanDef(Class<?> beanClass) {
-		BeanDefinition cache = beanDefsByType.get(beanClass.getName());
-		if (cache == null) {
-			cache = new BeanDefinition(beanClass);
-			beanDefsByType.put(beanClass.getName(), cache);
+	
+	private void extractProperties(BeanDefinition def) {
+		extractMethodGetters(def.getBeanType(), def);
+		extractMethodSettersFromGetters(def.getBeanType(), def);
+		extractMethodSetters(def.getBeanType(), def);
+		if (getOptions().isExtractFields()) {
+			extractFields(def.getBeanType(), def);
 		}
-		return cache;
 	}
 
-	private Map<String, Property> extractProperties(Class<?> beanClass) {
-		Map<String, Property> properties = new HashMap<String, Property>();
-		extractGetters(beanClass, properties);
-		extractSettersFromGetters(beanClass, properties);
-		extractAdditionalSetters(beanClass, properties);
-		return properties;
-	}
-
-	private void extractGetters(Class<?> beanClass, Map<String, Property> properties) {
+	private void extractMethodGetters(Class<?> beanClass, BeanDefinition def) {
 		Method[] methods = beanClass.getMethods();
 		for (Method m : methods) {
 			if (isReaderMethod(m)) {
@@ -79,31 +80,26 @@ public class PropertiesExtractor {
 						        m.toGenericString(), beanClass.getName());
 					}
 				} else {
-					Property p = new Property();
+					PropertyDefinition p = new PropertyDefinition();
 					p.setName(propertyName);
 					p.setRead(m);
 					p.setType(m.getReturnType());
 					p.setGenericType(m.getGenericReturnType());
 					p.setIgnore(!isInclude);
-					properties.put(p.getName(), p);
+					p.setMakeAccessible(getOptions().isMakeAccessible());
+					
+					def.addProperty(p);
 				}
 			}
 		}
 	}
 
-	private void extractSettersFromGetters(Class<?> beanClass, Map<String, Property> properties) {
+	private void extractMethodSettersFromGetters(Class<?> beanClass, BeanDefinition def) {
 		// find corresponding setters
-		for (Property p : properties.values()) {
+		for (PropertyDefinition p : def.getProperties()) {
 			if (p.getRead() != null) {
 				String setterName = "set" + upperFirstChar(p.getName());
-				Method setter = null;
-				try {
-					setter = beanClass.getMethod(setterName, p.getType());
-				} catch (SecurityException e) {
-					// ignore
-				} catch (NoSuchMethodException e) {
-					// ignore
-				}
+				Method setter = ClassUtils.getMethod(beanClass, setterName, p.getType());
 				if (setter != null) {
 					p.setWrite(setter);
 					// TODO:check generic type?
@@ -115,18 +111,18 @@ public class PropertiesExtractor {
 		}
 	}
 
-	private void extractAdditionalSetters(Class<?> beanClass, Map<String, Property> properties) {
+	private void extractMethodSetters(Class<?> beanClass, BeanDefinition def) {
 		Method[] methods = beanClass.getMethods();
 		for (Method m : methods) {
 			if (isWriterMethod(m)) {
-				extractAdditionalSetterMethod(beanClass, properties, m);
+				extractAdditionalSetterMethod(beanClass, def, m);
 			}
 		}
 	}
 
-	private void extractAdditionalSetterMethod(Class<?> beanClass, Map<String, Property> properties, Method m) {
+	private void extractAdditionalSetterMethod(Class<?> beanClass, BeanDefinition def, Method m) {
 		String propertyName = extractPropertyName(m);
-		Property p = properties.get(propertyName);
+		PropertyDefinition p = def.getProperty(propertyName);
 		Class<?> propertyType = p != null ? p.getType() : m.getParameterTypes()[0];
 		boolean isInclude = isIncludeProperty(beanClass, propertyName, propertyType);
 		if (p == null) {
@@ -135,13 +131,16 @@ public class PropertiesExtractor {
 				        "Found additional setter %s with no corresponding getter for property '%s' on class %s",
 				        m.toGenericString(), propertyName, beanClass.getName());
 			}
-			p = new Property();
+			p = new PropertyDefinition();
 			p.setName(propertyName);
 			p.setWrite(m);
 			p.setType(propertyType);
 			p.setGenericType(m.getGenericParameterTypes()[0]);
 			p.setIgnore(!isInclude);
-			properties.put(p.getName(), p);
+			p.setMakeAccessible(getOptions().isMakeAccessible());
+			
+			
+			def.addProperty(p);
 		} else {
 			if (p.getWrite() == null) {
 				p.setWrite(m);
@@ -154,7 +153,52 @@ public class PropertiesExtractor {
 			}
 		}
 	}
+	
+	private void extractFields(Class<?> beanClass, BeanDefinition def) {
+		Field[] fields = beanClass.getDeclaredFields();
+		for (Field f : fields) {
+			if (isIncludeField(f)) {
+				String propertyName = extractPropertyName(f);
+				Class<?> propertyType = f.getType();
+				PropertyDefinition p = def.getProperty(propertyName);
+				if( p == null){
+					boolean isInclude = isIncludeProperty(beanClass, propertyName, propertyType);
+					
+					p = new PropertyDefinition();
+					p.setName(propertyName);
+					p.setIgnore(!isInclude);
+					p.setType(f.getType());
+					p.setGenericType(f.getGenericType());
+					p.setMakeAccessible(getOptions().isMakeAccessible());
+					
+					def.addProperty(p);
+				} else {
+					if (p.getType() != f.getType()) {
+						if (getOptions().isFailOnMisMatchingFields()) {
+							throw new BeanException(
+							        "Error extracting field '%s', existing property '%s' exists but types do not match. Expected %s but was %s",
+							        f.getName(), propertyName, p.getType().getName(), f.getType().getName());
+						}
+					}
+					if (p.getGenericType() != f.getGenericType()) {
+						if (getOptions().isFailOnMisMatchingFields()) {
+							throw new BeanException(
+							        "Error extracting field '%s', existing property '%s' exists but generic types do not match. Expected %s but was %s",
+							        f.getName(), propertyName, p.getGenericType(), f.getGenericType());
+						}
+					}
 
+				}
+				p.setField(f);
+			
+			}
+		}
+	}
+
+	private boolean isIncludeField(Field f){
+		return !f.isSynthetic() && !isStatic(f);
+	}
+	
 	private boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
 		if ("class".equals(propertyName)) {
 			return false;

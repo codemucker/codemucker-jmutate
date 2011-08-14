@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 
-class TstBeanArray {
+public class TstBeanArray {
 	private String[] stringArray;
 	private Float[] floatArray;
 	private Character[] charArray;

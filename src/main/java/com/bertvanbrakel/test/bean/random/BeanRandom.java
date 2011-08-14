@@ -1,6 +1,6 @@
 package com.bertvanbrakel.test.bean.random;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.invokeCtorWith;
+import static com.bertvanbrakel.test.bean.ClassUtils.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -16,7 +16,7 @@ import java.util.Stack;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.BeanException;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
-import com.bertvanbrakel.test.bean.Property;
+import com.bertvanbrakel.test.bean.PropertyDefinition;
 
 public class BeanRandom implements RandomGenerator {
 
@@ -54,7 +54,7 @@ public class BeanRandom implements RandomGenerator {
 
 	private void populatePropertiesWithRandomValues(Object bean) {
 		BeanDefinition def = extractor.extractBeanDef(bean.getClass());
-		for (Property p : def.getProperties()) {
+		for (PropertyDefinition p : def.getProperties()) {
 			if (!p.isIgnore()) {
 				if (isGenerateRandomPropertyValue(bean.getClass(), p.getName(), p.getType())) {
 					populatePropertyWithRandomValue(p, bean);
@@ -63,22 +63,15 @@ public class BeanRandom implements RandomGenerator {
 		}
 	}
 
-	private void populatePropertyWithRandomValue(Property p, Object bean) {
+	private void populatePropertyWithRandomValue(PropertyDefinition p, Object bean) {
 		if (p.getWrite() != null) {
-			Method setter = p.getWrite();
 			Object propertyValue = generateRandom(null, p.getName(), p.getType(), p.getGenericType());
 			// TODO:option to ignore errors?
 			try {
-				setter.invoke(bean, new Object[] { propertyValue });
-			} catch (IllegalArgumentException e) {
-				throw new BeanException("Error invoking setter %s on property '%s' on class %s",
-				        setter.toGenericString(), p.getName(), bean.getClass().getName());
-			} catch (IllegalAccessException e) {
-				throw new BeanException("Error invoking setter %s on property '%s' on class %s",
-				        setter.toGenericString(), p.getName(), bean.getClass().getName());
-			} catch (InvocationTargetException e) {
-				throw new BeanException("Error invoking setter %s on property '%s' on class %s",
-				        setter.toGenericString(), p.getName(), bean.getClass().getName());
+				invokeMethod(bean, p.getWrite(), new Object[] { propertyValue }, p.isMakeAccessible());
+			} catch (BeanException e) {
+				throw new BeanException("Error setting property '%s' on bean %s", e, p.getName(), bean.getClass()
+				        .getName());
 			}
 		}
 	}

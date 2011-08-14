@@ -1,6 +1,6 @@
 package com.bertvanbrakel.test.bean.random;
 
-class TstBeanSelf {
+public class TstBeanSelf {
 	private TstBeanSelf fieldSelf;
 
 	public TstBeanSelf getFieldSelf() {

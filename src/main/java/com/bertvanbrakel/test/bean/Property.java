@@ -1,62 +1,41 @@
 package com.bertvanbrakel.test.bean;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import static com.bertvanbrakel.test.bean.ClassUtils.getFieldValue;
+import static com.bertvanbrakel.test.bean.ClassUtils.invokeMethod;
+import static com.bertvanbrakel.test.bean.ClassUtils.setFieldValue;
 
 public class Property {
-    private Method read;
-    private Method write;
-    private String name;
-    private Class<?> type;
-    private Type genericType;
-    private boolean ignore;
 
-    public boolean isIgnore() {
-	return ignore;
+	private final PropertyDefinition def;
+
+	public Property(PropertyDefinition def) {
+		super();
+		this.def = def;
+	}
+
+	public PropertyDefinition getPropertyDefinition() {
+    	return def;
     }
 
-    public void setIgnore(boolean ignore) {
-	this.ignore = ignore;
-    }
+	public Object getValue(Object bean) {
+		if (def.getRead() != null) {
+			return invokeMethod(bean, def.getRead(), null, def.isMakeAccessible());
+		}
+		if (def.getField() != null) {
+			return getFieldValue(bean, def.getField(), def.isMakeAccessible());
+		}
+		throw new BeanException("No accessor for proeprty '%s'", def.getName());
+	}
 
-    public Method getRead() {
-	return read;
-    }
-
-    public void setRead(Method read) {
-	this.read = read;
-    }
-
-    public Method getWrite() {
-	return write;
-    }
-
-    public void setWrite(Method write) {
-	this.write = write;
-    }
-
-    public String getName() {
-	return name;
-    }
-
-    public void setName(String name) {
-	this.name = name;
-    }
-
-    public Class<?> getType() {
-	return type;
-    }
-
-    public void setType(Class<?> type) {
-	this.type = type;
-    }
-
-    public Type getGenericType() {
-	return genericType;
-    }
-
-    public void setGenericType(Type genericType) {
-	this.genericType = genericType;
-    }
-
+	public void setValue(Object bean, Object val) {
+		if (def.getWrite() != null) {
+			invokeMethod(bean, def.getWrite(), new Object[] {val}, def.isMakeAccessible());
+			return;
+		}
+		if (def.getField() != null) {
+			setFieldValue(bean, def.getField(), val, def.isMakeAccessible());
+			return;
+		}
+		throw new BeanException("No mutator for proeprty '%s'", def.getName());
+	}
 }

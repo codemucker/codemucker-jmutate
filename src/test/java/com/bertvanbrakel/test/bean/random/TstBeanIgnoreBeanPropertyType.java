@@ -4,7 +4,7 @@ import com.bertvanbrakel.test.bean.TstBeanIgnoreProperty;
 
 
 
-class TstBeanIgnoreBeanPropertyType {
+public class TstBeanIgnoreBeanPropertyType {
 	private String fieldA;
 	private TstBeanIgnoreProperty fieldB;
 

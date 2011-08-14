@@ -5,10 +5,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import com.bertvanbrakel.test.bean.random.RandomOptions;
+
 public class BeanOptions {
 	private boolean failOnInvalidGetters = false;
 	private boolean failOnMissingSetters = false;
 	private boolean failOnAdditionalSetters = false;
+	private boolean failOnMisMatchingFields = true;
+
+	private boolean extractFields = false;
+	
+	private boolean makeAccessible = false;
 
 	private Collection<String> ignoreProperties = new HashSet<String>();
 	private Map<String, Collection<String>> ignorePropertiesOnClass = new HashMap<String, Collection<String>>();
@@ -17,6 +24,15 @@ public class BeanOptions {
 		failOnAdditionalSetters = false;
 		failOnMissingSetters = false;
 		failOnInvalidGetters = false;
+	}
+
+	public boolean isMakeAccessible() {
+	    return makeAccessible;
+    }
+
+	public BeanOptions makeAccessible(boolean b) {
+	    this.makeAccessible = b;
+	    return this;
 	}
 
 	public boolean isFailOnInvalidGetters() {
@@ -69,7 +85,7 @@ public class BeanOptions {
 	public Map<String, Collection<String>> getIgnorePropertiesOnClass() {
 		return ignorePropertiesOnClass;
 	}
-	
+
 	public boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
 		if (ignoreProperties.contains(propertyName)) {
 			return false;
@@ -83,4 +99,21 @@ public class BeanOptions {
 		return true;
 	}
 
+	public boolean isFailOnMisMatchingFields() {
+		return failOnMisMatchingFields;
+	}
+
+	public BeanOptions failOnMisMatchingFields(boolean failOnMisMatchingFields) {
+		this.failOnMisMatchingFields = failOnMisMatchingFields;
+		return this;
+	}
+
+	public boolean isExtractFields() {
+		return extractFields;
+	}
+
+	public BeanOptions extractFields(boolean extractFields) {
+		this.extractFields = extractFields;
+		return this;
+	}
 }

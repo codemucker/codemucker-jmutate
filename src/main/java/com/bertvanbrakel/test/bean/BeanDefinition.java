@@ -3,6 +3,7 @@ package com.bertvanbrakel.test.bean;
 import java.lang.reflect.Constructor;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.hamcrest.generator.qdox.model.BeanProperty;
@@ -11,7 +12,7 @@ public class BeanDefinition {
 	
 	private final Class<?> beanType;
 	private Constructor ctor;
-	private Map<String, Property> properties;
+	private Map<String, PropertyDefinition> properties = new HashMap<String, PropertyDefinition>();
 
 	public BeanDefinition(Class<?> type) {
 		this.beanType = type;
@@ -25,15 +26,15 @@ public class BeanDefinition {
 		return ctor;
 	}
 
-	public Map<String, Property> getPropertyMap() {
-		return properties;
+	public Class<?> getBeanType() {
+    	return beanType;
+    }
+
+	public Collection<PropertyDefinition> getProperties() {
+		return properties.values();
 	}
 
-	public Collection<Property> getProperties() {
-		return properties == null ? Collections.EMPTY_LIST : properties.values();
-	}
-
-	public Property getProperty(String name){
+	public PropertyDefinition getProperty(String name){
 		return properties.get(name);
 	}
 	
@@ -41,7 +42,11 @@ public class BeanDefinition {
 		return properties.keySet();
 	}
 	
-	public void setPropertyMap(Map<String, Property> properties) {
+	public void setPropertyMap(Map<String, PropertyDefinition> properties) {
 		this.properties = properties;
+	}
+	
+	public void addProperty(PropertyDefinition p) {
+		this.properties.put(p.getName(), p);
 	}
 }

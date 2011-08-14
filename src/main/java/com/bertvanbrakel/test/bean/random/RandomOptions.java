@@ -18,7 +18,7 @@ public class RandomOptions extends BeanOptions {
 
 	private boolean failOnNonSupportedPropertyType = false;
 	private boolean failOnRecursiveBeanCreation = true;
-
+	
 	public RandomOptions excludePackage(String pkg) {
 		excludePackages.add(pkg);
 		return this;

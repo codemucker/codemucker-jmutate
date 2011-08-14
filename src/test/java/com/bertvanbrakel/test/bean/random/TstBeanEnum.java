@@ -1,14 +1,13 @@
 package com.bertvanbrakel.test.bean.random;
 
-
-class TstBeanEnum {
+public class TstBeanEnum {
 	private static enum TstEnum {
 		ONE, TWO, THREE;
 	}
 
-	TstBeanEnum.TstEnum enumField;
+	TstEnum enumField;
 
-	public TstBeanEnum.TstEnum getEnumField() {
+	public TstEnum getEnumField() {
 		return enumField;
 	}
 
