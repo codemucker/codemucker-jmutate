@@ -82,4 +82,14 @@ public class PropertiesExtractorTest {
     	
     	assertEquals(4,def.getProperties().size());
     }
+	
+	@Test
+	public void test_parent_properties_detected() {
+		BeanDefinition def = new PropertiesExtractor().extractBeanDef(TstBeanParentPropertiesIncluded.class);
+		
+		assertTrue(def.hasProperty("fieldA"));
+		assertTrue(def.hasProperty("fieldB"));
+		
+		assertEquals(2, def.getProperties().size());
+	}
 }
