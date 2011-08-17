@@ -3,11 +3,12 @@ package com.bertvanbrakel.test.bean;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 public class CtorDefinition {
 
 	private final Constructor<?> ctor;
-	private final Collection<CtorArgDefinition> args;
+	private final List<CtorArgDefinition> args;
 	private boolean makeAccessible = false;
 
 	public CtorDefinition(Constructor<?> ctor) {
@@ -30,9 +31,17 @@ public class CtorDefinition {
 	public void addArg(CtorArgDefinition arg) {
 		args.add(arg);
 	}
+	
+	public int getNumArgs(){
+		return args.size();
+	}
 
-	public Collection<CtorArgDefinition> getArgs() {
+	public List<CtorArgDefinition> getArgs() {
 		return args;
+	}
+
+	public CtorArgDefinition getArg(int position) {
+		return args.get(position);
 	}
 
 	public CtorArgDefinition getArgNamed(String name) {

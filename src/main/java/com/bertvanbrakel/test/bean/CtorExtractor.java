@@ -67,7 +67,7 @@ public class CtorExtractor {
 	private String extractArgName(Annotation[] annotations) {
 		String name = null;
 		for (Annotation a : annotations) {
-			if (BeanProperty.class.equals(a)) {
+			if (BeanProperty.class.isAssignableFrom(a.getClass())) {
 				name = ((BeanProperty) a).name().trim();
 				if (name.length() == 0) {
 					name = null;

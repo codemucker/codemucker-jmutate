@@ -1,6 +1,6 @@
 package com.bertvanbrakel.test.bean.random;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.invokeCtorWith;
+import static com.bertvanbrakel.test.bean.ClassUtils.*;
 import static com.bertvanbrakel.test.bean.ClassUtils.invokeMethod;
 
 import java.lang.reflect.Constructor;
@@ -12,6 +12,8 @@ import java.util.Stack;
 
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.BeanException;
+import com.bertvanbrakel.test.bean.CtorArgDefinition;
+import com.bertvanbrakel.test.bean.CtorDefinition;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
 
@@ -42,7 +44,7 @@ public class BeanRandom implements RandomGenerator {
 		extractor = new PropertiesExtractor(options);
 		this.options = options;
 	}
-
+	
 	public <T> T populate(Class<T> beanClass) {
 		BeanDefinition def = extractor.extractBeanDefWithCtor(beanClass);
 		if (def.getCtor() == null) {
@@ -51,32 +53,48 @@ public class BeanRandom implements RandomGenerator {
 			        beanClass.getName());
 
 		}
-		T bean = invokeCtorWithRandomArgs((Constructor<T>) def.getCtor());
-		populatePropertiesWithRandomValues(bean);
+		T bean = populateCtor((Constructor<T>) def.getCtor());
+		populateProperties(bean);
 		return bean;
 	}
 
-	private void populatePropertiesWithRandomValues(Object bean) {
+	private void populateProperties(Object bean) {
 		BeanDefinition def = extractor.extractBeanDef(bean.getClass());
+		populateProperties(def, bean);
+	}
+
+	public void populateProperties(BeanDefinition def, Object bean) {
 		for (PropertyDefinition p : def.getProperties()) {
-			if (!p.isIgnore()) {
-				if (isGenerateRandomPropertyValue(bean.getClass(), p.getName(), p.getType())) {
-					populatePropertyWithRandomValue(p, bean);
-				}
+			if (!p.isIgnore() && p.hasMutator() && isGenerateRandomPropertyValue(bean.getClass(), p.getName(), p.getType())) {
+				populateProperty(bean, p);
 			}
 		}
 	}
+	
+	public void populateProperty(Object bean, PropertyDefinition p) {
+		Class<?> beanClass = bean.getClass();
+		Object propertyValue = generateRandom(beanClass, p);
+		setPropertyWithValue(bean, p, propertyValue);
+	}
 
-	private void populatePropertyWithRandomValue(PropertyDefinition p, Object bean) {
-		if (p.getWrite() != null) {
-			Object propertyValue = generateRandom(null, p.getName(), p.getType(), p.getGenericType());
-			// TODO:option to ignore errors?
-			try {
+	public Object generateRandom(Class<?> beanClass, PropertyDefinition p) {
+		Object propertyValue = generateRandom(beanClass, p.getName(), p.getType(), p.getGenericType());
+		return propertyValue;
+	}
+	
+	public void setPropertyWithValue(Object bean, PropertyDefinition p, Object propertyValue) {
+		if (!p.hasMutator()) {
+			throw new BeanException("Property '%s' has no mutators (no setters or field access)", p.getName());
+		}
+		// TODO:option to ignore errors?
+		try {
+			if (p.getWrite() != null) {
 				invokeMethod(bean, p.getWrite(), new Object[] { propertyValue }, p.isMakeAccessible());
-			} catch (BeanException e) {
-				throw new BeanException("Error setting property '%s' on bean %s", e, p.getName(), bean.getClass()
-				        .getName());
+			} else if (p.getField() != null) {
+				setFieldValue(bean, p.getField(), propertyValue);
 			}
+		} catch (BeanException e) {
+			throw new BeanException("Error setting property '%s' on bean %s", e, p.getName(), bean.getClass().getName());
 		}
 	}
 
@@ -116,16 +134,44 @@ public class BeanRandom implements RandomGenerator {
 		}
 	}
 
-	protected <T> T invokeCtorWithRandomArgs(Constructor<T> ctor) {
-		int len = ctor.getParameterTypes().length;
-		Object[] args = new Object[len];
-		for (int i = 0; i < len; i++) {
-			args[i] = generateRandom(ctor.getDeclaringClass(), null, ctor.getParameterTypes()[i], ctor.getGenericParameterTypes()[i]);
-		}
+	public <T> T populateCtor(Constructor<T> ctor) {
+		Object[] args = generateRandomArgsForCtor(ctor);
 		T bean = invokeCtorWith(ctor, args);
 		return bean;
 	}
 	
+	public Object[] generateRandomArgsForCtor(Constructor<?> ctor) {
+		Class<?>[] types = ctor.getParameterTypes();
+		Type[] genericTypes = ctor.getGenericParameterTypes();
+
+		int numArgs = types.length;
+		Object[] args = new Object[numArgs];
+		for (int i = 0; i < numArgs; i++) {
+			args[i] = generateRandom(ctor.getDeclaringClass(), null, types[i], genericTypes[i]);
+		}
+		return args;
+	}
+	
+	public Object generateRandomNotEqualsTo(Object orgVal, Class<?> beanClass, PropertyDefinition p) {
+		return generateRandomNotEqualsTo(orgVal, beanClass, p.getName(), p.getType(), p.getGenericType());
+	}
+	
+	public Object generateRandomNotEqualsTo(Object orgVal, Class<?> beanClass, CtorArgDefinition ctorArg) {
+		return generateRandomNotEqualsTo(orgVal, beanClass, ctorArg.getName(), ctorArg.getType(), ctorArg.getGenericType());
+	}
+	
+	private Object generateRandomNotEqualsTo(Object orgVal, Class<?> beanClass, String propertyName, Class<?> type, Type genericType) {
+		final int maxNumAttempts = 10;
+		for (int i = 0; i < maxNumAttempts; i++) {
+			Object newVal = generateRandom(beanClass, propertyName, type, genericType);
+			if (!newVal.equals(orgVal)) {
+				return newVal;
+			}
+		}
+		throw new BeanException(
+		        "Exceeded max number of attempts (%d) to generate different random value of type '%s', for value '%s'",
+		        maxNumAttempts, type.getName(), genericType, orgVal);
+	}
 	@Override
 	public Object generateRandom(Class beanClass, String propertyName, Class propertyType, Type genericType) {
 		RandomGenerator<?> provider = options.getProvider(propertyType);

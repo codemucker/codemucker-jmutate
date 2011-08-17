@@ -14,6 +14,10 @@ public class CtorArgDefinition {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	public boolean isNamed() {
+		return name != null;
+	}
 
 	public Class<?> getType() {
 		return type;

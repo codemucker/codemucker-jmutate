@@ -19,6 +19,10 @@ public class PropertyDefinition {
 	private Method read;
 	private Method write;
 
+	public boolean hasMutator() {
+		return write != null || field != null;
+	}
+	
 	public boolean isMakeAccessible() {
     	return makeAccessible;
     }

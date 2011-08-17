@@ -211,7 +211,7 @@ public class PropertiesExtractor {
 		return !f.isSynthetic() && !isStatic(f);
 	}
 	
-	private boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
+	public boolean isIncludeProperty(Class<?> beanClass, String propertyName, Class<?> propertyType) {
 		if ("class".equals(propertyName)) {
 			return false;
 		}

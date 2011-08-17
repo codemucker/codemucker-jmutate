@@ -16,9 +16,13 @@ public class ClassFinder {
 	final ClassFinderOptions options;
 	
 	public ClassFinder(){
-		options = new ClassFinderOptions();
+		this(new ClassFinderOptions());
 	}
 
+	public ClassFinder(ClassFinderOptions options){
+		this.options = options;
+	}
+	
 	public File findTestClassesDir() {
 		return findInProjectDir(new String[] { "target/test-classes" });
 	}
