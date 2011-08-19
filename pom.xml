@@ -11,7 +11,27 @@
     <packaging>jar</packaging>
     <name>com.bertvanbrakel - Test Extensions</name>
     <description>Bucket library to hold a number of often replicated test code snippets</description>
+	<repositories>
+<!-- 		<repository> -->
+<!-- 			<id>javaparser</id> -->
+<!-- 			<name>JavaParser Repository</name> -->
+<!-- 			<url>http://javaparser.googlecode.com/svn/maven2</url> -->
+<!-- 			<snapshots> -->
+<!-- 				<enabled>false</enabled> -->
+<!-- 			</snapshots> -->
+<!-- 		</repository> -->
+    </repositories>
     <dependencies>
+<!--         <dependency> -->
+<!--             <groupId>com.google.code.javaparser</groupId> -->
+<!-- 		    <artifactId>javaparser</artifactId> -->
+<!-- 		    <version>1.0.8</version> -->
+<!-- 		</dependency> -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
         <dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-all</artifactId>
@@ -33,6 +53,16 @@
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
             <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.bertvanbrakel</groupId>
+            <artifactId>bertvanbrakel-lang</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

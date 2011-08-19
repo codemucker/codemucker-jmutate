@@ -8,15 +8,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.regex.Pattern;
 
+import com.bertvanbrakel.test.util.ProjectFinder;
+
 public class ClassFinderOptions {
 	
-	private final Collection<String> projectFiles = Arrays.asList(
-		"pom.xml", // maven2
-        "project.xml", // maven1
-        "build.xml", // ant
-        ".project", // eclipse
-        ".classpath" // eclipse
-	);
+	private final Collection<String> projectFiles = new ArrayList<String>(ProjectFinder.DEF_PROJECT_FILES);
 	
 	public static final ClassMatcher MATCHER_ANONYMOUS = new ClassMatcher() {
 		@Override
