@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import com.bertvanbrakel.test.bean.random.RandomOptions;
-
 public class BeanOptions {
 	private boolean failOnInvalidGetters = false;
 	private boolean failOnMissingSetters = false;

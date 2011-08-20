@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.apache.log4j.spi.LoggerFactory;
 
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
@@ -42,20 +41,28 @@ public class BeanBuilderGenerator {
 		this.generationCtxt = ctxt;
 	}
 
-	public void generateBuilder(Class<?> beanClass, BuilderOptions options) {
+	public void generate(Class<?> beanClass, GeneratorOptions options) {
 		BeanDefinition def = new PropertiesExtractor(options).extractBeanDef(beanClass);
-		generateBuilder(def, options);
+		generate(beanClass.getName(), def, options);
 	}
 
-	public void generateBuilder(BeanDefinition def, BuilderOptions options) {
 		// TODDO:use a proper AST library, Rescriptor etc....
 		// for now a simple string builder
-		BeanBuilderWriter w = new BeanBuilderWriter(options, def.getBeanType().getName());
-		w.generate(def);
+	public void generate(String fqBeanClassName, BeanDefinition def, GeneratorOptions options) {
+		WriterBean w1 = new WriterBean(fqBeanClassName);
+		w1.generate(def);
+		writeSource(w1);
+		
+		WriterBeanBuilder w2 = new WriterBeanBuilder(fqBeanClassName);
+		w2.generate(def);
+		writeSource(w2);
+	}
+	
+	private void writeSource(AbstractBeanWriter w){	
 		String relPath = w.getSourceFilePath();
 		File dest = new File(generationCtxt.getGenerationMainDir(), relPath);
 		String src = w.toJavaClassString();
-		writeTo(dest, src);
+		writeTo(dest, src);	
 	}
 
 	private void writeTo(File dest, String src) {

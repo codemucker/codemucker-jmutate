@@ -2,7 +2,7 @@ package com.bertvanbrakel.test.bean.builder;
 
 import com.bertvanbrakel.test.bean.BeanOptions;
 
-public class BuilderOptions extends BeanOptions {
+public class GeneratorOptions extends BeanOptions {
 
 	private boolean markeGeneratedClass = true;
 	private boolean markeGeneratedFields = true;
@@ -23,7 +23,7 @@ public class BuilderOptions extends BeanOptions {
 		return markeGeneratedFields;
 	}
 
-	public BuilderOptions setMarkeGeneratedFields(boolean markeGeneratedFields) {
+	public GeneratorOptions setMarkeGeneratedFields(boolean markeGeneratedFields) {
 		this.markeGeneratedFields = markeGeneratedFields;
 		return this;
 	}
@@ -32,7 +32,7 @@ public class BuilderOptions extends BeanOptions {
 		return markeGeneratedMethods;
 	}
 
-	public BuilderOptions setMarkeGeneratedMethods(boolean markeGeneratedMethods) {
+	public GeneratorOptions setMarkeGeneratedMethods(boolean markeGeneratedMethods) {
 		this.markeGeneratedMethods = markeGeneratedMethods;
 		return this;
 	}
@@ -41,17 +41,17 @@ public class BuilderOptions extends BeanOptions {
 		return markPatternOnClass;
 	}
 
-	public BuilderOptions setMarkPatternOnClass(boolean markPatternOnClass) {
+	public GeneratorOptions setMarkPatternOnClass(boolean markPatternOnClass) {
 		this.markPatternOnClass = markPatternOnClass;
 		return this;
 	}
 
-	public BuilderOptions setMarkeGeneratedClass(boolean markeGenerated) {
+	public GeneratorOptions setMarkeGeneratedClass(boolean markeGenerated) {
 		this.markeGeneratedClass = markeGenerated;
 		return this;
 	}
 
-	public BuilderOptions setMarkPatternOnMethod(boolean markPattern) {
+	public GeneratorOptions setMarkPatternOnMethod(boolean markPattern) {
 		this.markPatternOnMethod = markPattern;
 		return this;
 	}

@@ -1,6 +1,6 @@
 package com.bertvanbrakel.test.bean.tester.hashcodeequals;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 
 public class TstBeanNonEqualHashcode {
 

@@ -1,7 +1,8 @@
 package com.bertvanbrakel.test.bean.random;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.*;
+import static com.bertvanbrakel.test.bean.ClassUtils.invokeCtorWith;
 import static com.bertvanbrakel.test.bean.ClassUtils.invokeMethod;
+import static com.bertvanbrakel.test.bean.ClassUtils.setFieldValue;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -13,7 +14,6 @@ import java.util.Stack;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.BeanException;
 import com.bertvanbrakel.test.bean.CtorArgDefinition;
-import com.bertvanbrakel.test.bean.CtorDefinition;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
 

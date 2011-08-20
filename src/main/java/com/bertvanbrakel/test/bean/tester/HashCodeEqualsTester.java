@@ -1,6 +1,7 @@
 package com.bertvanbrakel.test.bean.tester;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.*;
+import static com.bertvanbrakel.test.bean.ClassUtils.invokeCtorWith;
+import static com.bertvanbrakel.test.bean.ClassUtils.invokeMethod;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 

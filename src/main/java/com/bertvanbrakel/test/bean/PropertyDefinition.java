@@ -3,9 +3,10 @@ package com.bertvanbrakel.test.bean;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collection;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class PropertyDefinition {
 	
@@ -87,6 +88,30 @@ public class PropertyDefinition {
 		this.genericType = genericType;
 	}
 
+	public boolean isString(){
+		return String.class == type;
+	}
+	
+	public boolean isPrimitive(){
+		return type.isPrimitive();
+	}
+	
+	public boolean isType(Class<?> type) {
+		return type.isAssignableFrom(this.type);
+	}
+
+	public boolean isType(String typeName) {
+		return this.type.getName().equals(typeName);
+	}
+
+	public boolean isIndexed() {
+		return type.isArray() || Collection.class.isAssignableFrom(type);
+	}
+
+	public boolean isArray(){
+		return type.isArray();
+	}
+	
 	@Override
 	public String toString(){
 		return ToStringBuilder.reflectionToString(this,ToStringStyle.MULTI_LINE_STYLE);
