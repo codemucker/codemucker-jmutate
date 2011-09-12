@@ -164,10 +164,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(AnnotationTypeDeclaration node, Object other) {
-		if (!(other instanceof AnnotationTypeDeclaration)) {
-			return false;
-		}
-		AnnotationTypeDeclaration o = (AnnotationTypeDeclaration) other;
+		AnnotationTypeDeclaration o = safeCast(AnnotationTypeDeclaration.class, other);
 		// node type added in JLS3 - ignore old JLS2-style modifiers
 		return (assertSubtreeMatch(node.getJavadoc(), o.getJavadoc())
 				&& assertSubtreeListMatch(node.modifiers(), o.modifiers())
@@ -191,10 +188,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(AnnotationTypeMemberDeclaration node, Object other) {
-		if (!(other instanceof AnnotationTypeMemberDeclaration)) {
-			return false;
-		}
-		AnnotationTypeMemberDeclaration o = (AnnotationTypeMemberDeclaration) other;
+		AnnotationTypeMemberDeclaration o = safeCast(AnnotationTypeMemberDeclaration.class, other);
 		// node type added in JLS3 - ignore old JLS2-style modifiers
 		return (assertSubtreeMatch(node.getJavadoc(), o.getJavadoc())
 				&& assertSubtreeListMatch(node.modifiers(), o.modifiers())
@@ -218,10 +212,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(AnonymousClassDeclaration node, Object other) {
-		if (!(other instanceof AnonymousClassDeclaration)) {
-			return false;
-		}
-		AnonymousClassDeclaration o = (AnonymousClassDeclaration) other;
+		AnonymousClassDeclaration o = safeCast(AnonymousClassDeclaration.class, other);
 		return assertSubtreeListMatch(node.bodyDeclarations(), o.bodyDeclarations());
 	}
 
@@ -240,10 +231,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ArrayAccess node, Object other) {
-		if (!(other instanceof ArrayAccess)) {
-			return false;
-		}
-		ArrayAccess o = (ArrayAccess) other;
+		ArrayAccess o = safeCast(ArrayAccess.class, other);
 		return (
 			assertSubtreeMatch(node.getArray(), o.getArray())
 				&& assertSubtreeMatch(node.getIndex(), o.getIndex()));
@@ -264,10 +252,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ArrayCreation node, Object other) {
-		if (!(other instanceof ArrayCreation)) {
-			return false;
-		}
-		ArrayCreation o = (ArrayCreation) other;
+		ArrayCreation o = safeCast(ArrayCreation.class, other);
 		return (
 			assertSubtreeMatch(node.getType(), o.getType())
 				&& assertSubtreeListMatch(node.dimensions(), o.dimensions())
@@ -289,10 +274,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ArrayInitializer node, Object other) {
-		if (!(other instanceof ArrayInitializer)) {
-			return false;
-		}
-		ArrayInitializer o = (ArrayInitializer) other;
+		ArrayInitializer o = safeCast(ArrayInitializer.class, other);
 		return assertSubtreeListMatch(node.expressions(), o.expressions());
 	}
 
@@ -311,10 +293,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ArrayType node, Object other) {
-		if (!(other instanceof ArrayType)) {
-			return false;
-		}
-		ArrayType o = (ArrayType) other;
+		ArrayType o = safeCast(ArrayType.class, other);;
 		return assertSubtreeMatch(node.getComponentType(), o.getComponentType());
 	}
 
@@ -333,10 +312,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(AssertStatement node, Object other) {
-		if (!(other instanceof AssertStatement)) {
-			return false;
-		}
-		AssertStatement o = (AssertStatement) other;
+		AssertStatement o = safeCast(AssertStatement.class, other);
 		return (
 			assertSubtreeMatch(node.getExpression(), o.getExpression())
 				&& assertSubtreeMatch(node.getMessage(), o.getMessage()));
@@ -357,10 +333,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(Assignment node, Object other) {
-		if (!(other instanceof Assignment)) {
-			return false;
-		}
-		Assignment o = (Assignment) other;
+		Assignment o = safeCast(Assignment.class, other);
 		return (
 			node.getOperator().equals(o.getOperator())
 				&& assertSubtreeMatch(node.getLeftHandSide(), o.getLeftHandSide())
@@ -382,10 +355,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(Block node, Object other) {
-		if (!(other instanceof Block)) {
-			return false;
-		}
-		Block o = (Block) other;
+		Block o = safeCast(Block.class, other);
 		return assertSubtreeListMatch(node.statements(), o.statements());
 	}
 
@@ -410,9 +380,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.0
 	 */
 	public boolean match(BlockComment node, Object other) {
-		if (!(other instanceof BlockComment)) {
-			return false;
-		}
+		safeCast(BlockComment.class, other);
 		return true;
 	}
 
@@ -431,10 +399,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(BooleanLiteral node, Object other) {
-		if (!(other instanceof BooleanLiteral)) {
-			return false;
-		}
-		BooleanLiteral o = (BooleanLiteral) other;
+		BooleanLiteral o = safeCast(BooleanLiteral.class, other);
 		return node.booleanValue() == o.booleanValue();
 	}
 
@@ -453,10 +418,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(BreakStatement node, Object other) {
-		if (!(other instanceof BreakStatement)) {
-			return false;
-		}
-		BreakStatement o = (BreakStatement) other;
+		BreakStatement o = safeCast(BreakStatement.class, other);
 		return assertSubtreeMatch(node.getLabel(), o.getLabel());
 	}
 
@@ -475,10 +437,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(CastExpression node, Object other) {
-		if (!(other instanceof CastExpression)) {
-			return false;
-		}
-		CastExpression o = (CastExpression) other;
+		CastExpression o = safeCast(CastExpression.class, other);
 		return (
 			assertSubtreeMatch(node.getType(), o.getType())
 				&& assertSubtreeMatch(node.getExpression(), o.getExpression()));
@@ -499,10 +458,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(CatchClause node, Object other) {
-		if (!(other instanceof CatchClause)) {
-			return false;
-		}
-		CatchClause o = (CatchClause) other;
+		CatchClause o = safeCast(CatchClause.class, other);
 		return (
 			assertSubtreeMatch(node.getException(), o.getException())
 				&& assertSubtreeMatch(node.getBody(), o.getBody()));
@@ -523,10 +479,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(CharacterLiteral node, Object other) {
-		if (!(other instanceof CharacterLiteral)) {
-			return false;
-		}
-		CharacterLiteral o = (CharacterLiteral) other;
+		CharacterLiteral o = safeCast(CharacterLiteral.class, other);
 		return safeEquals(node.getEscapedValue(), o.getEscapedValue());
 	}
 
@@ -586,10 +539,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(CompilationUnit node, Object other) {
-		if (!(other instanceof CompilationUnit)) {
-			return false;
-		}
-		CompilationUnit o = (CompilationUnit) other;
+		CompilationUnit o = safeCast(CompilationUnit.class, other);
 		return (
 			assertSubtreeMatch(node.getPackage(), o.getPackage())
 				&& assertSubtreeListMatch(node.imports(), o.imports())
@@ -611,10 +561,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ConditionalExpression node, Object other) {
-		if (!(other instanceof ConditionalExpression)) {
-			return false;
-		}
-		ConditionalExpression o = (ConditionalExpression) other;
+		ConditionalExpression o = safeCast(ConditionalExpression.class, other);
 		return (
 			assertSubtreeMatch(node.getExpression(), o.getExpression())
 				&& assertSubtreeMatch(node.getThenExpression(), o.getThenExpression())
@@ -636,10 +583,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ConstructorInvocation node, Object other) {
-		if (!(other instanceof ConstructorInvocation)) {
-			return false;
-		}
-		ConstructorInvocation o = (ConstructorInvocation) other;
+		ConstructorInvocation o = safeCast(ConstructorInvocation.class, other);
 		if (node.getAST().apiLevel() >= AST.JLS3) {
 			if (!assertSubtreeListMatch(node.typeArguments(), o.typeArguments())) {
 				return false;
@@ -663,10 +607,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ContinueStatement node, Object other) {
-		if (!(other instanceof ContinueStatement)) {
-			return false;
-		}
-		ContinueStatement o = (ContinueStatement) other;
+		ContinueStatement o = safeCast(ContinueStatement.class, other);
 		return assertSubtreeMatch(node.getLabel(), o.getLabel());
 	}
 
@@ -711,10 +652,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(DoStatement node, Object other) {
-		if (!(other instanceof DoStatement)) {
-			return false;
-		}
-		DoStatement o = (DoStatement) other;
+		DoStatement o = safeCast(DoStatement.class, other);
 		return (
 			assertSubtreeMatch(node.getExpression(), o.getExpression())
 				&& assertSubtreeMatch(node.getBody(), o.getBody()));
@@ -735,9 +673,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(EmptyStatement node, Object other) {
-		if (!(other instanceof EmptyStatement)) {
-			return false;
-		}
+		safeCast(EmptyStatement.class, other);
 		return true;
 	}
 
@@ -757,10 +693,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(EnhancedForStatement node, Object other) {
-		if (!(other instanceof EnhancedForStatement)) {
-			return false;
-		}
-		EnhancedForStatement o = (EnhancedForStatement) other;
+		EnhancedForStatement o = safeCast(EnhancedForStatement.class, other);
 		return (
 			assertSubtreeMatch(node.getParameter(), o.getParameter())
 				&& assertSubtreeMatch(node.getExpression(), o.getExpression())
@@ -783,10 +716,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(EnumConstantDeclaration node, Object other) {
-		if (!(other instanceof EnumConstantDeclaration)) {
-			return false;
-		}
-		EnumConstantDeclaration o = (EnumConstantDeclaration) other;
+		EnumConstantDeclaration o = safeCast(EnumConstantDeclaration.class, other);
 		return (
 			assertSubtreeMatch(node.getJavadoc(), o.getJavadoc())
 				&& assertSubtreeListMatch(node.modifiers(), o.modifiers())
@@ -813,10 +743,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(EnumDeclaration node, Object other) {
-		if (!(other instanceof EnumDeclaration)) {
-			return false;
-		}
-		EnumDeclaration o = (EnumDeclaration) other;
+		EnumDeclaration o = safeCast(EnumDeclaration.class, other);
 		return (
 			assertSubtreeMatch(node.getJavadoc(), o.getJavadoc())
 				&& assertSubtreeListMatch(node.modifiers(), o.modifiers())
@@ -843,10 +770,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ExpressionStatement node, Object other) {
-		if (!(other instanceof ExpressionStatement)) {
-			return false;
-		}
-		ExpressionStatement o = (ExpressionStatement) other;
+		ExpressionStatement o = safeCast(ExpressionStatement.class, other);
 		return assertSubtreeMatch(node.getExpression(), o.getExpression());
 	}
 
@@ -865,10 +789,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(FieldAccess node, Object other) {
-		if (!(other instanceof FieldAccess)) {
-			return false;
-		}
-		FieldAccess o = (FieldAccess) other;
+		FieldAccess o = safeCast(FieldAccess.class, other);
 		return (
 			assertSubtreeMatch(node.getExpression(), o.getExpression())
 				&& assertSubtreeMatch(node.getName(), o.getName()));
@@ -889,10 +810,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(FieldDeclaration node, Object other) {
-		if (!(other instanceof FieldDeclaration)) {
-			return false;
-		}
-		FieldDeclaration o = (FieldDeclaration) other;
+		FieldDeclaration o = safeCast(FieldDeclaration.class, other);
 		int level = node.getAST().apiLevel();
 		if (level == AST.JLS2) {
 			if (node.getModifiers() != o.getModifiers()) {
@@ -925,10 +843,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ForStatement node, Object other) {
-		if (!(other instanceof ForStatement)) {
-			return false;
-		}
-		ForStatement o = (ForStatement) other;
+		ForStatement o = safeCast(ForStatement.class, other);
 		return (
 			assertSubtreeListMatch(node.initializers(), o.initializers())
 				&& assertSubtreeMatch(node.getExpression(), o.getExpression())
@@ -951,10 +866,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(IfStatement node, Object other) {
-		if (!(other instanceof IfStatement)) {
-			return false;
-		}
-		IfStatement o = (IfStatement) other;
+		IfStatement o = safeCast(IfStatement.class, other);
 		return (
 			assertSubtreeMatch(node.getExpression(), o.getExpression())
 				&& assertSubtreeMatch(node.getThenStatement(), o.getThenStatement())
@@ -976,10 +888,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ImportDeclaration node, Object other) {
-		if (!(other instanceof ImportDeclaration)) {
-			return false;
-		}
-		ImportDeclaration o = (ImportDeclaration) other;
+		ImportDeclaration o = safeCast(ImportDeclaration.class, other);
 		if (node.getAST().apiLevel() >= AST.JLS3) {
 			if (node.isStatic() != o.isStatic()) {
 				return false;
@@ -1005,10 +914,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(InfixExpression node, Object other) {
-		if (!(other instanceof InfixExpression)) {
-			return false;
-		}
-		InfixExpression o = (InfixExpression) other;
+		InfixExpression o = safeCast(InfixExpression.class, other);
 		// be careful not to trigger lazy creation of extended operand lists
 		if (node.hasExtendedOperands() && o.hasExtendedOperands()) {
 			if (!assertSubtreeListMatch(node.extendedOperands(), o.extendedOperands())) {
@@ -1039,10 +945,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(InstanceofExpression node, Object other) {
-		if (!(other instanceof InstanceofExpression)) {
-			return false;
-		}
-		InstanceofExpression o = (InstanceofExpression) other;
+		InstanceofExpression o = safeCast(InstanceofExpression.class, other);
 		return (
 				assertSubtreeMatch(node.getLeftOperand(), o.getLeftOperand())
 				&& assertSubtreeMatch(node.getRightOperand(), o.getRightOperand()));
@@ -1063,10 +966,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(Initializer node, Object other) {
-		if (!(other instanceof Initializer)) {
-			return false;
-		}
-		Initializer o = (Initializer) other;
+		Initializer o = safeCast(Initializer.class, other);
 		int level = node.getAST().apiLevel();
 		if (level == AST.JLS2) {
 			if (node.getModifiers() != o.getModifiers()) {
@@ -1110,10 +1010,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @see #ASTMatcher(boolean)
 	 */
 	public boolean match(Javadoc node, Object other) {
-		if (!(other instanceof Javadoc)) {
-			return false;
-		}
-		Javadoc o = (Javadoc) other;
+		Javadoc o = safeCast(Javadoc.class, other);
 		if (this.matchDocTags) {
 			return assertSubtreeListMatch(node.tags(), o.tags());
 		} else {
@@ -1150,10 +1047,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(LabeledStatement node, Object other) {
-		if (!(other instanceof LabeledStatement)) {
-			return false;
-		}
-		LabeledStatement o = (LabeledStatement) other;
+		LabeledStatement o = safeCast(LabeledStatement.class, other);
 		return (
 			assertSubtreeMatch(node.getLabel(), o.getLabel())
 				&& assertSubtreeMatch(node.getBody(), o.getBody()));
@@ -1180,9 +1074,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.0
 	 */
 	public boolean match(LineComment node, Object other) {
-		if (!(other instanceof LineComment)) {
-			return false;
-		}
+		safeCast(LineComment.class, other);
 		return true;
 	}
 
@@ -1202,10 +1094,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(MarkerAnnotation node, Object other) {
-		if (!(other instanceof MarkerAnnotation)) {
-			return false;
-		}
-		MarkerAnnotation o = (MarkerAnnotation) other;
+		MarkerAnnotation o = safeCast(MarkerAnnotation.class, other);
 		return assertSubtreeMatch(node.getTypeName(), o.getTypeName());
 	}
 
@@ -1225,10 +1114,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.0
 	 */
 	public boolean match(MemberRef node, Object other) {
-		if (!(other instanceof MemberRef)) {
-			return false;
-		}
-		MemberRef o = (MemberRef) other;
+		MemberRef o = safeCast(MemberRef.class, other);
 		return (
 				assertSubtreeMatch(node.getQualifier(), o.getQualifier())
 				&& assertSubtreeMatch(node.getName(), o.getName()));
@@ -1250,10 +1136,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(MemberValuePair node, Object other) {
-		if (!(other instanceof MemberValuePair)) {
-			return false;
-		}
-		MemberValuePair o = (MemberValuePair) other;
+		MemberValuePair o = safeCast(MemberValuePair.class, other);
 		return (assertSubtreeMatch(node.getName(), o.getName())
 				&& assertSubtreeMatch(node.getValue(), o.getValue()));
 	}
@@ -1274,10 +1157,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.0
 	 */
 	public boolean match(MethodRef node, Object other) {
-		if (!(other instanceof MethodRef)) {
-			return false;
-		}
-		MethodRef o = (MethodRef) other;
+		MethodRef o = safeCast(MethodRef.class, other);
 		return (
 				assertSubtreeMatch(node.getQualifier(), o.getQualifier())
 				&& assertSubtreeMatch(node.getName(), o.getName())
@@ -1300,10 +1180,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.0
 	 */
 	public boolean match(MethodRefParameter node, Object other) {
-		if (!(other instanceof MethodRefParameter)) {
-			return false;
-		}
-		MethodRefParameter o = (MethodRefParameter) other;
+		MethodRefParameter o = safeCast(MethodRefParameter.class, other);
 		int level = node.getAST().apiLevel();
 		if (level >= AST.JLS3) {
 			if (node.isVarargs() != o.isVarargs()) {
@@ -1338,10 +1215,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(MethodDeclaration node, Object other) {
-		if (!(other instanceof MethodDeclaration)) {
-			return false;
-		}
-		MethodDeclaration o = (MethodDeclaration) other;
+		MethodDeclaration o = safeCast(MethodDeclaration.class, other);
 		
 		checkJslLevel(node);
 		if (!assertSubtreeListMatch(node.modifiers(), o.modifiers())) {
@@ -1386,10 +1260,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(MethodInvocation node, Object other) {
-		if (!(other instanceof MethodInvocation)) {
-			return false;
-		}
-		MethodInvocation o = (MethodInvocation) other;
+		MethodInvocation o = safeCast(MethodInvocation.class, other);
 		if (node.getAST().apiLevel() >= AST.JLS3) {
 			if (!assertSubtreeListMatch(node.typeArguments(), o.typeArguments())) {
 				return false;
@@ -1417,10 +1288,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(Modifier node, Object other) {
-		if (!(other instanceof Modifier)) {
-			return false;
-		}
-		Modifier o = (Modifier) other;
+		Modifier o = safeCast(Modifier.class, other);
 		return (node.getKeyword() == o.getKeyword());
 	}
 
@@ -1440,10 +1308,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(NormalAnnotation node, Object other) {
-		if (!(other instanceof NormalAnnotation)) {
-			return false;
-		}
-		NormalAnnotation o = (NormalAnnotation) other;
+		NormalAnnotation o = safeCast(NormalAnnotation.class, other);
 		return (assertSubtreeMatch(node.getTypeName(), o.getTypeName())
 					&& assertSubtreeListMatch(node.values(), o.values()));
 	}
@@ -1463,9 +1328,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(NullLiteral node, Object other) {
-		if (!(other instanceof NullLiteral)) {
-			return false;
-		}
+		safeCast(NullLiteral.class, other);
 		return true;
 	}
 
@@ -1484,10 +1347,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(NumberLiteral node, Object other) {
-		if (!(other instanceof NumberLiteral)) {
-			return false;
-		}
-		NumberLiteral o = (NumberLiteral) other;
+		NumberLiteral o = safeCast(NumberLiteral.class, other);
 		return safeEquals(node.getToken(), o.getToken());
 	}
 
@@ -1506,10 +1366,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(PackageDeclaration node, Object other) {
-		if (!(other instanceof PackageDeclaration)) {
-			return false;
-		}
-		PackageDeclaration o = (PackageDeclaration) other;
+		PackageDeclaration o = safeCast(PackageDeclaration.class, other);
 		if (node.getAST().apiLevel() >= AST.JLS3) {
 			if (!assertSubtreeMatch(node.getJavadoc(), o.getJavadoc())) {
 				return false;
@@ -1537,10 +1394,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(ParameterizedType node, Object other) {
-		if (!(other instanceof ParameterizedType)) {
-			return false;
-		}
-		ParameterizedType o = (ParameterizedType) other;
+		ParameterizedType o = safeCast(ParameterizedType.class, other);
 		return assertSubtreeMatch(node.getType(), o.getType())
 				&& assertSubtreeListMatch(node.typeArguments(), o.typeArguments());
 	}
@@ -1560,10 +1414,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ParenthesizedExpression node, Object other) {
-		if (!(other instanceof ParenthesizedExpression)) {
-			return false;
-		}
-		ParenthesizedExpression o = (ParenthesizedExpression) other;
+		ParenthesizedExpression o = safeCast(ParenthesizedExpression.class, other);
 		return assertSubtreeMatch(node.getExpression(), o.getExpression());
 	}
 
@@ -1582,10 +1433,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(PostfixExpression node, Object other) {
-		if (!(other instanceof PostfixExpression)) {
-			return false;
-		}
-		PostfixExpression o = (PostfixExpression) other;
+		PostfixExpression o = safeCast(PostfixExpression.class, other);
 		return (
 			node.getOperator().equals(o.getOperator())
 				&& assertSubtreeMatch(node.getOperand(), o.getOperand()));
@@ -1606,10 +1454,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(PrefixExpression node, Object other) {
-		if (!(other instanceof PrefixExpression)) {
-			return false;
-		}
-		PrefixExpression o = (PrefixExpression) other;
+		PrefixExpression o = safeCast(PrefixExpression.class, other);
 		return (
 			node.getOperator().equals(o.getOperator())
 				&& assertSubtreeMatch(node.getOperand(), o.getOperand()));
@@ -1630,10 +1475,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(PrimitiveType node, Object other) {
-		if (!(other instanceof PrimitiveType)) {
-			return false;
-		}
-		PrimitiveType o = (PrimitiveType) other;
+		PrimitiveType o = safeCast(PrimitiveType.class, other);
 		return (node.getPrimitiveTypeCode() == o.getPrimitiveTypeCode());
 	}
 
@@ -1652,10 +1494,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(QualifiedName node, Object other) {
-		if (!(other instanceof QualifiedName)) {
-			return false;
-		}
-		QualifiedName o = (QualifiedName) other;
+		QualifiedName o = safeCast(QualifiedName.class, other);
 		return (
 			assertSubtreeMatch(node.getQualifier(), o.getQualifier())
 				&& assertSubtreeMatch(node.getName(), o.getName()));
@@ -1677,10 +1516,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(QualifiedType node, Object other) {
-		if (!(other instanceof QualifiedType)) {
-			return false;
-		}
-		QualifiedType o = (QualifiedType) other;
+		QualifiedType o = safeCast(QualifiedType.class, other);
 		return (
 			assertSubtreeMatch(node.getQualifier(), o.getQualifier())
 				&& assertSubtreeMatch(node.getName(), o.getName()));
@@ -1701,10 +1537,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ReturnStatement node, Object other) {
-		if (!(other instanceof ReturnStatement)) {
-			return false;
-		}
-		ReturnStatement o = (ReturnStatement) other;
+		ReturnStatement o = safeCast(ReturnStatement.class, other);
 		return assertSubtreeMatch(node.getExpression(), o.getExpression());
 	}
 
@@ -1723,10 +1556,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SimpleName node, Object other) {
-		if (!(other instanceof SimpleName)) {
-			return false;
-		}
-		SimpleName o = (SimpleName) other;
+		SimpleName o = safeCast(SimpleName.class, other);
 		return node.getIdentifier().equals(o.getIdentifier());
 	}
 
@@ -1745,10 +1575,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SimpleType node, Object other) {
-		if (!(other instanceof SimpleType)) {
-			return false;
-		}
-		SimpleType o = (SimpleType) other;
+		SimpleType o = safeCast(SimpleType.class, other);
 		return assertSubtreeMatch(node.getName(), o.getName());
 	}
 
@@ -1768,10 +1595,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(SingleMemberAnnotation node, Object other) {
-		if (!(other instanceof SingleMemberAnnotation)) {
-			return false;
-		}
-		SingleMemberAnnotation o = (SingleMemberAnnotation) other;
+		SingleMemberAnnotation o = safeCast(SingleMemberAnnotation.class, other);
 		return (assertSubtreeMatch(node.getTypeName(), o.getTypeName())
 				&& assertSubtreeMatch(node.getValue(), o.getValue()));
 	}
@@ -1795,10 +1619,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SingleVariableDeclaration node, Object other) {
-		if (!(other instanceof SingleVariableDeclaration)) {
-			return false;
-		}
-		SingleVariableDeclaration o = (SingleVariableDeclaration) other;
+		SingleVariableDeclaration o = safeCast(SingleVariableDeclaration.class, other);
 		int level = node.getAST().apiLevel();
 		if (level == AST.JLS2) {
 			if (node.getModifiers() != o.getModifiers()) {
@@ -1835,10 +1656,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(StringLiteral node, Object other) {
-		if (!(other instanceof StringLiteral)) {
-			return false;
-		}
-		StringLiteral o = (StringLiteral) other;
+		StringLiteral o = safeCast(StringLiteral.class, other);
 		return safeEquals(node.getEscapedValue(), o.getEscapedValue());
 	}
 
@@ -1857,10 +1675,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SuperConstructorInvocation node, Object other) {
-		if (!(other instanceof SuperConstructorInvocation)) {
-			return false;
-		}
-		SuperConstructorInvocation o = (SuperConstructorInvocation) other;
+		SuperConstructorInvocation o = safeCast(SuperConstructorInvocation.class, other);
 		if (node.getAST().apiLevel() >= AST.JLS3) {
 			if (!assertSubtreeListMatch(node.typeArguments(), o.typeArguments())) {
 				return false;
@@ -1886,10 +1701,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SuperFieldAccess node, Object other) {
-		if (!(other instanceof SuperFieldAccess)) {
-			return false;
-		}
-		SuperFieldAccess o = (SuperFieldAccess) other;
+		SuperFieldAccess o = safeCast(SuperFieldAccess.class, other);
 		return (
 			assertSubtreeMatch(node.getName(), o.getName())
 				&& assertSubtreeMatch(node.getQualifier(), o.getQualifier()));
@@ -1910,10 +1722,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SuperMethodInvocation node, Object other) {
-		if (!(other instanceof SuperMethodInvocation)) {
-			return false;
-		}
-		SuperMethodInvocation o = (SuperMethodInvocation) other;
+		SuperMethodInvocation o = safeCast(SuperMethodInvocation.class, other);
 		if (node.getAST().apiLevel() >= AST.JLS3) {
 			if (!assertSubtreeListMatch(node.typeArguments(), o.typeArguments())) {
 				return false;
@@ -1940,10 +1749,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SwitchCase node, Object other) {
-		if (!(other instanceof SwitchCase)) {
-			return false;
-		}
-		SwitchCase o = (SwitchCase) other;
+		SwitchCase o = safeCast(SwitchCase.class, other);
 		return assertSubtreeMatch(node.getExpression(), o.getExpression());
 	}
 
@@ -1962,10 +1768,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SwitchStatement node, Object other) {
-		if (!(other instanceof SwitchStatement)) {
-			return false;
-		}
-		SwitchStatement o = (SwitchStatement) other;
+		SwitchStatement o = safeCast(SwitchStatement.class, other);
 		return (
 			assertSubtreeMatch(node.getExpression(), o.getExpression())
 				&& assertSubtreeListMatch(node.statements(), o.statements()));
@@ -1986,10 +1789,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(SynchronizedStatement node, Object other) {
-		if (!(other instanceof SynchronizedStatement)) {
-			return false;
-		}
-		SynchronizedStatement o = (SynchronizedStatement) other;
+		SynchronizedStatement o = safeCast(SynchronizedStatement.class, other);
 		return (
 			assertSubtreeMatch(node.getExpression(), o.getExpression())
 				&& assertSubtreeMatch(node.getBody(), o.getBody()));
@@ -2011,10 +1811,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.0
 	 */
 	public boolean match(TagElement node, Object other) {
-		if (!(other instanceof TagElement)) {
-			return false;
-		}
-		TagElement o = (TagElement) other;
+		TagElement o = safeCast(TagElement.class, other);
 		return (
 				safeEquals(node.getTagName(), o.getTagName())
 				&& assertSubtreeListMatch(node.fragments(), o.fragments()));
@@ -2036,10 +1833,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.0
 	 */
 	public boolean match(TextElement node, Object other) {
-		if (!(other instanceof TextElement)) {
-			return false;
-		}
-		TextElement o = (TextElement) other;
+		TextElement o = safeCast(TextElement.class, other);
 		return safeEquals(node.getText(), o.getText());
 	}
 
@@ -2058,10 +1852,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ThisExpression node, Object other) {
-		if (!(other instanceof ThisExpression)) {
-			return false;
-		}
-		ThisExpression o = (ThisExpression) other;
+		ThisExpression o = safeCast(ThisExpression.class, other);
 		return assertSubtreeMatch(node.getQualifier(), o.getQualifier());
 	}
 
@@ -2080,10 +1871,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(ThrowStatement node, Object other) {
-		if (!(other instanceof ThrowStatement)) {
-			return false;
-		}
-		ThrowStatement o = (ThrowStatement) other;
+		ThrowStatement o = safeCast(ThrowStatement.class, other);
 		return assertSubtreeMatch(node.getExpression(), o.getExpression());
 	}
 
@@ -2102,10 +1890,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(TryStatement node, Object other) {
-		if (!(other instanceof TryStatement)) {
-			return false;
-		}
-		TryStatement o = (TryStatement) other;
+		TryStatement o = safeCast(TryStatement.class, other);
 		switch(node.getAST().apiLevel()) {
 			case AST.JLS2 :
 			case AST.JLS3 :
@@ -2137,10 +1922,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(TypeDeclaration node, Object other) {
-		if (!(other instanceof TypeDeclaration)) {
-			return false;
-		}
-		TypeDeclaration o = (TypeDeclaration) other;
+		TypeDeclaration o = safeCast(TypeDeclaration.class, other);
 		checkJslLevel(node);
 		if (!assertSubtreeListMatch(node.modifiers(), o.modifiers())) {
 			return false;
@@ -2177,10 +1959,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(TypeDeclarationStatement node, Object other) {
-		if (!(other instanceof TypeDeclarationStatement)) {
-			return false;
-		}
-		TypeDeclarationStatement o = (TypeDeclarationStatement) other;
+		TypeDeclarationStatement o = safeCast(TypeDeclarationStatement.class, other);
 		return assertSubtreeMatch(node.getDeclaration(), o.getDeclaration());
 	}
 
@@ -2199,10 +1978,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(TypeLiteral node, Object other) {
-		if (!(other instanceof TypeLiteral)) {
-			return false;
-		}
-		TypeLiteral o = (TypeLiteral) other;
+		TypeLiteral o = safeCast(TypeLiteral.class, other);
 		return assertSubtreeMatch(node.getType(), o.getType());
 	}
 
@@ -2222,10 +1998,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(TypeParameter node, Object other) {
-		if (!(other instanceof TypeParameter)) {
-			return false;
-		}
-		TypeParameter o = (TypeParameter) other;
+		TypeParameter o = safeCast(TypeParameter.class, other);
 		return assertSubtreeMatch(node.getName(), o.getName())
 				&& assertSubtreeListMatch(node.typeBounds(), o.typeBounds());
 	}
@@ -2245,10 +2018,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(VariableDeclarationExpression node, Object other) {
-		if (!(other instanceof VariableDeclarationExpression)) {
-			return false;
-		}
-		VariableDeclarationExpression o = (VariableDeclarationExpression) other;
+		VariableDeclarationExpression o = safeCast(VariableDeclarationExpression.class, other);
 		int level = node.getAST().apiLevel();
 		if (level == AST.JLS2) {
 			if (node.getModifiers() != o.getModifiers()) {
@@ -2283,10 +2053,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(VariableDeclarationFragment node, Object other) {
-		if (!(other instanceof VariableDeclarationFragment)) {
-			return false;
-		}
-		VariableDeclarationFragment o = (VariableDeclarationFragment) other;
+		VariableDeclarationFragment o = safeCast(VariableDeclarationFragment.class, other);
 		return assertSubtreeMatch(node.getName(), o.getName())
 			&& node.getExtraDimensions() == o.getExtraDimensions()
 			&& assertSubtreeMatch(node.getInitializer(), o.getInitializer());
@@ -2307,10 +2074,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(VariableDeclarationStatement node, Object other) {
-		if (!(other instanceof VariableDeclarationStatement)) {
-			return false;
-		}
-		VariableDeclarationStatement o = (VariableDeclarationStatement) other;
+		VariableDeclarationStatement o = safeCast(VariableDeclarationStatement.class, other);
 		checkJslLevel(node);
 		int level = node.getAST().apiLevel();
 		if (level >= AST.JLS3) {
@@ -2337,10 +2101,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 *   different node type or is <code>null</code>
 	 */
 	public boolean match(WhileStatement node, Object other) {
-		if (!(other instanceof WhileStatement)) {
-			return false;
-		}
-		WhileStatement o = (WhileStatement) other;
+		WhileStatement o = safeCast(WhileStatement.class, other);
 		return (
 			assertSubtreeMatch(node.getExpression(), o.getExpression())
 				&& assertSubtreeMatch(node.getBody(), o.getBody()));
@@ -2362,10 +2123,7 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * @since 3.1
 	 */
 	public boolean match(WildcardType node, Object other) {
-		if (!(other instanceof WildcardType)) {
-			return false;
-		}
-		WildcardType o = (WildcardType) other;
+		WildcardType o = safeCast(WildcardType.class, other);
 		if( node.isUpperBound() != o.isUpperBound()){
 			fail("Expected upperbound=%s but was %s for <%s>", node.isUpperBound(), o.isUpperBound(), o);
 		}
@@ -2405,5 +2163,12 @@ public class AssertingAstMatcher extends ASTMatcher {
 	
 	private void fail(String msg, Object... args){
 		Assert.fail(String.format(msg, args));
+	}
+	
+	private <T extends ASTNode> T safeCast(Class<T> expectType, Object actual){
+		if( !expectType.isInstance(actual)){
+			fail("Expected type %s but was %s", expectType.getName(), actual.getClass().getName());
+		}
+		return (T) actual;
 	}
 }
