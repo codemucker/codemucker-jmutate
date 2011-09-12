@@ -19,6 +19,40 @@ public class ProjectFinder {
 	        ".classpath" // eclipse	
 	));
 	
+	public static File findTargetDir() {
+		File targetDir = new File(findProjectDir(), "target");
+		if (!targetDir.exists()) {
+			boolean created = targetDir.mkdirs();
+			if (!created) {
+				throw new ClassFinderException("Couldn't create maven target dir " + targetDir.getAbsolutePath());
+			}
+		}
+		return targetDir;
+	}
+
+	public static File findDefaultMavenSrcDir(){
+		return findInProjectDir(new String[]{ "src/main/java" });
+	}
+	
+	public static File findDefaultMavenResourceDir(){
+		return findInProjectDir(new String[]{ "src/main/resources" });
+	}
+	
+	public static File findDefaultMavenTestDir(){
+		return findInProjectDir(new String[]{ "src/test/java" });
+	}
+	
+	public static File findDefaultMavenTestResourcesDir(){
+		return findInProjectDir(new String[]{ "src/test/resources" });
+	}
+	
+	public static File findDefaultMavenCompileDir(){
+		return findInProjectDir(new String[]{ "target/classes" });
+	}
+	
+	public static File findDefaultMavenCompileTestDir(){
+		return findInProjectDir(new String[]{ "target/test-classes" });
+	}
 	
 	public static File findInProjectDir(String[] relativeDirs){
 		return findInProjectDir(DEF_PROJECT_FILES, relativeDirs);

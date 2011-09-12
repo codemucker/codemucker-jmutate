@@ -11,7 +11,7 @@ import com.bertvanbrakel.test.bean.ClassUtils;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
 
 @NotThreadSafe
-public abstract class AbstractBeanWriter extends AbstractClassWriter {
+public abstract class AbstractBeanWriter extends AbstractClassWriter implements BeanGenerator {
 	
 	protected final BeanBuilderOptions options;
 
@@ -46,8 +46,8 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter {
 	public AbstractBeanWriter(BeanBuilderOptions options, String fullClassName){
 		this.options = options;
 		this.fullClassName = fullClassName;
-		this.shortClassName = extractShortClassNamePart(fullClassName);
-		this.pkgName = extractPkgPart(fullClassName);
+		this.shortClassName = ClassUtils.extractShortClassNamePart(fullClassName);
+		this.pkgName = ClassUtils.extractPkgPart(fullClassName);
 	}
 	
 	public String getSourceFilePath(){
@@ -75,6 +75,13 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter {
 		println("public class ${this.shortClassName}{");
     }
 
+	protected void generateInterfaceOpen() {
+        if (options.isMarkPatternOnClass()) {
+			annotate(Generated.class);
+		}
+		println("public interface ${this.shortClassName}{");
+    }
+	
 	protected void generateClassClose() {
         println("}");
     }
@@ -102,6 +109,19 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter {
 			}
 		}
     }
+
+
+	public void generateInterfaceSetters(BeanDefinition def) {
+        // methods
+		for (PropertyDefinition p : def.getProperties()) {
+			if (!p.isIgnore()) {
+				if (options.isMarkeGeneratedMethods()) {
+					annotate(Generated.class);
+				}
+				println("public void ${property.setter}(${property.type} ${property.field});",p);
+			}
+		}
+    }
 	
 	public void generateGetters(BeanDefinition def) {
         // methods
@@ -111,6 +131,18 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter {
 					annotate(Generated.class);
 				}
 				println("public ${property.type} ${property.getter}(){ return ${property.field}; }",p);
+			}
+		}
+    }
+	
+	public void generateInterfaceGetters(BeanDefinition def) {
+        // methods
+		for (PropertyDefinition p : def.getProperties()) {
+			if (!p.isIgnore()) {
+				if (options.isMarkeGeneratedMethods()) {
+					annotate(Generated.class);
+				}
+				println("public ${property.type} ${property.getter}();",p);
 			}
 		}
     }
@@ -242,8 +274,8 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter {
 			.put("property.safeName", safeName(def.getName()))
 			.put("property.field", fieldName(def.getName()))
 			
-			.put("property.type", safeToClassName(def.getType()))
-			.put("property.genericType", safeToClassName(def.getGenericType()))
+			.put("property.type", ClassUtils.safeToClassName(def.getType()))
+			.put("property.genericType", ClassUtils.safeToClassName(def.getGenericType()))
 			.put("property.upperName",upperName )
 			.put("property.setter","set" + upperName)
 			.put("property.getter","get" + upperName)

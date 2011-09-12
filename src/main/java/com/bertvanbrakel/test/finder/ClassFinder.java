@@ -1,12 +1,15 @@
 package com.bertvanbrakel.test.finder;
 
-import static com.bertvanbrakel.test.util.ProjectFinder.findInProjectDir;
+import static com.bertvanbrakel.test.bean.ClassUtils.pathToClassName;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+
+import com.bertvanbrakel.test.util.ProjectFinder;
+
 /**
  * Utility class to find classes in ones project
  */
@@ -20,17 +23,20 @@ public class ClassFinder {
 
 	public ClassFinder(ClassFinderOptions options){
 		this.options = options;
+	}	
+	
+	public ClassFinderOptions getOptions() {
+	    return options;
+    }
+	
+	public File findClassesDir() {
+		return ProjectFinder.findDefaultMavenCompileDir();
 	}
 	
 	public File findTestClassesDir() {
-		return findInProjectDir(new String[] { "target/test-classes" });
-	}
-
-	public File findClassesDir() {
-		return findInProjectDir(new String[] { "target/classes" });
+		return ProjectFinder.findDefaultMavenCompileTestDir();
 	}
 	
-
 	public Iterable<Class<?>> findClasses() {
 		final Collection<String> foundClassNames = findClassNames();
 		return new Iterable<Class<?>>() {
@@ -42,15 +48,8 @@ public class ClassFinder {
 	}
 	
 	public Collection<String> findClassNames() {
-		Collection<File> classPathDirs = new HashSet<File>(options.getClassPathsDir());
-		if (options.isIncludeClassesDir()) {
-			classPathDirs.add(findClassesDir());
-		}
-		if (options.isIncludeTestDir()) {
-			classPathDirs.add(findTestClassesDir());
-		}
 		final Collection<String> foundClassNames = new HashSet<String>();
-		for (File classPath : classPathDirs) {
+		for (File classPath : getClassPathDirsToSearch()) {
 			for (String resource : findClassResourcePaths(classPath)) {
 				if (resource.endsWith(".class")) {
 					String className = pathToClassName(resource);
@@ -60,43 +59,28 @@ public class ClassFinder {
 		}
 		return foundClassNames;
 	}
+	
+	private Collection<File> getClassPathDirsToSearch(){
+		Collection<File> classPathDirs = new HashSet<File>(options.getClassPathsDir());
+		if (options.isIncludeClassesDir()) {
+			classPathDirs.add(findClassesDir());
+		}
+		if (options.isIncludeTestDir()) {
+			classPathDirs.add(findTestClassesDir());
+		}
+		return classPathDirs;
+	}
 
 	public Collection<String> findClassResourcePaths() {
 		return findClassResourcePaths(findClassesDir());
 	}
 
 	public Collection<String> findClassResourcePaths(File rootDir) {
-		final FileMatcher fileMatcher = options.toFileMatcher();
-		FileWalker walker = new FileWalker() {
-			@Override
-			public boolean isIncludeFile(String relPath, File file) {
-				return fileMatcher.matchFile(file, relPath);
-			}
-		};
+		FileWalkerFilter walker = new FileWalkerFilter();
+		walker.setIncludes(options.toFileMatcher());
+		
 		Collection<String> resources = walker.findFiles(rootDir);
 		return resources;
-	}
-	
-	private String pathToClassName(String relFilePath) {
-		String classPath = stripExtension(relFilePath);
-		String className = convertFilePathToClassPath(classPath);
-		return className;
-	}
-
-	private static String stripExtension(String path) {
-		int dot = path.lastIndexOf('.');
-		if (dot != -1) {
-			return path.substring(0, dot);
-		}
-		return path;
-	}
-
-	private static String convertFilePathToClassPath(String path) {
-		if (path.charAt(0) == '/') {
-			return path.substring(1).replace('/', '.');
-		} else {
-			return path.replace('/', '.');
-		}
 	}
 
 	private static class ClassLoadingIterator implements Iterator<Class<?>>{
@@ -151,8 +135,4 @@ public class ClassFinder {
 			}
 		}
 	}
-	
-	public ClassFinderOptions getOptions() {
-	    return options;
-    }
 }

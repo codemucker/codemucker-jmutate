@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -13,6 +14,28 @@ import com.bertvanbrakel.test.bean.annotation.BeanProperty;
 
 public class ClassUtils {
 
+	
+	public static String pathToClassName(String relFilePath) {
+		String classPath = stripExtension(relFilePath);
+		String className = convertFilePathToClassPath(classPath);
+		return className;
+	}
+
+	public static String stripExtension(String path) {
+		int dot = path.lastIndexOf('.');
+		if (dot != -1) {
+			return path.substring(0, dot);
+		}
+		return path;
+	}
+
+	public static String convertFilePathToClassPath(String path) {
+		if (path.charAt(0) == '/') {
+			return path.substring(1).replace('/', '.');
+		} else {
+			return path.replace('/', '.');
+		}
+	}
 	public static <T> Constructor<T> getLongestCtor(Class<T> beanClass) {
 		Constructor<T> longest = null;
 		Constructor<T>[] ctors = (Constructor<T>[]) beanClass.getDeclaredConstructors();
@@ -262,4 +285,32 @@ public class ClassUtils {
 		}
 		return null;
 	}
+
+	public static String safeToClassName(Class<?> type){
+    	return type==null?null:type.getName();
+    }
+
+	public static String insertBeforeClassName(String fqClassName, String shortClassNamePrefix) {
+    	return extractPkgPart(fqClassName) + "." + shortClassNamePrefix + extractShortClassNamePart(fqClassName);
+    }
+
+	public static String extractPkgPart(String className){
+    	int dot = className.lastIndexOf('.');
+    	if( dot != -1 ){
+    		return className.substring(0, dot);
+    	}
+    	return "";
+    }
+
+	public static String extractShortClassNamePart(String className){
+    	int dot = className.lastIndexOf('.');
+    	if( dot != -1 ){
+    		return className.substring(dot+1);
+    	}
+    	return className;
+    }
+
+	public static String safeToClassName(Type type){
+    	return type==null?null:type.getClass().getName();
+    }
 }

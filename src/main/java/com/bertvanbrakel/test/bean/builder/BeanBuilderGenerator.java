@@ -1,11 +1,25 @@
 package com.bertvanbrakel.test.bean.builder;
 
+import static junit.framework.Assert.assertNotNull;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.log4j.Logger;
+import org.eclipse.jdt.core.IJavaModel;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.MethodRef;
 
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
@@ -49,19 +63,80 @@ public class BeanBuilderGenerator {
 		// TODDO:use a proper AST library, Rescriptor etc....
 		// for now a simple string builder
 	public void generate(String fqBeanClassName, BeanDefinition def, GeneratorOptions options) {
-		WriterBean w1 = new WriterBean(fqBeanClassName);
-		w1.generate(def);
-		writeSource(w1);
-		
-		WriterBeanBuilder w2 = new WriterBeanBuilder(fqBeanClassName);
-		w2.generate(def);
-		writeSource(w2);
+		generate(new BeanWriter(fqBeanClassName), def);
+		generate(new BeanBuilderWriter(fqBeanClassName), def);
+		generate(new BeanReadInterfaceWriter(fqBeanClassName), def);
+		generate(new BeanWriteWriter(fqBeanClassName), def);
+		generate(new BeanReadWriter(fqBeanClassName), def);
+	}
+	
+	public void generate(AbstractBeanWriter w, BeanDefinition def){
+		w.generate(def);
+		writeSource(w);	
 	}
 	
 	private void writeSource(AbstractBeanWriter w){	
 		String relPath = w.getSourceFilePath();
 		File dest = new File(generationCtxt.getGenerationMainDir(), relPath);
 		String src = w.toJavaClassString();
+		
+		CompilationUnit result;
+		try {
+			ASTParser parser = ASTParser.newParser(AST.JLS3);
+			
+			 // In order to parse 1.5 code, some compiler options need to be set to 1.5
+			 Map options = JavaCore.getOptions();
+			 JavaCore.setComplianceOptions(JavaCore.VERSION_1_5, options);
+			 parser.setCompilerOptions(options);
+			 
+			parser.setSource(src.toCharArray());
+
+			result = (CompilationUnit) parser.createAST(null);
+		} catch (Exception e) {
+			throw new BeanGenerationException("error parsing source", e);
+		}
+		assertNotNull(result);
+		//System.out.println(ToStringBuilder.reflectionToString(result));
+		assertNotNull(result.getRoot());
+		ASTNode rootNode = result.getRoot();
+		//System.out.println(rootNode.getClass().getName());
+		BaseASTVisitor vis = new BaseASTVisitor() {
+//			@Override
+//			protected boolean visitNode(ASTNode node) {
+//				System.out.println("------visit---------------");
+//				System.out.println(node);
+//				return true;
+//			}
+
+			@Override
+            public boolean visit(MethodDeclaration node) {
+	            return log("methodDecl", node);
+            }
+
+			@Override
+            public boolean visit(MethodInvocation node) {
+	            return log("methodCall", node);
+            }
+
+			@Override
+            public boolean visit(MethodRef node) {
+	            return log("methodRef", node);
+            }
+			
+			private boolean log(String msg, ASTNode node){
+				System.out.println("---------------------" + msg);
+				System.out.println(node);
+				return true;
+			}
+		};
+	//	result.accept(vis);
+//		System.out.println("rootNode=" + rootNode);
+//		
+		//System.out.println("comments=" + result.getCommentList());
+//		
+//		IJavaModel javaModel = result.getJavaElement().getJavaModel();
+//		assertNotNull(javaModel);
+//		
 		writeTo(dest, src);	
 	}
 

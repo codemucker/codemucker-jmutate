@@ -5,14 +5,18 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Collection;
 
-class FileWalker {
-	FileFilter DIR_FILTER = new FileFilter() {
+public class FileWalker {
+	
+	private static FileFilter DIR_FILTER = new FileFilter() {
+		private static final char HIDDEN_DIR_PREFIX = '.';//like .git, .svn,....
+		
 		@Override
-		public boolean accept(File f) {
-			return f.isDirectory() && f.getName().charAt(0) != '.';
+		public boolean accept(File dir) {
+			return dir.isDirectory() && dir.getName().charAt(0) != HIDDEN_DIR_PREFIX && !dir.getName().equals("CVS");
 		}
 	};
-	FileFilter FILE_FILTER = new FileFilter() {
+	
+	private static FileFilter FILE_FILTER = new FileFilter() {
 		@Override
 		public boolean accept(File f) {
 			return f.isFile();

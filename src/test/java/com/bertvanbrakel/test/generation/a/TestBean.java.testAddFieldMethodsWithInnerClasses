@@ -1,0 +1,52 @@
+package com.bertvanbrakel.test.generation.a;
+
+import com.bertvanbrakel.test.bean.annotation.BeanProperty;
+import com.bertvanbrakel.test.bean.builder.Pattern;
+import com.bertvanbrakel.test.bean.builder.PatternType;
+
+@Pattern(type=PatternType.Builder)
+public class TestBean {
+
+    @BeanProperty(name = "one")
+    private String fieldOne;
+    private String fieldTwo;
+    private String foo;
+    
+    public TestBean(String foo){
+        this.foo = foo;
+    }
+    
+    public void methodOne() {
+
+    }
+
+    public void methodTwo() {
+
+    }
+    
+    public String getFoo(){
+        return this.foo;
+    }
+    
+    public void setFoo(String foo){
+        this.foo = foo;
+    }
+
+    private static class StaticInnerClass {
+
+        private String staticInnerClassFieldA;
+
+        public void staticInnerDoIt() {
+
+        }
+    }
+
+    private class InnerClass {
+        private String innerClassFieldA;
+
+        public void innerDoIt() {
+
+        }
+    }
+
+}

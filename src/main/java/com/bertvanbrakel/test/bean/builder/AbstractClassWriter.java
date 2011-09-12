@@ -1,6 +1,5 @@
 package com.bertvanbrakel.test.bean.builder;
 
-import java.lang.reflect.Type;
 
 import com.bertvanbrakel.lang.MapBuilder;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
@@ -41,30 +40,6 @@ public abstract class AbstractClassWriter {
 	
 	protected static MapBuilder<String, Object> emptyMap(){
 		return new MapBuilder<String, Object>();
-	}
-	
-	protected static String safeToClassName(Class<?> type){
-		return type==null?null:type.getName();
-	}
-
-	protected static String extractPkgPart(String className){
-		int dot = className.lastIndexOf('.');
-		if( dot != -1 ){
-			return className.substring(0, dot);
-		}
-		return "";
-	}
-
-	protected static String extractShortClassNamePart(String className){
-		int dot = className.lastIndexOf('.');
-		if( dot != -1 ){
-			return className.substring(dot+1);
-		}
-		return className;
-	}
-	
-	protected static String safeToClassName(Type type){
-		return type==null?null:type.getClass().getName();
 	}
 	
 }

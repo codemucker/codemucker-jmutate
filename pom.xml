@@ -26,11 +26,11 @@
 		</repository>
 	</repositories>
 	<dependencies>
-		<dependency>
-			<groupId>com.google.code.javaparser</groupId>
-			<artifactId>javaparser</artifactId>
-			<version>1.0.8</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.google.code.javaparser</groupId> -->
+<!-- 			<artifactId>javaparser</artifactId> -->
+<!-- 			<version>1.0.8</version> -->
+<!-- 		</dependency> -->
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -72,6 +72,16 @@
 			<groupId>com.bertvanbrakel</groupId>
 			<artifactId>bertvanbrakel-lang</artifactId>
 			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>core</artifactId>
+			<version>3.3.0-v_771</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jdt</groupId>
+			<artifactId>ui</artifactId>
+			<version>3.3.0-v20070607-0010</version>
 		</dependency>
 	</dependencies>
 </project>
