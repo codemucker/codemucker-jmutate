@@ -16,7 +16,7 @@ import com.bertvanbrakel.codemucker.ast.MutableJavaSourceFile;
 import com.bertvanbrakel.codemucker.ast.MutableJavaType;
 import com.bertvanbrakel.codemucker.ast.SourceFileVisitor;
 import com.bertvanbrakel.codemucker.ast.a.TestBean;
-import com.bertvanbrakel.codemucker.ast.finder.SourceFinder;
+import com.bertvanbrakel.codemucker.ast.finder.JavaSourceFinder;
 import com.bertvanbrakel.test.finder.ClassFinderOptions;
 import com.bertvanbrakel.test.util.TestHelper;
 
@@ -70,7 +70,7 @@ public class ModifyClassTest {
 	}
 	
 	private MutableJavaType findType(String typeClassName){
-		SourceFinder finder = new SourceFinder();
+		JavaSourceFinder finder = new JavaSourceFinder();
 		ClassFinderOptions opts = finder.getOptions();
 		opts.includeClassesDir(false);
 		opts.includeTestDir(true);

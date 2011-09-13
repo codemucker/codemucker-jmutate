@@ -3,15 +3,15 @@ package com.bertvanbrakel.codemucker.ast;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-import com.bertvanbrakel.codemucker.ast.finder.ClasspathLocation;
+import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
 
 public class JavaSourceFile {
-	private final ClasspathLocation location;
+	private final ClasspathResource location;
 	private final AstCreator astCreator;
 	private transient CompilationUnit astNode;
 
-	public JavaSourceFile(AstCreator astCreator, ClasspathLocation location) {
+	public JavaSourceFile(AstCreator astCreator, ClasspathResource location) {
 		this.location = location;
 		this.astCreator = astCreator;
 	}
@@ -31,7 +31,7 @@ public class JavaSourceFile {
 		return astCreator;
 	}
 
-	public ClasspathLocation getLocation(){
+	public ClasspathResource getLocation(){
 		return location;
 	}
 	

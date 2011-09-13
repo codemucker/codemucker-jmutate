@@ -5,14 +5,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.bertvanbrakel.codemucker.ast.AstCreator;
+import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
 import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
 import com.bertvanbrakel.codemucker.ast.SourceFileVisitor;
-import com.bertvanbrakel.codemucker.util.SourceUtil;
 import com.bertvanbrakel.test.finder.ClassFinderOptions;
 import com.bertvanbrakel.test.finder.FileWalkerFilter;
 import com.bertvanbrakel.test.util.ProjectFinder;
@@ -20,15 +18,15 @@ import com.bertvanbrakel.test.util.ProjectFinder;
 /**
  * Utility class to find source classes in ones project
  */
-public class SourceFinder {
+public class JavaSourceFinder {
 
-	final ClassFinderOptions options;
+	private final ClassFinderOptions options;
 	
-	public SourceFinder(){
+	public JavaSourceFinder(){
 		this(new ClassFinderOptions());
 	}
 
-	public SourceFinder(ClassFinderOptions options){
+	public JavaSourceFinder(ClassFinderOptions options){
 		this.options = options;
 	}	
 
@@ -44,10 +42,6 @@ public class SourceFinder {
 		for( JavaSourceFile srcFile:findSourceFiles(astCreator)){
 			srcFile.visit(visitor);
 		}
-	}
-	
-	public Collection<String> findSourceFilePaths() {
-		return findResourcesIn(findSourceDir());
 	}
 	
 	public File findSourceDir() {
@@ -77,49 +71,21 @@ public class SourceFinder {
 	}
 
 	private AstCreator createDefaultASTCreator(){
-		return new AstCreator() {
-			private ASTParser parser = SourceUtil.newParser();
-			
-			@Override
-			public synchronized CompilationUnit create(File srcFile) {
-				String src = SourceUtil.readSource(srcFile);
-				CompilationUnit cu = parseCompilationUnit(src);
-				cu.recordModifications();
-				return cu;
-			}
-
-			@Override
-            public ASTNode parseAstSnippet(CharSequence src) {
-				return createNode(src,ASTParser.K_EXPRESSION);
-            }
-
-			@Override
-            public CompilationUnit parseCompilationUnit(CharSequence src) {
-				CompilationUnit cu = (CompilationUnit) createNode(src,ASTParser.K_COMPILATION_UNIT);
-				return cu;
-			}
-			
-			private ASTNode createNode(CharSequence src, int kind){
-				parser.setSource(src.toString().toCharArray());
-				parser.setKind(kind);
-				ASTNode node = parser.createAST(null);
-				return node;
-			}
-		};
+		return new DefaultAstCreator();
 	}
 	
 	public Iterable<JavaSourceFile> findSourceFiles(final AstCreator astCreator) {
 		final Collection<JavaSourceFile> foundSources = new HashSet<JavaSourceFile>();
-		for (File classPath : getSourceDirsToSearch()) {
-			for (String resource : findResourcesIn(classPath)) {
-				if (resource.endsWith(".java")) {
-					foundSources.add(new JavaSourceFile(astCreator, new ClasspathLocation(classPath, resource)));
+		for (File classDir: getSourceDirsToSearch()) {
+			for (ClasspathResource resource : findClassResourcesIn(classDir)) {
+				if (resource.isExtension("java")) {
+					foundSources.add(new JavaSourceFile(astCreator, resource));
 				}
 			}
 		}
 		return foundSources;
 	}
-	
+
 	private Collection<File> getSourceDirsToSearch(){
 		Collection<File> classPathDirs = new HashSet<File>(options.getClassPathsDir());
 		if (options.isIncludeClassesDir()) {
@@ -131,7 +97,15 @@ public class SourceFinder {
 		return classPathDirs;
 	}
 
-	public Collection<String> findResourcesIn(File rootDir) {
+	public Iterable<ClasspathResource> findClassResourcesIn(File rootDir) {
+		final Collection<ClasspathResource> found = new HashSet<ClasspathResource>();
+		for (String relativePath : findRelativePathsIn(rootDir)) {
+			found.add(new ClasspathResource(rootDir, relativePath));
+		}
+		return found;
+	}
+	
+	public Collection<String> findRelativePathsIn(File rootDir) {
 		FileWalkerFilter walker = new FileWalkerFilter();
 		walker.setIncludes(options.toFileMatcher());
 		
