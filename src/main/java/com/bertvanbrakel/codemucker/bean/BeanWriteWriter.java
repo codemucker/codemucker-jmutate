@@ -20,8 +20,8 @@ public class BeanWriteWriter extends AbstractBeanWriter {
 		generateImports();
 		generateInterfaceOpen();
 		generateInterfaceSetters(def);
-		generateFieldEquals(def);
-		generateFieldClone(def);
+	//	generateFieldEquals(def);
+		//generateFieldClone(def);
 		generateClassClose();	
 	}
 
