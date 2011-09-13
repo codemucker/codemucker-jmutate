@@ -1,7 +1,5 @@
 package com.bertvanbrakel.test.finder;
 
-import java.io.File;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
@@ -9,18 +7,13 @@ import com.bertvanbrakel.test.generation.AstCreator;
 import com.bertvanbrakel.test.generation.SourceFileVisitor;
 import com.bertvanbrakel.test.util.SourceUtil;
 
-public class SourceFile {
-
-	private final File path;
-	private final String pathBasedClassName;
-
+public class JavaSourceFile {
+	private final ClasspathLocation location;
+	private final AstCreator astCreator;
 	private transient CompilationUnit astNode;
 
-	private final AstCreator astCreator;
-
-	public SourceFile(AstCreator astCreator, File path, String className) {
-		this.path = path;
-		this.pathBasedClassName = className;
+	public JavaSourceFile(AstCreator astCreator, ClasspathLocation location) {
+		this.location = location;
 		this.astCreator = astCreator;
 	}
 
@@ -39,27 +32,23 @@ public class SourceFile {
 		return astCreator;
 	}
 
-	public String getPathBasedClassName() {
-		return pathBasedClassName;
+	public ClasspathLocation getLocation(){
+		return location;
 	}
-
-	public File getPath() {
-		return path;
-	}
-
+	
 	public void setAstNode(CompilationUnit astNode) {
 		this.astNode = astNode;
 	}
 
 	public CompilationUnit getCompilationUnit() {
 		if (astNode == null) {
-			astNode = astCreator.create(path);
+			astNode = astCreator.create(location.getFile());
 		}
 		return astNode;
 	}
 
 	public String readSource() {
-		return SourceUtil.readSource(path);
+		return SourceUtil.readSource(location.getFile());
 	}
 
 	public String toString() {

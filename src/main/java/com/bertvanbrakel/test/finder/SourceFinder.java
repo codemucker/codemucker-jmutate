@@ -1,7 +1,5 @@
 package com.bertvanbrakel.test.finder;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.pathToClassName;
-
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
@@ -40,7 +38,7 @@ public class SourceFinder {
 	}
 
 	public void visit(SourceFileVisitor visitor, AstCreator astCreator) {
-		for( SourceFile srcFile:findSourceFiles(astCreator)){
+		for( JavaSourceFile srcFile:findSourceFiles(astCreator)){
 			srcFile.visit(visitor);
 		}
 	}
@@ -62,7 +60,7 @@ public class SourceFinder {
 	}
 
 	public Iterable<CompilationUnit> findCompilationUnits(AstCreator astCreator) {
-		final Iterable<SourceFile> sources = findSourceFiles(astCreator);
+		final Iterable<JavaSourceFile> sources = findSourceFiles(astCreator);
 		return new Iterable<CompilationUnit>(){
 			@Override
 			public Iterator<CompilationUnit> iterator() {
@@ -71,7 +69,7 @@ public class SourceFinder {
 		};
 	}
 	
-	public Iterable<SourceFile> findSourceFiles() {
+	public Iterable<JavaSourceFile> findSourceFiles() {
 		return findSourceFiles(createDefaultASTCreator());
 	}
 
@@ -107,13 +105,12 @@ public class SourceFinder {
 		};
 	}
 	
-	public Iterable<SourceFile> findSourceFiles(final AstCreator astCreator) {
-		final Collection<SourceFile> foundSources = new HashSet<SourceFile>();
+	public Iterable<JavaSourceFile> findSourceFiles(final AstCreator astCreator) {
+		final Collection<JavaSourceFile> foundSources = new HashSet<JavaSourceFile>();
 		for (File classPath : getSourceDirsToSearch()) {
 			for (String resource : findResourcesIn(classPath)) {
 				if (resource.endsWith(".java")) {
-					String className = pathToClassName(resource);
-					foundSources.add(new SourceFile(astCreator, new File(classPath, resource), className));
+					foundSources.add(new JavaSourceFile(astCreator, new ClasspathLocation(classPath, resource)));
 				}
 			}
 		}
@@ -142,9 +139,9 @@ public class SourceFinder {
 	
 	private static class CompilationUnitIterator implements Iterator<CompilationUnit>{
 
-		private final Iterator<SourceFile> sources;
+		private final Iterator<JavaSourceFile> sources;
 		
-		private CompilationUnitIterator(Iterator<SourceFile> sources){
+		private CompilationUnitIterator(Iterator<JavaSourceFile> sources){
 			this.sources = sources;
 		}
 		
