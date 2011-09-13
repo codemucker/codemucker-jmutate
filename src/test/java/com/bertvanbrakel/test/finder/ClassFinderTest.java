@@ -1,6 +1,6 @@
 package com.bertvanbrakel.test.finder;
 
-import static com.bertvanbrakel.test.TestUtils.list;
+import static com.bertvanbrakel.test.util.TestUtils.list;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;

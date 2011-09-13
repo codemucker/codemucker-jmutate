@@ -10,7 +10,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.bertvanbrakel.test.bean.annotation.BeanProperty;
+import com.bertvanbrakel.codemucker.annotation.BeanProperty;
 
 public class CtorExtractor {
 

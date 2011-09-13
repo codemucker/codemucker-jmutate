@@ -3,7 +3,7 @@ package com.bertvanbrakel.test.bean.tester.hashcodeequals;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.bertvanbrakel.test.bean.annotation.BeanProperty;
+import com.bertvanbrakel.codemucker.annotation.BeanProperty;
 
 public class TstBeanBrokenCtor {
 	private String fieldA;

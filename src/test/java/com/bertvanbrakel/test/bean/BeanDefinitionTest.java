@@ -6,6 +6,9 @@ import static junit.framework.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.bertvanbrakel.test.bean.BeanDefinition;
+import com.bertvanbrakel.test.bean.PropertyDefinition;
+
 public class BeanDefinitionTest {
 
 	@Test

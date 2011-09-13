@@ -1,6 +1,6 @@
 package com.bertvanbrakel.test.bean;
 
-import com.bertvanbrakel.test.bean.annotation.BeanProperty;
+import com.bertvanbrakel.codemucker.annotation.BeanProperty;
 
 public class TstBeanAnnotations {
 

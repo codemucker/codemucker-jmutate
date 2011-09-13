@@ -1,6 +1,6 @@
 package com.bertvanbrakel.test.bean.random;
 
-import static com.bertvanbrakel.test.TestUtils.sorted;
+import static com.bertvanbrakel.test.util.TestUtils.sorted;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
