@@ -17,7 +17,7 @@ public class JavaSourceFileTest {
 
 		File dir = helper.createTempDir();
 
-		JavaSourceFile src = new JavaSourceFile(null, new ClasspathResource(dir, "foo/bar/Alice.java"));
+		JavaSourceFile src = new JavaSourceFile(new DefaultAstCreator(), new ClasspathResource(dir, "foo/bar/Alice.java"));
 		assertEquals("foo.bar.Alice", src.getClassnameBasedOnPath());
 
 	}

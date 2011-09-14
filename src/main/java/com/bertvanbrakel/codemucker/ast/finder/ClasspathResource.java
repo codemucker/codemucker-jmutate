@@ -1,5 +1,7 @@
 package com.bertvanbrakel.codemucker.ast.finder;
 
+import static com.bertvanbrakel.lang.Check.checkNotNull;
+
 import java.io.File;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -10,7 +12,8 @@ public class ClasspathResource {
 	private String extension;
 
 	public ClasspathResource(File classDir, String relativePath) {
-		super();
+		checkNotNull("classDir", classDir);
+		checkNotNull("relativePath", relativePath);
 		this.classDir = classDir;
 		this.relativePath = relativePath;
 		this.extension = extractExtension(relativePath);

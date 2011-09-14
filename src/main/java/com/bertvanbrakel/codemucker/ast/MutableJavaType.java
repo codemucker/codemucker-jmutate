@@ -1,9 +1,9 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import static com.bertvanbrakel.lang.Check.checkNotNull;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.AST;
@@ -24,6 +24,8 @@ public class MutableJavaType {
 	private final AbstractTypeDeclaration type;
 
 	public MutableJavaType(MutableJavaSourceFile declaringSrcFile, AbstractTypeDeclaration type) {
+		checkNotNull("declaringSrcFile", declaringSrcFile);
+		checkNotNull("type", type);
 		this.declaringSrcFile = declaringSrcFile;
 		this.type = type;
 	}

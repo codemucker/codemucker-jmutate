@@ -1,5 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import static com.bertvanbrakel.lang.Check.checkNotNull;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -28,6 +30,7 @@ public class MutableJavaSourceFile {
 	private final JavaSourceFile srcFile;
 
 	public MutableJavaSourceFile(JavaSourceFile srcFile) {
+		checkNotNull("srcFile", srcFile);
 		this.srcFile = srcFile;
 	}
 	
@@ -44,18 +47,23 @@ public class MutableJavaSourceFile {
 	}
 	
 	public AbstractTypeDeclaration getMainType() {
+		String simpleName = srcFile.getSimpleClassnameBasedOnPath();
+		return getTypeWithName(simpleName);
+	}
+	
+	public AbstractTypeDeclaration getTypeWithName(String simpleName){
 		CompilationUnit cu = getCompilationUnit();
 		List<AbstractTypeDeclaration> types = cu.types();
-		String className = srcFile.getSimpleClassnameBasedOnPath();
+		//String className = srcFile.getSimpleClassnameBasedOnPath();
 		for( AbstractTypeDeclaration type:types){
-			if( className.equals(type.getName().toString())){
+			if( simpleName.equals(type.getName().toString())){
 				return type;
 			}
 		}
 		Collection<String> names = extractNames(types);
-		throw new CodemuckerException("Can't find main type in %s. Looking for %s. Found %s", srcFile.getLocation().getRelativePath(), className, Arrays.toString(names.toArray()));
+		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, srcFile.getLocation().getRelativePath(), Arrays.toString(names.toArray()));
 	}
-
+	
 	private static Collection<String> extractNames(List<AbstractTypeDeclaration> types){
 		Collection<String> names = new ArrayList<String>();
 		for( AbstractTypeDeclaration type:types){
@@ -123,10 +131,11 @@ public class MutableJavaSourceFile {
 
 	public CompilationUnit parseSnippet(String snippetSrc) {
 		// get template variables and interpolate
+		//TODO:add defaults vars
 		Map<String, Object> vars = new HashMap<String, Object>();
-		CharSequence src = Interpolator.interpolate(snippetSrc, vars);
+		CharSequence interpolatedSrc = Interpolator.interpolate(snippetSrc, vars);
 		// parse it
-		CompilationUnit cu = srcFile.getAstCreator().parseCompilationUnit(src);
+		CompilationUnit cu = srcFile.getAstCreator().parseCompilationUnit(interpolatedSrc);
 		return cu;
 	}
 }

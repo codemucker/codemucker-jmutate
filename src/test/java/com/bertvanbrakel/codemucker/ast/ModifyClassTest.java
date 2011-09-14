@@ -3,18 +3,11 @@ package com.bertvanbrakel.codemucker.ast;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.AssertingAstMatcher;
-import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
-import com.bertvanbrakel.codemucker.ast.MutableJavaSourceFile;
-import com.bertvanbrakel.codemucker.ast.MutableJavaType;
-import com.bertvanbrakel.codemucker.ast.SourceFileVisitor;
 import com.bertvanbrakel.codemucker.ast.a.TestBean;
 import com.bertvanbrakel.codemucker.ast.finder.JavaSourceFinder;
 import com.bertvanbrakel.test.finder.ClassFinderOptions;
@@ -37,7 +30,6 @@ public class ModifyClassTest {
 		type.addMethodSnippet("public void setFoo(String foo){ this.foo = foo; }");
 		assertAstEquals("TestBeanSimple.java.testAddFieldAndMethods", type);
 	}
-	
 	
 	@Test
 	public void testAddFieldMethodsWithInnerClasses() throws Exception {
@@ -75,17 +67,10 @@ public class ModifyClassTest {
 		opts.includeClassesDir(false);
 		opts.includeTestDir(true);
 		opts.includeFileName("*/ast/a/" + typeClassName + ".java");
-
-		//TypeLoggingVisitor visitor = new TypeLoggingVisitor();
-
-		for( JavaSourceFile srcFile:finder.findSourceFiles()){
-			//srcFile.visit(visitor);
-			MutableJavaSourceFile src = new MutableJavaSourceFile(srcFile);
-			return src.getMainTypeAsMutable();
-		}
 		
-		fail("Can't find " + typeClassName);
-		return null;
+		JavaSourceFile srcFile = finder.findSourceFiles().iterator().next();
+		MutableJavaSourceFile mutable = new MutableJavaSourceFile(srcFile);
+		return mutable.getMainTypeAsMutable();
 	}
 	
 	private void assertAstEquals(String expectPath, MutableJavaType actual){
@@ -104,27 +89,5 @@ public class ModifyClassTest {
 		boolean equals = actualCu.subtreeMatch(matcher, expectCu);
 		assertTrue("ast's don't match", equals);
 		//assertEquals(expectAst, actualAst);
-	}
-	
-	// todo:turn this into a saearch index/pull parser thingy? so we can ask for
-	// a class with certain annotations and ask for all methods
-	// maybe point to source locations so we can perform fast lookup on methods
-	// instad of holding all in memory...
-	public static class TypeLoggingVisitor extends SourceFileVisitor {
-
-		@Override
-		public boolean visit(File rootDir, String relPath, File srcFile) {
-			return log("file", relPath);
-		}
-
-		@Override
-		public boolean visit(TypeDeclaration node) {
-			return log("typeDec", node.getName());
-		}
-
-		private boolean log(String msg, Object obj) {
-			System.out.println(msg + "---->" + obj.toString());
-			return true;
-		}
 	}
 }
