@@ -5,6 +5,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
+import com.bertvanbrakel.test.bean.ClassUtils;
 
 public class JavaSourceFile {
 	private final ClasspathResource location;
@@ -33,6 +34,20 @@ public class JavaSourceFile {
 
 	public ClasspathResource getLocation(){
 		return location;
+	}
+	
+	public String getClassnameBasedOnPath(){
+		String simpleName = getSimpleClassnameBasedOnPath();
+		String pkg = location.getPackagePart();
+		if( pkg != null ){
+			return pkg + "." + simpleName;
+		}
+		return simpleName;
+	}
+	
+	public String getSimpleClassnameBasedOnPath(){
+		String name = ClassUtils.upperFirstChar(location.getFilenamePart());
+		return name;
 	}
 	
 	public void setAstNode(CompilationUnit astNode) {

@@ -93,10 +93,6 @@ public class MutableJavaType {
 	private AST getAst() {
 		return type.getAST();
 	}
-
-	private static Collection<Class<?>> col(Class<?>... types) {
-		return Arrays.asList(types);
-	}
 	
 	public TypeDeclaration parseSnippetAsClass(String snippetSrc) {
 		return declaringSrcFile.parseSnippetAsClass(snippetSrc);
@@ -160,7 +156,7 @@ public class MutableJavaType {
 	public boolean isClass() {
 		return type instanceof TypeDeclaration;
 	}
-
+	
 	public TypeDeclaration asType() {
 		return (TypeDeclaration) type;
 	}

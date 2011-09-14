@@ -1,12 +1,12 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static junit.framework.Assert.assertEquals;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,15 +31,6 @@ public class MutableJavaSourceFile {
 		this.srcFile = srcFile;
 	}
 	
-	private static AbstractTypeDeclaration extractMainType(CompilationUnit cu) {
-		List<AbstractTypeDeclaration> types = cu.types();
-		assertEquals(1, types.size());
-
-		AbstractTypeDeclaration type = types.iterator().next();
-		// System.out.println("type=" + type.getName());
-		return type;
-	}
-
 	public JavaSourceFile getSourceFile() {
 		return srcFile;
 	}
@@ -49,10 +40,31 @@ public class MutableJavaSourceFile {
 	}
 
 	public MutableJavaType getMainTypeAsMutable() {
-		return new MutableJavaType(this, extractMainType(getCompilationUnit()));
+		return new MutableJavaType(this, getMainType());
 	}
 	
-	public Iterable<MutableJavaType> getMutableTypes() {
+	public AbstractTypeDeclaration getMainType() {
+		CompilationUnit cu = getCompilationUnit();
+		List<AbstractTypeDeclaration> types = cu.types();
+		String className = srcFile.getSimpleClassnameBasedOnPath();
+		for( AbstractTypeDeclaration type:types){
+			if( className.equals(type.getName().toString())){
+				return type;
+			}
+		}
+		Collection<String> names = extractNames(types);
+		throw new CodemuckerException("Can't find main type in %s. Looking for %s. Found %s", srcFile.getLocation().getRelativePath(), className, Arrays.toString(names.toArray()));
+	}
+
+	private static Collection<String> extractNames(List<AbstractTypeDeclaration> types){
+		Collection<String> names = new ArrayList<String>();
+		for( AbstractTypeDeclaration type:types){
+			names.add(type.getName().toString());
+		}
+		return names;
+	}
+	
+	public Iterable<MutableJavaType> getTypesAsMutable() {
 		List<MutableJavaType> mutables = new ArrayList<MutableJavaType>();
 		List<AbstractTypeDeclaration> types = getCompilationUnit().types();
 		for (AbstractTypeDeclaration type : types) {
