@@ -13,7 +13,7 @@ import com.bertvanbrakel.codemucker.ast.finder.JavaSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SourceFinderOptions;
 import com.bertvanbrakel.test.util.TestHelper;
 
-public class ModifyClassTest {
+public class JavaTypeMutatorTest {
 
 	@Test
 	public void testAddSimpleField() throws Exception {		

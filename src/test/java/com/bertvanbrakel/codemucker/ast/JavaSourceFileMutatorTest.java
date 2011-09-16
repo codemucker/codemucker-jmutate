@@ -15,7 +15,7 @@ import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.util.TestHelper;
 
-public class MutableJavaSourceFileTest {
+public class JavaSourceFileMutatorTest {
 
 	TestHelper helper = new TestHelper();
 
