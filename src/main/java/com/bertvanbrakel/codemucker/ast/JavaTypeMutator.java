@@ -106,7 +106,7 @@ public class JavaTypeMutator {
 		CharSequence interpolatedSrc = Interpolator.interpolate(snippetSrc, vars);
 		// parse it
 		//TODO:jealous class, knows too much about the javaType/ASTCreator. Use a generation context?
-		CompilationUnit cu = javaType.getDeclaringFile().getAstCreator().parseCompilationUnit(interpolatedSrc);
+		CompilationUnit cu = javaType.getDeclaringSourceFile().getAstCreator().parseCompilationUnit(interpolatedSrc);
 		return cu;
 	}
 }

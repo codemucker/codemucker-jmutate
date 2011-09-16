@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTMatcher;
@@ -92,7 +93,8 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.core.dom.WildcardType;
 
 /**
- * Copied and modified from IBM's ASTMatcher
+ * A Matcher which throws {@link AssertionFailedError} when nodes don't match. This is so useful error messages are generated
+ * on non matching Ast's. Copied and modified from IBM's ASTMatcher. 
  */
 public class AssertingAstMatcher extends ASTMatcher {
 

@@ -13,15 +13,18 @@ import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+/**
+ * A convenience wrapper around an Ast java type
+ */
 public class JavaType {
 
-	private final JavaSourceFile declaringSrcFile;
+	private final JavaSourceFile declaringSourceFile;
 	private final AbstractTypeDeclaration type;
 
 	public JavaType(JavaSourceFile declaringSrcFile, AbstractTypeDeclaration type) {
 		checkNotNull("declaringSrcFile", declaringSrcFile);
 		checkNotNull("type", type);
-		this.declaringSrcFile = declaringSrcFile;
+		this.declaringSourceFile = declaringSrcFile;
 		this.type = type;
 	}
 
@@ -29,8 +32,8 @@ public class JavaType {
     	return type;
     }
 	
-	public JavaSourceFile getDeclaringFile() {
-		return declaringSrcFile;
+	public JavaSourceFile getDeclaringSourceFile() {
+		return declaringSourceFile;
 	}
 
 	protected AST getAst() {

@@ -83,7 +83,7 @@ public class ModifyClassTest {
 	private void assertAstEquals(String expectPath, JavaTypeMutator actual){
 		TestHelper helper = new TestHelper();
 		//read the expected result
-		JavaSourceFile srcFile = actual.getJavaType().getDeclaringFile();
+		JavaSourceFile srcFile = actual.getJavaType().getDeclaringSourceFile();
 		String expectSrc = null;
         try {
 	        expectSrc = helper.getTestJavaSourceDir().childResource(TestBean.class, expectPath).readAsString();
@@ -92,7 +92,7 @@ public class ModifyClassTest {
         }
 		CompilationUnit expectCu = srcFile.getAstCreator().parseCompilationUnit(expectSrc);
 		AssertingAstMatcher matcher = new AssertingAstMatcher(false);
-		CompilationUnit actualCu = actual.getJavaType().getDeclaringFile().getCompilationUnit();
+		CompilationUnit actualCu = actual.getJavaType().getDeclaringSourceFile().getCompilationUnit();
 		boolean equals = actualCu.subtreeMatch(matcher, expectCu);
 		assertTrue("ast's don't match", equals);
 		//assertEquals(expectAst, actualAst);

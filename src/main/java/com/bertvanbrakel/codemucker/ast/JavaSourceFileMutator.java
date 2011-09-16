@@ -36,10 +36,16 @@ public class JavaSourceFileMutator {
 		return srcFile.getCompilationUnit();
 	}
 
+	/**
+	 * Return the type declared in this file with the same name as the name of the file.
+	 */
 	public JavaTypeMutator getMainTypeAsMutable() {
 		return new JavaTypeMutator(srcFile, srcFile.getMainType());
 	}
 	
+	/**
+	 * Return all the top level java types declared in this file
+	 */
 	public Iterable<JavaTypeMutator> getTypesAsMutable() {
 		List<JavaTypeMutator> mutables = new ArrayList<JavaTypeMutator>();
 		List<AbstractTypeDeclaration> types = getCompilationUnit().types();
@@ -49,14 +55,13 @@ public class JavaSourceFileMutator {
 		return mutables;
 	}
 
-	// TODO:move into SrcFile?
 	public void writeChangesToSrcFile() {
-		if( hasChanges() ){
+		if( hasModifications() ){
 			writeChangesToFile(srcFile.getLocation().getFile());
 		}
 	}
 
-	public boolean hasChanges(){
+	public boolean hasModifications(){
 		return getCompilationUnit().getAST().modificationCount() > 0;
 	}
 	
