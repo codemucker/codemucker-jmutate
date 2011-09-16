@@ -30,11 +30,11 @@ public class MutableJavaSourceFileTest {
 		w.println("public class Bob {");
 		w.println("}");
 
-		MutableJavaSourceFile srcFile = newJavaSrc(w, "foo.bar.Alice");
+		JavaSourceFile srcFile = newJavaSrc(w, "foo.bar.Alice");
 		
 		AbstractTypeDeclaration type = srcFile.getMainType();
 		assertNotNull(type);
-		assertEquals(type.getName().toString(), "Alice");
+		assertEquals(type.getName().getIdentifier(), "Alice");
 	}
 	
 	@Test
@@ -48,25 +48,27 @@ public class MutableJavaSourceFileTest {
 		w.println("public class Bob {");
 		w.println("}");
 
-		MutableJavaSourceFile srcFile = newJavaSrc(w, "foo.bar.Alice");
+		JavaSourceFileMutator srcFile = newMutator(w, "foo.bar.Alice");
 		
-		MutableJavaType mutable = srcFile.getMainTypeAsMutable();
-		AbstractTypeDeclaration type = srcFile.getMainType();
+		JavaTypeMutator mutable = srcFile.getMainTypeAsMutable();
+		AbstractTypeDeclaration type = srcFile.getSourceFile().getMainType();
 		
 		assertNotNull(mutable);
-		assertEquals(mutable.asType(), type);
+		assertEquals(mutable.getJavaType().asType(), type);
 	}
 	
-	private MutableJavaSourceFile newJavaSrc(SrcWriter w, String fqClassName) throws IOException {
+	private JavaSourceFileMutator newMutator(SrcWriter writer, String fqClassName) throws IOException {
+		return new JavaSourceFileMutator(newJavaSrc(writer, fqClassName));
+	}	
+	
+	private JavaSourceFile newJavaSrc(SrcWriter writer, String fqClassName) throws IOException {
 		File dir = helper.createTempDir();
 		String path = fqClassName.replace('.', '/') + ".java";
 
 		File f = new File(dir, path);
-		writeSrcTo(w, f);
+		writeSrcTo(writer, f);
 
-		MutableJavaSourceFile srcFile = new MutableJavaSourceFile(new JavaSourceFile(new DefaultAstCreator(),
-		        new ClasspathResource(dir, path)));
-
+		JavaSourceFile srcFile = new JavaSourceFile(new ClasspathResource(dir, path), new DefaultAstCreator());
 		return srcFile;
 	}
 

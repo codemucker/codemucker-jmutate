@@ -83,7 +83,7 @@ public class ClassFinder {
 		return resources;
 	}
 
-	private static class ClassLoadingIterator implements Iterator<Class<?>>{
+	private static final class ClassLoadingIterator implements Iterator<Class<?>>{
 		private final ClassMatcher classMatcher;
 		private final Iterator<String> classNames;
 		private final ClassLoader classLoader;
@@ -127,6 +127,7 @@ public class ClassFinder {
 			}
 			return null;
 		}
+		
 		private Class<?> loadClass(String className) {
 			try {
 				return classLoader.loadClass(className);

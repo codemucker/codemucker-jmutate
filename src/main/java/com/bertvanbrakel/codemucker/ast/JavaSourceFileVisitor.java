@@ -5,7 +5,7 @@ import java.io.File;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 
-public class SourceFileVisitor extends BaseASTVisitor {
+public class JavaSourceFileVisitor extends BaseASTVisitor {
 
 	public boolean visit(File rootDir, String relFilePath, File srcFile) {
 		return true;

@@ -7,16 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.MalformedTreeException;
@@ -24,12 +19,11 @@ import org.eclipse.text.edits.TextEdit;
 import org.eclipse.text.edits.UndoEdit;
 
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
-import com.bertvanbrakel.lang.interpolator.Interpolator;
 
-public class MutableJavaSourceFile {
+public class JavaSourceFileMutator {
 	private final JavaSourceFile srcFile;
 
-	public MutableJavaSourceFile(JavaSourceFile srcFile) {
+	public JavaSourceFileMutator(JavaSourceFile srcFile) {
 		checkNotNull("srcFile", srcFile);
 		this.srcFile = srcFile;
 	}
@@ -42,41 +36,15 @@ public class MutableJavaSourceFile {
 		return srcFile.getCompilationUnit();
 	}
 
-	public MutableJavaType getMainTypeAsMutable() {
-		return new MutableJavaType(this, getMainType());
+	public JavaTypeMutator getMainTypeAsMutable() {
+		return new JavaTypeMutator(srcFile, srcFile.getMainType());
 	}
 	
-	public AbstractTypeDeclaration getMainType() {
-		String simpleName = srcFile.getSimpleClassnameBasedOnPath();
-		return getTypeWithName(simpleName);
-	}
-	
-	public AbstractTypeDeclaration getTypeWithName(String simpleName){
-		CompilationUnit cu = getCompilationUnit();
-		List<AbstractTypeDeclaration> types = cu.types();
-		//String className = srcFile.getSimpleClassnameBasedOnPath();
-		for( AbstractTypeDeclaration type:types){
-			if( simpleName.equals(type.getName().toString())){
-				return type;
-			}
-		}
-		Collection<String> names = extractNames(types);
-		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, srcFile.getLocation().getRelativePath(), Arrays.toString(names.toArray()));
-	}
-	
-	private static Collection<String> extractNames(List<AbstractTypeDeclaration> types){
-		Collection<String> names = new ArrayList<String>();
-		for( AbstractTypeDeclaration type:types){
-			names.add(type.getName().toString());
-		}
-		return names;
-	}
-	
-	public Iterable<MutableJavaType> getTypesAsMutable() {
-		List<MutableJavaType> mutables = new ArrayList<MutableJavaType>();
+	public Iterable<JavaTypeMutator> getTypesAsMutable() {
+		List<JavaTypeMutator> mutables = new ArrayList<JavaTypeMutator>();
 		List<AbstractTypeDeclaration> types = getCompilationUnit().types();
 		for (AbstractTypeDeclaration type : types) {
-			mutables.add(new MutableJavaType(this, type));
+			mutables.add(new JavaTypeMutator(srcFile, type));
 		}
 		return mutables;
 	}
@@ -122,20 +90,4 @@ public class MutableJavaSourceFile {
 		}
 	}
 
-	public TypeDeclaration parseSnippetAsClass(String snippetSrc) {
-		CompilationUnit cu = parseSnippet(snippetSrc);
-		TypeDeclaration type = (TypeDeclaration) cu.types().get(0);
-
-		return type;
-	}
-
-	public CompilationUnit parseSnippet(String snippetSrc) {
-		// get template variables and interpolate
-		//TODO:add defaults vars
-		Map<String, Object> vars = new HashMap<String, Object>();
-		CharSequence interpolatedSrc = Interpolator.interpolate(snippetSrc, vars);
-		// parse it
-		CompilationUnit cu = srcFile.getAstCreator().parseCompilationUnit(interpolatedSrc);
-		return cu;
-	}
 }

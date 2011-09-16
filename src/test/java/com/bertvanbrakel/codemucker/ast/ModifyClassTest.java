@@ -10,14 +10,14 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.a.TestBean;
 import com.bertvanbrakel.codemucker.ast.finder.JavaSourceFinder;
-import com.bertvanbrakel.test.finder.ClassFinderOptions;
+import com.bertvanbrakel.codemucker.ast.finder.SourceFinderOptions;
 import com.bertvanbrakel.test.util.TestHelper;
 
 public class ModifyClassTest {
 
 	@Test
 	public void testAddSimpleField() throws Exception {		
-		MutableJavaType type = findType("TestBeanSimple");
+		JavaTypeMutator type = findType("TestBeanSimple");
 		type.addFieldSnippet("private String foo;");
 		
 		assertAstEquals("TestBeanSimple.java.testAddSimpleField", type);
@@ -25,15 +25,16 @@ public class ModifyClassTest {
 	
 	@Test
 	public void testAddFieldAndMethods() throws Exception {		
-		MutableJavaType type = findType("TestBeanSimple");
+		JavaTypeMutator type = findType("TestBeanSimple");
 		type.addFieldSnippet("private String foo;");
 		type.addMethodSnippet("public void setFoo(String foo){ this.foo = foo; }");
+		
 		assertAstEquals("TestBeanSimple.java.testAddFieldAndMethods", type);
 	}
 	
 	@Test
 	public void testAddFieldMethodsWithInnerClasses() throws Exception {
-		MutableJavaType type = findType("TestBean");
+		JavaTypeMutator type = findType("TestBean");
 		type.addFieldSnippet("private String foo;");
 		type.addMethodSnippet("public String getFoo(){ return this.foo; }");
 		type.addMethodSnippet("public void setFoo(String foo){ this.foo = foo; }");
@@ -44,6 +45,12 @@ public class ModifyClassTest {
 	
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
+		JavaSourceFinder finder = new JavaSourceFinder();
+		SourceFinderOptions opts = finder.getOptions();
+		opts.includeClassesDir(false);
+		opts.includeTestDir(true);
+
+
 		fail("TODO");
 		
 //		TypeSource src = getSource("TestBeanSimple");
@@ -61,22 +68,22 @@ public class ModifyClassTest {
 
 	}
 	
-	private MutableJavaType findType(String typeClassName){
+	private JavaTypeMutator findType(String typeClassName){
 		JavaSourceFinder finder = new JavaSourceFinder();
-		ClassFinderOptions opts = finder.getOptions();
+		SourceFinderOptions opts = finder.getOptions();
 		opts.includeClassesDir(false);
 		opts.includeTestDir(true);
 		opts.includeFileName("*/ast/a/" + typeClassName + ".java");
 		
 		JavaSourceFile srcFile = finder.findSourceFiles().iterator().next();
-		MutableJavaSourceFile mutable = new MutableJavaSourceFile(srcFile);
+		JavaSourceFileMutator mutable = new JavaSourceFileMutator(srcFile);
 		return mutable.getMainTypeAsMutable();
 	}
 	
-	private void assertAstEquals(String expectPath, MutableJavaType actual){
+	private void assertAstEquals(String expectPath, JavaTypeMutator actual){
 		TestHelper helper = new TestHelper();
 		//read the expected result
-		JavaSourceFile srcFile = actual.getDeclaringFile().getSourceFile();
+		JavaSourceFile srcFile = actual.getJavaType().getDeclaringFile();
 		String expectSrc = null;
         try {
 	        expectSrc = helper.getTestJavaSourceDir().childResource(TestBean.class, expectPath).readAsString();
@@ -85,7 +92,7 @@ public class ModifyClassTest {
         }
 		CompilationUnit expectCu = srcFile.getAstCreator().parseCompilationUnit(expectSrc);
 		AssertingAstMatcher matcher = new AssertingAstMatcher(false);
-		CompilationUnit actualCu = actual.getDeclaringFile().getCompilationUnit();
+		CompilationUnit actualCu = actual.getJavaType().getDeclaringFile().getCompilationUnit();
 		boolean equals = actualCu.subtreeMatch(matcher, expectCu);
 		assertTrue("ast's don't match", equals);
 		//assertEquals(expectAst, actualAst);

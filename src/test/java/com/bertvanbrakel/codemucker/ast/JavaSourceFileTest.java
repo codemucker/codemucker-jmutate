@@ -11,14 +11,25 @@ import com.bertvanbrakel.test.util.TestHelper;
 
 public class JavaSourceFileTest {
 
-	@Test
-	public void testClassNameBasedOnPath() {
-		TestHelper helper = new TestHelper();
+	TestHelper helper = new TestHelper();
 
+	@Test
+	public void testGetSimpleClassnameBasedOnPath() {
+		JavaSourceFile src = newSourceFile("foo/bar/Alice.java");
+		assertEquals("Alice", src.getSimpleClassnameBasedOnPath());
+	}
+
+	@Test
+	public void testGetClassNameBasedOnPath() {
+		JavaSourceFile src = newSourceFile("foo/bar/Alice.java");
+		assertEquals("foo.bar.Alice", src.getClassnameBasedOnPath());
+	}
+
+	private JavaSourceFile newSourceFile(String path) {
 		File dir = helper.createTempDir();
 
-		JavaSourceFile src = new JavaSourceFile(new DefaultAstCreator(), new ClasspathResource(dir, "foo/bar/Alice.java"));
-		assertEquals("foo.bar.Alice", src.getClassnameBasedOnPath());
-
+		JavaSourceFile src = new JavaSourceFile(new ClasspathResource(dir, path), new DefaultAstCreator());
+		return src;
 	}
+
 }
