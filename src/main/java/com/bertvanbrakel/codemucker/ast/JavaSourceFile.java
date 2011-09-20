@@ -12,8 +12,9 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
+import com.bertvanbrakel.codemucker.ast.finder.JavaTypeMatcher;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
-import com.bertvanbrakel.test.bean.ClassUtils;
+import com.bertvanbrakel.test.util.ClassNameUtil;
 
 public class JavaSourceFile {
 	
@@ -40,6 +41,10 @@ public class JavaSourceFile {
 		}
 	}
 
+	public JavaSourceFileMutator asMutator(){
+		return new JavaSourceFileMutator(this);
+	}
+	
 	public AstCreator getAstCreator() {
 		return astCreator;
 	}
@@ -50,7 +55,7 @@ public class JavaSourceFile {
 	
 	public AbstractTypeDeclaration getMainType() {
 		String simpleName = getSimpleClassnameBasedOnPath();
-		return getTypeWithName(simpleName);
+		return getTopTypeWithName(simpleName);
 	}
 	
 	public String getClassnameBasedOnPath(){
@@ -63,13 +68,15 @@ public class JavaSourceFile {
 	}
 	
 	public String getSimpleClassnameBasedOnPath(){
-		String name = ClassUtils.upperFirstChar(location.getFilenamePart());
+		String name = ClassNameUtil.upperFirstChar(location.getFilenamePart());
 		return name;
 	}
 	
-	public AbstractTypeDeclaration getTypeWithName(String simpleName){
+	/**
+	 * Look through just the top level types for this file for a type with the given name
+	 */
+	public AbstractTypeDeclaration getTopTypeWithName(String simpleName){
 		List<AbstractTypeDeclaration> types = getTypes();
-		//String className = srcFile.getSimpleClassnameBasedOnPath();
 		for( AbstractTypeDeclaration type:types){
 			if( simpleName.equals(type.getName().toString())){
 				return type;
@@ -77,6 +84,34 @@ public class JavaSourceFile {
 		}
 		Collection<String> names = extractNames(types);
 		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, location.getRelativePath(), Arrays.toString(names.toArray()));
+	}
+	
+	/**
+	 * Look through all top level types and all their children for any type with the given name. 
+	 */
+	public List<JavaType> findTypesWithName(final String simpleName){
+		JavaTypeMatcher matcher = new JavaTypeMatcher() {
+			@Override
+			public boolean matchType(JavaType found) {
+				return found.getSimpleName().equals(simpleName);
+			}
+		};
+		return internalFindTypesMatching(matcher);
+	}
+	
+	public List<JavaType> findTypesMatching(JavaTypeMatcher matcher){
+		return internalFindTypesMatching(matcher);
+	}
+	
+	private List<JavaType> internalFindTypesMatching(JavaTypeMatcher matcher){
+		List<JavaType> found = new ArrayList<JavaType>();
+		for( JavaType type:getJavaTypes()){
+			if( matcher.matchType(type)){
+				found.add(type);
+			}
+			type.findChildTypesMatching(matcher);
+		}
+		return found;
 	}
 
 	private static Collection<String> extractNames(List<AbstractTypeDeclaration> types){

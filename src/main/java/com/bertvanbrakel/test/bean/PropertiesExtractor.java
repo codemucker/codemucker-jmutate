@@ -6,7 +6,6 @@ import static com.bertvanbrakel.test.bean.ClassUtils.getNoArgCtor;
 import static com.bertvanbrakel.test.bean.ClassUtils.isReaderMethod;
 import static com.bertvanbrakel.test.bean.ClassUtils.isStatic;
 import static com.bertvanbrakel.test.bean.ClassUtils.isWriterMethod;
-import static com.bertvanbrakel.test.bean.ClassUtils.upperFirstChar;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -15,6 +14,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.bertvanbrakel.test.util.ClassNameUtil;
 
 public class PropertiesExtractor {
 
@@ -106,7 +107,7 @@ public class PropertiesExtractor {
 		// find corresponding setters
 		for (PropertyDefinition p : def.getProperties()) {
 			if (p.getRead() != null) {
-				String setterName = "set" + upperFirstChar(p.getName());
+				String setterName = "set" + ClassNameUtil.upperFirstChar(p.getName());
 				Method setter = ClassUtils.getMethod(beanClass, setterName, p.getType());
 				if (setter != null) {
 					p.setWrite(setter);

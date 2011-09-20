@@ -28,7 +28,7 @@ public class JavaSourceFileMutator {
 		this.srcFile = srcFile;
 	}
 	
-	public JavaSourceFile getSourceFile() {
+	public JavaSourceFile getJavaSourceFile() {
 		return srcFile;
 	}
 

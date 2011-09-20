@@ -1,13 +1,12 @@
 package com.bertvanbrakel.test.finder;
 
-import static com.bertvanbrakel.test.bean.ClassUtils.pathToClassName;
-
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import com.bertvanbrakel.test.util.ClassNameUtil;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
 /**
@@ -52,7 +51,7 @@ public class ClassFinder {
 		for (File classPath : getClassPathDirsToSearch()) {
 			for (String resource : findClassResourcePaths(classPath)) {
 				if (resource.endsWith(".class")) {
-					String className = pathToClassName(resource);
+					String className = ClassNameUtil.pathToClassName(resource);
 					foundClassNames.add(className);
 				}
 			}

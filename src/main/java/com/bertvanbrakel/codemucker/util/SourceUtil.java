@@ -22,6 +22,9 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.AssertingAstMatcher;
+import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
+import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
+import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
@@ -33,6 +36,16 @@ public class SourceUtil {
 		File srcDir = new File( ProjectFinder.findTargetDir(), "junit-test-generate" );
 		File srcFile = new File(srcDir, newJavaFilePath() );
 		writeFile( src, srcFile);
+		return srcFile;
+	}
+	
+	public static JavaSourceFile writeJavaSrc(SrcWriter writer, File classDir, String fqClassName) throws IOException {
+		String path = fqClassName.replace('.', '/') + ".java";
+		ClasspathResource resource = new ClasspathResource(classDir, path);
+
+		writeFile(writer, resource.getFile());
+
+		JavaSourceFile srcFile = new JavaSourceFile(resource, new DefaultAstCreator());
 		return srcFile;
 	}
 	

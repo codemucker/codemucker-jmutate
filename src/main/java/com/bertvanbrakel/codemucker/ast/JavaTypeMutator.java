@@ -1,5 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import static com.bertvanbrakel.lang.Check.checkNotNull;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,8 +15,6 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.lang.interpolator.Interpolator;
-
-import static com.bertvanbrakel.lang.Check.*;
 
 public class JavaTypeMutator {
 	
@@ -34,6 +34,15 @@ public class JavaTypeMutator {
 	public JavaType getJavaType() {
     	return javaType;
     }
+	
+	public void setAccess(Access access){
+		javaType.getJavaModifiers().setAccess(access);
+	}
+	
+	public JavaModifiers getJavaModifiers(){
+		return javaType.getJavaModifiers();
+	}
+	
 	
 	public void addFieldSnippet(String fieldSnippet) {
 		String src = wrapSnippetInClassDeclaration(fieldSnippet);

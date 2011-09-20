@@ -10,8 +10,8 @@ import com.bertvanbrakel.codemucker.annotation.PatternType;
 import com.bertvanbrakel.lang.MapBuilder;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
-import com.bertvanbrakel.test.bean.ClassUtils;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
+import com.bertvanbrakel.test.util.ClassNameUtil;
 
 @NotThreadSafe
 public abstract class AbstractBeanWriter extends AbstractClassWriter implements BeanGenerator {
@@ -49,8 +49,8 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter implements 
 	public AbstractBeanWriter(BeanBuilderOptions options, String fullClassName){
 		this.options = options;
 		this.fullClassName = fullClassName;
-		this.shortClassName = ClassUtils.extractShortClassNamePart(fullClassName);
-		this.pkgName = ClassUtils.extractPkgPart(fullClassName);
+		this.shortClassName = ClassNameUtil.extractShortClassNamePart(fullClassName);
+		this.pkgName = ClassNameUtil.extractPkgPart(fullClassName);
 	}
 	
 	public String getSourceFilePath(){
@@ -273,14 +273,14 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter implements 
 	public void println(String s, PropertyDefinition def){
 		MapBuilder<String, Object> map = map();
 		if( def != null ){
-			String upperName = ClassUtils.upperFirstChar(def.getName());
+			String upperName = ClassNameUtil.upperFirstChar(def.getName());
 			map		
 			.put("property.name", def.getName())
 			.put("property.safeName", safeName(def.getName()))
 			.put("property.field", fieldName(def.getName()))
 			
-			.put("property.type", ClassUtils.safeToClassName(def.getType()))
-			.put("property.genericType", ClassUtils.safeToClassName(def.getGenericType()))
+			.put("property.type", ClassNameUtil.safeToClassName(def.getType()))
+			.put("property.genericType", ClassNameUtil.safeToClassName(def.getGenericType()))
 			.put("property.upperName",upperName )
 			.put("property.setter","set" + upperName)
 			.put("property.getter","get" + upperName)

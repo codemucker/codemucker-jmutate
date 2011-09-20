@@ -4,14 +4,13 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
+import com.bertvanbrakel.codemucker.util.SourceUtil;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.util.TestHelper;
 
@@ -51,7 +50,7 @@ public class JavaSourceFileMutatorTest {
 		JavaSourceFileMutator srcFile = newMutator(w, "foo.bar.Alice");
 		
 		JavaTypeMutator mutable = srcFile.getMainTypeAsMutable();
-		AbstractTypeDeclaration type = srcFile.getSourceFile().getMainType();
+		AbstractTypeDeclaration type = srcFile.getJavaSourceFile().getMainType();
 		
 		assertNotNull(mutable);
 		assertEquals(mutable.getJavaType().asType(), type);
@@ -62,24 +61,7 @@ public class JavaSourceFileMutatorTest {
 	}	
 	
 	private JavaSourceFile newJavaSrc(SrcWriter writer, String fqClassName) throws IOException {
-		File dir = helper.createTempDir();
-		String path = fqClassName.replace('.', '/') + ".java";
-
-		File f = new File(dir, path);
-		writeSrcTo(writer, f);
-
-		JavaSourceFile srcFile = new JavaSourceFile(new ClasspathResource(dir, path), new DefaultAstCreator());
-		return srcFile;
-	}
-
-	private void writeSrcTo(SrcWriter w, File f) throws IOException {
-		f.getParentFile().mkdirs();
-		FileOutputStream fos = null;
-		try {
-			fos = new FileOutputStream(f);
-			IOUtils.write(w.getSource(), fos);
-		} finally {
-			IOUtils.closeQuietly(fos);
-		}
+		File classRootDir = helper.createTempDir();
+		return SourceUtil.writeJavaSrc(writer, classRootDir, fqClassName);
 	}
 }

@@ -21,8 +21,8 @@ import com.bertvanbrakel.codemucker.bean.BeanBuilderGenerator;
 import com.bertvanbrakel.codemucker.bean.GeneratorOptions;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.bean.BeanDefinition;
-import com.bertvanbrakel.test.bean.ClassUtils;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
+import com.bertvanbrakel.test.util.ClassNameUtil;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
 public class BeanBuilderGeneratorTest {
@@ -109,9 +109,9 @@ public class BeanBuilderGeneratorTest {
 	private void addProperty(BeanDefinition def, Class<?> propertyType) {
 		String name;
 		if (propertyType.isPrimitive()) {
-			name = "primitive" + ClassUtils.upperFirstChar(propertyType.getSimpleName());
+			name = "primitive" + ClassNameUtil.upperFirstChar(propertyType.getSimpleName());
 		} else {
-			name = ClassUtils.lowerFirstChar( propertyType.getSimpleName() );
+			name = ClassNameUtil.lowerFirstChar( propertyType.getSimpleName() );
 		}
 		addProperty(def, name, propertyType);
 	}

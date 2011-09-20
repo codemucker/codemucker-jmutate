@@ -3,7 +3,7 @@ package com.bertvanbrakel.codemucker.bean;
 import com.bertvanbrakel.codemucker.annotation.Generated;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
-import com.bertvanbrakel.test.bean.ClassUtils;
+import com.bertvanbrakel.test.util.ClassNameUtil;
 
 @NotThreadSafe
 public class BeanReadInterfaceWriter extends AbstractBeanWriter {
@@ -13,7 +13,7 @@ public class BeanReadInterfaceWriter extends AbstractBeanWriter {
 	}
 	
 	public BeanReadInterfaceWriter(BeanBuilderOptions options, String beanClassName){
-		super(options, ClassUtils.insertBeforeClassName(beanClassName, "I"));
+		super(options, ClassNameUtil.insertBeforeClassName(beanClassName, "I"));
 	}
 
 	@Override

@@ -6,29 +6,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 
 import com.bertvanbrakel.codemucker.annotation.BeanProperty;
+import com.bertvanbrakel.test.util.ClassNameUtil;
 
 public class ClassUtils {
 
 	
-	public static String pathToClassName(String relFilePath) {
-		String classPath = stripExtension(relFilePath);
-		String className = convertFilePathToClassPath(classPath);
-		return className;
-	}
-
-	public static String stripExtension(String path) {
-		int dot = path.lastIndexOf('.');
-		if (dot != -1) {
-			return path.substring(0, dot);
-		}
-		return path;
-	}
-
 	public static String convertFilePathToClassPath(String path) {
 		if (path.charAt(0) == '/') {
 			return path.substring(1).replace('/', '.');
@@ -186,11 +172,11 @@ public class ClassUtils {
 		}
 		name = m.getName();
 		if (name.startsWith("get")) {
-			return lowerFirstChar(name.substring(3));
+			return ClassNameUtil.lowerFirstChar(name.substring(3));
 		} else if (name.startsWith("is")) {
-			return lowerFirstChar(name.substring(2));
+			return ClassNameUtil.lowerFirstChar(name.substring(2));
 		} else if (name.startsWith("set")) {
-			return lowerFirstChar(name.substring(3));
+			return ClassNameUtil.lowerFirstChar(name.substring(3));
 		}
 		throw new BeanException("Don't know how to extract the property name from method '%s', no property annotations either ", m.getName());
 	}
@@ -259,22 +245,6 @@ public class ClassUtils {
 		return Modifier.isVolatile(member.getModifiers());
 	}
 
-	public static String lowerFirstChar(String name) {
-		if (name.length() > 1) {
-			return Character.toLowerCase(name.charAt(0)) + name.substring(1);
-		} else {
-			return Character.toLowerCase(name.charAt(0)) + "";
-		}
-	}
-
-	public static String upperFirstChar(String name) {
-		if (name.length() > 1) {
-			return Character.toUpperCase(name.charAt(0)) + name.substring(1);
-		} else {
-			return Character.toUpperCase(name.charAt(0)) + "";
-		}
-	}
-
 	public static Method getMethod(Class<?> beanClass, String methodName, Class<?> parameterTypes) {
 		try {
 			return beanClass.getMethod(methodName, parameterTypes);
@@ -285,32 +255,4 @@ public class ClassUtils {
 		}
 		return null;
 	}
-
-	public static String safeToClassName(Class<?> type){
-    	return type==null?null:type.getName();
-    }
-
-	public static String insertBeforeClassName(String fqClassName, String shortClassNamePrefix) {
-    	return extractPkgPart(fqClassName) + "." + shortClassNamePrefix + extractShortClassNamePart(fqClassName);
-    }
-
-	public static String extractPkgPart(String className){
-    	int dot = className.lastIndexOf('.');
-    	if( dot != -1 ){
-    		return className.substring(0, dot);
-    	}
-    	return "";
-    }
-
-	public static String extractShortClassNamePart(String className){
-    	int dot = className.lastIndexOf('.');
-    	if( dot != -1 ){
-    		return className.substring(dot+1);
-    	}
-    	return className;
-    }
-
-	public static String safeToClassName(Type type){
-    	return type==null?null:type.getClass().getName();
-    }
 }
