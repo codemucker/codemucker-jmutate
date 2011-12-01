@@ -1,5 +1,9 @@
 package com.bertvanbrakel.codemucker.ast.finder;
 
+import static com.bertvanbrakel.lang.Check.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
+
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
@@ -8,28 +12,23 @@ import java.util.NoSuchElementException;
 
 import com.bertvanbrakel.codemucker.ast.AstCreator;
 import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
+import com.bertvanbrakel.codemucker.ast.JMethod;
+import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
 import com.bertvanbrakel.codemucker.ast.JavaSourceFileVisitor;
-import com.bertvanbrakel.codemucker.ast.JavaType;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.Matcher;
+import com.bertvanbrakel.test.finder.FileMatcher;
 import com.bertvanbrakel.test.finder.FileWalkerFilter;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
-import static com.bertvanbrakel.lang.Check.*;
-
 /**
- * Utility class to find source classes in ones project
+ * Utility class to find source files, java types, and methods
  */
 public class JavaSourceFinder {
 
+	private static final String JAVA_EXTENSION = "java";
 	private final SourceFinderOptions options;
-
-	private static final JavaSourceFileMatcher ALL_MATCHER = new JavaSourceFileMatcher() {
-		@Override
-		public boolean matchSource(JavaSourceFile found) {
-			return true;
-		}
-	};
-
+	
 	public JavaSourceFinder() {
 		this(new SourceFinderOptions());
 	}
@@ -43,15 +42,15 @@ public class JavaSourceFinder {
 	}
 
 	public void visit(JavaSourceFileVisitor visitor) {
-		visit(visitor, ALL_MATCHER);
+		visit(visitor, options.toSourceMatcher());
 	}
 
-	public void visit(JavaSourceFileVisitor visitor, JavaSourceFileMatcher matcher) {
+	public void visit(JavaSourceFileVisitor visitor, Matcher<JavaSourceFile> matcher) {
 		visit(visitor, matcher, createDefaultASTCreator());
 	}
 
-	public void visit(JavaSourceFileVisitor visitor, JavaSourceFileMatcher matcher, AstCreator astCreator) {
-		for (JavaSourceFile srcFile : findSourceFiles(astCreator, matcher)) {
+	public void visit(JavaSourceFileVisitor visitor, Matcher<JavaSourceFile> matcher, AstCreator astCreator) {
+		for (JavaSourceFile srcFile : findSources(astCreator, matcher)) {
 			srcFile.visit(visitor);
 		}
 	}
@@ -64,60 +63,90 @@ public class JavaSourceFinder {
 		return ProjectFinder.findDefaultMavenTestDir();
 	}
 
-	// public Iterable<CompilationUnit> findCompilationUnits() {
-	// return findCompilationUnits(createDefaultASTCreator());
-	// }
-	//
-	// public Iterable<CompilationUnit> findCompilationUnits(AstCreator
-	// astCreator) {
-	// final Iterable<JavaSourceFile> sources = findSourceFiles(astCreator);
-	// return new Iterable<CompilationUnit>(){
-	// @Override
-	// public Iterator<CompilationUnit> iterator() {
-	// return new CompilationUnitIterator(sources.iterator());
-	// }
-	// };
-	// }
+	public Iterable<JMethod> findMethods() {
+		return findMethods( options.toMethodMatcher());
+	}
+	
+	public Iterable<JMethod> findMethods(Matcher<JMethod> matcher) {
+		return findMethods( options.toSourceMatcher(),options.toTypeMatcher(),matcher);
+	}
+	
+	public Iterable<JMethod> findMethods(final  Matcher<JavaSourceFile> sourceMatcher, final Matcher<JType> typeMatcher, final Matcher<JMethod> methodMatcher) {
+		final Iterable<JType> foundTypes = findTypes(sourceMatcher, typeMatcher);
+		return new Iterable<JMethod>() {
+    		@Override
+    		public Iterator<JMethod> iterator() {
+    			return new FilteringIterator<JMethod>(new JMethodIterator(foundTypes.iterator()), methodMatcher);
+    		}
+    	};
+	}
 
-	public Iterable<JavaType> findTypes(final  JavaSourceFileMatcher sourceMatcher, final JavaTypeMatcher typeMatcher) {
-		final Iterable<JavaSourceFile> sources = findSourceFiles(sourceMatcher);
-		return new Iterable<JavaType>() {
-			@Override
-			public Iterator<JavaType> iterator() {
-				return new JavaTypeFilteringIterator(new JavaTypeIterator(sources.iterator()), typeMatcher);
-			}
-		};
+	public Iterable<JType> findTypes() {
+		return findTypes(options.toTypeMatcher());
 	}
 	
-	public Iterable<JavaSourceFile> findSourceFiles() {
-		return findSourceFiles(options.toJavaSourceMatcher());
+	public Iterable<JType> findTypes(final Matcher<JType> typeMatcher) {
+    	return findTypes(options.toSourceMatcher(),typeMatcher);
+    }
+
+	public Iterable<JType> findTypes(Matcher<JavaSourceFile> sourceMacther, final Matcher<JType> typeMatcher) {
+    	//TODO:change this to use the new Javatype matcher on the JavaSOurceFIle ?
+    	//TODO:don't keep the list of source files around? only long enough for loading the types?
+    	//maybe only add to a modification context if changes made?
+		final Iterable<JavaSourceFile> foundSources = findSources(sourceMacther);
+    	return new Iterable<JType>() {
+    		@Override
+    		public Iterator<JType> iterator() {
+    			return new FilteringIterator<JType>(new JavaTypeIterator(foundSources.iterator()), typeMatcher);
+    		}
+    	};
+    }
+	
+	public Iterable<JavaSourceFile> findSources() {
+		return findSources(options.toSourceMatcher());
 	}
 	
-	public Iterable<JavaSourceFile> findSourceFiles(JavaSourceFileMatcher matcher) {
-		return findSourceFiles(createDefaultASTCreator(), matcher);
+	public Iterable<JavaSourceFile> findSources(Matcher<JavaSourceFile> matcher) {
+		return findSources(createDefaultASTCreator(), matcher);
 	}
 
 	private AstCreator createDefaultASTCreator() {
 		return new DefaultAstCreator();
 	}
 
-	public Iterable<JavaSourceFile> findSourceFiles(final AstCreator astCreator, final JavaSourceFileMatcher matcher) {
-		final Collection<JavaSourceFile> foundSources = new HashSet<JavaSourceFile>();
-		for (File classDir : getSourceDirsToSearch()) {
-			for (ClasspathResource resource : findClassResourcesIn(classDir)) {
-				if (resource.isExtension("java")) {
-					foundSources.add(new JavaSourceFile(resource, astCreator));
-				}
+	public Iterable<JavaSourceFile> findSources(final AstCreator astCreator, final Matcher<JavaSourceFile> matcher) {
+		final Collection<JavaSourceFile> sources = newHashSet();
+		
+		Iterable<ClasspathResource> resources = findResources();
+		for (ClasspathResource resource :  resources) {
+			if (resource.isExtension(JAVA_EXTENSION)) {
+				sources.add(new JavaSourceFile(resource, astCreator));
 			}
 		}
+		//filter results using supplied matcher
 		return new Iterable<JavaSourceFile>() {
 			@Override
 			public Iterator<JavaSourceFile> iterator() {
-				return new JavaSourceFileIterator(foundSources.iterator(), matcher);
+				return new FilteringIterator<JavaSourceFile>(sources.iterator(), matcher);
 			}
 		};
 	}
+	
+	public Iterable<ClasspathResource> findResources(){
+		return findResources(options.toFileMatcher());
+	}
 
+	public Iterable<ClasspathResource> findResources(FileMatcher fileMatcher){
+		Collection<File> sourceDirs = getSourceDirsToSearch();
+		Collection<ClasspathResource> resources = newArrayList();
+		for (File classDir : sourceDirs) {
+			//TODO:expose classpath resources as a public finder method
+			Collection<ClasspathResource> foundInClassDir = findClassResourcesIn(classDir, fileMatcher);
+			resources.addAll(foundInClassDir);
+		}
+		return resources;
+	}
+	
 	private Collection<File> getSourceDirsToSearch() {
 		Collection<File> classPathDirs = new HashSet<File>(options.getClassPathsDir());
 		if (options.isIncludeClassesDir()) {
@@ -129,106 +158,63 @@ public class JavaSourceFinder {
 		return classPathDirs;
 	}
 
-	public Iterable<ClasspathResource> findClassResourcesIn(File rootDir) {
-		final Collection<ClasspathResource> found = new HashSet<ClasspathResource>();
-		for (String relativePath : findRelativePathsIn(rootDir)) {
+	public Collection<ClasspathResource> findClassResourcesIn(File rootDir, FileMatcher fileMatcher) {
+		final Collection<ClasspathResource> found = newHashSet();
+		for (String relativePath : findRelativePathsIn(rootDir, fileMatcher)) {
 			found.add(new ClasspathResource(rootDir, relativePath));
 		}
 		return found;
 	}
 
-	public Collection<String> findRelativePathsIn(File rootDir) {
+	public Collection<String> findRelativePathsIn(File rootDir, FileMatcher fileMatcher) {
 		FileWalkerFilter walker = new FileWalkerFilter();
-		walker.setIncludes(options.toFileMatcher());
+		walker.setIncludes(fileMatcher);
 
 		Collection<String> resources = walker.findFiles(rootDir);
 		return resources;
 	}
-
-	private static class JavaSourceFileIterator implements Iterator<JavaSourceFile> {
-
-		private final Iterator<JavaSourceFile> sources;
-		private final JavaSourceFileMatcher matcher;
-		private JavaSourceFile nextFile;
-
-		private JavaSourceFileIterator(Iterator<JavaSourceFile> sources, JavaSourceFileMatcher matcher) {
-			checkNotNull("sources", sources);
-			checkNotNull("matcher", matcher);
-			this.sources = sources;
-			this.matcher = matcher;
-
-			nextFile = nextFile();
-		}
-
-		@Override
-		public boolean hasNext() {
-			return nextFile != null;
-		}
-
-		@Override
-		public JavaSourceFile next() {
-			if (nextFile == null) {
-				throw new NoSuchElementException();
-			}
-			JavaSourceFile ret = nextFile;
-			nextFile = nextFile();
-			return ret;
-		}
-
-		private JavaSourceFile nextFile() {
-			while (sources.hasNext()) {
-				JavaSourceFile file = sources.next();
-				if (matcher.matchSource(file)) {
-					return file;
-				}
-			}
-			return null;
-		}
-
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException();
-		}
-	}
 	
-	private static class JavaTypeIterator implements Iterator<JavaType> {
+	private static class JMethodIterator implements Iterator<JMethod> {
 
-		private final Iterator<JavaSourceFile> sources;
+		private final Iterator<JType> types;
 		
-		private Iterator<JavaType> types;
-		private JavaType nextType;
+		private Iterator<JMethod> methods;
+		private JMethod nextMethod;
 
-		JavaTypeIterator(Iterator<JavaSourceFile> sources) {
-			checkNotNull("sources", sources);
-			this.sources = sources;
-			nextType = nextType();
+		public JMethodIterator(Iterator<JType> types) {
+			checkNotNull("types", types);
+			this.types = types;
+			this.nextMethod = nextMethod();
 		}
 		
 		@Override
 		public boolean hasNext() {
-			return nextType != null;
+			return nextMethod != null;
 		}
 
 		@Override
-		public JavaType next() {
-			if (nextType == null) {
+		public JMethod next() {
+			if (nextMethod == null) {
 				throw new NoSuchElementException();
 			}
-			JavaType ret = nextType;
-			nextType = nextType();
+			JMethod ret = nextMethod;
+			nextMethod = nextMethod();
 			return ret;
 		}
 
-		private JavaType nextType() {
-			if (types != null && types.hasNext()) {
-				return types.next();
+		private JMethod nextMethod() {
+			//does current iterator have any more?
+			if (methods != null && methods.hasNext()) {
+				return methods.next();
 			}
-			while (sources.hasNext()) {
-				types = sources.next().getJavaTypes().iterator();
-				if( types.hasNext()){
-					return types.next();
+			//move on to the next type
+			while (types.hasNext()) {
+				methods = types.next().getAllJavaMethods().iterator();
+				if( methods.hasNext()){
+					return methods.next();
 				}
 			}
+			//no more methods
 			return null;
 		}
 
@@ -238,49 +224,54 @@ public class JavaSourceFinder {
 		}	
 	}
 	
-	private static class JavaTypeFilteringIterator implements Iterator<JavaType> {
+	private static class JavaTypeIterator implements Iterator<JType> {
 
-		private final Iterator<JavaType> types;
-		private final JavaTypeMatcher matcher;
-		private JavaType nextType;
+		private final Iterator<JavaSourceFile> sources;
+		
+		private Iterator<JType> types;
+		private JType nextType;
 
-		private JavaTypeFilteringIterator(Iterator<JavaType> types, JavaTypeMatcher matcher) {
-			checkNotNull("types", types);
-			checkNotNull("matcher", matcher);
-			this.types = types;
-			this.matcher = matcher;
-
-			nextType = nextType();
+		JavaTypeIterator(Iterator<JavaSourceFile> sources) {
+			checkNotNull("sources", sources);
+			this.sources = sources;
+			this.nextType = nextType();
 		}
-
+		
 		@Override
 		public boolean hasNext() {
 			return nextType != null;
 		}
 
 		@Override
-		public JavaType next() {
+		public JType next() {
 			if (nextType == null) {
 				throw new NoSuchElementException();
 			}
-			JavaType ret = nextType;
+			JType ret = nextType;
 			nextType = nextType();
 			return ret;
 		}
 
-		private JavaType nextType() {
-			while (types.hasNext()) {
-				JavaType type = types.next();
-				if (matcher.matchType(type)) {
-					return type;
+		private JType nextType() {
+			//does current iterator have any more?
+			if (types != null && types.hasNext()) {
+				return types.next();
+			}
+			//move on to the next source file
+			while (sources.hasNext()) {
+				types = sources.next().findAllTypes().iterator();
+				if( types.hasNext()){
+					return types.next();
 				}
 			}
+			//no more types
 			return null;
 		}
 
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
-		}
+		}	
 	}
+
 }

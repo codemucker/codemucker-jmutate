@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.regex.Pattern;
 
 import com.bertvanbrakel.test.util.ProjectFinder;
+import com.bertvanbrakel.test.util.TestUtils;
 
 public class ClassFinderOptions {
 	
@@ -109,7 +110,7 @@ public class ClassFinderOptions {
 	}
 
 	public ClassFinderOptions excludeFileName(String path) {
-		String regExp = antToRegExp(path);
+		String regExp = TestUtils.antExpToPatternExp(path);
 		excludeFileName(Pattern.compile(regExp));
 		return this;
 	}
@@ -125,7 +126,7 @@ public class ClassFinderOptions {
 	}
 
 	public ClassFinderOptions includeFileName(String pattern) {
-		String regExp = antToRegExp(pattern);
+		String regExp = TestUtils.antExpToPatternExp(pattern);
 		includeFileName(Pattern.compile(regExp));
 		return this;
 	}
@@ -138,23 +139,6 @@ public class ClassFinderOptions {
 	public ClassFinderOptions includeFileName(FileMatcher matcher) {
 		this.includeFileNameMatchers.add(matcher);
 		return this;
-	}
-	
-	private String antToRegExp(String antPattern) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < antPattern.length(); i++) {
-			char c = antPattern.charAt(i);
-			if (c == '.') {
-				sb.append("\\.");
-			} else if (c == '*') {
-				sb.append(".*");
-			} else if (c == '?') {
-				sb.append(".?");
-			} else {
-				sb.append(c);
-			}
-		}
-		return sb.toString();
 	}
 	
 	public ClassFinderOptions assignableTo(Class<?>... superclass) {

@@ -1,11 +1,16 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static junit.framework.Assert.fail;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.JavaSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SourceFinderOptions;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 
 public class JavaSourceFinderTest {
 
@@ -15,22 +20,63 @@ public class JavaSourceFinderTest {
 		SourceFinderOptions opts = finder.getOptions();
 		opts.includeClassesDir(false);
 		opts.includeTestDir(true);
+		opts.includeTypes(JTypeMatchers.withAnnotation(MyAnnotation.class));
 
-
-		fail("TODO");
+		boolean found = false;
+		List<JType> foundTypes = list(finder.findTypes());
 		
-//		TypeSource src = getSource("TestBeanSimple");
-//		src.addFieldSnippet("private String foo;");
-		//src.addMethodSnippet("public String getFoo(){ return this.foo; }");
-		//src.addMethodSnippet("public void setFoo(String foo){ this.foo = foo; }");
-		//src.addConstructorSnippet("public TestBean(String foo){ this.foo = foo; }");
+		for( JType type:foundTypes){
+			assertEquals(ClassWithAnnotation.class.getSimpleName(), type.getSimpleName());
+			boolean hasAnon = type.hasAnnotationOfType(MyAnnotation.class,true);
+			assertTrue("expected annotation", hasAnon);
+			found = true;
+		}
+		assertEquals(1, foundTypes.size());
+		
+		assertTrue("Expected type to be found", found);
+	}
+	
+	@Test
+	public void testFindWithMethods(){
+		JavaSourceFinder finder = new JavaSourceFinder();
+		SourceFinderOptions opts = finder.getOptions();
+		opts.includeClassesDir(true);
+		opts.includeTestDir(true);
+		//opts.includeTypeMatching(JTypeMatchers.)
+		
+		finder.findMethods();
+	}
+	
+	
+	private static <T> List<T> list(Iterable<T> it) {
+		List<T> list = new ArrayList<T>();
+		for (T item : it) {
+			list.add(item);
+		}
+		return list;
+	}
 
-//		finder.visit(visitor);
-//
-//		new FieldMatcher().annotation(BeanProperty.class).inClass().pkgAntPattern("*generation.a");
-//		new MethodMatcher().nameAntPattern("get*").numArgs(0);
+	public static @interface MyAnnotation {
 
-		// todo:get all classes with annotation X
+	}
 
+	@MyAnnotation
+	private static class ClassWithAnnotation {
+
+	}
+
+	private static class ClassWithNoAnnotation {
+
+	}
+	
+	private static class Foo {
+		public static @interface MyAnnotation2 {
+
+		}
+		
+		@MyAnnotation2
+		public void bar(){
+			
+		}
 	}
 }

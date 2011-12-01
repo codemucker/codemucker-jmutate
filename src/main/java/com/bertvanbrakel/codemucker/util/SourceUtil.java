@@ -67,8 +67,8 @@ public class SourceUtil {
 		}
 	}
 	
-	public static void assertSourceFileAstsMatch(File src1,File src2) throws IOException {
-		assertTrue("Sources AST's don't match", sourceFileAstsMatch(src1, src2));
+	public static void assertSourceFileAstsMatch(File expected,File actual) throws IOException {
+		assertTrue("Sources AST's don't match", sourceFileAstsMatch(expected, actual));
 	}
 
 	public static boolean sourceFileAstsMatch(File expectSrc,File actualSrc) throws IOException {

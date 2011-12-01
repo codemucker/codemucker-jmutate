@@ -6,7 +6,7 @@ import java.util.Collections;
 
 import org.eclipse.jdt.core.dom.Modifier.ModifierKeyword;
 
-public enum Access {
+public enum JAccess {
 	PRIVATE(ModifierKeyword.PRIVATE_KEYWORD, ModifierKeyword.PUBLIC_KEYWORD, ModifierKeyword.PROTECTED_KEYWORD), 
 	PACKAGE(null, ModifierKeyword.PUBLIC_KEYWORD, ModifierKeyword.PROTECTED_KEYWORD, ModifierKeyword.PRIVATE_KEYWORD),
 	PROTECTED(ModifierKeyword.PROTECTED_KEYWORD, ModifierKeyword.PUBLIC_KEYWORD, ModifierKeyword.PRIVATE_KEYWORD), 
@@ -15,7 +15,7 @@ public enum Access {
 	private final ModifierKeyword keyword;
 	private final Collection<ModifierKeyword> keywordsToUnset;
 	
-	private Access(ModifierKeyword keyword,ModifierKeyword... keywordsToUnset){
+	private JAccess(ModifierKeyword keyword,ModifierKeyword... keywordsToUnset){
 		this.keyword = keyword;
 		this.keywordsToUnset = Collections.unmodifiableCollection(Arrays.asList(keywordsToUnset));
 	}

@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class TestUtils {
 
@@ -62,5 +63,31 @@ public class TestUtils {
 	public static <T> List<T> list() {
 		return new ArrayList<T>();
 	}
+	/**
+	 * Convert an ant regular expression into a java pattern
+	 */
+	public static Pattern antExpToPattern(String antPattern) {
+		return Pattern.compile(antExpToPatternExp(antPattern));
+	}
+	
+	/**
+	 * Convert an ant regular expression to a standard java pattern expression
+	 */
+	public static String antExpToPatternExp(String antPattern) {
+    	StringBuilder sb = new StringBuilder();
+    	for (int i = 0; i < antPattern.length(); i++) {
+    		char c = antPattern.charAt(i);
+    		if (c == '.') {
+    			sb.append("\\.");
+    		} else if (c == '*') {
+    			sb.append(".*");
+    		} else if (c == '?') {
+    			sb.append(".?");
+    		} else {
+    			sb.append(c);
+    		}
+    	}
+    	return sb.toString();
+    }
 
 }

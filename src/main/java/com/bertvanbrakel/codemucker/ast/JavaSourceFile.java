@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
-import com.bertvanbrakel.codemucker.ast.finder.JavaTypeMatcher;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatcher;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
@@ -72,6 +72,9 @@ public class JavaSourceFile {
 		return name;
 	}
 	
+	public AbstractTypeDeclaration getTopTypeWithName(Class<?> type){
+		return getTopTypeWithName(type.getSimpleName());
+	}
 	/**
 	 * Look through just the top level types for this file for a type with the given name
 	 */
@@ -86,30 +89,46 @@ public class JavaSourceFile {
 		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, location.getRelativePath(), Arrays.toString(names.toArray()));
 	}
 	
+
+	public JType getTypeWithName(Class<?> type) {
+		return getTypeWithName(type.getSimpleName());
+	}
+	
 	/**
 	 * Look through all top level types and all their children for any type with the given name. 
 	 */
-	public List<JavaType> findTypesWithName(final String simpleName){
-		JavaTypeMatcher matcher = new JavaTypeMatcher() {
+	public JType getTypeWithName(final String simpleName) {
+		JTypeMatcher matcher = new JTypeMatcher() {
 			@Override
-			public boolean matchType(JavaType found) {
+			public boolean matches(JType found) {
 				return found.getSimpleName().equals(simpleName);
 			}
 		};
+		List<JType> found = internalFindTypesMatching(matcher);
+		if (found.size() > 1) {
+			throw new CodemuckerException("Invalid source file, found more than one type with name '%s'", simpleName);
+		}
+		if (found.size() == 1) {
+			return found.get(0);
+		}
+		return null;
+	}
+
+	public List<JType> findAllTypes(){
+		return internalFindTypesMatching(JType.MATCH_ALL_TYPES);
+	}
+	
+	public List<JType> findTypesMatching(JTypeMatcher matcher){
 		return internalFindTypesMatching(matcher);
 	}
 	
-	public List<JavaType> findTypesMatching(JavaTypeMatcher matcher){
-		return internalFindTypesMatching(matcher);
-	}
-	
-	private List<JavaType> internalFindTypesMatching(JavaTypeMatcher matcher){
-		List<JavaType> found = new ArrayList<JavaType>();
-		for( JavaType type:getJavaTypes()){
-			if( matcher.matchType(type)){
+	private List<JType> internalFindTypesMatching(JTypeMatcher matcher){
+		List<JType> found = new ArrayList<JType>();
+		for( JType type:getJavaTypes()){
+			if( matcher.matches(type)){
 				found.add(type);
 			}
-			type.findChildTypesMatching(matcher);
+			type.findChildTypesMatching(matcher, found);
 		}
 		return found;
 	}
@@ -122,10 +141,10 @@ public class JavaSourceFile {
 		return names;
 	}
 
-	public List<JavaType> getJavaTypes() {
-		List<JavaType> javaTypes = new ArrayList<JavaType>();
+	public List<JType> getJavaTypes() {
+		List<JType> javaTypes = new ArrayList<JType>();
 		for( AbstractTypeDeclaration type:getTypes()){
-			javaTypes.add(new JavaType(this, type));
+			javaTypes.add(new JType(this, type));
 		}
 		return javaTypes;
 	}

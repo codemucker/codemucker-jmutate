@@ -39,18 +39,18 @@ public class JavaSourceFileMutator {
 	/**
 	 * Return the type declared in this file with the same name as the name of the file.
 	 */
-	public JavaTypeMutator getMainTypeAsMutable() {
-		return new JavaTypeMutator(srcFile, srcFile.getMainType());
+	public JTypeMutator getMainTypeAsMutable() {
+		return new JTypeMutator(srcFile, srcFile.getMainType());
 	}
 	
 	/**
 	 * Return all the top level java types declared in this file
 	 */
-	public Iterable<JavaTypeMutator> getTypesAsMutable() {
-		List<JavaTypeMutator> mutables = new ArrayList<JavaTypeMutator>();
+	public Iterable<JTypeMutator> getTypesAsMutable() {
+		List<JTypeMutator> mutables = new ArrayList<JTypeMutator>();
 		List<AbstractTypeDeclaration> types = getCompilationUnit().types();
 		for (AbstractTypeDeclaration type : types) {
-			mutables.add(new JavaTypeMutator(srcFile, type));
+			mutables.add(new JTypeMutator(srcFile, type));
 		}
 		return mutables;
 	}

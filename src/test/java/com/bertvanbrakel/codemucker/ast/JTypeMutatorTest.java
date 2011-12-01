@@ -11,13 +11,14 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.ast.a.TestBean;
 import com.bertvanbrakel.codemucker.ast.finder.JavaSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SourceFinderOptions;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.FileMatchers;
 import com.bertvanbrakel.test.util.TestHelper;
 
-public class JavaTypeMutatorTest {
+public class JTypeMutatorTest {
 
 	@Test
 	public void testAddSimpleField() throws Exception {		
-		JavaTypeMutator type = findType("TestBeanSimple");
+		JTypeMutator type = findType("TestBeanSimple");
 		type.addFieldSnippet("private String foo;");
 		
 		assertAstEquals("TestBeanSimple.java.testAddSimpleField", type);
@@ -25,7 +26,7 @@ public class JavaTypeMutatorTest {
 	
 	@Test
 	public void testAddFieldAndMethods() throws Exception {		
-		JavaTypeMutator type = findType("TestBeanSimple");
+		JTypeMutator type = findType("TestBeanSimple");
 		type.addFieldSnippet("private String foo;");
 		type.addMethodSnippet("public void setFoo(String foo){ this.foo = foo; }");
 		
@@ -34,7 +35,7 @@ public class JavaTypeMutatorTest {
 	
 	@Test
 	public void testAddFieldMethodsWithInnerClasses() throws Exception {
-		JavaTypeMutator type = findType("TestBean");
+		JTypeMutator type = findType("TestBean");
 		type.addFieldSnippet("private String foo;");
 		type.addMethodSnippet("public String getFoo(){ return this.foo; }");
 		type.addMethodSnippet("public void setFoo(String foo){ this.foo = foo; }");
@@ -43,19 +44,19 @@ public class JavaTypeMutatorTest {
 		assertAstEquals("TestBean.java.testAddFieldMethodsWithInnerClasses", type);
 	}
 	
-	private JavaTypeMutator findType(String typeClassName){
+	private JTypeMutator findType(String typeClassName){
 		JavaSourceFinder finder = new JavaSourceFinder();
 		SourceFinderOptions opts = finder.getOptions();
 		opts.includeClassesDir(false);
 		opts.includeTestDir(true);
-		opts.includeFileName("*/ast/a/" + typeClassName + ".java");
+		opts.includeFile(FileMatchers.withPath("*/ast/a/" + typeClassName + ".java"));
 		
-		JavaSourceFile srcFile = finder.findSourceFiles().iterator().next();
+		JavaSourceFile srcFile = finder.findSources().iterator().next();
 		JavaSourceFileMutator mutable = new JavaSourceFileMutator(srcFile);
 		return mutable.getMainTypeAsMutable();
 	}
 	
-	private void assertAstEquals(String expectPath, JavaTypeMutator actual){
+	private void assertAstEquals(String expectPath, JTypeMutator actual){
 		TestHelper helper = new TestHelper();
 		//read the expected result
 		JavaSourceFile srcFile = actual.getJavaType().getDeclaringSourceFile();

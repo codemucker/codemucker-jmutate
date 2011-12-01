@@ -10,53 +10,53 @@ import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.Modifier.ModifierKeyword;
 
-public class JavaModifiers {
+public class JModifiers {
 	private final AST ast;
 	private final List<IExtendedModifier> modifiers;
 
-	public JavaModifiers(AST ast, List<IExtendedModifier> modifiers) {
+	public JModifiers(AST ast, List<IExtendedModifier> modifiers) {
 		super();
 		this.modifiers = modifiers;
 		this.ast = ast;
 	}
 
-	public void setAccess(Access access) {
+	public void setAccess(JAccess access) {
 		setModifier(access.getKeyword(), access.getIncompatibleKeywords());
 	}
 	
 	public boolean isPublic() {
-		return isAccess(Access.PUBLIC);
+		return isAccess(JAccess.PUBLIC);
 	}
 
 	public boolean isProtected() {
-		return isAccess(Access.PROTECTED);
+		return isAccess(JAccess.PROTECTED);
 	}
 
 	public boolean isPrivate() {
-		return isAccess(Access.PRIVATE);
+		return isAccess(JAccess.PRIVATE);
 	}
 	
 	public boolean isPackagePrivate() {
-		return isAccess(Access.PACKAGE);
+		return isAccess(JAccess.PACKAGE);
 	}
 	
-	public boolean isAccess(Access access) {
+	public boolean isAccess(JAccess access) {
 		return asAccess().equals(access);
 	}
 	
-	public Access asAccess() {
+	public JAccess asAccess() {
 		for (Modifier m : getModifiers()) {
 			if (ModifierKeyword.PUBLIC_KEYWORD.equals(m.getKeyword())) {
-				return Access.PUBLIC;
+				return JAccess.PUBLIC;
 			}
 			if (ModifierKeyword.PRIVATE_KEYWORD.equals(m.getKeyword())) {
-				return Access.PRIVATE;
+				return JAccess.PRIVATE;
 			}
 			if (ModifierKeyword.PROTECTED_KEYWORD.equals(m.getKeyword())) {
-				return Access.PROTECTED;
+				return JAccess.PROTECTED;
 			}
 		}
-		return Access.PACKAGE;
+		return JAccess.PACKAGE;
 	}
 
 	public void setModifierKeywordIfNotSet(ModifierKeyword keywordToSet) {

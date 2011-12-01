@@ -84,10 +84,16 @@ public class SrcWriterTest {
 
 		TypeDeclaration node = getAstFromClassBody(src1.getSource());
 
-		System.out.println(node);
-		System.out.println(node.bodyDeclarations());
+		log(node);
+		log(node.bodyDeclarations());
 		node.bodyDeclarations();
-		System.out.println(ToStringBuilder.reflectionToString(node, ToStringStyle.MULTI_LINE_STYLE));
+		log(ToStringBuilder.reflectionToString(node, ToStringStyle.MULTI_LINE_STYLE));
 
+	}
+	
+	private static void log(Object msg) {
+		if (false) {
+			System.out.println(msg);
+		}
 	}
 }

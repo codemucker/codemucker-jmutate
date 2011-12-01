@@ -59,33 +59,34 @@ public class BeanBuilderGeneratorTest {
 
 	@Test
 	public void test_addGetter_and_setter() throws Exception {
-		SrcWriter src1 = new SrcWriter();
-		src1.println("package com.bertvanbrakel.codegen.bean;");
-		src1.println( "public class TestBeanModify {");
-		src1.println( "@BeanProperty");
-		src1.println( "private String myField;" );
-		src1.println("}");
+		SrcWriter srcBefore = new SrcWriter();
+		srcBefore.println("package com.bertvanbrakel.codegen.bean;");
+		srcBefore.println( "public class TestBeanModify {");
+		srcBefore.println( "@BeanProperty");
+		srcBefore.println( "private String myField;" );
+		srcBefore.println("}");
 
-		SrcWriter src2 = new SrcWriter();
-		src2.println("package com.bertvanbrakel.codegen.bean;");
-		src2.println( "public class TestBeanModify {");
-		src2.println( "private String myField;" );
-		src2.println( "public void setMyField(String myField ){ this.myField = myField;}" );
-		src2.println( "public String getMyField(){ return this.myField;}" );
-		src2.println("}");
+		SrcWriter srcExpected = new SrcWriter();
+		srcExpected.println("package com.bertvanbrakel.codegen.bean;");
+		srcExpected.println( "public class TestBeanModify {");
+		srcExpected.println( "@BeanProperty");
+		srcExpected.println( "private String myField;" );
+		srcExpected.println( "public void setMyField(String myField ){ this.myField = myField;}" );
+		srcExpected.println( "public String getMyField(){ return this.myField;}" );
+		srcExpected.println("}");
 
-		File srcFile = writeNewJavaFile(src1);
-		File srcFile2 = writeNewJavaFile(src2);
+		File modifiedSrcFile = writeNewJavaFile(srcBefore);
+		File srcFileExpected = writeNewJavaFile(srcExpected);
 		
 		//now lets add a getter and setter
-		CompilationUnit cu = getAstFromFileWithNoErrors(srcFile);
+		CompilationUnit cu = getAstFromFileWithNoErrors(modifiedSrcFile);
 		AST ast = cu.getAST();
-		MethodDeclaration m = ast.newMethodDeclaration();
+	//	MethodDeclaration m = ast.newMethodDeclaration();
 		
 		//write new AST back to file
 		
 		//then check it matches what we expect
-		assertSourceFileAstsMatch(srcFile, srcFile2);
+		assertSourceFileAstsMatch(srcFileExpected, modifiedSrcFile);
 	}
 	
 

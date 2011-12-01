@@ -16,30 +16,30 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.lang.interpolator.Interpolator;
 
-public class JavaTypeMutator {
+public class JTypeMutator {
 	
-	private final JavaType javaType;
+	private final JType javaType;
 
 	private final DefaultStrategyProvider strategies = new DefaultStrategyProvider();
 	
-	public JavaTypeMutator(JavaSourceFile declaringSrcFile, AbstractTypeDeclaration type) {
-		this(new JavaType(declaringSrcFile, type));
+	public JTypeMutator(JavaSourceFile declaringSrcFile, AbstractTypeDeclaration type) {
+		this(new JType(declaringSrcFile, type));
 	}
 	
-	public JavaTypeMutator(JavaType javaType) {
+	public JTypeMutator(JType javaType) {
 		checkNotNull("javaType", javaType);
 		this.javaType = javaType;
 	}
 
-	public JavaType getJavaType() {
+	public JType getJavaType() {
     	return javaType;
     }
 	
-	public void setAccess(Access access){
+	public void setAccess(JAccess access){
 		javaType.getJavaModifiers().setAccess(access);
 	}
 	
-	public JavaModifiers getJavaModifiers(){
+	public JModifiers getJavaModifiers(){
 		return javaType.getJavaModifiers();
 	}
 	
