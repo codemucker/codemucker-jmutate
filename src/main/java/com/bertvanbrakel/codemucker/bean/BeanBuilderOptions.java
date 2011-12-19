@@ -2,8 +2,20 @@ package com.bertvanbrakel.codemucker.bean;
 
 public class BeanBuilderOptions extends GeneratorOptions {
 
+	/**
+	 * If true then the builder will cache properties before creating the bean. Else sets
+	 * on bean directly
+	 */
 	private boolean cacheProperties = true;
+	
+	/**
+	 * If true then generate a bean copy method
+	 */
 	private boolean generateBeanCopy = false;
+	
+	/**
+	 * If true then generate a bean equals method
+	 */
 	private boolean generateBeanEquals = false;
 
 	public boolean isGenerateBeanEquals() {

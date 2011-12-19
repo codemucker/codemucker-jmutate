@@ -1,13 +1,11 @@
 package com.bertvanbrakel.codemucker.ast.finder.matcher;
 
 import java.lang.annotation.Annotation;
-import java.util.regex.Pattern;
 
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.finder.IncludeExcludeMatcher;
 import com.bertvanbrakel.codemucker.ast.finder.IncludeExcludeMatcher.IncludeMode;
-import com.bertvanbrakel.test.util.TestUtils;
 
 public class JMethodCriteria implements JMethodMatcher {
 
@@ -38,7 +36,7 @@ public class JMethodCriteria implements JMethodMatcher {
 		return this;
 	}
 
-	public JMethodCriteria withNumArgs(final IntMatcher intMatcher) {
+	public JMethodCriteria withNumArgs(final Matcher<Integer> intMatcher) {
 		matchers.addInclude(JMethodMatchers.withNumArgs(intMatcher));
 		return this;
 	}

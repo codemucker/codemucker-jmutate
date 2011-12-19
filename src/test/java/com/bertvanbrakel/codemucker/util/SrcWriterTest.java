@@ -40,8 +40,8 @@ public class SrcWriterTest {
 		src.append("\npublic void foo(){ this.myField = null; }");
 		src.append("\n}");
 
-		File srcFile = writeNewJavaFile(src);
-		File srcFile2 = writeNewJavaFile(src);
+		File srcFile = writeNewJavaFile(src).getFile();
+		File srcFile2 = writeNewJavaFile(src).getFile();
 
 		assertSourceFileAstsMatch(srcFile, srcFile2);
 	}
@@ -69,8 +69,8 @@ public class SrcWriterTest {
 		src2.println();
 		src2.println("}");
 
-		File srcFile = writeNewJavaFile(scr1);
-		File srcFile2 = writeNewJavaFile(src2);
+		File srcFile = writeNewJavaFile(scr1).getFile();
+		File srcFile2 = writeNewJavaFile(src2).getFile();
 
 		assertSourceFileAstsMatch(srcFile, srcFile2);
 	}

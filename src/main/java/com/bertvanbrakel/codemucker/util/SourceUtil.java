@@ -20,8 +20,10 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.internal.corext.refactoring.typeconstraints.ASTCreator;
 
 import com.bertvanbrakel.codemucker.ast.AssertingAstMatcher;
+import com.bertvanbrakel.codemucker.ast.AstCreator;
 import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
 import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
 import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
@@ -32,11 +34,16 @@ public class SourceUtil {
 
 	private static AtomicLong uniqueIdCounter = new AtomicLong();
 
-	public static File writeNewJavaFile(SrcWriter src){
-		File srcDir = new File( ProjectFinder.findTargetDir(), "junit-test-generate" );
-		File srcFile = new File(srcDir, newJavaFilePath() );
-		writeFile( src, srcFile);
-		return srcFile;
+	public static ClasspathResource writeNewJavaFile(SrcWriter src) {
+		File srcDir = new File(ProjectFinder.findTargetDir(), "junit-test-generate");
+		return writeNewJavaFile(src, srcDir);
+	}
+
+	public static ClasspathResource writeNewJavaFile(SrcWriter src, File srcDir) {
+		String relativePath = newJavaFilePath();
+		ClasspathResource resource = new ClasspathResource(srcDir, relativePath);
+		writeFile(src, resource.getFile());
+		return resource;
 	}
 	
 	public static JavaSourceFile writeJavaSrc(SrcWriter writer, File classDir, String fqClassName) throws IOException {
@@ -78,6 +85,15 @@ public class SourceUtil {
 		boolean matchDocTags = false;
 		AssertingAstMatcher matcher = new AssertingAstMatcher(matchDocTags);
 		return actualCu.subtreeMatch(matcher, expectCu);
+	}
+
+	public static JavaSourceFile getJavaSourceFrom(ClasspathResource resource) {
+		CompilationUnit cu = getAstFromFile(resource.getFile());
+		return new JavaSourceFile(resource, newDefaultAstCreator());
+	}
+
+	public static AstCreator newDefaultAstCreator(){
+		return new DefaultAstCreator();
 	}
 	
 	public static CompilationUnit getAstFromFileWithNoErrors(File srcFile) {

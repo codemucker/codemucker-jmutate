@@ -26,6 +26,10 @@ public class IgnoreableChildTypesVisitor extends BaseASTVisitor {
 		this(-1, false);
 	}
 
+	/**
+	 * 
+	 * @param maxDepth 0 = look only in current node directly. -1 means any depth
+	 */
 	public IgnoreableChildTypesVisitor(int maxDepth) {
 		this(maxDepth, false);
 	}

@@ -5,6 +5,9 @@ import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
+/**
+ * Write a bean as an interface
+ */
 @NotThreadSafe
 public class BeanReadInterfaceWriter extends AbstractBeanWriter {
 

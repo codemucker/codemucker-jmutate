@@ -16,7 +16,7 @@ import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatcher;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
-public class JavaSourceFile {
+public class JavaSourceFile implements JSource {
 	
 	private final ClasspathResource location;
 	private final AstCreator astCreator;
@@ -45,14 +45,20 @@ public class JavaSourceFile {
 		return new JavaSourceFileMutator(this);
 	}
 	
+	@Override
 	public AstCreator getAstCreator() {
 		return astCreator;
 	}
 
+	@Override
 	public ClasspathResource getLocation(){
 		return location;
 	}
 	
+	public JType getMainJType() {
+		return new JType(this, getMainType());
+	}
+
 	public AbstractTypeDeclaration getMainType() {
 		String simpleName = getSimpleClassnameBasedOnPath();
 		return getTopTypeWithName(simpleName);

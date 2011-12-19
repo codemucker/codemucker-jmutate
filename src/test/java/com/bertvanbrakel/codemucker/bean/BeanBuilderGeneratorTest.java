@@ -15,7 +15,7 @@
  */
 package com.bertvanbrakel.codemucker.bean;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.assertSourceFileAstsMatch;
+import static com.bertvanbrakel.codemucker.util.SourceUtil.*;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.getAstFromClassBody;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.getAstFromFileWithNoErrors;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.writeNewJavaFile;
@@ -27,11 +27,17 @@ import java.util.Date;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.codemucker.ast.JTypeMutator;
+import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
+import com.bertvanbrakel.codemucker.ast.JavaSourceFileMutator;
+import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.bean.BeanBuilderGenerator;
 import com.bertvanbrakel.codemucker.bean.GeneratorOptions;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
@@ -75,13 +81,13 @@ public class BeanBuilderGeneratorTest {
 		srcExpected.println( "public String getMyField(){ return this.myField;}" );
 		srcExpected.println("}");
 
-		File modifiedSrcFile = writeNewJavaFile(srcBefore);
-		File srcFileExpected = writeNewJavaFile(srcExpected);
+		ClasspathResource modifiedSrcFile = writeNewJavaFile(srcBefore);
+		ClasspathResource srcFileExpected = writeNewJavaFile(srcExpected);
 		
+		
+		JavaSourceFile source = getJavaSourceFrom(modifiedSrcFile);
+		JTypeMutator mut = source.getMainJType().asMutator();
 		//now lets add a getter and setter
-		CompilationUnit cu = getAstFromFileWithNoErrors(modifiedSrcFile);
-		AST ast = cu.getAST();
-	//	MethodDeclaration m = ast.newMethodDeclaration();
 		
 		//write new AST back to file
 		

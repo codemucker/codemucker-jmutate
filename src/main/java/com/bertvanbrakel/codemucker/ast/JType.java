@@ -1,6 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
 import static com.bertvanbrakel.lang.Check.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -14,11 +15,8 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
-import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatcher;
@@ -31,8 +29,8 @@ import com.bertvanbrakel.codemucker.util.JavaNameUtil;
  */
 public class JType {
 
-	private final JavaSourceFile declaringSourceFile;
-	private final AbstractTypeDeclaration type;
+	private final JSource source;
+	private final AbstractTypeDeclaration typeNode;
 
 	public static final JTypeMatcher MATCH_ALL_TYPES = new JTypeMatcher() {
 		@Override
@@ -48,11 +46,11 @@ public class JType {
 		}
 	};
 	
-	public JType(JavaSourceFile declaringSrcFile, AbstractTypeDeclaration type) {
-		checkNotNull("declaringSrcFile", declaringSrcFile);
+	public JType(JSource source, AbstractTypeDeclaration type) {
+		checkNotNull("source", source);
 		checkNotNull("type", type);
-		this.declaringSourceFile = declaringSrcFile;
-		this.type = type;
+		this.source = source;
+		this.typeNode = type;
 	}
 	
 	public JType getTypeWithName(String simpleName){
@@ -62,11 +60,11 @@ public class JType {
 		TypeDeclaration[] types = asType().getTypes();
 		for (AbstractTypeDeclaration type : types) {
 			if (simpleName.equals(type.getName().toString())) {
-				return new JType(declaringSourceFile, type);
+				return new JType(source, type);
 			}
 		}
 		Collection<String> names = extractNames(types);
-		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, declaringSourceFile.getLocation().getRelativePath(), Arrays.toString(names.toArray()));
+		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, source, Arrays.toString(names.toArray()));
 	}
 
 	private static Collection<String> extractNames(TypeDeclaration[] types){
@@ -96,7 +94,7 @@ public class JType {
 	private void findChildTypesMatching(JType type, JTypeMatcher matcher, List<JType> found) {
 		if (type.isClass()) {
 			for (TypeDeclaration child : type.asType().getTypes()) {
-				JType childJavaType = new JType(declaringSourceFile, child);
+				JType childJavaType = new JType(source, child);
 				if (matcher.matches(childJavaType)) {
 					found.add(childJavaType);
 				}
@@ -109,14 +107,36 @@ public class JType {
 		return new JTypeMutator(this);
 	}
 
+	public List<JField> findFieldsMatching(Matcher<JField> matcher) {
+		List<JField> found = newArrayList();
+		findFieldsMatching(matcher, found);
+		return found;
+	}
+	
+	private void findFieldsMatching(final Matcher<JField> matcher, final List<JField> found) {
+		int maxDepth = 0;
+		final JType parent = this;
+		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
+			@Override
+			public boolean visit(FieldDeclaration node) {
+				JField field = new JField(parent, node);
+				if (matcher.matches(field)) {
+					found.add(field);
+				}
+				return super.visit(node);
+			}
+		};
+		this.typeNode.accept(visitor);
+	}
+	
 	public List<JMethod> findMethodsMatching(Matcher<JMethod> matcher) {
-		List<JMethod> found = new ArrayList<JMethod>();
+		List<JMethod> found = newArrayList();
 		findMethodsMatching(matcher, found);
 		return found;
 	}
 
 	public Collection<JMethod> getAllJavaMethods() {
-		List<JMethod> found = new ArrayList<JMethod>();
+		List<JMethod> found = newArrayList();
 		findMethodsMatching(MATCH_ALL_METHODS, found);
 		return found;
 	}
@@ -134,7 +154,7 @@ public class JType {
 				return super.visit(node);
 			}
 		};
-		type.accept(visitor);
+		this.typeNode.accept(visitor);
 	}
 	
 	public boolean hasMethodsMatching(final Matcher<JMethod> matcher) {
@@ -160,49 +180,53 @@ public class JType {
             }
 			
 		};
-		type.accept(visitor);
+		typeNode.accept(visitor);
 		return foundMethod.get();
 	}
 
-	public AbstractTypeDeclaration getType() {
-    	return type;
+	public AbstractTypeDeclaration getTypeNode() {
+    	return typeNode;
     }
 	
-	public JavaSourceFile getDeclaringSourceFile() {
-		return declaringSourceFile;
+	public JSource getSource() {
+		return source;
 	}
 
 	protected AST getAst() {
-		return type.getAST();
+		return typeNode.getAST();
 	}
 
 	public String getSimpleName(){
-		return type.getName().getIdentifier();
+		return typeNode.getName().getIdentifier();
 	}
 
 	public String getPackageName(){
-		return JavaNameUtil.getPackageFor(type);
+		return JavaNameUtil.getPackageFor(typeNode);
+	}
+	
+	public boolean isAccess(JAccess access) {
+		return getJavaModifiers().asAccess().equals(access);
 	}
 	
 	@SuppressWarnings("unchecked")
     public JModifiers getJavaModifiers(){
-		return new JModifiers(type.getAST(),type.modifiers());
+		return new JModifiers(typeNode.getAST(),typeNode.modifiers());
 	}
 	
 	public boolean isEnum() {
-		return type instanceof EnumDeclaration;
+		return typeNode instanceof EnumDeclaration;
 	}
 
 	public boolean isAnnotation() {
-		return type instanceof AnnotationTypeDeclaration;
+		return typeNode instanceof AnnotationTypeDeclaration;
 	}
 
 	public boolean isInnerClass() {
-		return isClass() && type.isMemberTypeDeclaration();
+		return isClass() && typeNode.isMemberTypeDeclaration();
 	}
 
 	public boolean isTopLevelClass() {
-		return type.isPackageMemberTypeDeclaration();
+		return typeNode.isPackageMemberTypeDeclaration();
 	}
 
 	public boolean isConcreteClass() {
@@ -214,19 +238,19 @@ public class JType {
 	}
 
 	public boolean isClass() {
-		return type instanceof TypeDeclaration;
+		return typeNode instanceof TypeDeclaration;
 	}
 
 	public TypeDeclaration asType() {
-		return (TypeDeclaration) type;
+		return (TypeDeclaration) typeNode;
 	}
 
 	public EnumDeclaration asEnum() {
-		return (EnumDeclaration) type;
+		return (EnumDeclaration) typeNode;
 	}
 
 	public AnnotationTypeDeclaration asAnnotation() {
-		return (AnnotationTypeDeclaration) type;
+		return (AnnotationTypeDeclaration) typeNode;
 	}
 
 	public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass,boolean includeChildClassesInLookup) {
@@ -234,13 +258,7 @@ public class JType {
 	}
 
 	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass, boolean includeChildClassesInLookup) {
-		for(org.eclipse.jdt.core.dom.Annotation a:getAnnotations(includeChildClassesInLookup)){
-			JAnnotation found = new JAnnotation(a);
-			if( found.isOfType(annotationClass)){
-				return found;
-			}
-		}
-		return null;
+		return JAnnotation.getAnnotationOfType(typeNode, includeChildClassesInLookup?JAnnotation.ANY_DEPTH:JAnnotation.DIRECT_DEPTH, annotationClass);
 	}
 	
 	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
@@ -253,44 +271,13 @@ public class JType {
 	 * @return
 	 */
 	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(final boolean includeChildClassesInLookup){
-		final List<org.eclipse.jdt.core.dom.Annotation> annons = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
 		final int maxDepth = includeChildClassesInLookup?-1:0;
-		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth){
-			
-			@Override
-            public boolean visit(ImportDeclaration node) {
-	            //super.visit(node);
-				return false;
-			}
-			
-			@Override
-			public boolean visit(MarkerAnnotation node) {
-				// return super.visit(node);
-				annons.add(node);
-				return false;
-			}
-
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				// return super.visit(node);
-				annons.add(node);
-				return false;
-			}
-
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				// return super.visit(node);
-				annons.add(node);
-				return false;
-			}
-		};
-		type.accept(visitor);
-		return annons;
+		return JAnnotation.findAnnotations(typeNode, maxDepth);
 	}
 
 	@SuppressWarnings("unchecked")
     public List<ASTNode> getBodyDeclarations() {
-	    return type.bodyDeclarations();
+	    return typeNode.bodyDeclarations();
     }
 
 	public boolean isAnonymousClass() {

@@ -9,7 +9,6 @@ import java.io.IOException;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.util.TestHelper;
@@ -31,9 +30,9 @@ public class JavaSourceFileMutatorTest {
 
 		JavaSourceFile srcFile = newJavaSrc(w, "foo.bar.Alice");
 		
-		AbstractTypeDeclaration type = srcFile.getMainType();
+		JType type = srcFile.getMainJType();
 		assertNotNull(type);
-		assertEquals(type.getName().getIdentifier(), "Alice");
+		assertEquals(type.getSimpleName(), "Alice");
 	}
 	
 	@Test

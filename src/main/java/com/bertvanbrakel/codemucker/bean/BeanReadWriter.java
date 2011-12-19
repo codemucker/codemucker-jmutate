@@ -3,6 +3,9 @@ package com.bertvanbrakel.codemucker.bean;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 
+/**
+ * Write a bean with no setters, only getters
+ */
 @NotThreadSafe
 public class BeanReadWriter extends AbstractBeanWriter {
 

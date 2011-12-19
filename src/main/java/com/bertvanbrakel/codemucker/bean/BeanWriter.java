@@ -2,7 +2,9 @@ package com.bertvanbrakel.codemucker.bean;
 
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
-
+/**
+ * Write a bean with setters and getters
+ */
 @NotThreadSafe
 public class BeanWriter extends AbstractBeanWriter {
 

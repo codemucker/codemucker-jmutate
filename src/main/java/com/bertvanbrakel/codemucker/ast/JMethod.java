@@ -3,15 +3,10 @@ package com.bertvanbrakel.codemucker.ast;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 
 public class JMethod {
@@ -65,47 +60,10 @@ public class JMethod {
 	}
 
 	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass) {
-		for(org.eclipse.jdt.core.dom.Annotation a:getAnnotations()){
-			JAnnotation found = new JAnnotation(a);
-			if( found.isOfType(annotationClass)){
-				return found;
-			}
-		}
-		return null;
+		return JAnnotation.getAnnotationOfType(methodNode, JAnnotation.DIRECT_DEPTH, annotationClass);
 	}
 	
 	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
-		final List<org.eclipse.jdt.core.dom.Annotation> annons = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
-		
-		BaseASTVisitor visitor = new BaseASTVisitor(){
-			@Override
-            public boolean visit(ImportDeclaration node) {
-	            //super.visit(node);
-				return false;
-			}
-			
-			@Override
-			public boolean visit(MarkerAnnotation node) {
-				// return super.visit(node);
-				annons.add(node);
-				return false;
-			}
-
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				// return super.visit(node);
-				annons.add(node);
-				return false;
-			}
-
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				// return super.visit(node);
-				annons.add(node);
-				return false;
-			}
-		};
-		methodNode.accept(visitor);
-		return annons;
+		return JAnnotation.findAnnotations(methodNode, JAnnotation.DIRECT_DEPTH);
 	}
 }

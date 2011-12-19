@@ -6,13 +6,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.lang.interpolator.Interpolator;
 
@@ -43,13 +47,24 @@ public class JTypeMutator {
 		return javaType.getJavaModifiers();
 	}
 	
-	
+	public ImportDeclaration newImport(String fqn){
+		AST ast = javaType.getAst();
+		Name name = ast.newName(fqn);
+		ImportDeclaration imprt = ast.newImportDeclaration();
+		imprt.setName(name);
+		return imprt;
+	}
+
 	public void addFieldSnippet(String fieldSnippet) {
 		String src = wrapSnippetInClassDeclaration(fieldSnippet);
 
 		TypeDeclaration type = parseSnippetAsClass(src);
 		FieldDeclaration field = type.getFields()[0];
 
+		//JField f = new JField( new JType(type), field);
+		//TODO:detect if it exists?
+		
+		this.javaType.findFieldsMatching(JFieldMatchers.withName(field.ge));
 		addToBodyAfterBefore(field, strategies.getDefaultFieldStrategy());
 	}
 
@@ -98,6 +113,9 @@ public class JTypeMutator {
 		ASTNode copy = ASTNode.copySubtree(javaType.getAst(), child);
 		List<ASTNode> body = javaType.getBodyDeclarations();
 		int index = strategy.findIndex(body);
+		if( index < 0){
+			throw new CodemuckerException("Insertion strategy %s couldn't find an index to insert %s into", strategy, child);
+		}
 		body.add(index, copy);
 	}
 
@@ -115,7 +133,7 @@ public class JTypeMutator {
 		CharSequence interpolatedSrc = Interpolator.interpolate(snippetSrc, vars);
 		// parse it
 		//TODO:jealous class, knows too much about the javaType/ASTCreator. Use a generation context?
-		CompilationUnit cu = javaType.getDeclaringSourceFile().getAstCreator().parseCompilationUnit(interpolatedSrc);
+		CompilationUnit cu = javaType.getSource().getAstCreator().parseCompilationUnit(interpolatedSrc);
 		return cu;
 	}
 }
