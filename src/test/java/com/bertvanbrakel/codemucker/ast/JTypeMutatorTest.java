@@ -16,10 +16,12 @@ import com.bertvanbrakel.test.util.TestHelper;
 
 public class JTypeMutatorTest {
 
+	private JContext context = new DefaultJContext();
+	
 	@Test
 	public void testAddSimpleField() throws Exception {		
 		JTypeMutator type = findType("TestBeanSimple");
-		type.addFieldSnippet("private String foo;");
+		type.addField("private String foo;");
 		
 		assertAstEquals("TestBeanSimple.java.testAddSimpleField", type);
 	}
@@ -27,8 +29,8 @@ public class JTypeMutatorTest {
 	@Test
 	public void testAddFieldAndMethods() throws Exception {		
 		JTypeMutator type = findType("TestBeanSimple");
-		type.addFieldSnippet("private String foo;");
-		type.addMethodSnippet("public void setFoo(String foo){ this.foo = foo; }");
+		type.addField("private String foo;");
+		type.addMethod("public void setFoo(String foo){ this.foo = foo; }");
 		
 		assertAstEquals("TestBeanSimple.java.testAddFieldAndMethods", type);
 	}
@@ -36,16 +38,16 @@ public class JTypeMutatorTest {
 	@Test
 	public void testAddFieldMethodsWithInnerClasses() throws Exception {
 		JTypeMutator type = findType("TestBean");
-		type.addFieldSnippet("private String foo;");
-		type.addMethodSnippet("public String getFoo(){ return this.foo; }");
-		type.addMethodSnippet("public void setFoo(String foo){ this.foo = foo; }");
-		type.addConstructorSnippet("public TestBean(String foo){ this.foo = foo; }");
+		type.addField("private String foo;");
+		type.addMethod("public String getFoo(){ return this.foo; }");
+		type.addMethod("public void setFoo(String foo){ this.foo = foo; }");
+		type.addCtor("public TestBean(String foo){ this.foo = foo; }");
 		
 		assertAstEquals("TestBean.java.testAddFieldMethodsWithInnerClasses", type);
 	}
 	
 	private JTypeMutator findType(String typeClassName){
-		JavaSourceFinder finder = new JavaSourceFinder();
+		JavaSourceFinder finder = new JavaSourceFinder(context);
 		SourceFinderOptions opts = finder.getOptions();
 		opts.includeClassesDir(false);
 		opts.includeTestDir(true);
@@ -59,17 +61,17 @@ public class JTypeMutatorTest {
 	private void assertAstEquals(String expectPath, JTypeMutator actual){
 		TestHelper helper = new TestHelper();
 		//read the expected result
-		JavaSourceFile srcFile = actual.getJavaType().getSource();
+		//JavaSourceFile srcFile = actual.getJavaType().getSource();
 		String expectSrc = null;
         try {
 	        expectSrc = helper.getTestJavaSourceDir().childResource(TestBean.class, expectPath).readAsString();
         } catch (IOException e) {
 	        fail("Couldn't read source file " + expectPath);
         }
-		CompilationUnit expectCu = srcFile.getAstCreator().parseCompilationUnit(expectSrc);
+		CompilationUnit expectCu = context.getAstCreator().parseCompilationUnit(expectSrc);
 		AssertingAstMatcher matcher = new AssertingAstMatcher(false);
-		CompilationUnit actualCu = actual.getJavaType().getSource().getCompilationUnit();
-		boolean equals = actualCu.subtreeMatch(matcher, expectCu);
+		CompilationUnit actualCu = actual.getJavaType().getCompilationUnit();
+		boolean equals = expectCu.subtreeMatch(matcher, actualCu);
 		assertTrue("ast's don't match", equals);
 		//assertEquals(expectAst, actualAst);
 	}

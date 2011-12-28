@@ -55,11 +55,12 @@ public class JavaSourceFile implements JSource {
 		return location;
 	}
 	
+	@Deprecated
 	public JType getMainJType() {
-		return new JType(this, getMainType());
+		return getMainType();
 	}
 
-	public AbstractTypeDeclaration getMainType() {
+	public JType getMainType() {
 		String simpleName = getSimpleClassnameBasedOnPath();
 		return getTopTypeWithName(simpleName);
 	}
@@ -78,17 +79,17 @@ public class JavaSourceFile implements JSource {
 		return name;
 	}
 	
-	public AbstractTypeDeclaration getTopTypeWithName(Class<?> type){
+	public JType getTopTypeWithName(Class<?> type){
 		return getTopTypeWithName(type.getSimpleName());
 	}
 	/**
 	 * Look through just the top level types for this file for a type with the given name
 	 */
-	public AbstractTypeDeclaration getTopTypeWithName(String simpleName){
+	public JType  getTopTypeWithName(String simpleName){
 		List<AbstractTypeDeclaration> types = getTypes();
 		for( AbstractTypeDeclaration type:types){
 			if( simpleName.equals(type.getName().toString())){
-				return type;
+				return new JType(type);
 			}
 		}
 		Collection<String> names = extractNames(types);
@@ -150,7 +151,7 @@ public class JavaSourceFile implements JSource {
 	public List<JType> getJavaTypes() {
 		List<JType> javaTypes = new ArrayList<JType>();
 		for( AbstractTypeDeclaration type:getTypes()){
-			javaTypes.add(new JType(this, type));
+			javaTypes.add(new JType(type));
 		}
 		return javaTypes;
 	}

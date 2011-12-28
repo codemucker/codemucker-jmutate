@@ -49,7 +49,7 @@ public class JavaSourceFileMutatorTest {
 		JavaSourceFileMutator srcFile = newMutator(w, "foo.bar.Alice");
 		
 		JTypeMutator mutable = srcFile.getMainTypeAsMutable();
-		AbstractTypeDeclaration type = srcFile.getJavaSourceFile().getMainType();
+		AbstractTypeDeclaration type = srcFile.getJavaSourceFile().getMainType().getTypeNode();
 		
 		assertNotNull(mutable);
 		assertEquals(mutable.getJavaType().asType(), type);

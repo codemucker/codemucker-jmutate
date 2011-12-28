@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -29,7 +30,6 @@ import com.bertvanbrakel.codemucker.util.JavaNameUtil;
  */
 public class JType {
 
-	private final JSource source;
 	private final AbstractTypeDeclaration typeNode;
 
 	public static final JTypeMatcher MATCH_ALL_TYPES = new JTypeMatcher() {
@@ -46,10 +46,8 @@ public class JType {
 		}
 	};
 	
-	public JType(JSource source, AbstractTypeDeclaration type) {
-		checkNotNull("source", source);
+	public JType(AbstractTypeDeclaration type) {
 		checkNotNull("type", type);
-		this.source = source;
 		this.typeNode = type;
 	}
 	
@@ -60,11 +58,11 @@ public class JType {
 		TypeDeclaration[] types = asType().getTypes();
 		for (AbstractTypeDeclaration type : types) {
 			if (simpleName.equals(type.getName().toString())) {
-				return new JType(source, type);
+				return new JType(type);
 			}
 		}
 		Collection<String> names = extractNames(types);
-		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, source, Arrays.toString(names.toArray()));
+		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, this, Arrays.toString(names.toArray()));
 	}
 
 	private static Collection<String> extractNames(TypeDeclaration[] types){
@@ -94,7 +92,7 @@ public class JType {
 	private void findChildTypesMatching(JType type, JTypeMatcher matcher, List<JType> found) {
 		if (type.isClass()) {
 			for (TypeDeclaration child : type.asType().getTypes()) {
-				JType childJavaType = new JType(source, child);
+				JType childJavaType = new JType(child);
 				if (matcher.matches(childJavaType)) {
 					found.add(childJavaType);
 				}
@@ -187,15 +185,22 @@ public class JType {
 	public AbstractTypeDeclaration getTypeNode() {
     	return typeNode;
     }
-	
-	public JSource getSource() {
-		return source;
-	}
 
 	protected AST getAst() {
 		return typeNode.getAST();
 	}
 
+	public CompilationUnit getCompilationUnit(){
+		ASTNode parent = typeNode;
+		while( parent != null){
+			parent = parent.getParent();
+			if( parent instanceof CompilationUnit){
+				return (CompilationUnit)parent;
+			}
+		}
+		throw new CodemuckerException("Couldn't find compilation unit. Unexpected");
+	}
+	
 	public String getSimpleName(){
 		return typeNode.getName().getIdentifier();
 	}
@@ -287,4 +292,5 @@ public class JType {
 	public boolean isImplementing(Class<?> require) {
 	    throw new UnsupportedOperationException("TODO, implements me!");
     }
+	
 }

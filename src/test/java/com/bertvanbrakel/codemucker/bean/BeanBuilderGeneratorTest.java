@@ -15,36 +15,22 @@
  */
 package com.bertvanbrakel.codemucker.bean;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.*;
-import static com.bertvanbrakel.codemucker.util.SourceUtil.getAstFromClassBody;
-import static com.bertvanbrakel.codemucker.util.SourceUtil.getAstFromFileWithNoErrors;
+import static com.bertvanbrakel.codemucker.util.SourceUtil.assertSourceFileAstsMatch;
+import static com.bertvanbrakel.codemucker.util.SourceUtil.getJavaSourceFrom;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.writeNewJavaFile;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.JTypeMutator;
 import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
-import com.bertvanbrakel.codemucker.ast.JavaSourceFileMutator;
 import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
-import com.bertvanbrakel.codemucker.bean.BeanBuilderGenerator;
-import com.bertvanbrakel.codemucker.bean.GeneratorOptions;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
 import com.bertvanbrakel.test.util.ClassNameUtil;
-import com.bertvanbrakel.test.util.ProjectFinder;
 
 public class BeanBuilderGeneratorTest {
 
@@ -84,48 +70,18 @@ public class BeanBuilderGeneratorTest {
 		ClasspathResource modifiedSrcFile = writeNewJavaFile(srcBefore);
 		ClasspathResource srcFileExpected = writeNewJavaFile(srcExpected);
 		
-		
 		JavaSourceFile source = getJavaSourceFrom(modifiedSrcFile);
-		JTypeMutator mut = source.getMainJType().asMutator();
+		JTypeMutator mut = source.getTopTypeWithName("TestBeanModify").asMutator();
+		
 		//now lets add a getter and setter
+		mut.addMethod("public void setMyField(String myField ){ this.myField = myField;}");
+		mut.addMethod("public String getMyField(){ return this.myField;}");
 		
 		//write new AST back to file
+		source.asMutator().writeChangesToSrcFile();
 		
 		//then check it matches what we expect
 		assertSourceFileAstsMatch(srcFileExpected, modifiedSrcFile);
-	}
-	
-
-	@Test
-	public void test_eclipse_find() throws Exception {
-		File srcDir = ProjectFinder.findDefaultMavenCompileDir();
-		File srcFile = new File(srcDir, "com/bertvanbrakel/test/finder/ClassFinder.java");
-
-//		
-//        final List<SearchMatch> references = new ArrayList<SearchMatch>();
-//        
-//        SearchPattern pattern = SearchPattern.createPattern("setShort", 
-//                                                            IJavaSearchConstants.ALL_OCCURRENCES,
-//                                                            IJavaSearchConstants.REFERENCES,
-//                                                            SearchPattern.R_FULL_MATCH);
-//        if (pattern == null) {
-//            // E.g. element not found / no longer exists
-//            throw new NullPointerException("No pattern!?");
-//        }
-//        
-//        SearchRequestor requestor = new SearchRequestor() {
-//            @Override public void acceptSearchMatch(SearchMatch match) throws CoreException {
-//                references.add(match);
-//            }
-//        };
-//        
-//        IJavaSearchScope scope = mm.createWorkspaceScope();
-//        new SearchEngine().search(pattern,
-//                                  new SearchParticipant[] { SearchEngine.getDefaultSearchParticipant() },
-//                                  scope,
-//                                  requestor,
-//                                  null);
-        
 	}
 	
 	private void addProperty(BeanDefinition def, Class<?> propertyType) {

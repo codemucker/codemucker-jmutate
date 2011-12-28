@@ -2,32 +2,17 @@ package com.bertvanbrakel.codemucker.ast;
 
 import static com.bertvanbrakel.lang.Check.checkNotNull;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
-
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
-import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
-import com.bertvanbrakel.lang.interpolator.Interpolator;
 
 public class JTypeMutator {
 	
 	private final JType javaType;
-
-	private final DefaultStrategyProvider strategies = new DefaultStrategyProvider();
 	
-	public JTypeMutator(JavaSourceFile declaringSrcFile, AbstractTypeDeclaration type) {
-		this(new JType(declaringSrcFile, type));
+	public JTypeMutator(AbstractTypeDeclaration type) {
+		this(new JType(type));
 	}
 	
 	public JTypeMutator(JType javaType) {
@@ -54,86 +39,17 @@ public class JTypeMutator {
 		imprt.setName(name);
 		return imprt;
 	}
-
-	public void addFieldSnippet(String fieldSnippet) {
-		String src = wrapSnippetInClassDeclaration(fieldSnippet);
-
-		TypeDeclaration type = parseSnippetAsClass(src);
-		FieldDeclaration field = type.getFields()[0];
-
-		//JField f = new JField( new JType(type), field);
-		//TODO:detect if it exists?
-		
-		this.javaType.findFieldsMatching(JFieldMatchers.withName(field.ge));
-		addToBodyAfterBefore(field, strategies.getDefaultFieldStrategy());
+	
+	public void addField(String fieldSnippet){
+		Mutations.fieldChange(new DefaultJContext(), fieldSnippet).apply(javaType.getTypeNode());
 	}
-
-	public void addConstructorSnippet(String ctorSnippet) {
-		String src = wrapSnippetInClassDeclaration(ctorSnippet);
-
-		TypeDeclaration type = parseSnippetAsClass(src);
-		MethodDeclaration method = type.getMethods()[0];
-		if (method.getReturnType2() != null) {
-			throw new BeanGenerationException("Constructors should not have any return type. Constructor was %s",
-			        method);
-		}
-		if (!method.getName().getIdentifier().equals(type.getName().getIdentifier())) {
-			throw new BeanGenerationException(
-			        "Constructors should have the same name as the type. Expected name '%s' but got '%s'", type
-			                .getName().getIdentifier(), method.getName().getIdentifier());
-		}
-
-		method.setConstructor(true);
-
-		addToBodyAfterBefore(method, strategies.getCtorStrategy());
+	
+	public void addMethod(String methodSnippet){
+		Mutations.methodChange(new DefaultJContext(), methodSnippet).apply(javaType.getTypeNode());
 	}
-
-	public void addMethodSnippet(String methodDeclaration) {
-		String src = wrapSnippetInClassDeclaration(methodDeclaration);
-
-		TypeDeclaration type = parseSnippetAsClass(src);
-		MethodDeclaration method = type.getMethods()[0];
-		method.setConstructor(false);
-
-		addToBodyAfterBefore(method, strategies.getDefaultMethodStrategy());
+	
+	public void addCtor(String ctorSnippet){
+		Mutations.constructorChange(new DefaultJContext(), ctorSnippet).apply(javaType.getTypeNode());
 	}
-
-	private String wrapSnippetInClassDeclaration(String snippetSrc) {
-		String simpleClassName = javaType.getSimpleName();
-		String wrappedSrc = "class " + simpleClassName + "{" + snippetSrc + "}";
-		return wrappedSrc;
-	}
-
-	public void addClassSnippet(String src) {
-		TypeDeclaration type = parseSnippetAsClass(src);
-		addToBodyAfterBefore(type, strategies.getClassStrategy());
-	}
-
-	private void addToBodyAfterBefore(ASTNode child, InsertionStrategy strategy) {
-		ASTNode copy = ASTNode.copySubtree(javaType.getAst(), child);
-		List<ASTNode> body = javaType.getBodyDeclarations();
-		int index = strategy.findIndex(body);
-		if( index < 0){
-			throw new CodemuckerException("Insertion strategy %s couldn't find an index to insert %s into", strategy, child);
-		}
-		body.add(index, copy);
-	}
-
-	public TypeDeclaration parseSnippetAsClass(String snippetSrc) {
-		CompilationUnit cu = parseSnippet(snippetSrc);
-		TypeDeclaration type = (TypeDeclaration) cu.types().get(0);
-
-		return type;
-	}
-
-	public CompilationUnit parseSnippet(String snippetSrc) {
-		// get template variables and interpolate
-		//TODO:add defaults vars
-		Map<String, Object> vars = new HashMap<String, Object>();
-		CharSequence interpolatedSrc = Interpolator.interpolate(snippetSrc, vars);
-		// parse it
-		//TODO:jealous class, knows too much about the javaType/ASTCreator. Use a generation context?
-		CompilationUnit cu = javaType.getSource().getAstCreator().parseCompilationUnit(interpolatedSrc);
-		return cu;
-	}
+	
 }

@@ -183,7 +183,7 @@ public class JTypeTest {
 
 	public JType newJavaType(SrcWriter w, String fqClassName, String typeToGet) {
 		JavaSourceFile srcFile = newJavaSrc(w, fqClassName);
-		JType type = new JType(srcFile, srcFile.getTopTypeWithName(typeToGet));
+		JType type = srcFile.getTopTypeWithName(typeToGet);
 
 		return type;
 	}

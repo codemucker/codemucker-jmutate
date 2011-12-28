@@ -1,6 +1,6 @@
 package com.bertvanbrakel.codemucker.ast.finder;
 
-import static com.bertvanbrakel.lang.Check.checkNotNull;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -11,7 +11,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 import com.bertvanbrakel.codemucker.ast.AstCreator;
-import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
+import com.bertvanbrakel.codemucker.ast.DefaultJContext;
+import com.bertvanbrakel.codemucker.ast.JContext;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
@@ -28,12 +29,25 @@ public class JavaSourceFinder {
 
 	private static final String JAVA_EXTENSION = "java";
 	private final SourceFinderOptions options;
-	
+	private final JContext context;
+
 	public JavaSourceFinder() {
 		this(new SourceFinderOptions());
 	}
 
+	public JavaSourceFinder(JContext context) {
+		this(context, new SourceFinderOptions());
+	}
+
 	public JavaSourceFinder(SourceFinderOptions options) {
+		this(new DefaultJContext(), options);
+	}
+
+	public JavaSourceFinder(JContext context, SourceFinderOptions options) {
+		checkNotNull(context, "expect a context");
+		checkNotNull(options, "expect options");
+		
+		this.context = context;
 		this.options = options;
 	}
 
@@ -46,7 +60,7 @@ public class JavaSourceFinder {
 	}
 
 	public void visit(JavaSourceFileVisitor visitor, Matcher<JavaSourceFile> matcher) {
-		visit(visitor, matcher, createDefaultASTCreator());
+		visit(visitor, matcher, getDefaultASTCreator());
 	}
 
 	public void visit(JavaSourceFileVisitor visitor, Matcher<JavaSourceFile> matcher, AstCreator astCreator) {
@@ -107,11 +121,11 @@ public class JavaSourceFinder {
 	}
 	
 	public Iterable<JavaSourceFile> findSources(Matcher<JavaSourceFile> matcher) {
-		return findSources(createDefaultASTCreator(), matcher);
+		return findSources(getDefaultASTCreator(), matcher);
 	}
 
-	private AstCreator createDefaultASTCreator() {
-		return new DefaultAstCreator();
+	private AstCreator getDefaultASTCreator() {
+		return context.getAstCreator();
 	}
 
 	public Iterable<JavaSourceFile> findSources(final AstCreator astCreator, final Matcher<JavaSourceFile> matcher) {

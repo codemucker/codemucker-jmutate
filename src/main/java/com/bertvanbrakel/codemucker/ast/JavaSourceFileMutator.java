@@ -40,7 +40,7 @@ public class JavaSourceFileMutator {
 	 * Return the type declared in this file with the same name as the name of the file.
 	 */
 	public JTypeMutator getMainTypeAsMutable() {
-		return new JTypeMutator(srcFile, srcFile.getMainType());
+		return new JTypeMutator(srcFile.getMainType());
 	}
 	
 	/**
@@ -50,7 +50,7 @@ public class JavaSourceFileMutator {
 		List<JTypeMutator> mutables = new ArrayList<JTypeMutator>();
 		List<AbstractTypeDeclaration> types = getCompilationUnit().types();
 		for (AbstractTypeDeclaration type : types) {
-			mutables.add(new JTypeMutator(srcFile, type));
+			mutables.add(new JTypeMutator(type));
 		}
 		return mutables;
 	}

@@ -23,11 +23,11 @@ public class DefaultStrategyProvider {
 			col(FieldDeclaration.class, MethodDeclaration.class, EnumDeclaration.class, TypeDeclaration.class),
 		    col());
 
-	public InsertionStrategy getDefaultFieldStrategy(){
+	public InsertionStrategy getFieldStrategy(){
 		return STRATEGY_FIELD;
 	}
 	
-	public InsertionStrategy getDefaultMethodStrategy(){
+	public InsertionStrategy getMethodStrategy(){
 		return STRATEGY_METHOD;
 	}
 	

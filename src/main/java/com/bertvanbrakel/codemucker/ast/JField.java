@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 public class JField {
@@ -35,6 +36,16 @@ public class JField {
 		return getNames().contains(name);
 	}
 	
+	public boolean isType(JField field){
+		return isType(field.getFieldNode().getType());
+	}
+	
+	public boolean isType(Type type){
+		return fieldNode.getType().equals(type) ;
+	}
+	
+	
+
 	public List<String> getNames(){
 		final List<String> names = newArrayList();
 		BaseASTVisitor visitor = new BaseASTVisitor(){

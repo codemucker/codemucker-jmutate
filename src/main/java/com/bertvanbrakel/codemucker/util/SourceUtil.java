@@ -20,7 +20,6 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.internal.corext.refactoring.typeconstraints.ASTCreator;
 
 import com.bertvanbrakel.codemucker.ast.AssertingAstMatcher;
 import com.bertvanbrakel.codemucker.ast.AstCreator;
@@ -74,6 +73,10 @@ public class SourceUtil {
 		}
 	}
 	
+	public static void assertSourceFileAstsMatch(ClasspathResource expected, ClasspathResource actual) throws IOException {
+		assertSourceFileAstsMatch(expected.getFile(), actual.getFile());
+	}
+	
 	public static void assertSourceFileAstsMatch(File expected,File actual) throws IOException {
 		assertTrue("Sources AST's don't match", sourceFileAstsMatch(expected, actual));
 	}
@@ -84,7 +87,7 @@ public class SourceUtil {
 
 		boolean matchDocTags = false;
 		AssertingAstMatcher matcher = new AssertingAstMatcher(matchDocTags);
-		return actualCu.subtreeMatch(matcher, expectCu);
+		return expectCu.subtreeMatch(matcher, actualCu);
 	}
 
 	public static JavaSourceFile getJavaSourceFrom(ClasspathResource resource) {
