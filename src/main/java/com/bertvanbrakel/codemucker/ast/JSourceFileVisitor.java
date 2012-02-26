@@ -5,7 +5,7 @@ import java.io.File;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 
-public class JavaSourceFileVisitor extends BaseASTVisitor {
+public class JSourceFileVisitor extends BaseASTVisitor {
 
 	public boolean visit(File rootDir, String relFilePath, File srcFile) {
 		return true;
@@ -21,11 +21,11 @@ public class JavaSourceFileVisitor extends BaseASTVisitor {
 	public void endVisitClass(String className) {
 	}
 
-	public boolean visit(JavaSourceFile f) {
+	public boolean visit(JSourceFile f) {
 		return true;
 	}
 
-	public void endVisit(JavaSourceFile f) {
+	public void endVisit(JSourceFile f) {
 	}
 
 	public boolean visit(CompilationUnit cu) {

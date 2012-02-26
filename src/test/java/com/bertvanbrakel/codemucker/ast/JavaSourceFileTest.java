@@ -15,20 +15,20 @@ public class JavaSourceFileTest {
 
 	@Test
 	public void testGetSimpleClassnameBasedOnPath() {
-		JavaSourceFile src = newSourceFile("foo/bar/Alice.java");
+		JSourceFile src = newSourceFile("foo/bar/Alice.java");
 		assertEquals("Alice", src.getSimpleClassnameBasedOnPath());
 	}
 
 	@Test
 	public void testGetClassNameBasedOnPath() {
-		JavaSourceFile src = newSourceFile("foo/bar/Alice.java");
+		JSourceFile src = newSourceFile("foo/bar/Alice.java");
 		assertEquals("foo.bar.Alice", src.getClassnameBasedOnPath());
 	}
 
-	private JavaSourceFile newSourceFile(String path) {
+	private JSourceFile newSourceFile(String path) {
 		File dir = helper.createTempDir();
 
-		JavaSourceFile src = new JavaSourceFile(new ClasspathResource(dir, path), new DefaultAstCreator());
+		JSourceFile src = new JSourceFile(new ClasspathResource(dir, path), new DefaultAstCreator());
 		return src;
 	}
 

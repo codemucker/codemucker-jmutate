@@ -18,8 +18,13 @@ package com.bertvanbrakel.codemucker.util;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.assertSourceFileAstsMatch;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.getAstFromClassBody;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.writeNewJavaFile;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
+
+import junit.framework.AssertionFailedError;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -74,7 +79,35 @@ public class SrcWriterTest {
 
 		assertSourceFileAstsMatch(srcFile, srcFile2);
 	}
+	
+	@Test
+	public void test_srcFileDOesNotMatch_whenDifferent() throws Exception{	
+		SrcWriter src1 = new SrcWriter();
+		src1.append("package com.bertvanbrakel.test;");
+		src1.append("public class TestBeanModify {");
+		src1.append("private String myField;");
+		src1.append("\npublic void foo(){ this.myField = null; }");
+		src1.append("\n}");
+		
+		SrcWriter src2 = new SrcWriter();
+		src2.append("package com.bertvanbrakel.test;");
+		src2.append("public class TestBeanModify {");
+		src2.append("private String myField;");
+		src2.append("\npublic void foo(){ this.myField = \"\"; }");
+		src2.append("\n}");
+		
 
+		File srcFile = writeNewJavaFile(src1).getFile();
+		File srcFile2 = writeNewJavaFile(src2).getFile();
+
+		Throwable expect = null;
+		try {
+			assertSourceFileAstsMatch(srcFile, srcFile2);
+		} catch (AssertionFailedError e){
+			expect = e;
+		}
+		assertNotNull("Expected exception",expect);
+	}
 	@Test
 	public void test_can_parse_just_method() throws Exception {
 		SrcWriter src1 = new SrcWriter();

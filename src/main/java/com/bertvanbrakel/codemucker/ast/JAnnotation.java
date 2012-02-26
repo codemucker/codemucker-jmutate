@@ -8,7 +8,9 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
+import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
@@ -98,5 +100,33 @@ public class JAnnotation {
 		node.accept(visitor);
 		return annons;
 	}
+
+	public String getValueForAttribute(String name){
+		return getValueForAttribute(name,"");
+	}
 	
+	public String getValueForAttribute(String name,String defaultValue){
+		//TODO:handle nested annotations
+		SimpleName val = null;
+		if( annotation.isMarkerAnnotation()){
+			val = null;
+		}
+		if( annotation instanceof SingleMemberAnnotation){
+			if( "value".equals(name)){
+				val = (SimpleName)((SingleMemberAnnotation)annotation).getValue();
+			}	
+		}
+		if( annotation instanceof NormalAnnotation){
+			NormalAnnotation normal = (NormalAnnotation)annotation;
+			List<MemberValuePair> values = normal.values();
+			for( MemberValuePair pair:values){
+				if( name.equals(pair.getName().getIdentifier())){
+					val = (SimpleName)pair.getValue();
+					break;
+				}
+			}
+		}
+		
+		return val==null?defaultValue:val.getIdentifier();
+	}
 }

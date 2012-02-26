@@ -1,5 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,15 +15,16 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.lang.interpolator.Interpolator;
 
-public abstract class AbstractMutation<T> extends AbstractMutationBuilder<T> {
+public class MutationHelper {
 
 	private final JContext context;
 	
-	AbstractMutation(JContext context){
+	public MutationHelper(JContext context){
+		checkNotNull(context);
 		this.context = context;
 	}
 
-	protected void addToBodyUsingStrategy(JType javaType, ASTNode child, InsertionStrategy strategy) {
+	public void addToBodyUsingStrategy(JType javaType, ASTNode child, InsertionStrategy strategy) {
 		ASTNode copy = ASTNode.copySubtree(javaType.getAst(), child);
 		List<ASTNode> body = javaType.getBodyDeclarations();
 		int index = strategy.findIndex(body);
@@ -31,14 +34,14 @@ public abstract class AbstractMutation<T> extends AbstractMutationBuilder<T> {
 		body.add(index, copy);
 	}
 	
-	protected FieldDeclaration parseField(String fieldSnippet){
+	public FieldDeclaration parseField(String fieldSnippet){
 		String src = wrapSnippetInClassDeclaration(fieldSnippet);
 		TypeDeclaration type = parseClass(src);
 		FieldDeclaration fieldNode = type.getFields()[0];
 		return fieldNode;
 	}
 	
-	protected MethodDeclaration parseConstructor(String ctorSnippet){
+	public MethodDeclaration parseConstructor(String ctorSnippet){
 		MethodDeclaration method = parseMethod(ctorSnippet);
 		if (method.getReturnType2() != null) {
 			throw new BeanGenerationException("Constructors should not have any return type. Constructor was %s",
@@ -48,7 +51,7 @@ public abstract class AbstractMutation<T> extends AbstractMutationBuilder<T> {
 		return method;
 	}
 	
-	protected MethodDeclaration parseMethod(String methodSnippet){
+	public MethodDeclaration parseMethod(String methodSnippet){
 		String src = wrapSnippetInClassDeclaration(methodSnippet);
 
 		TypeDeclaration type = parseClass(src);
@@ -70,7 +73,7 @@ public abstract class AbstractMutation<T> extends AbstractMutationBuilder<T> {
 		return type;
 	}
 
-	protected CompilationUnit parseCompilationUnit(String snippetSrc) {
+	public CompilationUnit parseCompilationUnit(String snippetSrc) {
 		// get template variables and interpolate
 		//TODO:add defaults vars
 		Map<String, Object> vars = new HashMap<String, Object>();

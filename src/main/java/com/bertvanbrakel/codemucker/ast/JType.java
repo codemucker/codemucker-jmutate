@@ -20,15 +20,20 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import com.bertvanbrakel.codemucker.ast.finder.FindResult;
+import com.bertvanbrakel.codemucker.ast.finder.FindResultImpl;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatcher;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatcher;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatcher;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.Matcher;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
+import com.bertvanbrakel.test.bean.ClassUtils;
 
 /**
  * A convenience wrapper around an Ast java type
  */
-public class JType {
+public class JType implements JAnnotatable, AstNodeProvider {
 
 	private final AbstractTypeDeclaration typeNode;
 
@@ -49,6 +54,11 @@ public class JType {
 	public JType(AbstractTypeDeclaration type) {
 		checkNotNull("type", type);
 		this.typeNode = type;
+	}
+	
+	@Override
+	public ASTNode getAstNode(){
+		return typeNode;
 	}
 	
 	public JType getTypeWithName(String simpleName){
@@ -73,10 +83,10 @@ public class JType {
 		return names;
 	}
 	
-	public List<JType> findChildTypesMatching(JTypeMatcher matcher){
-		List<JType> found = new ArrayList<JType>();
+	public FindResult<JType> findChildTypesMatching(JTypeMatcher matcher){
+		List<JType> found = newArrayList();
 		findChildTypesMatching(this, matcher, found);
-		return found;
+		return FindResultImpl.from(found);
 	}
 	
 	/* package */ void findChildTypesMatching(JTypeMatcher matcher, List<JType> found){
@@ -105,10 +115,13 @@ public class JType {
 		return new JTypeMutator(this);
 	}
 
-	public List<JField> findFieldsMatching(Matcher<JField> matcher) {
+	public FindResult<JField> findAllFields(){
+		return findFieldsMatching(JFieldMatchers.any());
+	}
+	public FindResult<JField> findFieldsMatching(Matcher<JField> matcher) {
 		List<JField> found = newArrayList();
 		findFieldsMatching(matcher, found);
-		return found;
+		return FindResultImpl.from(found);
 	}
 	
 	private void findFieldsMatching(final Matcher<JField> matcher, final List<JField> found) {
@@ -127,16 +140,16 @@ public class JType {
 		this.typeNode.accept(visitor);
 	}
 	
-	public List<JMethod> findMethodsMatching(Matcher<JMethod> matcher) {
+	public FindResult<JMethod> findMethodsMatching(Matcher<JMethod> matcher) {
 		List<JMethod> found = newArrayList();
 		findMethodsMatching(matcher, found);
-		return found;
+		return FindResultImpl.from(found);
 	}
 
-	public Collection<JMethod> getAllJavaMethods() {
+	public FindResult<JMethod> findAllJavaMethods() {
 		List<JMethod> found = newArrayList();
 		findMethodsMatching(MATCH_ALL_METHODS, found);
-		return found;
+		return FindResultImpl.from(found);
 	}
 	
 	private void findMethodsMatching(final Matcher<JMethod> matcher, final List<JMethod> found) {
@@ -200,6 +213,10 @@ public class JType {
 		}
 		throw new CodemuckerException("Couldn't find compilation unit. Unexpected");
 	}
+
+	public String getFullName(){
+		return JavaNameUtil.getQualifiedName(typeNode.getName());
+	}
 	
 	public String getSimpleName(){
 		return typeNode.getName().getIdentifier();
@@ -258,14 +275,25 @@ public class JType {
 		return (AnnotationTypeDeclaration) typeNode;
 	}
 
+	@Override
+	public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass) {
+		return hasAnnotationOfType(annotationClass, false);
+	}
+	
 	public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass,boolean includeChildClassesInLookup) {
 		return getAnnotationOfType(annotationClass,includeChildClassesInLookup) != null;
 	}
 
+	@Override
+	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass) {
+		return getAnnotationOfType(annotationClass,false);
+	}
+	
 	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass, boolean includeChildClassesInLookup) {
 		return JAnnotation.getAnnotationOfType(typeNode, includeChildClassesInLookup?JAnnotation.ANY_DEPTH:JAnnotation.DIRECT_DEPTH, annotationClass);
 	}
 	
+	@Override
 	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
 		//all
 		return getAnnotations(true);

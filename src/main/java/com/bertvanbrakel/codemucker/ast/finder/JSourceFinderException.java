@@ -1,16 +1,16 @@
 package com.bertvanbrakel.codemucker.ast.finder;
 
-public class SourceFinderException extends RuntimeException {
+public class JSourceFinderException extends RuntimeException {
 
-	public SourceFinderException(String message, Throwable cause) {
+	public JSourceFinderException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public SourceFinderException(String message) {
+	public JSourceFinderException(String message) {
 		super(message);
 	}
 
-	public SourceFinderException(String message, Object... args) {
+	public JSourceFinderException(String message, Object... args) {
 		super(String.format(message, args));
 	}
 

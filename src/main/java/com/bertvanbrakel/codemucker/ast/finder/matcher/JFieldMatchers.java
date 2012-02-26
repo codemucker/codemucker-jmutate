@@ -11,6 +11,17 @@ import com.bertvanbrakel.test.util.TestUtils;
 
 public class JFieldMatchers extends JMatchers  {
 
+	private static final JFieldMatcher MATCH_ANY  = new JFieldMatcher() {
+		
+		@Override
+		public boolean matches(JField found) {
+			return true;
+		}
+	};
+	
+	public static JFieldMatcher any(){
+		return MATCH_ANY;
+	}
 	public static JFieldMatcher ofType(final Matcher<Type> typeMatcher){
 		return new JFieldMatcher() {
 			@Override

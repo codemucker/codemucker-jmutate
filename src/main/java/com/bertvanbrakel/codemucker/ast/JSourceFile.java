@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
@@ -16,21 +17,27 @@ import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatcher;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
-public class JavaSourceFile implements JSource {
+public class JSourceFile implements JSource, AstNodeProvider {
 	
 	private final ClasspathResource location;
 	private final AstCreator astCreator;
 	//created on demand
 	private transient CompilationUnit compilationUnit;
 
-	public JavaSourceFile(ClasspathResource location, AstCreator astCreator) {
+	public JSourceFile(ClasspathResource location, AstCreator astCreator) {
 		checkNotNull("location", location);
 		checkNotNull("astCreator", astCreator);
 		this.location = location;
 		this.astCreator = astCreator;
 	}
+	
+	@Override
+	public ASTNode getAstNode(){
+		return compilationUnit;
+	}
+	
 
-	public void visit(JavaSourceFileVisitor visitor) {
+	public void visit(JSourceFileVisitor visitor) {
 		if (visitor.visit(this)) {
 			CompilationUnit cu = getCompilationUnit();
 			if (visitor.visit(cu)) {
@@ -41,8 +48,8 @@ public class JavaSourceFile implements JSource {
 		}
 	}
 
-	public JavaSourceFileMutator asMutator(){
-		return new JavaSourceFileMutator(this);
+	public JSourceFileMutator asMutator(){
+		return new JSourceFileMutator(this);
 	}
 	
 	@Override

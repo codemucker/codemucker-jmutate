@@ -6,10 +6,11 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 
-public class JMethod {
+public class JMethod implements JAnnotatable, AstNodeProvider {
 
 	private final JType parentType;
 	private final MethodDeclaration methodNode;
@@ -22,6 +23,11 @@ public class JMethod {
 		this.methodNode = methodNode;
 	}
 
+	@Override
+	public ASTNode getAstNode(){
+		return methodNode;
+	}
+	
 	public JType getParentType() {
     	return parentType;
     }
@@ -55,14 +61,17 @@ public class JMethod {
 	}
 	
 	@SuppressWarnings("unchecked")
+	@Override
     public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass) {
 		return JAnnotation.hasAnnotation(annotationClass, methodNode.modifiers());
 	}
 
+	@Override
 	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass) {
 		return JAnnotation.getAnnotationOfType(methodNode, JAnnotation.DIRECT_DEPTH, annotationClass);
 	}
 	
+	@Override
 	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
 		return JAnnotation.findAnnotations(methodNode, JAnnotation.DIRECT_DEPTH);
 	}

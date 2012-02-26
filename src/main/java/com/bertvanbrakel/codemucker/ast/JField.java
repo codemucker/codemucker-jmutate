@@ -7,11 +7,12 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
-public class JField {
+public class JField implements JAnnotatable, AstNodeProvider {
 
 	private final JType parentType;
 	private final FieldDeclaration fieldNode;
@@ -24,6 +25,11 @@ public class JField {
 		this.fieldNode = fieldNode;
 	}
 
+	@Override
+	public ASTNode getAstNode(){
+		return fieldNode;
+	}
+	
 	public JType getParentType() {
     	return parentType;
     }
@@ -44,8 +50,6 @@ public class JField {
 		return fieldNode.getType().equals(type) ;
 	}
 	
-	
-
 	public List<String> getNames(){
 		final List<String> names = newArrayList();
 		BaseASTVisitor visitor = new BaseASTVisitor(){
@@ -69,14 +73,17 @@ public class JField {
 	}
 
 	@SuppressWarnings("unchecked")
+	@Override
     public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass) {
 		return JAnnotation.hasAnnotation(annotationClass, fieldNode.modifiers());
 	}
 
+	@Override
 	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass) {
 		return JAnnotation.getAnnotationOfType(fieldNode, JAnnotation.ANY_DEPTH, annotationClass);
 	}
 	
+	@Override
 	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
 		return JAnnotation.findAnnotations(fieldNode);
 	}

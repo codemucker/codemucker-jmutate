@@ -8,16 +8,16 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.finder.JavaSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SourceFinderOptions;
+import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
+import com.bertvanbrakel.codemucker.ast.finder.JSourceFinderOptions;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 
 public class JavaSourceFinderTest {
 
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
-		JavaSourceFinder finder = new JavaSourceFinder();
-		SourceFinderOptions opts = finder.getOptions();
+		JSourceFinder finder = new JSourceFinder();
+		JSourceFinderOptions opts = finder.getOptions();
 		opts.includeClassesDir(false);
 		opts.includeTestDir(true);
 		opts.includeTypes(JTypeMatchers.withAnnotation(MyAnnotation.class));
@@ -38,8 +38,8 @@ public class JavaSourceFinderTest {
 	
 	@Test
 	public void testFindWithMethods(){
-		JavaSourceFinder finder = new JavaSourceFinder();
-		SourceFinderOptions opts = finder.getOptions();
+		JSourceFinder finder = new JSourceFinder();
+		JSourceFinderOptions opts = finder.getOptions();
 		opts.includeClassesDir(true);
 		opts.includeTestDir(true);
 		//opts.includeTypeMatching(JTypeMatchers.)

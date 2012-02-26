@@ -25,7 +25,7 @@ import java.util.Date;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.JTypeMutator;
-import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
+import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.bean.BeanDefinition;
@@ -70,7 +70,7 @@ public class BeanBuilderGeneratorTest {
 		ClasspathResource modifiedSrcFile = writeNewJavaFile(srcBefore);
 		ClasspathResource srcFileExpected = writeNewJavaFile(srcExpected);
 		
-		JavaSourceFile source = getJavaSourceFrom(modifiedSrcFile);
+		JSourceFile source = getJavaSourceFrom(modifiedSrcFile);
 		JTypeMutator mut = source.getTopTypeWithName("TestBeanModify").asMutator();
 		
 		//now lets add a getter and setter

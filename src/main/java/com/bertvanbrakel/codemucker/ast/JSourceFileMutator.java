@@ -20,15 +20,15 @@ import org.eclipse.text.edits.UndoEdit;
 
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 
-public class JavaSourceFileMutator {
-	private final JavaSourceFile srcFile;
+public class JSourceFileMutator {
+	private final JSourceFile srcFile;
 
-	public JavaSourceFileMutator(JavaSourceFile srcFile) {
+	public JSourceFileMutator(JSourceFile srcFile) {
 		checkNotNull("srcFile", srcFile);
 		this.srcFile = srcFile;
 	}
 	
-	public JavaSourceFile getJavaSourceFile() {
+	public JSourceFile getJavaSourceFile() {
 		return srcFile;
 	}
 

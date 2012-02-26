@@ -9,8 +9,9 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.a.TestBean;
-import com.bertvanbrakel.codemucker.ast.finder.JavaSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SourceFinderOptions;
+import com.bertvanbrakel.codemucker.ast.a.TestBeanSimple;
+import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
+import com.bertvanbrakel.codemucker.ast.finder.JSourceFinderOptions;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.FileMatchers;
 import com.bertvanbrakel.test.util.TestHelper;
 
@@ -20,7 +21,7 @@ public class JTypeMutatorTest {
 	
 	@Test
 	public void testAddSimpleField() throws Exception {		
-		JTypeMutator type = findType("TestBeanSimple");
+		JTypeMutator type = findType(TestBeanSimple.class.getSimpleName());
 		type.addField("private String foo;");
 		
 		assertAstEquals("TestBeanSimple.java.testAddSimpleField", type);
@@ -28,7 +29,7 @@ public class JTypeMutatorTest {
 	
 	@Test
 	public void testAddFieldAndMethods() throws Exception {		
-		JTypeMutator type = findType("TestBeanSimple");
+		JTypeMutator type = findType(TestBeanSimple.class.getSimpleName());
 		type.addField("private String foo;");
 		type.addMethod("public void setFoo(String foo){ this.foo = foo; }");
 		
@@ -37,25 +38,33 @@ public class JTypeMutatorTest {
 	
 	@Test
 	public void testAddFieldMethodsWithInnerClasses() throws Exception {
-		JTypeMutator type = findType("TestBean");
-		type.addField("private String foo;");
-		type.addMethod("public String getFoo(){ return this.foo; }");
-		type.addMethod("public void setFoo(String foo){ this.foo = foo; }");
-		type.addCtor("public TestBean(String foo){ this.foo = foo; }");
+		JTypeMutator type = findType(TestBean.class.getSimpleName());
+		type.fieldChange("private String foo;").apply();
+		type.methodChange("public String getFoo(){ return this.foo; }").apply();
+		type.methodChange("public void setFoo(String foo){ this.foo = foo; }").apply();
+		type.ctorChange("public TestBean(String foo){ this.foo = foo; }").apply();
 		
 		assertAstEquals("TestBean.java.testAddFieldMethodsWithInnerClasses", type);
 	}
 	
+	@Test
+	public void testAddDuplicateSimpleField() throws Exception {		
+		JTypeMutator type = findType(TestBeanSimple.class.getSimpleName());
+		type.fieldChange("private int fieldOne;").replace(true).apply();
+		
+		assertAstEquals("TestBeanSimple.java.testAddDuplicateSimpleField", type);
+	}
+	
+	
 	private JTypeMutator findType(String typeClassName){
-		JavaSourceFinder finder = new JavaSourceFinder(context);
-		SourceFinderOptions opts = finder.getOptions();
+		JSourceFinder finder = new JSourceFinder(context);
+		JSourceFinderOptions opts = finder.getOptions();
 		opts.includeClassesDir(false);
 		opts.includeTestDir(true);
 		opts.includeFile(FileMatchers.withPath("*/ast/a/" + typeClassName + ".java"));
 		
-		JavaSourceFile srcFile = finder.findSources().iterator().next();
-		JavaSourceFileMutator mutable = new JavaSourceFileMutator(srcFile);
-		return mutable.getMainTypeAsMutable();
+		JSourceFile srcFile = finder.findSources().iterator().next();
+		return srcFile.asMutator().getMainTypeAsMutable();
 	}
 	
 	private void assertAstEquals(String expectPath, JTypeMutator actual){

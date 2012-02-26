@@ -11,8 +11,8 @@ import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
 
 public class Mutations {
 	
-	public static CodeMutation<AbstractTypeDeclaration> fieldChange(JContext context, final String fieldSnippet){
-		return new AbstractMutation<AbstractTypeDeclaration>(context){
+	public static AbstractMutation2<AbstractTypeDeclaration> fieldChange(JContext context, AbstractTypeDeclaration type, final String fieldSnippet){
+		return new AbstractMutation2<AbstractTypeDeclaration>(context,type){
 			@Override
 			public void apply(final AbstractTypeDeclaration typeNode) {
 				FieldDeclaration fieldNode = parseField(getSnippet());
@@ -23,19 +23,21 @@ public class Mutations {
 				//TODO:detect if it exists?
 				boolean hasFound = false;
 				for( String fieldName:newField.getNames()){
-					List<JField> found= javaType.findFieldsMatching(JFieldMatchers.withName(fieldName));
+					List<JField> found = javaType.findFieldsMatching(JFieldMatchers.withName(fieldName)).asList();
 					if( !found.isEmpty()){
 						hasFound = true;
+						
 						JField existingField = found.get(0);
-						if( existingField.isType(newField)){
-		    				//modify it!
-		    				if( isReplace()){
-		    					
-		    				} else if( isErrorOnExisting()) {
-		    					//throw?
-		    					throw new CodemuckerException("Existing field %s, not replacing with %s", existingField.getFieldNode(), getSnippet());
-		    				}	
-						}					
+						if( isReplace()){
+	    					if( existingField.isType(newField)){
+			    				 
+							}
+	    					existingField.getFieldNode().delete();			
+	    					addToBodyUsingStrategy(javaType, newField.getFieldNode(), getInsertionStrategy());
+						} else if( isErrorOnExisting()) {
+	    					//throw?
+	    					throw new CodemuckerException("Existing field %s, not replacing with %s", existingField.getFieldNode(), getSnippet());
+	    				} 
 					}
 				}
 				if( !hasFound){
@@ -48,8 +50,8 @@ public class Mutations {
 		.strategyFeild();
 	}
 	
-	public static AbstractMutationBuilder<AbstractTypeDeclaration> constructorChange(JContext context, final String ctorSnippet){
-		return new AbstractMutation<AbstractTypeDeclaration>(context){
+	public static AbstractMutation2<AbstractTypeDeclaration> constructorChange(JContext context, AbstractTypeDeclaration type,final String ctorSnippet){
+		return new AbstractMutation2<AbstractTypeDeclaration>(context,type){
 			@Override
 			public void apply(final AbstractTypeDeclaration typeNode) {
 				MethodDeclaration ctorNode = parseConstructor(getSnippet());
@@ -58,7 +60,7 @@ public class Mutations {
 				
 				//TODO:detect if it exists?
 				boolean hasFound = false;
-				List<JMethod> found= javaType.findMethodsMatching(JMethodMatchers.withName(newCtor.getName()));
+				List<JMethod> found= javaType.findMethodsMatching(JMethodMatchers.withName(newCtor.getName())).asList();
 				if( !found.isEmpty()){
 					hasFound = true;
 					JMethod existingCtor = found.get(0);
@@ -81,10 +83,11 @@ public class Mutations {
 		.strategyCtor();	
 	}
 	
-	public static AbstractMutationBuilder<AbstractTypeDeclaration> methodChange(JContext context, final String methodSnippet){
-		return new AbstractMutation<AbstractTypeDeclaration>(context){
+	public static AbstractMutation2<AbstractTypeDeclaration> methodChange(JContext context, AbstractTypeDeclaration type, final String methodSnippet){
+		return new AbstractMutation2<AbstractTypeDeclaration>(context,type){
 			@Override
 			public void apply(final AbstractTypeDeclaration typeNode) {
+				
 				MethodDeclaration methodNode = parseMethod(getSnippet());
 				
 				JType javaType = new JType(typeNode);
@@ -92,7 +95,7 @@ public class Mutations {
 				
 				//TODO:detect if it exists?
 				boolean hasFound = false;
-				List<JMethod> found= javaType.findMethodsMatching(JMethodMatchers.withName(newMethod.getName()));
+				List<JMethod> found= javaType.findMethodsMatching(JMethodMatchers.withName(newMethod.getName())).asList();
 				if( !found.isEmpty()){
 					hasFound = true;
 					JMethod existingMethod = found.get(0);

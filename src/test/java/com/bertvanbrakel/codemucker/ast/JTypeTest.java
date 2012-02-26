@@ -15,6 +15,7 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatcher;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
@@ -96,11 +97,11 @@ public class JTypeTest {
 	
 		JType type = newJavaType(w, "foo.bar.Foo", "MyTestClass");
 
-		Collection<JMethod> foundMethods = type.getAllJavaMethods();
+		FindResult<JMethod> foundMethods = type.findAllJavaMethods();
 	
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("methodA","methodB"));		
 		
-		MatcherAssert.assertThat(foundMethods, matcher);
+		MatcherAssert.assertThat(foundMethods.asList(), matcher);
 	}
 
 	@Test
@@ -117,7 +118,7 @@ public class JTypeTest {
 	
 		JType type = newJavaType(w, "foo.bar.Foo", "MyTestClass");
 
-		Collection<JMethod> foundMethods = type.findMethodsMatching(new JMethodMatcher() {
+		FindResult<JMethod> foundMethods = type.findMethodsMatching(new JMethodMatcher() {
 			@Override
 			public boolean matches(JMethod found) {
 				return found.getName().startsWith("get");
@@ -126,7 +127,7 @@ public class JTypeTest {
 	
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("getA","getB"));		
 		
-		MatcherAssert.assertThat(foundMethods, matcher);
+		MatcherAssert.assertThat(foundMethods.asList(), matcher);
 	}
 	
 
@@ -143,7 +144,7 @@ public class JTypeTest {
 	
 		JType type = newJavaType(w, "foo.bar.Foo", "MyTestClass");
 
-		Collection<JMethod> foundMethods = type.findMethodsMatching(new JMethodMatcher() {
+		FindResult<JMethod> foundMethods = type.findMethodsMatching(new JMethodMatcher() {
 			@Override
 			public boolean matches(JMethod found) {
 				return found.isConstructor();
@@ -152,7 +153,7 @@ public class JTypeTest {
 	
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("MyTestClass","MyTestClass"));		
 		
-		MatcherAssert.assertThat(foundMethods, matcher);
+		MatcherAssert.assertThat(foundMethods.asList(), matcher);
 	}
 	
 	private List<Matcher<JMethod>> equalsMethodNames(String... methodNames){
@@ -182,13 +183,13 @@ public class JTypeTest {
 	}
 
 	public JType newJavaType(SrcWriter w, String fqClassName, String typeToGet) {
-		JavaSourceFile srcFile = newJavaSrc(w, fqClassName);
+		JSourceFile srcFile = newJavaSrc(w, fqClassName);
 		JType type = srcFile.getTopTypeWithName(typeToGet);
 
 		return type;
 	}
 
-	private JavaSourceFile newJavaSrc(SrcWriter writer, String fqClassName) {
+	private JSourceFile newJavaSrc(SrcWriter writer, String fqClassName) {
 		File classRootDir = helper.createTempDir();
 		try {
 			return SourceUtil.writeJavaSrc(writer, classRootDir, fqClassName);

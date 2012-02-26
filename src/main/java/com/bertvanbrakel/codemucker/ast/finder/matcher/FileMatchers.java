@@ -28,7 +28,15 @@ public class FileMatchers {
 	public static FileMatcher withName(String antPattern) {
 		return withPath("*/" + antPattern);
 	}
-	
+
+	public static FileMatcher inPackage(Class<?> classWithPkg) {
+		return inPackage(classWithPkg.getPackage());
+	}
+
+	public static FileMatcher inPackage(Package pkg) {
+		return withPath(pkg.toString().replace('.', '/'));
+	}
+
 	public static FileMatcher withPath(String antPattern) {
 		return withPath(TestUtils.antExpToPattern(antPattern));
 	}
@@ -37,4 +45,6 @@ public class FileMatchers {
 		return new RegExpPatternFileNameMatcher(pattern);
 	}
 
+
+		
 }

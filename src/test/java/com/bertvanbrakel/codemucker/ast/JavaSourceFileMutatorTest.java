@@ -28,7 +28,7 @@ public class JavaSourceFileMutatorTest {
 		w.println("public class Bob {");
 		w.println("}");
 
-		JavaSourceFile srcFile = newJavaSrc(w, "foo.bar.Alice");
+		JSourceFile srcFile = newJavaSrc(w, "foo.bar.Alice");
 		
 		JType type = srcFile.getMainJType();
 		assertNotNull(type);
@@ -46,7 +46,7 @@ public class JavaSourceFileMutatorTest {
 		w.println("public class Bob {");
 		w.println("}");
 
-		JavaSourceFileMutator srcFile = newMutator(w, "foo.bar.Alice");
+		JSourceFileMutator srcFile = newMutator(w, "foo.bar.Alice");
 		
 		JTypeMutator mutable = srcFile.getMainTypeAsMutable();
 		AbstractTypeDeclaration type = srcFile.getJavaSourceFile().getMainType().getTypeNode();
@@ -55,11 +55,11 @@ public class JavaSourceFileMutatorTest {
 		assertEquals(mutable.getJavaType().asType(), type);
 	}
 	
-	private JavaSourceFileMutator newMutator(SrcWriter writer, String fqClassName) throws IOException {
-		return new JavaSourceFileMutator(newJavaSrc(writer, fqClassName));
+	private JSourceFileMutator newMutator(SrcWriter writer, String fqClassName) throws IOException {
+		return new JSourceFileMutator(newJavaSrc(writer, fqClassName));
 	}	
 	
-	private JavaSourceFile newJavaSrc(SrcWriter writer, String fqClassName) throws IOException {
+	private JSourceFile newJavaSrc(SrcWriter writer, String fqClassName) throws IOException {
 		File classRootDir = helper.createTempDir();
 		return SourceUtil.writeJavaSrc(writer, classRootDir, fqClassName);
 	}

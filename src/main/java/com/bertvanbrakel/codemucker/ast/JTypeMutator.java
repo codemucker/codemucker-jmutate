@@ -40,16 +40,29 @@ public class JTypeMutator {
 		return imprt;
 	}
 	
-	public void addField(String fieldSnippet){
-		Mutations.fieldChange(new DefaultJContext(), fieldSnippet).apply(javaType.getTypeNode());
+	public void addField(String fieldSnippet, Object... args){
+		fieldChange(fieldSnippet,args).apply();
 	}
 	
-	public void addMethod(String methodSnippet){
-		Mutations.methodChange(new DefaultJContext(), methodSnippet).apply(javaType.getTypeNode());
+	public void addMethod(String methodSnippet, Object... args){
+		methodChange(methodSnippet,args).apply();
 	}
 	
-	public void addCtor(String ctorSnippet){
-		Mutations.constructorChange(new DefaultJContext(), ctorSnippet).apply(javaType.getTypeNode());
+	public void addCtor(String ctorSnippet, Object... args){
+		ctorChange(ctorSnippet,args).apply();
 	}
+	
+	public AbstractMutation2<AbstractTypeDeclaration> fieldChange(String fieldSnippet,Object...args){
+		return Mutations.fieldChange(new DefaultJContext(), javaType.getTypeNode(), String.format(fieldSnippet,args));
+	}
+	
+	public AbstractMutation2<AbstractTypeDeclaration> methodChange(String methodSnippet,Object...args){
+		return Mutations.methodChange(new DefaultJContext(), javaType.getTypeNode(), String.format(methodSnippet,args));
+	}
+	
+	public AbstractMutation2<AbstractTypeDeclaration> ctorChange(String ctorSnippet,Object...args){
+		return Mutations.constructorChange(new DefaultJContext(), javaType.getTypeNode(), String.format(ctorSnippet,args));
+	}
+	
 	
 }

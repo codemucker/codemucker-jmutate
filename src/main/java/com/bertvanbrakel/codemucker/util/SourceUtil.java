@@ -24,7 +24,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import com.bertvanbrakel.codemucker.ast.AssertingAstMatcher;
 import com.bertvanbrakel.codemucker.ast.AstCreator;
 import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
-import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
+import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.test.util.ProjectFinder;
@@ -45,13 +45,13 @@ public class SourceUtil {
 		return resource;
 	}
 	
-	public static JavaSourceFile writeJavaSrc(SrcWriter writer, File classDir, String fqClassName) throws IOException {
+	public static JSourceFile writeJavaSrc(SrcWriter writer, File classDir, String fqClassName) throws IOException {
 		String path = fqClassName.replace('.', '/') + ".java";
 		ClasspathResource resource = new ClasspathResource(classDir, path);
 
 		writeFile(writer, resource.getFile());
 
-		JavaSourceFile srcFile = new JavaSourceFile(resource, new DefaultAstCreator());
+		JSourceFile srcFile = new JSourceFile(resource, new DefaultAstCreator());
 		return srcFile;
 	}
 	
@@ -90,9 +90,9 @@ public class SourceUtil {
 		return expectCu.subtreeMatch(matcher, actualCu);
 	}
 
-	public static JavaSourceFile getJavaSourceFrom(ClasspathResource resource) {
+	public static JSourceFile getJavaSourceFrom(ClasspathResource resource) {
 		CompilationUnit cu = getAstFromFile(resource.getFile());
-		return new JavaSourceFile(resource, newDefaultAstCreator());
+		return new JSourceFile(resource, newDefaultAstCreator());
 	}
 
 	public static AstCreator newDefaultAstCreator(){

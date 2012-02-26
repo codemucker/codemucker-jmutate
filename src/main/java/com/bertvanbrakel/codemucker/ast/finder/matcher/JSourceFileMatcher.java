@@ -1,9 +1,9 @@
 package com.bertvanbrakel.codemucker.ast.finder.matcher;
 
-import com.bertvanbrakel.codemucker.ast.JavaSourceFile;
+import com.bertvanbrakel.codemucker.ast.JSourceFile;
 
 /**
- * Matcher to filter for {@link JavaSourceFile}'s
+ * Matcher to filter for {@link JSourceFile}'s
  */
-public interface JSourceFileMatcher extends Matcher<JavaSourceFile>{
+public interface JSourceFileMatcher extends Matcher<JSourceFile>{
 }
