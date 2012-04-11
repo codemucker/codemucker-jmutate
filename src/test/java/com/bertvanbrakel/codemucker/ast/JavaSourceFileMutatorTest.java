@@ -3,9 +3,6 @@ package com.bertvanbrakel.codemucker.ast;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.junit.Test;
 
@@ -30,7 +27,7 @@ public class JavaSourceFileMutatorTest {
 
 		JSourceFile srcFile = newJavaSrc(w, "foo.bar.Alice");
 		
-		JType type = srcFile.getMainJType();
+		JType type = srcFile.getMainType();
 		assertNotNull(type);
 		assertEquals(type.getSimpleName(), "Alice");
 	}
@@ -55,12 +52,11 @@ public class JavaSourceFileMutatorTest {
 		assertEquals(mutable.getJavaType().asType(), type);
 	}
 	
-	private JSourceFileMutator newMutator(SrcWriter writer, String fqClassName) throws IOException {
+	private JSourceFileMutator newMutator(SrcWriter writer, String fqClassName) {
 		return new JSourceFileMutator(newJavaSrc(writer, fqClassName));
 	}	
 	
-	private JSourceFile newJavaSrc(SrcWriter writer, String fqClassName) throws IOException {
-		File classRootDir = helper.createTempDir();
-		return SourceUtil.writeJavaSrc(writer, classRootDir, fqClassName);
+	private JSourceFile newJavaSrc(SrcWriter writer, String fqClassName) {
+		return SourceUtil.writeJavaSrc(writer, fqClassName);
 	}
 }

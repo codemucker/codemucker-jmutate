@@ -1,18 +1,20 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.a.TestBean;
 import com.bertvanbrakel.codemucker.ast.a.TestBeanSimple;
+import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.JSourceFinderOptions;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.FileMatchers;
+import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
 import com.bertvanbrakel.test.util.TestHelper;
 
 public class JTypeMutatorTest {
@@ -56,14 +58,21 @@ public class JTypeMutatorTest {
 	}
 	
 	
-	private JTypeMutator findType(String typeClassName){
-		JSourceFinder finder = new JSourceFinder(context);
-		JSourceFinderOptions opts = finder.getOptions();
-		opts.includeClassesDir(false);
-		opts.includeTestDir(true);
-		opts.includeFile(FileMatchers.withPath("*/ast/a/" + typeClassName + ".java"));
-		
-		JSourceFile srcFile = finder.findSources().iterator().next();
+	private JTypeMutator findType(String simpleClassName){
+		JSourceFinder finder = JSourceFinder.newBuilder()
+			.setSearchPaths(
+				SearchPathsBuilder.newBuilder()
+					.setIncludeClassesDir(false)
+					.setIncludeTestDir(true)
+			)
+			.setFilter(
+				FilterBuilder.newBuilder()
+					.setIncludeFileName("*/ast/a/" + simpleClassName + ".java")
+			)
+			.build();
+		List<JSourceFile> sources = finder.findSources().asList();
+		assertEquals("expected only a single match",1,sources.size());
+		JSourceFile srcFile = sources.iterator().next();
 		return srcFile.asMutator().getMainTypeAsMutable();
 	}
 	

@@ -17,19 +17,19 @@ package com.bertvanbrakel.codemucker.bean;
 
 import static com.bertvanbrakel.codemucker.util.SourceUtil.assertSourceFileAstsMatch;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.getJavaSourceFrom;
-import static com.bertvanbrakel.codemucker.util.SourceUtil.writeNewJavaFile;
+import static com.bertvanbrakel.codemucker.util.SourceUtil.writeResource;
 
 import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.JTypeMutator;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
-import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
+import com.bertvanbrakel.codemucker.ast.JTypeMutator;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
+import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
 public class BeanBuilderGeneratorTest {
@@ -67,8 +67,8 @@ public class BeanBuilderGeneratorTest {
 		srcExpected.println( "public String getMyField(){ return this.myField;}" );
 		srcExpected.println("}");
 
-		ClasspathResource modifiedSrcFile = writeNewJavaFile(srcBefore);
-		ClasspathResource srcFileExpected = writeNewJavaFile(srcExpected);
+		ClassPathResource modifiedSrcFile = writeResource(srcBefore);
+		ClassPathResource srcFileExpected = writeResource(srcExpected);
 		
 		JSourceFile source = getJavaSourceFrom(modifiedSrcFile);
 		JTypeMutator mut = source.getTopTypeWithName("TestBeanModify").asMutator();

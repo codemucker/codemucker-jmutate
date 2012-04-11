@@ -3,8 +3,9 @@ package com.bertvanbrakel.codemucker.ast.finder.matcher;
 import java.util.regex.Pattern;
 
 import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
 
-public class RegExpPatternTypeNameMatcher implements JTypeMatcher {
+public class RegExpPatternTypeNameMatcher implements Matcher<JType> {
 	private final Pattern pattern;
 
 	public RegExpPatternTypeNameMatcher(String pattern) {

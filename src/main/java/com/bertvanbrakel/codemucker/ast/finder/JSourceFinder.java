@@ -5,22 +5,26 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 import com.bertvanbrakel.codemucker.ast.AstCreator;
-import com.bertvanbrakel.codemucker.ast.DefaultJContext;
-import com.bertvanbrakel.codemucker.ast.JContext;
+import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
 import com.bertvanbrakel.codemucker.ast.JMethod;
-import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JSourceFileVisitor;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.Matcher;
-import com.bertvanbrakel.test.finder.FileMatcher;
-import com.bertvanbrakel.test.finder.FileWalkerFilter;
-import com.bertvanbrakel.test.util.ProjectFinder;
+import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.ClassPathRoot;
+import com.bertvanbrakel.test.finder.LoggingMatchedCallback;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Utility class to find source files, java types, and methods
@@ -28,154 +32,196 @@ import com.bertvanbrakel.test.util.ProjectFinder;
 public class JSourceFinder {
 
 	private static final String JAVA_EXTENSION = "java";
-	private final JSourceFinderOptions options;
-	private final JContext context;
-
-	public JSourceFinder() {
-		this(new JSourceFinderOptions());
-	}
-
-	public JSourceFinder(JContext context) {
-		this(context, new JSourceFinderOptions());
-	}
-
-	public JSourceFinder(JSourceFinderOptions options) {
-		this(new DefaultJContext(), options);
-	}
-
-	public JSourceFinder(JContext context, JSourceFinderOptions options) {
-		checkNotNull(context, "expect a context");
-		checkNotNull(options, "expect options");
+	private static FileFilter DIR_FILTER = new FileFilter() {
+		private static final char HIDDEN_DIR_PREFIX = '.';//like .git, .svn,....
 		
-		this.context = context;
-		this.options = options;
+		@Override
+		public boolean accept(File dir) {
+			return dir.isDirectory() && dir.getName().charAt(0) != HIDDEN_DIR_PREFIX && !dir.getName().equals("CVS");
+		}
+	};
+	
+	private static FileFilter FILE_FILTER = new FileFilter() {
+		@Override
+		public boolean accept(File f) {
+			return f.isFile();
+		}
+	};
+	
+//	private final JContext context;
+	private final Collection<ClassPathRoot> classPathRoots;
+	private final JSourceFinderFilterCallback filter;
+	private final JSourceFinderMatchedCallback matchedCallback;
+	private final JSourceFinderIgnoredCallback ignoredCallback;
+	private final JSourceFinderErrorCallback errorCallback;
+	private final AstCreator astCreator;
+
+	private final Matcher<JType> TYPE_MATCHER = new Matcher<JType>(){
+		@Override
+        public boolean matches(JType found) {
+            return filter.matches(found);
+        }
+	};
+
+	private final Matcher<JMethod> METHOD_MATCHER = new Matcher<JMethod>(){
+		@Override
+        public boolean matches(JMethod found) {
+            return filter.matches(found);
+        }
+	};
+	
+	public static interface JSourceFinderMatchedCallback {
+		public void onMatched(Object obj);
+		public void onMatched(ClassPathRoot classPathRoot);
+		public void onMatched(ClassPathResource child);
+		public void onMatched(JSourceFile file);
+		public void onMatched(JType type);
+		public void onMatched(JMethod method);
 	}
 
-	public JSourceFinderOptions getOptions() {
-		return options;
+	public static interface JSourceFinderIgnoredCallback {
+		public void onIgnored(Object obj);
+		public void onIgnored(ClassPathRoot classPathRoot);
+		public void onIgnored(ClassPathResource dirResource);
+		public void onIgnored(JSourceFile file);
+		public void onIgnored(JType type);
+		public void onIgnored(JMethod method);
 	}
+
+	public static interface JSourceFinderFilterCallback {
+		public boolean matches(Object obj);
+		public boolean matches(ClassPathRoot root);
+		public boolean matches(ClassPathResource resource);
+		public boolean matches(JSourceFile file);
+		public boolean matches(JType type);
+		public boolean matches(JMethod method);
+	}
+
+	public static interface JSourceFinderErrorCallback {
+		public void onError(Exception e);
+	}
+	
+	public static Builder newBuilder(){
+		return new Builder();
+	}
+
+	public JSourceFinder(
+			AstCreator astCreator
+			, Iterable<ClassPathRoot> classPathRoots
+			, JSourceFinderFilterCallback filter
+			, JSourceFinderMatchedCallback matchedCallback
+			, JSourceFinderIgnoredCallback ignoredCallback
+			, JSourceFinderErrorCallback errorCallback
+			) {
+		checkNotNull(classPathRoots, "expect class path roots");
+		
+		this.astCreator = checkNotNull(astCreator, "expect astCreator");
+		this.filter = checkNotNull(filter, "expect filter");
+		this.matchedCallback = checkNotNull(matchedCallback, "expect match callback");
+		this.ignoredCallback = checkNotNull(ignoredCallback, "expect ignored callback");
+		this.errorCallback = checkNotNull(errorCallback, "expect error callback");
+		this.classPathRoots = ImmutableList.<ClassPathRoot>builder().addAll(classPathRoots).build();
+	}
+
 
 	public void visit(JSourceFileVisitor visitor) {
-		visit(visitor, options.toSourceMatcher());
-	}
-
-	public void visit(JSourceFileVisitor visitor, Matcher<JSourceFile> matcher) {
-		visit(visitor, matcher, getDefaultASTCreator());
-	}
-
-	public void visit(JSourceFileVisitor visitor, Matcher<JSourceFile> matcher, AstCreator astCreator) {
-		for (JSourceFile srcFile : findSources(astCreator, matcher)) {
+		for (JSourceFile srcFile : findSources()) {
 			srcFile.visit(visitor);
 		}
 	}
-
-	public File findSourceDir() {
-		return ProjectFinder.findDefaultMavenSrcDir();
-	}
-
-	public File findTestSourceDir() {
-		return ProjectFinder.findDefaultMavenTestDir();
-	}
-
+	
 	public Iterable<JMethod> findMethods() {
-		return findMethods( options.toMethodMatcher());
-	}
-	
-	public Iterable<JMethod> findMethods(Matcher<JMethod> matcher) {
-		return findMethods( options.toSourceMatcher(),options.toTypeMatcher(),matcher);
-	}
-	
-	public Iterable<JMethod> findMethods(final  Matcher<JSourceFile> sourceMatcher, final Matcher<JType> typeMatcher, final Matcher<JMethod> methodMatcher) {
-		final Iterable<JType> foundTypes = findTypes(sourceMatcher, typeMatcher);
+		final Iterable<JType> foundTypes = findTypes();
 		return new Iterable<JMethod>() {
     		@Override
     		public Iterator<JMethod> iterator() {
-    			return new FilteringIterator<JMethod>(new JMethodIterator(foundTypes.iterator()), methodMatcher);
+    			return new FilteringIterator<JMethod>(new JMethodIterator(foundTypes.iterator()), toMethodMatcher());
     		}
     	};
 	}
 
 	public FindResult<JType> findTypes() {
-		return findTypes(options.toTypeMatcher());
+		FindResult<JSourceFile> sources = findSources();
+		return convertSourcesIntoTypes(sources).filter(toTypeMatcher());
+    }
+	
+	private Matcher<JType> toTypeMatcher(){
+		return TYPE_MATCHER;
 	}
 	
-	public FindResult<JType> findTypes(final Matcher<JType> typeMatcher) {
-    	return findTypes(options.toSourceMatcher(),typeMatcher);
-    }
+	private Matcher<JMethod> toMethodMatcher(){
+		return METHOD_MATCHER;
+	}
+	
+	private FindResult<JType> convertSourcesIntoTypes(FindResult<JSourceFile> sources){
+		return FindResultIterableBacked.from(new JavaTypeIterator(sources.iterator()));
+	}
 
-	public FindResult<JType> findTypes(Matcher<JSourceFile> sourceMatcher, final Matcher<JType> typeMatcher) {
-		FindResult<JSourceFile> sources = findSources(sourceMatcher);
-		return convertSourcesIntoTypes(sources).filter(typeMatcher);
-    }
-	
-	private FindResult<JType> convertSourcesIntoTypes(FindResult<JSourceFile> sourceResults){
-		JavaTypeIterator typeIterator = new JavaTypeIterator(sourceResults.iterator());
-		return FindResultImpl.from(typeIterator);
-	}
-	
 	public FindResult<JSourceFile> findSources() {
-		return findSources(options.toSourceMatcher());
-	}
-	
-	public FindResult<JSourceFile> findSources(Matcher<JSourceFile> matcher) {
-		return findSources(getDefaultASTCreator(), matcher);
-	}
-
-	private AstCreator getDefaultASTCreator() {
-		return context.getAstCreator();
-	}
-
-	public FindResult<JSourceFile> findSources(final AstCreator astCreator, final Matcher<JSourceFile> matcher) {
-		final Collection<JSourceFile> sources = newHashSet();
-		FindResult<ClasspathResource> resources = findResources();
-		for (ClasspathResource resource :  resources) {
-			if (resource.isExtension(JAVA_EXTENSION)) {
-				sources.add(new JSourceFile(resource, astCreator));
+		final Set<JSourceFile> sources = newHashSet();
+		FindResult<ClassPathResource> resources = findResources();
+		for (ClassPathResource resource :  resources) {
+			if (resource.hasExtension(JAVA_EXTENSION)) {
+				JSourceFile source = new JSourceFile(resource, astCreator);
+				if( filter.matches((Object)source) && filter.matches(source) ){
+					matchedCallback.onMatched(source);
+					sources.add(source);
+				} else {
+					ignoredCallback.onIgnored(source);
+				}
 			}
 		}
-		return FindResultImpl.from(sources).filter(matcher);
+		return FindResultIterableBacked.from(sources);
 	}
 	
-	public FindResult<ClasspathResource> findResources(){
-		return findResources(options.toFileMatcher());
-	}
-
-	public FindResult<ClasspathResource> findResources(FileMatcher fileMatcher){
-		Collection<File> sourceDirs = getSourceDirsToSearch();
-		Collection<ClasspathResource> resources = newArrayList();
-		for (File classDir : sourceDirs) {
-			//TODO:expose classpath resources as a public finder method
-			FindResult<ClasspathResource> foundInClassDir = findClassResourcesIn(classDir, fileMatcher);
-			resources.addAll(foundInClassDir.asList());
+	public FindResult<ClassPathResource> findResources(){
+		Collection<ClassPathResource> resources = newHashSet();
+		Collection<ClassPathRoot> sourceDirs = getSourceDirsToSearch();
+		for (ClassPathRoot root: sourceDirs) {
+			if( filter.matches((Object)root) && filter.matches(root)){
+    			if( root.isDirectory()){
+    				matchedCallback.onMatched(root);
+    				walkResourceDir(resources, root);
+        		} else {
+        			ignoredCallback.onIgnored(root);
+        			//throw new CodemuckerException("can't currently walk non directory class path roots. Path: " + root.getPathName());
+        		}
+    		} else {
+    			ignoredCallback.onIgnored(root);
+    		}
 		}
-		return FindResultImpl.from(resources);
+		return FindResultIterableBacked.from(resources);
 	}
 	
-	private Collection<File> getSourceDirsToSearch() {
-		Collection<File> classPathDirs = new HashSet<File>(options.getClassPathsDir());
-		if (options.isIncludeClassesDir()) {
-			classPathDirs.add(findSourceDir());
-		}
-		if (options.isIncludeTestDir()) {
-			classPathDirs.add(findTestSourceDir());
-		}
-		return classPathDirs;
+	private Collection<ClassPathRoot> getSourceDirsToSearch() {
+		return classPathRoots;
 	}
-
-	public FindResult<ClasspathResource> findClassResourcesIn(File rootDir, FileMatcher fileMatcher) {
-		final Collection<ClasspathResource> found = newHashSet();
-		for (String relativePath : findRelativePathsIn(rootDir, fileMatcher)) {
-			found.add(new ClasspathResource(rootDir, relativePath));
-		}
-		return FindResultImpl.from(found);
+	
+	private void walkResourceDir(Collection<ClassPathResource> found, ClassPathRoot root) {
+		walkDir(found, root, "", root.getPath());
 	}
-
-	public Collection<String> findRelativePathsIn(File rootDir, FileMatcher fileMatcher) {
-		FileWalkerFilter walker = new FileWalkerFilter();
-		walker.setIncludes(fileMatcher);
-
-		Collection<String> resources = walker.findFiles(rootDir);
-		return resources;
+	
+	private void walkDir(Collection<ClassPathResource> found, ClassPathRoot rootDir, String parentPath, File dir) {
+//		ClassPathResource dirResource = new ClassPathResource(rootDir, dir, parentPath + "/", false);
+//		if (!filter.matches((Object)dirResource) || !filter.matches(dirResource)) {
+//			ignoredCallback.onIgnored(dirResource);
+//			return;
+//		}
+		File[] files = dir.listFiles(FILE_FILTER);
+		for (File f : files) {
+			String relPath = parentPath + "/" + f.getName();
+			ClassPathResource child = new ClassPathResource(rootDir, f, relPath, false);
+			if (filter.matches((Object)child) && filter.matches(child)) {
+				matchedCallback.onMatched(child);
+				found.add(child);
+			} else {
+				ignoredCallback.onIgnored(child);
+			}
+		}
+		File[] childDirs = dir.listFiles(DIR_FILTER);
+		for (File childDir : childDirs) {
+			walkDir(found, rootDir, parentPath + "/" + childDir.getName(), childDir);
+		}
 	}
 	
 	private static class JMethodIterator implements Iterator<JMethod> {
@@ -277,5 +323,208 @@ public class JSourceFinder {
 			throw new UnsupportedOperationException();
 		}	
 	}
+	
+	public static class Builder {
+		private AstCreator astCreator;
+		private List<ClassPathRoot> classPathRoots = newArrayList();
+		private JSourceFinderMatchedCallback findMatchedCallback;
+		private JSourceFinderIgnoredCallback findIgnoredCallback;
+		private JSourceFinderErrorCallback findErrorCallback;
+		private JSourceFinderFilterCallback finderFilter;
+		
+		public JSourceFinder build(){			
+			return new JSourceFinder(
+				toAstCreator()
+				, classPathRoots
+				, toFilter()
+				, toMatchedCallback()
+				, toIgnoredCallback()
+				, toErrorCallback()
+			);
+		}
+		
+		public Builder copyOf() {
+			Builder copy = new Builder();
+			copy.astCreator = astCreator;
+			copy.classPathRoots.addAll(classPathRoots);
+			copy.finderFilter = finderFilter;
+			copy.findMatchedCallback = findMatchedCallback;
+			copy.findIgnoredCallback = findIgnoredCallback;
+			copy.findErrorCallback = findErrorCallback;
+			return copy;
+		}
 
+		private AstCreator toAstCreator(){
+			return astCreator != null?astCreator:new DefaultAstCreator();
+		}
+	
+		private JSourceFinderIgnoredCallback toIgnoredCallback() {
+			return findIgnoredCallback != null ? findIgnoredCallback : new BaseIgnoredCallback();
+		}
+
+		private JSourceFinderMatchedCallback toMatchedCallback() {
+			return findMatchedCallback != null ? findMatchedCallback : new BaseMatchedCallback();
+		}
+		
+		private JSourceFinderErrorCallback toErrorCallback() {
+			return findErrorCallback != null ? findErrorCallback : new LoggingErrorCallback();
+		}
+
+		private JSourceFinderFilterCallback toFilter(){
+			return finderFilter != null? finderFilter:new BaseAllowAllFilter();
+		}
+
+	 	public Builder setSearchPaths(SearchPathsBuilder builder) {
+        	setSearchPaths(builder.build());
+        	return this;
+        }
+	 	
+	 	public Builder setSearchPaths(Iterable<ClassPathRoot> classPathRoots) {
+        	this.classPathRoots = nullSafeList(classPathRoots);
+        	return this;
+        }
+	 	
+	 	private static <T> List<T> nullSafeList(Iterable<T> iter){
+	 		if( iter == null){
+	 			return newArrayList();
+	 		}
+	 		return newArrayList(iter);
+	 	}
+
+		public Builder setFilter(FilterBuilder builder) {
+        	setFilter(builder.build());
+        	return this;
+		}
+		
+		public Builder setFilter(JSourceFinderFilterCallback filter) {
+        	this.finderFilter = filter;
+        	return this;
+		}
+
+		public Builder setMatchedCallback(JSourceFinderMatchedCallback callback) {
+        	this.findMatchedCallback = callback;
+        	return this;
+        }
+
+		public Builder setIgnoredCallback(JSourceFinderIgnoredCallback callback) {
+        	this.findIgnoredCallback = callback;
+        	return this;
+        }
+
+		public Builder setErrorCallback(JSourceFinderErrorCallback callback) {
+        	this.findErrorCallback = callback;
+        	return this;
+        }
+
+		public Builder setAstCreator(AstCreator astCreator) {
+        	this.astCreator = astCreator;
+        	return this;
+        }
+	}
+	
+	public static class BaseAllowAllFilter implements JSourceFinderFilterCallback {
+
+		@Override
+        public boolean matches(Object obj) {
+	        return true;
+        }
+
+		@Override
+        public boolean matches(ClassPathRoot root) {
+	        return true;
+        }
+
+		@Override
+        public boolean matches(ClassPathResource resource) {
+	        return true;
+        }
+
+		@Override
+        public boolean matches(JSourceFile file) {
+	        return true;
+        }
+
+		@Override
+        public boolean matches(JType type) {
+	        return true;
+        }
+
+		@Override
+        public boolean matches(JMethod method) {
+	        return true;
+        }
+	}
+	
+	public static class BaseIgnoredCallback implements JSourceFinderIgnoredCallback {
+
+		@Override
+        public void onIgnored(Object object) {
+        }
+		
+		@Override
+        public void onIgnored(ClassPathRoot root) {
+        }
+
+		@Override
+        public void onIgnored(JSourceFile source) {
+        }
+
+		@Override
+        public void onIgnored(JType type) {
+        }
+
+		@Override
+        public void onIgnored(JMethod method) {
+        }
+
+		@Override
+        public void onIgnored(ClassPathResource resource) {
+        }
+
+	}
+	
+	public static class BaseMatchedCallback implements JSourceFinderMatchedCallback {
+
+		@Override
+        public void onMatched(Object obj) {
+        }
+		
+		@Override
+        public void onMatched(ClassPathRoot root) {
+        }
+
+		@Override
+        public void onMatched(JSourceFile source) {
+        }
+
+		@Override
+        public void onMatched(JType type) {
+        }
+
+		@Override
+        public void onMatched(JMethod method) {
+        }
+
+		@Override
+        public void onMatched(ClassPathResource resource) {
+        }
+	}
+	
+	public static class LoggingErrorCallback implements JSourceFinderErrorCallback {
+		private final Logger logger;
+		
+		public LoggingErrorCallback(){
+			this(Logger.getLogger(LoggingMatchedCallback.class));
+		}
+		
+		public LoggingErrorCallback(Logger logger){
+			this.logger = checkNotNull(logger, "expect logger");
+		}
+
+		@Override
+        public void onError(Exception e) {
+			logger.warn("error", e);
+		}
+	}
+	
 }

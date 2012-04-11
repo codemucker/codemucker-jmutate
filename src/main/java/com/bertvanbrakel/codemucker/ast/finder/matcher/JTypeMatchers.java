@@ -5,12 +5,14 @@ import java.util.regex.Pattern;
 
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.TestUtils;
 import com.google.common.base.Strings;
 /**
  * Provides convenience static methods for creating {@link Matcher<JType>} matchers
  */
-public class JTypeMatchers extends JMatchers {
+public class JTypeMatchers extends LogicalMatchers {
 
 	private static final Matcher<JType> ANONYMOUS_MATCHER = new Matcher<JType>() {
 		@Override
@@ -49,6 +51,16 @@ public class JTypeMatchers extends JMatchers {
 	
 	private JTypeMatchers() {
     	//prevent instantiation
+	}
+	
+	@SuppressWarnings("unchecked")
+    public static Matcher<JType> any() {
+		return LogicalMatchers.any();
+	}
+	
+	@SuppressWarnings("unchecked")
+    public static Matcher<JType> none() {
+		return LogicalMatchers.none();
 	}
 	
 	public static Matcher<JType> inPackage(final String pkgAntExpression){
@@ -103,13 +115,17 @@ public class JTypeMatchers extends JMatchers {
 			}
 		};
 	}
+
+	public static Matcher<JType> withName(final Class<?> matchingClassName){
+		return withName(matchingClassName.getName());
+	}
 	
 	public static Matcher<JType> withName(final String antPattern){
 		return new Matcher<JType>() {
 			private final Pattern pattern = TestUtils.antExpToPattern(antPattern);
 			@Override
 			public boolean matches(JType found) {
-				return pattern.matcher(found.getSimpleName()).matches();
+				return pattern.matcher(found.getFullName()).matches();
 			}
 		};
 	}

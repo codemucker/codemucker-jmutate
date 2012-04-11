@@ -17,12 +17,10 @@ package com.bertvanbrakel.codemucker.util;
 
 import static com.bertvanbrakel.codemucker.util.SourceUtil.assertSourceFileAstsMatch;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.getAstFromClassBody;
-import static com.bertvanbrakel.codemucker.util.SourceUtil.writeNewJavaFile;
+import static com.bertvanbrakel.codemucker.util.SourceUtil.writeResource;
 import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 
 import junit.framework.AssertionFailedError;
 
@@ -30,8 +28,6 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.junit.Test;
-
-import com.bertvanbrakel.codemucker.util.SrcWriter;
 
 public class SrcWriterTest {
 
@@ -45,8 +41,8 @@ public class SrcWriterTest {
 		src.append("\npublic void foo(){ this.myField = null; }");
 		src.append("\n}");
 
-		File srcFile = writeNewJavaFile(src).getFile();
-		File srcFile2 = writeNewJavaFile(src).getFile();
+		File srcFile = writeResource(src).getFile();
+		File srcFile2 = writeResource(src).getFile();
 
 		assertSourceFileAstsMatch(srcFile, srcFile2);
 	}
@@ -74,8 +70,8 @@ public class SrcWriterTest {
 		src2.println();
 		src2.println("}");
 
-		File srcFile = writeNewJavaFile(scr1).getFile();
-		File srcFile2 = writeNewJavaFile(src2).getFile();
+		File srcFile = writeResource(scr1).getFile();
+		File srcFile2 = writeResource(src2).getFile();
 
 		assertSourceFileAstsMatch(srcFile, srcFile2);
 	}
@@ -97,8 +93,8 @@ public class SrcWriterTest {
 		src2.append("\n}");
 		
 
-		File srcFile = writeNewJavaFile(src1).getFile();
-		File srcFile2 = writeNewJavaFile(src2).getFile();
+		File srcFile = writeResource(src1).getFile();
+		File srcFile2 = writeResource(src2).getFile();
 
 		Throwable expect = null;
 		try {

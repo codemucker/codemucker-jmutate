@@ -21,14 +21,10 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.finder.FindResultImpl;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatcher;
+import com.bertvanbrakel.codemucker.ast.finder.FindResultIterableBacked;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatcher;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatcher;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.Matcher;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
-import com.bertvanbrakel.test.bean.ClassUtils;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
 
 /**
  * A convenience wrapper around an Ast java type
@@ -37,14 +33,14 @@ public class JType implements JAnnotatable, AstNodeProvider {
 
 	private final AbstractTypeDeclaration typeNode;
 
-	public static final JTypeMatcher MATCH_ALL_TYPES = new JTypeMatcher() {
+	public static final Matcher<JType> MATCH_ALL_TYPES = new Matcher<JType>() {
 		@Override
 		public boolean matches(JType found) {
 			return true;
 		}
 	};
 	
-	public static final JMethodMatcher MATCH_ALL_METHODS = new JMethodMatcher() {
+	public static final Matcher<JMethod> MATCH_ALL_METHODS = new Matcher<JMethod>() {
 		@Override
 		public boolean matches(JMethod found) {
 			return true;
@@ -83,13 +79,13 @@ public class JType implements JAnnotatable, AstNodeProvider {
 		return names;
 	}
 	
-	public FindResult<JType> findChildTypesMatching(JTypeMatcher matcher){
+	public FindResult<JType> findChildTypesMatching(Matcher<JType> matcher){
 		List<JType> found = newArrayList();
 		findChildTypesMatching(this, matcher, found);
-		return FindResultImpl.from(found);
+		return FindResultIterableBacked.from(found);
 	}
 	
-	/* package */ void findChildTypesMatching(JTypeMatcher matcher, List<JType> found){
+	/* package */ void findChildTypesMatching(Matcher<JType> matcher, List<JType> found){
 		findChildTypesMatching(this, matcher, found);
 	}
 	
@@ -99,7 +95,7 @@ public class JType implements JAnnotatable, AstNodeProvider {
 		return found;
 	}
 	
-	private void findChildTypesMatching(JType type, JTypeMatcher matcher, List<JType> found) {
+	private void findChildTypesMatching(JType type, Matcher<JType> matcher, List<JType> found) {
 		if (type.isClass()) {
 			for (TypeDeclaration child : type.asType().getTypes()) {
 				JType childJavaType = new JType(child);
@@ -121,7 +117,7 @@ public class JType implements JAnnotatable, AstNodeProvider {
 	public FindResult<JField> findFieldsMatching(Matcher<JField> matcher) {
 		List<JField> found = newArrayList();
 		findFieldsMatching(matcher, found);
-		return FindResultImpl.from(found);
+		return FindResultIterableBacked.from(found);
 	}
 	
 	private void findFieldsMatching(final Matcher<JField> matcher, final List<JField> found) {
@@ -143,13 +139,13 @@ public class JType implements JAnnotatable, AstNodeProvider {
 	public FindResult<JMethod> findMethodsMatching(Matcher<JMethod> matcher) {
 		List<JMethod> found = newArrayList();
 		findMethodsMatching(matcher, found);
-		return FindResultImpl.from(found);
+		return FindResultIterableBacked.from(found);
 	}
 
 	public FindResult<JMethod> findAllJavaMethods() {
 		List<JMethod> found = newArrayList();
 		findMethodsMatching(MATCH_ALL_METHODS, found);
-		return FindResultImpl.from(found);
+		return FindResultIterableBacked.from(found);
 	}
 	
 	private void findMethodsMatching(final Matcher<JMethod> matcher, final List<JMethod> found) {

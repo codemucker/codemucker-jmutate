@@ -1,6 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
 import static com.bertvanbrakel.lang.Check.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,23 +13,21 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatcher;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
+import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
 public class JSourceFile implements JSource, AstNodeProvider {
 	
-	private final ClasspathResource location;
+	private final ClassPathResource resource;
 	private final AstCreator astCreator;
 	//created on demand
 	private transient CompilationUnit compilationUnit;
 
-	public JSourceFile(ClasspathResource location, AstCreator astCreator) {
-		checkNotNull("location", location);
-		checkNotNull("astCreator", astCreator);
-		this.location = location;
-		this.astCreator = astCreator;
+	public JSourceFile(ClassPathResource location, AstCreator astCreator) {
+		this.resource = checkNotNull("location", location);
+		this.astCreator = checkNotNull("astCreator", astCreator);
 	}
 	
 	@Override
@@ -58,10 +57,13 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	}
 
 	@Override
-	public ClasspathResource getLocation(){
-		return location;
+	public ClassPathResource getLocation(){
+		return resource;
 	}
 	
+	/**
+	 * @deprecated use {@link #getMainType()}
+	 */
 	@Deprecated
 	public JType getMainJType() {
 		return getMainType();
@@ -74,7 +76,7 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	
 	public String getClassnameBasedOnPath(){
 		String simpleName = getSimpleClassnameBasedOnPath();
-		String pkg = location.getPackagePart();
+		String pkg = resource.getPackagePart();
 		if( pkg != null ){
 			return pkg + "." + simpleName;
 		}
@@ -82,7 +84,7 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	}
 	
 	public String getSimpleClassnameBasedOnPath(){
-		String name = ClassNameUtil.upperFirstChar(location.getFilenamePart());
+		String name = ClassNameUtil.upperFirstChar(resource.getBaseFileNamePart());
 		return name;
 	}
 	
@@ -100,7 +102,7 @@ public class JSourceFile implements JSource, AstNodeProvider {
 			}
 		}
 		Collection<String> names = extractNames(types);
-		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, location.getRelativePath(), Arrays.toString(names.toArray()));
+		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
 	}
 	
 
@@ -112,7 +114,7 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	 * Look through all top level types and all their children for any type with the given name. 
 	 */
 	public JType getTypeWithName(final String simpleName) {
-		JTypeMatcher matcher = new JTypeMatcher() {
+		Matcher<JType> matcher = new Matcher<JType>() {
 			@Override
 			public boolean matches(JType found) {
 				return found.getSimpleName().equals(simpleName);
@@ -125,20 +127,20 @@ public class JSourceFile implements JSource, AstNodeProvider {
 		if (found.size() == 1) {
 			return found.get(0);
 		}
-		return null;
+		throw new CodemuckerException("Could not find type with name '%s' in %s", simpleName, this);
 	}
 
 	public List<JType> findAllTypes(){
 		return internalFindTypesMatching(JType.MATCH_ALL_TYPES);
 	}
 	
-	public List<JType> findTypesMatching(JTypeMatcher matcher){
+	public List<JType> findTypesMatching(Matcher<JType> matcher){
 		return internalFindTypesMatching(matcher);
 	}
 	
-	private List<JType> internalFindTypesMatching(JTypeMatcher matcher){
-		List<JType> found = new ArrayList<JType>();
-		for( JType type:getJavaTypes()){
+	private List<JType> internalFindTypesMatching(Matcher<JType> matcher){
+		List<JType> found = newArrayList();
+		for( JType type:getJTypes()){
 			if( matcher.matches(type)){
 				found.add(type);
 			}
@@ -148,15 +150,15 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	}
 
 	private static Collection<String> extractNames(List<AbstractTypeDeclaration> types){
-		Collection<String> names = new ArrayList<String>();
+		Collection<String> names = newArrayList();
 		for( AbstractTypeDeclaration type:types){
 			names.add(type.getName().toString());
 		}
 		return names;
 	}
 
-	public List<JType> getJavaTypes() {
-		List<JType> javaTypes = new ArrayList<JType>();
+	public List<JType> getJTypes() {
+		List<JType> javaTypes = newArrayList();
 		for( AbstractTypeDeclaration type:getTypes()){
 			javaTypes.add(new JType(type));
 		}
@@ -170,13 +172,13 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	
 	public CompilationUnit getCompilationUnit() {
 		if (compilationUnit == null) {
-			compilationUnit = astCreator.create(location.getFile());
+			compilationUnit = astCreator.create(resource.getFile());
 		}
 		return compilationUnit;
 	}
 
 	public String readSource() {
-		return SourceUtil.readSource(location.getFile());
+		return SourceUtil.readSource(resource.getFile());
 	}
 
 	public String toString() {

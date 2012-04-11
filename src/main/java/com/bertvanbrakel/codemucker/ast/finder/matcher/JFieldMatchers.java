@@ -7,11 +7,13 @@ import org.eclipse.jdt.core.dom.Type;
 
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JField;
+import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.TestUtils;
 
-public class JFieldMatchers extends JMatchers  {
+public class JFieldMatchers extends LogicalMatchers  {
 
-	private static final JFieldMatcher MATCH_ANY  = new JFieldMatcher() {
+	private static final Matcher<JField> MATCH_ANY  = new Matcher<JField>() {
 		
 		@Override
 		public boolean matches(JField found) {
@@ -19,11 +21,12 @@ public class JFieldMatchers extends JMatchers  {
 		}
 	};
 	
-	public static JFieldMatcher any(){
+	@SuppressWarnings("unchecked")
+    public static Matcher<JField> any(){
 		return MATCH_ANY;
 	}
-	public static JFieldMatcher ofType(final Matcher<Type> typeMatcher){
-		return new JFieldMatcher() {
+	public static Matcher<JField> ofType(final Matcher<Type> typeMatcher){
+		return new Matcher<JField>() {
 			@Override
 			public boolean matches(JField found) {
 				return typeMatcher.matches(found.getFieldNode().getType());
@@ -31,8 +34,8 @@ public class JFieldMatchers extends JMatchers  {
 		};
 	}
 	
-	public static JFieldMatcher withName(final String antPattern){
-		return new JFieldMatcher() {
+	public static Matcher<JField> withName(final String antPattern){
+		return new Matcher<JField>() {
 			private final Pattern pattern = TestUtils.antExpToPattern(antPattern);		
 			@Override
 			public boolean matches(JField found) {
@@ -46,8 +49,8 @@ public class JFieldMatchers extends JMatchers  {
 		};
 	}
 	
-	public static <A extends Annotation> JFieldMatcher withAnnotation(final Class<A> annotationClass){
-		return new JFieldMatcher() {
+	public static <A extends Annotation> Matcher<JField> withAnnotation(final Class<A> annotationClass){
+		return new Matcher<JField>() {
 			@Override
 			public boolean matches(JField found) {
 				return found.hasAnnotationOfType(annotationClass);
@@ -55,8 +58,8 @@ public class JFieldMatchers extends JMatchers  {
 		};
 	}
 
-	public static  JFieldMatcher hasAccess(final JAccess access){
-		return new JFieldMatcher() {
+	public static  Matcher<JField> hasAccess(final JAccess access){
+		return new Matcher<JField>() {
 			@Override
 			public boolean matches(JField found) {
 				return found.isAccess(access);

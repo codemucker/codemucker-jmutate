@@ -2,66 +2,12 @@ package com.bertvanbrakel.codemucker.ast.finder.matcher;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.google.common.base.Objects;
 
-public class JMatchers {
 
-	/**
-     * Synonym for {@link #and(JTypeMatcher...)}
-     */
-    public static <T> Matcher<T> all(final Matcher<T>... matchers) {
-    	return and(matchers);
-    }
-
-	public static <T> Matcher<T> and(final Matcher<T>... matchers) {
-    	return new Matcher<T>() {
-    		@Override
-    		public boolean matches(T found) {
-    			for(Matcher<T> matcher:matchers){
-    				if( !matcher.matches(found)){
-    					return false;
-    				}
-    			}
-    			return true;
-    		}
-    	};
-    }
-
-	/**
-     * Synonym for {@link #or(JTypeMatcher...)}
-     */
-    public static <T> Matcher<T> either(final Matcher<T>... matchers) {
-    	return or(matchers);
-    }
-
-	/**
-     * Synonym for {@link #or(JTypeMatcher...)}
-     */
-    public static <T> Matcher<T> any(final Matcher<T>... matchers) {
-    	return or(matchers);
-    }
-
-	public static <T> Matcher<T> or(final Matcher<T>... matchers) {
-    	return new Matcher<T>() {
-    		@Override
-    		public boolean matches(T found) {
-    			for(Matcher<T> matcher:matchers){
-    				if( matcher.matches(found)){
-    					return true;
-    				}
-    			}
-    			return false;
-    		}
-    	};
-    }
-
-	public static <T> Matcher<T> not(final Matcher<T> matcher) {
-    	return new Matcher<T>() {
-    		@Override
-    		public boolean matches(T found) {
-    			return !matcher.matches(found);
-    		}
-    	};
-    }
+public class IntegerMatchers extends LogicalMatchers {
 
 	public static Matcher<Integer> equalTo(final int require) {
 		return new Matcher<Integer>() {
@@ -69,6 +15,11 @@ public class JMatchers {
 			public boolean matches(Integer found) {
 				return found.intValue() == require;
 			}
+			
+			@Override
+    		public String toString(){
+    			return Objects.toStringHelper("MatcheEqualTo").add("val", require).toString();
+    		}
 		};
 	}
 
@@ -78,6 +29,11 @@ public class JMatchers {
 			public boolean matches(Integer found) {
 				return found.intValue() > require;
 			}
+			
+			@Override
+    		public String toString(){
+    			return Objects.toStringHelper("MatchGreaterThan").add("val", require).toString();
+    		}
 		};
 	}
 
@@ -87,6 +43,10 @@ public class JMatchers {
 			public boolean matches(Integer found) {
 				return found.intValue() >= require;
 			}
+			@Override
+    		public String toString(){
+    			return Objects.toStringHelper("MatchGreaterOrEqualTo").add("val", require).toString();
+    		}
 		};
 	}
 
@@ -96,6 +56,11 @@ public class JMatchers {
 			public boolean matches(Integer found) {
 				return found.intValue() > require;
 			}
+			
+			@Override
+    		public String toString(){
+    			return Objects.toStringHelper("MatchLessThan").add("val", require).toString();
+    		}
 		};
 	}
 
@@ -105,6 +70,11 @@ public class JMatchers {
 			public boolean matches(Integer found) {
 				return found.intValue() <= require;
 			}
+			
+			@Override
+    		public String toString(){
+    			return Objects.toStringHelper("MatchLessThanOrEqualTo").add("val", require).toString();
+    		}
 		};
 	}
 
@@ -119,7 +89,11 @@ public class JMatchers {
 				int val = found.intValue();
 				return val >= from && val <= to;
 			}
+			
+			@Override
+    		public String toString(){
+    			return Objects.toStringHelper("MatchRangeInclusive").add("from", from).add("to", to).toString();
+    		}
 		};
 	}
-
 }

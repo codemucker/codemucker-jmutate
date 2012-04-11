@@ -22,108 +22,111 @@ import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.JTypeMutator;
+import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult.KeyProvider;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.FileMatchers;
+import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.Matcher;
 import com.bertvanbrakel.codemucker.refactor.a.TstBean;
 import com.bertvanbrakel.test.bean.ClassUtils;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.bertvanbrakel.test.finder.matcher.ResourceMatchers;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 import com.google.common.collect.Lists;
 
 public class RefactorTest {
 
-	@Test
-	public void test_add_getters_setters_builder(){
-		JSourceFinder finder = new JSourceFinder();
-		finder.getOptions()
-			.includeClassesDir(false)
-			.includeTestDir(true)
-			.includeFile(FileMatchers.inPackage(TstBean.class))
-			.includeTypes(JTypeMatchers.withAnnotation(GenerateBean.class))
-		;
-		FindResult<JType> found = finder.findTypes();
-		
-		for(JType type:found){
-			assertEquals(TstBean.class.getName(), type.getFullName());			
-			//TODO:generate getters/setters
-			
-			FindResult<JField> fields = type.findAllFields();
-			//FindResult<JMethod> methods = type.findAllJavaMethods();
-			//findMethods().asMap,asCollection,... FindResults object?
-			Map<String,MethodDef> setterMap = newHashMap();
-			Map<String,MethodDef> getterMap = newHashMap();
-			
-			KeyProvider<String, JMethod> propertyNameProvider = new KeyProvider<String, JMethod>() {
-				
-				@Override
-				public String getKeyFor(JMethod method) {
-					return extractPropertyName(method);
-				}
-			};
-			
-			Lists.
-			
-			
-			FindResult<JMethod> getters = type.findMethodsMatching(getterMatcher());
-			FindResult<JMethod> setters = type.findMethodsMatching(setterMatcher());
-			
-			
-			//find existing getters/setters
-			for( JMethod method:methods){
-				MethodDef def = extracteMthodDef(method);
-				if( def != null) {
-					if( def.isReader()){
-						getterMap.put(def.name, def);
-					} else if (def.isWriter()){
-						setterMap.put(def.name, def);
-					}
-				}
-			}
-			JTypeMutator typeMut = type.asMutator();
-			
-			//find getters/setters by name, _or_annotation marker....
-			for( JField field:fields){
-				//TODO:find corresponding methods
-				//TODO:determien if to ignore getter/setter for this field. Class annon, field annon?
-				Collection<String> propertyNames = extractPropertyNames(field);
-				for( String name:propertyNames){
-					MethodDef def = setterMap.get(name);
-					if( def == null){
-						 Collection<Object> args = newArrayList();
-						 args.add(ClassNameUtil.upperFirstChar(name));
-						 args.add(field.getFieldNode().getType());
-						 args.add(name);
-						 args.add(name);
-						 args.add(name);
-						 
-						 typeMut.addMethod("public void set%s(%s %s){ this.%s = %s; }",args.toArray());
-					}
-					def = getterMap.get(name);
-					if( def == null){
-						 Collection<Object> args = newArrayList();
-						 args.add(field.getFieldNode().getType());
-						 args.add(ClassNameUtil.upperFirstChar(name));
-						 args.add(name);
-						 
-						 typeMut.addMethod("public %s get%s(){ return this.%s; }",args.toArray());	
-					}	
-				}
-			}
-			
-			
-			
-			fail("TODO:implement me!");	
-		}
-		JChangeSet changes = new JChangeSet();
-		for( JType type:found){
-			type.getTypeNode().getAST()
-			changes.add(type)
-		}
-		changes.save();
-	}
+//	@Test
+//	public void test_add_getters_setters_builder(){
+//		JSourceFinder finder = JSourceFinder.newBuilder()
+//			.setSearchPaths(SearchPathsBuilder.newBuilder()
+//				.setIncludeClassesDir(false)
+//				.setIncludeTestDir(true)
+//			)
+//			.setFilter(FilterBuilder.newBuilder()
+//				.setIncludeResource(ResourceMatchers.inPackage(TstBean.class))
+//				.setIncludeTypes(JTypeMatchers.withAnnotation(GenerateBean.class))
+//			)
+//			.build();
+//		
+//		FindResult<JType> found = finder.findTypes();
+//		
+//		for(JType type:found){
+//			assertEquals(TstBean.class.getName(), type.getFullName());			
+//			//TODO:generate getters/setters
+//			
+//			FindResult<JField> fields = type.findAllFields();
+//			//FindResult<JMethod> methods = type.findAllJavaMethods();
+//			//findMethods().asMap,asCollection,... FindResults object?
+//			Map<String,MethodDef> setterMap = newHashMap();
+//			Map<String,MethodDef> getterMap = newHashMap();
+//			
+//			KeyProvider<String, JMethod> propertyNameProvider = new KeyProvider<String, JMethod>() {
+//				
+//				@Override
+//				public String getKeyFor(JMethod method) {
+//					return extractPropertyName(method);
+//				}
+//			};
+//			
+//			FindResult<JMethod> getters = type.findMethodsMatching(getterMatcher());
+//			FindResult<JMethod> setters = type.findMethodsMatching(setterMatcher());
+//			
+//			
+//			//find existing getters/setters
+//			for( JMethod method:methods){
+//				MethodDef def = extracteMthodDef(method);
+//				if( def != null) {
+//					if( def.isReader()){
+//						getterMap.put(def.name, def);
+//					} else if (def.isWriter()){
+//						setterMap.put(def.name, def);
+//					}
+//				}
+//			}
+//			JTypeMutator typeMut = type.asMutator();
+//			
+//			//find getters/setters by name, _or_annotation marker....
+//			for( JField field:fields){
+//				//TODO:find corresponding methods
+//				//TODO:determien if to ignore getter/setter for this field. Class annon, field annon?
+//				Collection<String> propertyNames = extractPropertyNames(field);
+//				for( String name:propertyNames){
+//					MethodDef def = setterMap.get(name);
+//					if( def == null){
+//						 Collection<Object> args = newArrayList();
+//						 args.add(ClassNameUtil.upperFirstChar(name));
+//						 args.add(field.getFieldNode().getType());
+//						 args.add(name);
+//						 args.add(name);
+//						 args.add(name);
+//						 
+//						 typeMut.addMethod("public void set%s(%s %s){ this.%s = %s; }",args.toArray());
+//					}
+//					def = getterMap.get(name);
+//					if( def == null){
+//						 Collection<Object> args = newArrayList();
+//						 args.add(field.getFieldNode().getType());
+//						 args.add(ClassNameUtil.upperFirstChar(name));
+//						 args.add(name);
+//						 
+//						 typeMut.addMethod("public %s get%s(){ return this.%s; }",args.toArray());	
+//					}	
+//				}
+//			}
+//			
+//			
+//			
+//			fail("TODO:implement me!");	
+//		}
+//		JChangeSet changes = new JChangeSet();
+//		for( JType type:found){
+//			type.getTypeNode().getAST()
+//			changes.add(type)
+//		}
+//		changes.save();
+//	}
 	
 	static class JChangeSet{
 		
@@ -135,7 +138,7 @@ public class RefactorTest {
 		
 	}
 	
-	private Matcher<JMethod> getterMatcher(){
+	private com.bertvanbrakel.test.finder.matcher.Matcher<JMethod> getterMatcher(){
 		return new Matcher<JMethod>(){
 			@Override
             public boolean matches(JMethod found) {
@@ -144,7 +147,7 @@ public class RefactorTest {
 		};
 	}
 	
-	private Matcher<JMethod> setterMatcher(){
+	private com.bertvanbrakel.test.finder.matcher.Matcher<JMethod> setterMatcher(){
 		return new Matcher<JMethod>(){
 			@Override
             public boolean matches(JMethod found) {

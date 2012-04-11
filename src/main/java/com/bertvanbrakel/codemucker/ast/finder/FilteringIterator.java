@@ -5,19 +5,27 @@ import static com.bertvanbrakel.lang.Check.checkNotNull;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import com.bertvanbrakel.codemucker.ast.finder.matcher.Matcher;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
 
-class FilteringIterator<T> implements Iterator<T> {
+/**
+ * Iterator which filters a source iterator
+ * @param <T>
+ */
+public class FilteringIterator<T> implements Iterator<T> {
 
-	private final Iterator<T> items;
+	private final Iterator<T> source;
 	private final Matcher<T> matcher;
 	
 	private T nextItem;
 
-	public FilteringIterator(Iterator<T> types, Matcher<T> matcher) {
-		checkNotNull("types", types);
+	/**
+	 * @param source the backing iterator which provides the item to iterate over
+	 * @param matcher the matcher which filters the source iterator
+	 */
+	public FilteringIterator(Iterator<T> source, Matcher<T> matcher) {
+		checkNotNull("types", source);
 		checkNotNull("matcher", matcher);
-		this.items = types;
+		this.source = source;
 		this.matcher = matcher;
 
 		nextItem = nextItem();
@@ -39,8 +47,8 @@ class FilteringIterator<T> implements Iterator<T> {
 	}
 
 	private T nextItem() {
-		while (items.hasNext()) {
-			T type = items.next();
+		while (source.hasNext()) {
+			T type = source.next();
 			if (matcher.matches(type)) {
 				return type;
 			}

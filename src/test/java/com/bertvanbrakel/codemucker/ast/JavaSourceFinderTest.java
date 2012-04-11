@@ -8,20 +8,24 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.JSourceFinderOptions;
+import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 
 public class JavaSourceFinderTest {
 
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
-		JSourceFinder finder = new JSourceFinder();
-		JSourceFinderOptions opts = finder.getOptions();
-		opts.includeClassesDir(false);
-		opts.includeTestDir(true);
-		opts.includeTypes(JTypeMatchers.withAnnotation(MyAnnotation.class));
-
+		JSourceFinder finder = JSourceFinder.newBuilder()
+			.setSearchPaths(SearchPathsBuilder.newBuilder()
+				.setIncludeClassesDir(false)
+				.setIncludeTestDir(true)
+			)
+			.setFilter(FilterBuilder.newBuilder()
+				.setIncludeTypes(JTypeMatchers.withAnnotation(MyAnnotation.class))
+			)
+			.build();
 		boolean found = false;
 		List<JType> foundTypes = list(finder.findTypes());
 		
@@ -38,12 +42,12 @@ public class JavaSourceFinderTest {
 	
 	@Test
 	public void testFindWithMethods(){
-		JSourceFinder finder = new JSourceFinder();
-		JSourceFinderOptions opts = finder.getOptions();
-		opts.includeClassesDir(true);
-		opts.includeTestDir(true);
-		//opts.includeTypeMatching(JTypeMatchers.)
-		
+		JSourceFinder finder = JSourceFinder.newBuilder()
+			.setSearchPaths(SearchPathsBuilder.newBuilder()
+				.setIncludeClassesDir(true)
+				.setIncludeTestDir(true)
+			)
+			.build();
 		finder.findMethods();
 	}
 	

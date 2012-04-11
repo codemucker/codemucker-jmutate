@@ -8,18 +8,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.bertvanbrakel.codemucker.ast.finder.matcher.Matcher;
+import com.bertvanbrakel.test.finder.matcher.Matcher;
 
-public class FindResultImpl<T> implements FindResult<T> {
 
-	private final Iterable<T> results;
+public class FindResultIterableBacked<T> implements FindResult<T> {
 
-	public static <T> FindResultImpl<T> from(Iterable<T> results){
-		return new FindResultImpl<T>(results);
+	private final Iterable<T> source;
+
+	public static <T> FindResultIterableBacked<T> from(Iterable<T> source){
+		return new FindResultIterableBacked<T>(source);
 	}
 	
-	public static <T> FindResultImpl<T> from(Iterator<T> results){
-		return new FindResultImpl<T>(toIterable(results));
+	public static <T> FindResultIterableBacked<T> from(Iterator<T> results){
+		return new FindResultIterableBacked<T>(toIterable(results));
 	}
 	
 	private static <T> Iterable<T> toIterable(Iterator<T> iter){
@@ -35,28 +36,28 @@ public class FindResultImpl<T> implements FindResult<T> {
 	 * @param results can be null in which case it is treated as an empty list
 	 */
 	@SuppressWarnings("unchecked")
-    public FindResultImpl(Iterable<T> results) {
+    public FindResultIterableBacked(Iterable<T> results) {
 	    super();
-	    this.results = results==null?Collections.EMPTY_LIST:results;
+	    this.source = results==null?Collections.EMPTY_LIST:results;
     }
 
 	@Override
     public Iterator<T> iterator() {
-	    return results.iterator();
+	    return source.iterator();
     }
 
 	@Override
     public List<T> asList() {
-		if( results instanceof List){
-			return (List<T>)results;
+		if( source instanceof List){
+			return (List<T>)source;
 		} else {
-			return newArrayList(results);
+			return newArrayList(source);
 		}
 	}
 
 	@Override
     public FindResult<T> filter(Matcher<T> matcher) {
-		return FindResultImpl.from(new FilteringIterator<T>(results.iterator(), matcher));
+		return FindResultIterableBacked.from(new FilteringIterator<T>(source.iterator(), matcher));
     }
 
 	@Override

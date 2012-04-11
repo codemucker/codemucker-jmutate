@@ -25,37 +25,56 @@ import com.bertvanbrakel.codemucker.ast.AssertingAstMatcher;
 import com.bertvanbrakel.codemucker.ast.AstCreator;
 import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
-import com.bertvanbrakel.codemucker.ast.finder.ClasspathResource;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
+import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.ClassPathRoot;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
 public class SourceUtil {
 
 	private static AtomicLong uniqueIdCounter = new AtomicLong();
 
-	public static ClasspathResource writeNewJavaFile(SrcWriter src) {
-		File srcDir = new File(ProjectFinder.findTargetDir(), "junit-test-generate");
-		return writeNewJavaFile(src, srcDir);
+	public static JSourceFile writeNewJavaFile(SrcWriter writer) {
+		return writeJavaSrc(writer, findRootDir(), newJavaFQDN());
 	}
 
-	public static ClasspathResource writeNewJavaFile(SrcWriter src, File srcDir) {
-		String relativePath = newJavaFilePath();
-		ClasspathResource resource = new ClasspathResource(srcDir, relativePath);
-		writeFile(src, resource.getFile());
-		return resource;
+	public static JSourceFile writeJavaSrc(SrcWriter writer, String fqClassName) {
+		return writeJavaSrc(writer, findRootDir(), fqClassName);
 	}
 	
-	public static JSourceFile writeJavaSrc(SrcWriter writer, File classDir, String fqClassName) throws IOException {
-		String path = fqClassName.replace('.', '/') + ".java";
-		ClasspathResource resource = new ClasspathResource(classDir, path);
-
-		writeFile(writer, resource.getFile());
-
+	public static JSourceFile writeJavaSrc(SrcWriter writer, File rootDir, String fqClassName) {
+		String relPath = fqClassName.replace('.', '/') + ".java";
+		ClassPathResource resource = writeResource(writer, rootDir, relPath);
 		JSourceFile srcFile = new JSourceFile(resource, new DefaultAstCreator());
 		return srcFile;
 	}
+
+	public static ClassPathResource writeResource(SrcWriter writer) {
+		return writeResource(writer,newResourceName());
+	}
 	
-	public static void writeFile(SrcWriter src, File destFile) {
+	public static ClassPathResource writeResource(SrcWriter writer, String relPath) {
+		return writeResource(writer, findRootDir(), relPath);
+	}
+
+	private static File findRootDir() {
+	    return new File(ProjectFinder.findTargetDir(), "junit-test-generate");
+    }
+	
+	public static ClassPathResource writeResource(SrcWriter writer, File rootDir, String relPath) {
+		ClassPathRoot root = new ClassPathRoot(rootDir);
+		File resourceFile = new File(rootDir.getAbsolutePath(), relPath);
+		ClassPathResource resource = new ClassPathResource(root, resourceFile, relPath, false);
+		writeResource(writer, resource);
+		return resource;
+	}
+
+	public static ClassPathResource writeResource(SrcWriter writer, ClassPathResource resource) {
+		writeFile(writer, resource.getFile());
+		return resource;
+	}
+	
+	public static void writeFile(SrcWriter writer, File destFile) {
 		FileOutputStream fos = null;
 		try {
 			if( !destFile.exists()){
@@ -63,7 +82,7 @@ public class SourceUtil {
 				destFile.createNewFile();
 			}
 			fos = new FileOutputStream(destFile);
-			IOUtils.write(src.getSource(), fos);
+			IOUtils.write(writer.getSource(), fos);
 		} catch (FileNotFoundException e) {
 	        throw new BeanGenerationException("Can't find file " + destFile==null?null:destFile.getAbsolutePath(),e);
         } catch (IOException e) {
@@ -73,15 +92,15 @@ public class SourceUtil {
 		}
 	}
 	
-	public static void assertSourceFileAstsMatch(ClasspathResource expected, ClasspathResource actual) throws IOException {
+	public static void assertSourceFileAstsMatch(ClassPathResource expected, ClassPathResource actual) {
 		assertSourceFileAstsMatch(expected.getFile(), actual.getFile());
 	}
-	
-	public static void assertSourceFileAstsMatch(File expected,File actual) throws IOException {
+
+	public static void assertSourceFileAstsMatch(File expected, File actual) {
 		assertTrue("Sources AST's don't match", sourceFileAstsMatch(expected, actual));
 	}
 
-	public static boolean sourceFileAstsMatch(File expectSrc,File actualSrc) throws IOException {
+	public static boolean sourceFileAstsMatch(File expectSrc, File actualSrc) {
 		CompilationUnit expectCu = getAstFromFileWithNoErrors(expectSrc);
 		CompilationUnit actualCu = getAstFromFileWithNoErrors(actualSrc);
 
@@ -90,8 +109,7 @@ public class SourceUtil {
 		return expectCu.subtreeMatch(matcher, actualCu);
 	}
 
-	public static JSourceFile getJavaSourceFrom(ClasspathResource resource) {
-		CompilationUnit cu = getAstFromFile(resource.getFile());
+	public static JSourceFile getJavaSourceFrom(ClassPathResource resource) {
 		return new JSourceFile(resource, newDefaultAstCreator());
 	}
 
@@ -159,20 +177,19 @@ public class SourceUtil {
 
 		// In order to parse 1.5 code, some compiler options need to be set
 		// to 1.5
-		Map options = JavaCore.getOptions();
+		@SuppressWarnings("rawtypes")
+        Map options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_1_5, options);
 		parser.setCompilerOptions(options);
 		
 		return parser;
 	}
 	
-	
-	public static String newJavaFilePath(){
-		return "com/bertvanbrakel/test/generate/" + newFileName();
+	private static String newJavaFQDN(){
+		return "com.bertvanbrakel.codemucker.randomjunit.Java" + uniqueIdCounter.incrementAndGet();
 	}
 	
-	public static String newFileName(){
-		return "file" + uniqueIdCounter.incrementAndGet() + ".java";
+	private static String newResourceName(){
+		return "com/bertvanbrakel/codemucker/randomjunit/Resource" + uniqueIdCounter.incrementAndGet() + ".text";
 	}
-
 }

@@ -16,7 +16,6 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatcher;
 import com.bertvanbrakel.codemucker.util.SourceUtil;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.lang.matcher.IsCollectionOf;
@@ -118,7 +117,7 @@ public class JTypeTest {
 	
 		JType type = newJavaType(w, "foo.bar.Foo", "MyTestClass");
 
-		FindResult<JMethod> foundMethods = type.findMethodsMatching(new JMethodMatcher() {
+		FindResult<JMethod> foundMethods = type.findMethodsMatching(new com.bertvanbrakel.test.finder.matcher.Matcher<JMethod>() {
 			@Override
 			public boolean matches(JMethod found) {
 				return found.getName().startsWith("get");
@@ -144,7 +143,7 @@ public class JTypeTest {
 	
 		JType type = newJavaType(w, "foo.bar.Foo", "MyTestClass");
 
-		FindResult<JMethod> foundMethods = type.findMethodsMatching(new JMethodMatcher() {
+		FindResult<JMethod> foundMethods = type.findMethodsMatching(new com.bertvanbrakel.test.finder.matcher.Matcher<JMethod>() {
 			@Override
 			public boolean matches(JMethod found) {
 				return found.isConstructor();
@@ -191,10 +190,6 @@ public class JTypeTest {
 
 	private JSourceFile newJavaSrc(SrcWriter writer, String fqClassName) {
 		File classRootDir = helper.createTempDir();
-		try {
-			return SourceUtil.writeJavaSrc(writer, classRootDir, fqClassName);
-		} catch (IOException e) {
-			throw new CodemuckerException("Couldn't writre tmp java source file", e);
-		}
+		return SourceUtil.writeJavaSrc(writer, classRootDir, fqClassName);
 	}
 }
