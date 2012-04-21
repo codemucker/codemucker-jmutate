@@ -1,39 +1,21 @@
 package com.bertvanbrakel.codemucker.refactor;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.annotation.BeanProperty;
-import com.bertvanbrakel.codemucker.annotation.GenerateBean;
 import com.bertvanbrakel.codemucker.ast.AstNodeProvider;
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.JAnnotatable;
 import com.bertvanbrakel.codemucker.ast.JAnnotation;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JMethod;
-import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.JTypeMutator;
-import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
-import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.finder.FindResult.KeyProvider;
-import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
-import com.bertvanbrakel.codemucker.refactor.a.TstBean;
 import com.bertvanbrakel.test.bean.ClassUtils;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
-import com.bertvanbrakel.test.finder.matcher.ResourceMatchers;
-import com.bertvanbrakel.test.util.ClassNameUtil;
-import com.google.common.collect.Lists;
 
 public class RefactorTest {
 

@@ -1,16 +1,11 @@
 package com.bertvanbrakel.codemucker.ast;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
 
-import junit.framework.ComparisonFailure;
-
-import org.eclipse.jdt.core.dom.ASTMatcher;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.Ignore;
 import org.junit.Test;

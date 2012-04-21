@@ -29,7 +29,6 @@ import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JTypeMutator;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
-import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
 import com.bertvanbrakel.test.finder.ClassPathResource;

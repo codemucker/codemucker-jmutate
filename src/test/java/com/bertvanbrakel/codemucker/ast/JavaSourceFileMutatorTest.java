@@ -8,8 +8,6 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
-import com.bertvanbrakel.codemucker.util.SourceUtil;
-import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.util.TestHelper;
 
 public class JavaSourceFileMutatorTest {
