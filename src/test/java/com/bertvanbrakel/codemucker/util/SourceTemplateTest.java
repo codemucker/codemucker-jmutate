@@ -24,14 +24,14 @@ import junit.framework.AssertionFailedError;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.DefaultMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 
 public class SourceTemplateTest {
 
-	private MutationContext ctxt = new DefaultMutationContext();
+	private MutationContext ctxt = new SimpleMutationContext();
 	
 	@Test
 	public void test_sameSrcFileMatches() throws Exception {

@@ -24,7 +24,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.DefaultMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JTypeMutator;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
@@ -53,7 +53,7 @@ public class BeanBuilderGeneratorTest {
 
 	@Test
 	public void test_addGetter_and_setter() throws Exception {
-		MutationContext ctxt = new DefaultMutationContext();
+		MutationContext ctxt = new SimpleMutationContext();
 		
 		SourceTemplate srcBefore = ctxt.newSourceTemplate();
 		srcBefore.println("package com.bertvanbrakel.codegen.bean;");

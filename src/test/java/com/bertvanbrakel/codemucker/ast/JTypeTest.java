@@ -18,7 +18,7 @@ import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.lang.matcher.IsCollectionOf;
 public class JTypeTest {
 
-	MutationContext ctxt = new DefaultMutationContext();
+	MutationContext ctxt = new SimpleMutationContext();
 	
 	@Test
 	public void testIsAbstract() {

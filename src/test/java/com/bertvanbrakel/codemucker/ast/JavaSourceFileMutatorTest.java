@@ -13,7 +13,7 @@ import com.bertvanbrakel.test.util.TestHelper;
 public class JavaSourceFileMutatorTest {
 
 	TestHelper helper = new TestHelper();
-	MutationContext context = new DefaultMutationContext();
+	MutationContext context = new SimpleMutationContext();
 	
 	@Test
 	public void testGetMainType() throws Exception {

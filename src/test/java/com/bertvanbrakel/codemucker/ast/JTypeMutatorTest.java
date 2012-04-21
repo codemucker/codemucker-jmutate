@@ -21,7 +21,7 @@ import com.bertvanbrakel.test.util.TestHelper;
 
 public class JTypeMutatorTest {
 
-	private MutationContext context = new DefaultMutationContext();
+	private MutationContext context = new SimpleMutationContext();
 	
 	@Test
 	public void testAddSimpleField() throws Exception {		

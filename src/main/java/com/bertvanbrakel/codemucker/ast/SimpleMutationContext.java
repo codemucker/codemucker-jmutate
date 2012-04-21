@@ -4,12 +4,12 @@ import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.codemucker.transform.StringTemplate;
 
-public class DefaultMutationContext implements MutationContext {
+public class SimpleMutationContext implements MutationContext {
 
 	private final PlacementStrategies strategyProvider  = new PlacementStrategies();
 	private final JAstParser parser = JAstParser.newBuilder().build();
 	
-	public DefaultMutationContext(){
+	public SimpleMutationContext(){
 	}
 
 	@Override

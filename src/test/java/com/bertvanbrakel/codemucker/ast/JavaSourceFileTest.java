@@ -12,7 +12,7 @@ import com.bertvanbrakel.test.util.TestHelper;
 public class JavaSourceFileTest {
 
 	TestHelper helper = new TestHelper();
-	MutationContext ctxt = new DefaultMutationContext();
+	MutationContext ctxt = new SimpleMutationContext();
 
 	@Test
 	public void testGetSimpleClassnameBasedOnPath() {
