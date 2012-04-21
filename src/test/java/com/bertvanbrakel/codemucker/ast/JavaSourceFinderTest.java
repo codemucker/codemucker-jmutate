@@ -23,7 +23,7 @@ public class JavaSourceFinderTest {
 				.setIncludeTestDir(true)
 			)
 			.setFilter(FilterBuilder.newBuilder()
-				.setIncludeTypes(JTypeMatchers.withAnnotation(MyAnnotation.class))
+				.addIncludeTypes(JTypeMatchers.withAnnotation(MyAnnotation.class))
 			)
 			.build();
 		boolean found = false;

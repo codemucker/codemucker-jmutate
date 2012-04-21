@@ -23,6 +23,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.FindResultIterableBacked;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
+import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 
@@ -107,8 +108,8 @@ public class JType implements JAnnotatable, AstNodeProvider {
 		}
 	}
 	
-	public JTypeMutator asMutator(){
-		return new JTypeMutator(this);
+	public JTypeMutator asMutator(MutationContext ctxt){
+		return new JTypeMutator(ctxt, this);
 	}
 
 	public FindResult<JField> findAllFields(){
@@ -126,7 +127,7 @@ public class JType implements JAnnotatable, AstNodeProvider {
 		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
 			@Override
 			public boolean visit(FieldDeclaration node) {
-				JField field = new JField(parent, node);
+				JField field = new JField(node);
 				if (matcher.matches(field)) {
 					found.add(field);
 				}
@@ -154,7 +155,7 @@ public class JType implements JAnnotatable, AstNodeProvider {
 		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
 			@Override
 			public boolean visit(MethodDeclaration node) {
-				JMethod javaMethod = new JMethod(parent, node);
+				JMethod javaMethod = new JMethod(node);
 				if (matcher.matches(javaMethod)) {
 					found.add(javaMethod);
 				}
@@ -172,7 +173,7 @@ public class JType implements JAnnotatable, AstNodeProvider {
 		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
 			@Override
 			public boolean visit(MethodDeclaration node) {
-				JMethod javaMethod = new JMethod(parent, node);
+				JMethod javaMethod = new JMethod(node);
 				if (matcher.matches(javaMethod)) {
 					foundMethod.set(true);
 					return false;
@@ -195,7 +196,7 @@ public class JType implements JAnnotatable, AstNodeProvider {
     	return typeNode;
     }
 
-	protected AST getAst() {
+	public AST getAst() {
 		return typeNode.getAST();
 	}
 
@@ -211,7 +212,7 @@ public class JType implements JAnnotatable, AstNodeProvider {
 	}
 
 	public String getFullName(){
-		return JavaNameUtil.getQualifiedName(typeNode.getName());
+		return JavaNameUtil.getQualifiedNameFor(typeNode);
 	}
 	
 	public String getSimpleName(){

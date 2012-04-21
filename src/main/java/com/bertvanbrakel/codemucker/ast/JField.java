@@ -14,14 +14,10 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 public class JField implements JAnnotatable, AstNodeProvider {
 
-	private final JType parentType;
 	private final FieldDeclaration fieldNode;
 	
-	public JField(JType parentType, FieldDeclaration fieldNode) {
-		checkNotNull(parentType, "expect parent java type");
-		checkNotNull(fieldNode, "expect java field node");
-
-		this.parentType = parentType;
+	public JField(FieldDeclaration fieldNode) {
+		checkNotNull(fieldNode, "expect field declaration");
 		this.fieldNode = fieldNode;
 	}
 
@@ -30,14 +26,10 @@ public class JField implements JAnnotatable, AstNodeProvider {
 		return fieldNode;
 	}
 	
-	public JType getParentType() {
-    	return parentType;
-    }
-	
 	public FieldDeclaration getFieldNode() {
     	return fieldNode;
     }
-	
+
 	public boolean hasName(String name){
 		return getNames().contains(name);
 	}

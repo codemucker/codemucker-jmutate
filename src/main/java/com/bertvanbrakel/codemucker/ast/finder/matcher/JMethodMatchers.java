@@ -11,7 +11,12 @@ import com.bertvanbrakel.test.util.TestUtils;
 
 public class JMethodMatchers extends LogicalMatchers {
 
-	public static Matcher<JMethod> withName(final String antPattern) {
+	/**
+	 * Return a matcher which matches using the given ant style method name expression
+	 * @param antPattern ant style pattern. E.g. *foo*bar??Ho
+	 * @return
+	 */
+	public static Matcher<JMethod> withMethodNamed(final String antPattern) {
 		return new Matcher<JMethod>() {
 			private final Pattern pattern = TestUtils.antExpToPattern(antPattern);
 
@@ -30,6 +35,15 @@ public class JMethodMatchers extends LogicalMatchers {
 	@SuppressWarnings("unchecked")
     public static Matcher<JMethod> none() {
 		return LogicalMatchers.none();
+	}
+
+	public static Matcher<JMethod> isConstructor() {
+		return new Matcher<JMethod>() {
+			@Override
+			public boolean matches(JMethod found) {
+				return found.isConstructor();
+			}
+		};
 	}
 	
 	public static Matcher<JMethod> withAccess(final JAccess access) {
@@ -72,4 +86,20 @@ public class JMethodMatchers extends LogicalMatchers {
 		};
 	}
 
+	public static Matcher<JMethod> withNameAndArgSignature(JMethod method) {
+		final String name = method.getName();
+		final int numArgs = method.getMethodNode().typeParameters().size();
+		final String sig = method.toClashDetectionSignature();
+
+		return new Matcher<JMethod>() {
+			@Override
+			public boolean matches(JMethod found) {
+				//test using the quickest and least resource intensive matches first
+				return numArgs == found.getMethodNode().typeParameters().size() 
+					&& name.equals(found.getName()) 
+					&& sig.equals(found.toClashDetectionSignature());
+			}
+		};
+	}
+	
 }

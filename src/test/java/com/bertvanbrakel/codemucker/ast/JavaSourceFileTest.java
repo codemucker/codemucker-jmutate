@@ -4,14 +4,15 @@ import static junit.framework.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.util.SourceUtil;
-import com.bertvanbrakel.codemucker.util.SrcWriter;
+import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 import com.bertvanbrakel.test.util.TestHelper;
 
 public class JavaSourceFileTest {
 
 	TestHelper helper = new TestHelper();
+	MutationContext ctxt = new DefaultMutationContext();
 
 	@Test
 	public void testGetSimpleClassnameBasedOnPath() {
@@ -26,12 +27,11 @@ public class JavaSourceFileTest {
 	}
 
 	private JSourceFile newSourceFile(String path) {
-		String name = path.replace('/', '.');
-		String shortName = ClassNameUtil.extractShortClassNamePart(name);
-		SrcWriter writer = new SrcWriter();
-		writer.append("public class " + shortName + "  {}");
-		
-		return SourceUtil.writeJavaSrc(writer,name);
+		String fqn = path.replace('/', '.');
+		String shortName = ClassNameUtil.extractShortClassNamePart(fqn);
+		SourceTemplate template = ctxt.newSourceTemplate();
+		template.println("public class " + shortName + "  {}");
+		return template.asSourceFileWithFQN(fqn);
 	}
 
 }

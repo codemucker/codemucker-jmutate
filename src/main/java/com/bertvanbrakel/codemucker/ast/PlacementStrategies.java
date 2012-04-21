@@ -8,34 +8,36 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-public class DefaultStrategyProvider {
+import com.bertvanbrakel.codemucker.transform.PlacementStrategy;
 
-	private static final InsertionStrategy STRATEGY_FIELD = new StrategyBeforeAfterNodes(
+public class PlacementStrategies {
+
+	public static final PlacementStrategy STRATEGY_FIELD = new StrategyBeforeAfterNodes(
 			col(FieldDeclaration.class),
 		    col(MethodDeclaration.class, TypeDeclaration.class, EnumDeclaration.class));
-	private static final InsertionStrategy STRATEGY_METHOD = new StrategyBeforeAfterNodes(
+	public static final PlacementStrategy STRATEGY_METHOD = new StrategyBeforeAfterNodes(
 			col(MethodDeclaration.class, FieldDeclaration.class, EnumDeclaration.class),
 	        col(TypeDeclaration.class));
-	private static final InsertionStrategy STRATEGY_CTOR = new StrategyBeforeAfterNodes(
+	public static final PlacementStrategy STRATEGY_CTOR = new StrategyBeforeAfterNodes(
 			col(FieldDeclaration.class, EnumDeclaration.class), 
 			col(TypeDeclaration.class));
-	private static final InsertionStrategy STRATEGY_CLASS = new StrategyBeforeAfterNodes(
+	public static final PlacementStrategy STRATEGY_CLASS = new StrategyBeforeAfterNodes(
 			col(FieldDeclaration.class, MethodDeclaration.class, EnumDeclaration.class, TypeDeclaration.class),
 		    col());
 
-	public InsertionStrategy getFieldStrategy(){
+	public PlacementStrategy getFieldStrategy(){
 		return STRATEGY_FIELD;
 	}
 	
-	public InsertionStrategy getMethodStrategy(){
+	public PlacementStrategy getMethodStrategy(){
 		return STRATEGY_METHOD;
 	}
 	
-	public InsertionStrategy getCtorStrategy(){
+	public PlacementStrategy getCtorStrategy(){
 		return STRATEGY_CTOR;
 	}
 	
-	public InsertionStrategy getClassStrategy(){
+	public PlacementStrategy getClassStrategy(){
 		return STRATEGY_CLASS;
 	}
 

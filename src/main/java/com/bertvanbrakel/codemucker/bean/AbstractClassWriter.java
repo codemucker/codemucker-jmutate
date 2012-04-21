@@ -1,7 +1,6 @@
 package com.bertvanbrakel.codemucker.bean;
 
 
-import com.bertvanbrakel.codemucker.ast.JTypeMutator;
 import com.bertvanbrakel.lang.MapBuilder;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.lang.interpolator.Interpolator;

@@ -5,7 +5,7 @@ import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder.JSourceFinderFilterCallback;
 import com.bertvanbrakel.test.finder.ClassPathResource;
-import com.bertvanbrakel.test.finder.ClassPathRoot;
+import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.google.common.base.Objects;
@@ -14,7 +14,7 @@ import com.google.common.base.Objects;
  * Thread safe if underlying matchers are
  */
 public class MatcherBackedFilter implements JSourceFinderFilterCallback {
-	private final Matcher<ClassPathRoot> classPathMatcher;
+	private final Matcher<Root> classPathMatcher;
 	private final Matcher<String> resourceNameMatcher;
 	private final Matcher<ClassPathResource> resourceMatcher;
 	private final Matcher<String> classNameMatcher;
@@ -27,7 +27,7 @@ public class MatcherBackedFilter implements JSourceFinderFilterCallback {
 	}
 	
 	private MatcherBackedFilter(
-			Matcher<ClassPathRoot> classPathMatcher
+			Matcher<Root> classPathMatcher
 			, Matcher<String> resourceNameMatcher
 			, Matcher<ClassPathResource> resourceMatcher
 			, Matcher<String> classNameMatcher
@@ -55,7 +55,7 @@ public class MatcherBackedFilter implements JSourceFinderFilterCallback {
     }
 
 	@Override
-    public boolean matches(ClassPathRoot root) {
+    public boolean matches(Root root) {
         return classPathMatcher.matches(root);
     }
 
@@ -91,7 +91,7 @@ public class MatcherBackedFilter implements JSourceFinderFilterCallback {
 	}
 
 	public static class Builder {
-		private Matcher<ClassPathRoot> classPathMatcher;
+		private Matcher<Root> classPathMatcher;
 		private Matcher<String> resourceNameMatcher;
 		private Matcher<ClassPathResource> resourceMatcher;
 		private Matcher<String> classNameMatcher;
@@ -123,7 +123,7 @@ public class MatcherBackedFilter implements JSourceFinderFilterCallback {
 			return copy;
 		}
 		
-		public MatcherBackedFilter.Builder setClassPathMatcher(Matcher<ClassPathRoot> classPathMatcher) {
+		public MatcherBackedFilter.Builder setClassPathMatcher(Matcher<Root> classPathMatcher) {
         	this.classPathMatcher = classPathMatcher;
         	return this;
 		}

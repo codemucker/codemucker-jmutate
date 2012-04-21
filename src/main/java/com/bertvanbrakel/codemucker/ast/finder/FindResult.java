@@ -8,7 +8,7 @@ import com.bertvanbrakel.test.finder.matcher.Matcher;
 
 public interface FindResult<T> extends Iterable<T> {
 
-	public List<T> asList();
+	public List<T> toList();
 
 	/**
 	 * Return a new view over the current results using the given filter
@@ -22,7 +22,7 @@ public interface FindResult<T> extends Iterable<T> {
 	 * @param keyProvider
 	 * @return
 	 */
-	public <K> Map<K,T> asMap(KeyProvider<K, T> keyProvider);
+	public <K> Map<K,T> toMap(KeyProvider<K, T> keyProvider);
 
 	public static interface KeyProvider<K,V> {
 		public K getKeyFor(V value);

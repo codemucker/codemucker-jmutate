@@ -1,5 +1,8 @@
 package com.bertvanbrakel.codemucker.util;
 
+import static com.google.common.collect.Lists.newArrayListWithCapacity;
+
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -14,9 +17,31 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Joiner;
 
 public class JavaNameUtil {
 
+	public static String getQualifiedNameFor(AbstractTypeDeclaration type) {
+		//TODO:handle anonymous inner classes....
+		List<String> parts = newArrayListWithCapacity(5);
+		//just adds the simple name
+		parts.add(type.getName().getFullyQualifiedName());
+		ASTNode parent = type.getParent();
+		while (parent != null) {
+			if (parent instanceof AbstractTypeDeclaration) {
+				//just adds the enclosing types simple name
+				parts.add(((AbstractTypeDeclaration) parent).getName().getFullyQualifiedName());
+			}
+			parent = parent.getParent();
+		}
+		String pkg = getPackageFor(type);
+		if (pkg != null) {
+			parts.add(pkg);
+		}
+		Collections.reverse(parts);
+		return Joiner.on('.').join(parts);
+	}
 	/**
 	 * Extract teh fuly qualified name from the given name, looking up parent if required
 	 * @param name
@@ -91,11 +116,35 @@ public class JavaNameUtil {
 		return null;
 	}
 
-	/* package for testing */ static String resolveFqnFromDeclaredTypes(CompilationUnit cu, SimpleName name) {
-		TypeDeclaration parentType = getParentTypeOrNull(name);
+	/**
+	 * Attempt to resolve the given name from all the declared types in the given compilation unit.
+	 *
+	 *
+	 * <p>E.g, given
+	 * <pre>
+	 * package com.mycompany;
+	 * 
+	 * public class Foo {
+	 *   public class Foo2 {
+	 *   	public class Foo3 {
+	 *     		Foo2 doIt(){return null);
+	 *   	}
+	 *   } 
+	 * }
+	 * </pre>
+	 * when passing in the name of the return type for the do it method, this will return com.mycompany.Foo2
+	 * </p>
+	 * @param cu
+	 * @param name
+	 * @return
+	 */
+	@VisibleForTesting
+	static String resolveFqnFromDeclaredTypes(CompilationUnit cu, SimpleName name) {
+		TypeDeclaration parentType = getEnclosingTypeOrNull(name);
 		return resolveFqnFromDeclaredType(parentType,name);
 	}
 
+	@VisibleForTesting	
 	static String resolveFqnFromDeclaredType(TypeDeclaration type, SimpleName name) {
 		if( type == null ){
 			return null;
@@ -132,7 +181,7 @@ public class JavaNameUtil {
 		//TODO:annotations
 		
 		//not found yet, lets now try parents
-		TypeDeclaration parentType = getParentTypeOrNull(type);
+		TypeDeclaration parentType = getEnclosingTypeOrNull(type);
 		return resolveFqnFromDeclaredType(parentType, name);
 	}
 	
@@ -143,10 +192,10 @@ public class JavaNameUtil {
 	private static String packageAndName(ASTNode node, String name){
 		CompilationUnit cu = getCompilationUnit(node);
 		String pkg = getPackagePrefixFrom(cu);
-		TypeDeclaration parent = getParentTypeOrNull(node);		
+		TypeDeclaration parent = getEnclosingTypeOrNull(node);		
 		while (parent != null) {
 			pkg = pkg + parent.getName().getIdentifier() + "$";
-			parent = getParentTypeOrNull(parent);
+			parent = getEnclosingTypeOrNull(parent);
 		}
 		return pkg + name;
 	}
@@ -181,7 +230,10 @@ public class JavaNameUtil {
 		return pkg;
 	}
 	
-	private static TypeDeclaration getParentTypeOrNull(ASTNode node) {
+	/**
+	 * Return the first parent node which is of type {@link TypeDeclaration} or null if no parent could be found
+	 */
+	private static TypeDeclaration getEnclosingTypeOrNull(ASTNode node) {
 		ASTNode parent = node.getParent();
 		while (parent != null) {
 			if (parent instanceof TypeDeclaration) {

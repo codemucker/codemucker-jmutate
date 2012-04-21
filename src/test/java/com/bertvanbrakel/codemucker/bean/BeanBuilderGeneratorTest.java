@@ -15,7 +15,7 @@
  */
 package com.bertvanbrakel.codemucker.bean;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.assertSourceFileAstsMatch;
+import static com.bertvanbrakel.codemucker.util.SourceUtil.assertAstsMatch;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.getJavaSourceFrom;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.writeResource;
 
@@ -24,8 +24,11 @@ import java.util.Date;
 
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.ast.DefaultMutationContext;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JTypeMutator;
+import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.codemucker.util.SrcWriter;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
@@ -51,14 +54,16 @@ public class BeanBuilderGeneratorTest {
 
 	@Test
 	public void test_addGetter_and_setter() throws Exception {
-		SrcWriter srcBefore = new SrcWriter();
+		MutationContext ctxt = new DefaultMutationContext();
+		
+		SourceTemplate srcBefore = ctxt.newSourceTemplate();
 		srcBefore.println("package com.bertvanbrakel.codegen.bean;");
 		srcBefore.println( "public class TestBeanModify {");
 		srcBefore.println( "@BeanProperty");
 		srcBefore.println( "private String myField;" );
 		srcBefore.println("}");
 
-		SrcWriter srcExpected = new SrcWriter();
+		SourceTemplate srcExpected = ctxt.newSourceTemplate();
 		srcExpected.println("package com.bertvanbrakel.codegen.bean;");
 		srcExpected.println( "public class TestBeanModify {");
 		srcExpected.println( "@BeanProperty");
@@ -71,17 +76,17 @@ public class BeanBuilderGeneratorTest {
 		ClassPathResource srcFileExpected = writeResource(srcExpected);
 		
 		JSourceFile source = getJavaSourceFrom(modifiedSrcFile);
-		JTypeMutator mut = source.getTopTypeWithName("TestBeanModify").asMutator();
+		JTypeMutator mut = source.getTopTypeWithName("TestBeanModify").asMutator(ctxt);
 		
 		//now lets add a getter and setter
 		mut.addMethod("public void setMyField(String myField ){ this.myField = myField;}");
 		mut.addMethod("public String getMyField(){ return this.myField;}");
 		
 		//write new AST back to file
-		source.asMutator().writeChangesToSrcFile();
+		source.writeModificationsToDisk();
 		
 		//then check it matches what we expect
-		assertSourceFileAstsMatch(srcFileExpected, modifiedSrcFile);
+		assertAstsMatch(srcFileExpected, modifiedSrcFile);
 	}
 	
 	private void addProperty(BeanDefinition def, Class<?> propertyType) {

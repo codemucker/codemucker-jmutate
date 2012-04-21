@@ -8,15 +8,16 @@ import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder.JSourceFinderFilterCallback;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JSourceMatchers;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 import com.bertvanbrakel.test.finder.ClassPathResource;
-import com.bertvanbrakel.test.finder.ClassPathRoot;
+import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.matcher.IncludeExcludeMatcherBuilder;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.finder.matcher.ResourceMatchers;
 
 public class FilterBuilder {
 
-	private IncludeExcludeMatcherBuilder<ClassPathRoot> roots = IncludeExcludeMatcherBuilder.newBuilder();
+	private IncludeExcludeMatcherBuilder<Root> roots = IncludeExcludeMatcherBuilder.newBuilder();
 	private IncludeExcludeMatcherBuilder<String> resourceNames = IncludeExcludeMatcherBuilder.newBuilder();
 	private IncludeExcludeMatcherBuilder<ClassPathResource> resources = IncludeExcludeMatcherBuilder.newBuilder();	
 	private IncludeExcludeMatcherBuilder<String> classNames = IncludeExcludeMatcherBuilder.newBuilder();
@@ -121,12 +122,22 @@ public class FilterBuilder {
 		return this;
 	}
 	
-	public FilterBuilder setIncludeTypes(Matcher<JType> matcher){
+	public FilterBuilder addIncludeTypesWithMethods(Matcher<JMethod> matcher){
+		addIncludeTypes(JTypeMatchers.withMethod(matcher));
+		return this;
+	}
+	
+	public FilterBuilder addExcludeTypesWithMethods(Matcher<JMethod> matcher){
+		addExcludeTypes(JTypeMatchers.withMethod(matcher));
+		return this;
+	}
+	
+	public FilterBuilder addIncludeTypes(Matcher<JType> matcher){
 		types.addInclude(matcher);
 		return this;
 	}
 	
-	public FilterBuilder setExcludeTypes(Matcher<JType> matcher){
+	public FilterBuilder addExcludeTypes(Matcher<JType> matcher){
 		types.addExclude(matcher);
 		return this;
 	}

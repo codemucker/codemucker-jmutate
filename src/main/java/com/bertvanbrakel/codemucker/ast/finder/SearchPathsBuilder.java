@@ -13,13 +13,14 @@ import java.util.Set;
 
 import com.bertvanbrakel.test.finder.ClassFinderException;
 import com.bertvanbrakel.test.finder.ClassPathRoot;
-import com.bertvanbrakel.test.finder.ClassPathRoot.TYPE;
+import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.Root.TYPE;
 import com.bertvanbrakel.test.util.ProjectFinder;
 import com.bertvanbrakel.test.util.ProjectResolver;
 
 public class SearchPathsBuilder {
 	
-	private final Map<String,ClassPathRoot> classPathsRoots = newLinkedHashMap();
+	private final Map<String,Root> classPathsRoots = newLinkedHashMap();
 	
 	private ProjectResolver projectResolver;
 
@@ -37,9 +38,10 @@ public class SearchPathsBuilder {
 	}
 	
 	/**
-	 * Return a mutable list of class path roots
+	 * Return a mutable list of class path roots. CHanges in the builder are not reflected in the returned
+	 * list (or vice versa)
 	 */
-	public List<ClassPathRoot> build(){
+	public List<Root> build(){
 		ProjectResolver resolver = toResolver();
 		
 		SearchPathsBuilder copy = new SearchPathsBuilder();
@@ -60,10 +62,10 @@ public class SearchPathsBuilder {
 	}
 	
 	private ProjectResolver toResolver(){
-		return projectResolver!=null?projectResolver:ProjectFinder.getDefaultResolver();
+		return projectResolver != null ? projectResolver : ProjectFinder.getDefaultResolver();
 	}
 	
-	public SearchPathsBuilder copyOf(){
+	public SearchPathsBuilder copyOf() {
 		SearchPathsBuilder copy = new SearchPathsBuilder();
 		copy.projectResolver = projectResolver;
 		copy.includeClassesDir = includeClassesDir;
@@ -117,7 +119,7 @@ public class SearchPathsBuilder {
     }
 	
 	public SearchPathsBuilder addClassPaths(Collection<File> paths, TYPE type) {
-		for( File path:paths){
+		for(File path:paths){
 			addClassPath(new ClassPathRoot(path,type));
 		}
     	return this;
@@ -128,14 +130,14 @@ public class SearchPathsBuilder {
     	return this;
     }
 
-	public SearchPathsBuilder addClassPaths(Iterable<ClassPathRoot> roots) {
-		for(ClassPathRoot root:roots){
+	public SearchPathsBuilder addClassPaths(Iterable<Root> roots) {
+		for(Root root:roots){
 			addClassPath(root);
 		}
 		return this;
 	}
 	
-	public SearchPathsBuilder addClassPath(ClassPathRoot root) {
+	public SearchPathsBuilder addClassPath(Root root) {
 		String key = root.getPathName();
 		if (root.isTypeKnown() || !classPathsRoots.containsKey(key)) {
 			classPathsRoots.put(key, root);

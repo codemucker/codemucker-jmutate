@@ -45,7 +45,7 @@ public class JavaAnnotationTest {
 			.build();
 	
 		FindResult<JSourceFile> found = finder.findSources();
-		assertEquals(1,found.asList().size());
+		assertEquals(1,found.toList().size());
 		JSourceFile sf = found.iterator().next();
 		JType type = sf.getTypeWithName(TestBean.class);
 		Collection<Annotation> annons = type.getAnnotations();

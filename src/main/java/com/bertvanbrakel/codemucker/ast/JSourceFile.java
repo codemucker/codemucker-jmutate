@@ -3,17 +3,26 @@ package com.bertvanbrakel.codemucker.ast;
 import static com.bertvanbrakel.lang.Check.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.util.ArrayList;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.text.edits.MalformedTreeException;
+import org.eclipse.text.edits.TextEdit;
 
-import com.bertvanbrakel.codemucker.util.SourceUtil;
+import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
+import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.ClassNameUtil;
@@ -21,13 +30,90 @@ import com.bertvanbrakel.test.util.ClassNameUtil;
 public class JSourceFile implements JSource, AstNodeProvider {
 	
 	private final ClassPathResource resource;
-	private final AstCreator astCreator;
-	//created on demand
-	private transient CompilationUnit compilationUnit;
+	private final CompilationUnit compilationUnit;
+	private final CharSequence sourceCode;
 
-	public JSourceFile(ClassPathResource location, AstCreator astCreator) {
-		this.resource = checkNotNull("location", location);
-		this.astCreator = checkNotNull("astCreator", astCreator);
+	public JSourceFile(ClassPathResource resource, CompilationUnit cu, CharSequence sourceCode) {
+		this.resource = checkNotNull("resource", resource);
+		this.sourceCode = sourceCode;
+		this.compilationUnit = cu;
+	}
+
+	public static JSourceFile fromResource(ClassPathResource resource, ASTParser parser){
+		checkNotNull("resource", resource);
+		checkNotNull("parser", parser);
+		
+		String src;
+		try {
+			src = resource.readAsString();
+		} catch(IOException e){
+			throw new CodemuckerException("Error reading resource contents " + resource,e);
+		}
+		
+		return fromSource(resource, src, parser);
+	}
+	
+	public static JSourceFile fromSource(ClassPathResource resource, CharSequence sourceCode, ASTParser parser){
+		checkNotNull("resource", resource);
+		checkNotNull("parser", parser);
+		
+		CompilationUnit cu = JAstParser.newBuilder().setParser(parser).build().parseCompilationUnit(sourceCode);
+		return new JSourceFile(resource, cu, sourceCode);
+	}
+
+	/**
+	 * Write any modifications to the AST back to disk. May throw an exception if the resource is not modifiable
+	 */
+	public void writeModificationsToDisk() {
+		if( hasModifications() ){
+			internalWriteChangesToFile();
+		}
+	}
+
+	public boolean hasModifications(){
+		return getCompilationUnit().getAST().modificationCount() > 0;
+	}
+
+	private void internalWriteChangesToFile() {
+		//TODO:check current contents of resource to validate no changes between the time we loaded
+		//it and now?
+		String src = getModifiedSource();
+		OutputStream os = null;
+		try {
+			os = resource.getOutputStream();
+			IOUtils.write(src, os);
+		} catch (FileNotFoundException e) {
+			throw new CodemuckerException("Couldn't write source to file" + resource, e);
+		} catch (IOException e) {
+			throw new CodemuckerException("Couldn't write source to file" + resource, e);
+		} finally {
+			IOUtils.closeQuietly(os);
+		}
+	}
+	
+	/**
+	 * Return the source as it would look with all the current modifications to the AST applied
+	 */
+	public String getModifiedSource(){
+    	Document doc = new Document(getOriginalSource());
+    	TextEdit edits = getCompilationUnit().rewrite(doc, null);
+    	try {
+    		edits.apply(doc);
+    	} catch (MalformedTreeException e) {
+    		throw new BeanGenerationException("can't apply changes", e);
+    	} catch (BadLocationException e) {
+    		throw new BeanGenerationException("can't apply changes", e);
+    	}
+    
+    	String updatedSrc = doc.get();
+    	return updatedSrc;
+	}		
+	
+	/**
+	 * Return the source as it was before any modifications were applied
+	 */
+	public String getOriginalSource() {
+		return sourceCode==null?null:sourceCode.toString();
 	}
 	
 	@Override
@@ -35,7 +121,6 @@ public class JSourceFile implements JSource, AstNodeProvider {
 		return compilationUnit;
 	}
 	
-
 	public void visit(JSourceFileVisitor visitor) {
 		if (visitor.visit(this)) {
 			CompilationUnit cu = getCompilationUnit();
@@ -47,26 +132,13 @@ public class JSourceFile implements JSource, AstNodeProvider {
 		}
 	}
 
-	public JSourceFileMutator asMutator(){
-		return new JSourceFileMutator(this);
+	public JSourceFileMutator asMutator(MutationContext ctxt){
+		return new JSourceFileMutator(ctxt, this);
 	}
 	
-	@Override
-	public AstCreator getAstCreator() {
-		return astCreator;
-	}
-
 	@Override
 	public ClassPathResource getLocation(){
 		return resource;
-	}
-	
-	/**
-	 * @deprecated use {@link #getMainType()}
-	 */
-	@Deprecated
-	public JType getMainJType() {
-		return getMainType();
 	}
 
 	public JType getMainType() {
@@ -84,8 +156,7 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	}
 	
 	public String getSimpleClassnameBasedOnPath(){
-		String name = ClassNameUtil.upperFirstChar(resource.getBaseFileNamePart());
-		return name;
+		return ClassNameUtil.upperFirstChar(resource.getBaseFileNamePart());
 	}
 	
 	public JType getTopTypeWithName(Class<?> type){
@@ -94,15 +165,16 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	/**
 	 * Look through just the top level types for this file for a type with the given name
 	 */
-	public JType  getTopTypeWithName(String simpleName){
-		List<AbstractTypeDeclaration> types = getTypes();
+	public JType getTopTypeWithName(String simpleName){
+		List<AbstractTypeDeclaration> types = getTopTypes();
 		for( AbstractTypeDeclaration type:types){
-			if( simpleName.equals(type.getName().toString())){
+			//fqn is actually just the shortname
+			if( simpleName.equals(type.getName().getFullyQualifiedName())){
 				return new JType(type);
 			}
 		}
 		Collection<String> names = extractNames(types);
-		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
+		throw new CodemuckerException("Can't find top level type named '%s' in resource '%s'. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
 	}
 	
 
@@ -140,7 +212,7 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	
 	private List<JType> internalFindTypesMatching(Matcher<JType> matcher){
 		List<JType> found = newArrayList();
-		for( JType type:getJTypes()){
+		for( JType type:getTopJTypes()){
 			if( matcher.matches(type)){
 				found.add(type);
 			}
@@ -157,28 +229,21 @@ public class JSourceFile implements JSource, AstNodeProvider {
 		return names;
 	}
 
-	public List<JType> getJTypes() {
+	public List<JType> getTopJTypes() {
 		List<JType> javaTypes = newArrayList();
-		for( AbstractTypeDeclaration type:getTypes()){
+		for( AbstractTypeDeclaration type:getTopTypes()){
 			javaTypes.add(new JType(type));
 		}
 		return javaTypes;
 	}
 	
 	@SuppressWarnings("unchecked")
-	public List<AbstractTypeDeclaration> getTypes() {
+	public List<AbstractTypeDeclaration> getTopTypes() {
 		return getCompilationUnit().types();
 	}
 	
 	public CompilationUnit getCompilationUnit() {
-		if (compilationUnit == null) {
-			compilationUnit = astCreator.create(resource.getFile());
-		}
 		return compilationUnit;
-	}
-
-	public String readSource() {
-		return SourceUtil.readSource(resource.getFile());
 	}
 
 	public String toString() {

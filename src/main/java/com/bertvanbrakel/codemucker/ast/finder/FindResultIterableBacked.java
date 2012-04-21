@@ -47,7 +47,7 @@ public class FindResultIterableBacked<T> implements FindResult<T> {
     }
 
 	@Override
-    public List<T> asList() {
+    public List<T> toList() {
 		if( source instanceof List){
 			return (List<T>)source;
 		} else {
@@ -61,7 +61,7 @@ public class FindResultIterableBacked<T> implements FindResult<T> {
     }
 
 	@Override
-    public <K> Map<K, T> asMap(KeyProvider<K, T> maker) {
+    public <K> Map<K, T> toMap(KeyProvider<K, T> maker) {
 		Map<K, T> map = newHashMap();
 		for(T item:this){
 			K key = maker.getKeyFor(item);

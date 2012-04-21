@@ -1,6 +1,9 @@
 package com.bertvanbrakel.codemucker.ast;
 
 public class CodemuckerException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+
 	public CodemuckerException(String message, Throwable cause, Object... args) {
 		super(String.format(message, args), cause);
 	}

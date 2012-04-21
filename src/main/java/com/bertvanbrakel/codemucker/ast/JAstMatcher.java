@@ -96,7 +96,7 @@ import org.eclipse.jdt.core.dom.WildcardType;
  * A Matcher which throws {@link AssertionFailedError} when nodes don't match. This is so useful error messages are generated
  * on non matching Ast's. Copied and modified from IBM's ASTMatcher. 
  */
-public class AssertingAstMatcher extends ASTMatcher {
+public class JAstMatcher extends ASTMatcher {
 
 	/**
 	 * Indicates whether doc tags should be matched.
@@ -104,17 +104,8 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 */
 	private boolean matchDocTags;
 
-	/**
-	 * Creates a new AST matcher instance.
-	 * <p>
-	 * For backwards compatibility, the matcher ignores tag
-	 * elements below doc comments by default. Use
-	 * {@link #ASTMatcher(boolean) ASTMatcher(true)}
-	 * for a matcher that compares doc tags by default.
-	 * </p>
-	 */
-	public AssertingAstMatcher() {
-		this(false);
+	public static Builder newBuilder(){
+		return new Builder();
 	}
 
 	/**
@@ -124,8 +115,9 @@ public class AssertingAstMatcher extends ASTMatcher {
 	 * to be compared by default, and <code>false</code> otherwise
 	 * @see #match(Javadoc,Object)
 	 * @since 3.0
+	 * @See {@link #newBuilder()}
 	 */
-	public AssertingAstMatcher(boolean matchDocTags) {
+	private JAstMatcher(boolean matchDocTags) {
 		this.matchDocTags = matchDocTags;
 	}
 
@@ -2127,44 +2119,37 @@ public class AssertingAstMatcher extends ASTMatcher {
 	public boolean match(WildcardType node, Object other) {
 		WildcardType o = safeCast(WildcardType.class, other);
 		if( node.isUpperBound() != o.isUpperBound()){
-			fail("Expected upperbound=%s but was %s for <%s>", node.isUpperBound(), o.isUpperBound(), o);
+			return false;
 		}
 		return assertSubtreeMatch(node.getBound(), o.getBound());
 	}
 
 	private boolean assertSubtreeMatch(Object node1, Object node2){
-		boolean match = super.safeSubtreeMatch(node1, node2);
-		if (!match) {
-			//TODO:add line number in		  
-			fail("Nodes don't match. Expected <%s> but was <%s>", node1, node2);
-		}
-		return true;
+		return super.safeSubtreeMatch(node1, node2);
 	}
 	
 	private boolean assertSubtreeListMatch(List list1, List list2){
-		int size1 = list1.size();
-		int size2 = list2.size();
-		int count = 0;
-		Iterator it1 = list1.iterator();
-		Iterator it2 = list2.iterator();
+		@SuppressWarnings("unchecked")
+        Iterator<ASTNode> it1 = list1.iterator();
+		@SuppressWarnings("unchecked")
+        Iterator<ASTNode> it2 = list2.iterator();
 		for (; it1.hasNext() && it2.hasNext();) {
-			ASTNode n1 = (ASTNode) it1.next();
-			ASTNode n2 = (ASTNode) it2.next();
+			ASTNode n1 = it1.next();
+			ASTNode n2 = it2.next();
 			if (!n1.subtreeMatch(this, n2)) {
-				fail("Node lists items don't match at position %d. Expected <%s> but was <%s>. Expected list <%s> but was <%s>", count, n1, n2, list1, list2);
+				return false;
 			}
-			count++;
 		}
 		if( it1.hasNext()){
-			fail("Missing node item. Expected %d number of items, but was %d. Next item expected was <%s>. Expected list <%s>, but was <%s>", size1, size2, it1.next(), list1, list2);
+			return false;
 		}
 		if( it2.hasNext()){
-			fail("Addition node items. Expected %d number of items, but was %d. Additional item was <%s>. Expected list <%s>, but was <%s>", size1, size2, it2.next(), list1, list2);
+			return false;
 		}
 		return true;
 	}
 	
-	private void fail(String msg, Object... args){
+	private static void fail(String msg, Object... args){
 		Assert.fail(String.format(msg, args));
 	}
 	
@@ -2173,5 +2158,29 @@ public class AssertingAstMatcher extends ASTMatcher {
 			fail("Expected type %s but was %s", expectType.getName(), actual.getClass().getName());
 		}
 		return (T) actual;
+	}
+	
+	public static class Builder {
+		private boolean matchDocTags = false;
+
+		public JAstMatcher build(){
+			return new JAstMatcher(matchDocTags);
+		}
+		
+		public ASTMatcher buildNonAsserting(){
+			return new ASTMatcher(matchDocTags);
+		}
+		
+		public Builder copyOf(){
+			Builder copy = new Builder();
+			copy.matchDocTags = matchDocTags;
+			return copy;
+		}
+		
+		public Builder setMatchDocTags(boolean matchDocTags) {
+        	this.matchDocTags = matchDocTags;
+        	return this;
+        }
+				
 	}
 }

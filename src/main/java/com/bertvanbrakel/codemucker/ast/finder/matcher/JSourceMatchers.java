@@ -32,7 +32,7 @@ public class JSourceMatchers extends IntegerMatchers {
 	}
 	
 	public static Matcher<JSourceFile> withName(Class<?> className){
-		return containsType(JTypeMatchers.withName(className));
+		return containsType(JTypeMatchers.withTypeNamed(className));
 	}
 	
 	public static Matcher<JSourceFile> withName(String antPattern){
@@ -80,7 +80,7 @@ public class JSourceMatchers extends IntegerMatchers {
 		
 		@Override
         public boolean matches(JSourceFile found) {
-			for( JType type:found.getJTypes()){
+			for( JType type:found.getTopJTypes()){
 				if( typeMatcher.matches(type)){
 					return true;
 				}

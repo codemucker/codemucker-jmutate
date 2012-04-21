@@ -13,9 +13,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.eclipse.jdt.core.dom.ASTParser;
 
-import com.bertvanbrakel.codemucker.ast.AstCreator;
-import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
+import com.bertvanbrakel.codemucker.ast.JAstParser;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JSourceFileVisitor;
@@ -23,6 +23,7 @@ import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.ClassPathRoot;
 import com.bertvanbrakel.test.finder.LoggingMatchedCallback;
+import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.google.common.collect.ImmutableList;
 
@@ -49,12 +50,12 @@ public class JSourceFinder {
 	};
 	
 //	private final JContext context;
-	private final Collection<ClassPathRoot> classPathRoots;
+	private final Collection<Root> classPathRoots;
 	private final JSourceFinderFilterCallback filter;
 	private final JSourceFinderMatchedCallback matchedCallback;
 	private final JSourceFinderIgnoredCallback ignoredCallback;
 	private final JSourceFinderErrorCallback errorCallback;
-	private final AstCreator astCreator;
+	private final ASTParser parser;
 
 	private final Matcher<JType> TYPE_MATCHER = new Matcher<JType>(){
 		@Override
@@ -72,7 +73,7 @@ public class JSourceFinder {
 	
 	public static interface JSourceFinderMatchedCallback {
 		public void onMatched(Object obj);
-		public void onMatched(ClassPathRoot classPathRoot);
+		public void onMatched(Root classPathRoot);
 		public void onMatched(ClassPathResource child);
 		public void onMatched(JSourceFile file);
 		public void onMatched(JType type);
@@ -81,7 +82,7 @@ public class JSourceFinder {
 
 	public static interface JSourceFinderIgnoredCallback {
 		public void onIgnored(Object obj);
-		public void onIgnored(ClassPathRoot classPathRoot);
+		public void onIgnored(Root classPathRoot);
 		public void onIgnored(ClassPathResource dirResource);
 		public void onIgnored(JSourceFile file);
 		public void onIgnored(JType type);
@@ -90,7 +91,7 @@ public class JSourceFinder {
 
 	public static interface JSourceFinderFilterCallback {
 		public boolean matches(Object obj);
-		public boolean matches(ClassPathRoot root);
+		public boolean matches(Root root);
 		public boolean matches(ClassPathResource resource);
 		public boolean matches(JSourceFile file);
 		public boolean matches(JType type);
@@ -106,8 +107,8 @@ public class JSourceFinder {
 	}
 
 	public JSourceFinder(
-			AstCreator astCreator
-			, Iterable<ClassPathRoot> classPathRoots
+			ASTParser parser
+			, Iterable<Root> classPathRoots
 			, JSourceFinderFilterCallback filter
 			, JSourceFinderMatchedCallback matchedCallback
 			, JSourceFinderIgnoredCallback ignoredCallback
@@ -115,12 +116,12 @@ public class JSourceFinder {
 			) {
 		checkNotNull(classPathRoots, "expect class path roots");
 		
-		this.astCreator = checkNotNull(astCreator, "expect astCreator");
+		this.parser = checkNotNull(parser, "expect parser");
 		this.filter = checkNotNull(filter, "expect filter");
 		this.matchedCallback = checkNotNull(matchedCallback, "expect match callback");
 		this.ignoredCallback = checkNotNull(ignoredCallback, "expect ignored callback");
 		this.errorCallback = checkNotNull(errorCallback, "expect error callback");
-		this.classPathRoots = ImmutableList.<ClassPathRoot>builder().addAll(classPathRoots).build();
+		this.classPathRoots = ImmutableList.<Root>builder().addAll(classPathRoots).build();
 	}
 
 
@@ -162,7 +163,7 @@ public class JSourceFinder {
 		FindResult<ClassPathResource> resources = findResources();
 		for (ClassPathResource resource :  resources) {
 			if (resource.hasExtension(JAVA_EXTENSION)) {
-				JSourceFile source = new JSourceFile(resource, astCreator);
+				JSourceFile source = JSourceFile.fromResource(resource, parser);
 				if( filter.matches((Object)source) && filter.matches(source) ){
 					matchedCallback.onMatched(source);
 					sources.add(source);
@@ -176,12 +177,12 @@ public class JSourceFinder {
 	
 	public FindResult<ClassPathResource> findResources(){
 		Collection<ClassPathResource> resources = newHashSet();
-		Collection<ClassPathRoot> sourceDirs = getSourceDirsToSearch();
-		for (ClassPathRoot root: sourceDirs) {
+		Collection<Root> sourceDirs = getSourceDirsToSearch();
+		for (Root root: sourceDirs) {
 			if( filter.matches((Object)root) && filter.matches(root)){
     			if( root.isDirectory()){
     				matchedCallback.onMatched(root);
-    				walkResourceDir(resources, root);
+    				walkResourceDir(resources, (ClassPathRoot)root);
         		} else {
         			ignoredCallback.onIgnored(root);
         			//throw new CodemuckerException("can't currently walk non directory class path roots. Path: " + root.getPathName());
@@ -193,7 +194,7 @@ public class JSourceFinder {
 		return FindResultIterableBacked.from(resources);
 	}
 	
-	private Collection<ClassPathRoot> getSourceDirsToSearch() {
+	private Collection<Root> getSourceDirsToSearch() {
 		return classPathRoots;
 	}
 	
@@ -201,7 +202,7 @@ public class JSourceFinder {
 		walkDir(found, root, "", root.getPath());
 	}
 	
-	private void walkDir(Collection<ClassPathResource> found, ClassPathRoot rootDir, String parentPath, File dir) {
+	private void walkDir(Collection<ClassPathResource> found, Root rootDir, String parentPath, File dir) {
 //		ClassPathResource dirResource = new ClassPathResource(rootDir, dir, parentPath + "/", false);
 //		if (!filter.matches((Object)dirResource) || !filter.matches(dirResource)) {
 //			ignoredCallback.onIgnored(dirResource);
@@ -210,7 +211,7 @@ public class JSourceFinder {
 		File[] files = dir.listFiles(FILE_FILTER);
 		for (File f : files) {
 			String relPath = parentPath + "/" + f.getName();
-			ClassPathResource child = new ClassPathResource(rootDir, f, relPath, false);
+			ClassPathResource child = new ClassPathResource(rootDir, relPath);
 			if (filter.matches((Object)child) && filter.matches(child)) {
 				matchedCallback.onMatched(child);
 				found.add(child);
@@ -325,8 +326,8 @@ public class JSourceFinder {
 	}
 	
 	public static class Builder {
-		private AstCreator astCreator;
-		private List<ClassPathRoot> classPathRoots = newArrayList();
+		private ASTParser parser;
+		private List<Root> classPathRoots = newArrayList();
 		private JSourceFinderMatchedCallback findMatchedCallback;
 		private JSourceFinderIgnoredCallback findIgnoredCallback;
 		private JSourceFinderErrorCallback findErrorCallback;
@@ -334,7 +335,7 @@ public class JSourceFinder {
 		
 		public JSourceFinder build(){			
 			return new JSourceFinder(
-				toAstCreator()
+				toParser()
 				, classPathRoots
 				, toFilter()
 				, toMatchedCallback()
@@ -345,7 +346,7 @@ public class JSourceFinder {
 		
 		public Builder copyOf() {
 			Builder copy = new Builder();
-			copy.astCreator = astCreator;
+			copy.parser = parser;
 			copy.classPathRoots.addAll(classPathRoots);
 			copy.finderFilter = finderFilter;
 			copy.findMatchedCallback = findMatchedCallback;
@@ -354,8 +355,8 @@ public class JSourceFinder {
 			return copy;
 		}
 
-		private AstCreator toAstCreator(){
-			return astCreator != null?astCreator:new DefaultAstCreator();
+		private ASTParser toParser(){
+			return parser != null ? parser : JAstParser.newDefaultParser();
 		}
 	
 		private JSourceFinderIgnoredCallback toIgnoredCallback() {
@@ -379,7 +380,7 @@ public class JSourceFinder {
         	return this;
         }
 	 	
-	 	public Builder setSearchPaths(Iterable<ClassPathRoot> classPathRoots) {
+	 	public Builder setSearchPaths(Iterable<Root> classPathRoots) {
         	this.classPathRoots = nullSafeList(classPathRoots);
         	return this;
         }
@@ -416,8 +417,8 @@ public class JSourceFinder {
         	return this;
         }
 
-		public Builder setAstCreator(AstCreator astCreator) {
-        	this.astCreator = astCreator;
+		public Builder setParser(ASTParser parser) {
+        	this.parser = parser;
         	return this;
         }
 	}
@@ -430,7 +431,7 @@ public class JSourceFinder {
         }
 
 		@Override
-        public boolean matches(ClassPathRoot root) {
+        public boolean matches(Root root) {
 	        return true;
         }
 
@@ -462,7 +463,7 @@ public class JSourceFinder {
         }
 		
 		@Override
-        public void onIgnored(ClassPathRoot root) {
+        public void onIgnored(Root root) {
         }
 
 		@Override
@@ -490,7 +491,7 @@ public class JSourceFinder {
         }
 		
 		@Override
-        public void onMatched(ClassPathRoot root) {
+        public void onMatched(Root root) {
         }
 
 		@Override

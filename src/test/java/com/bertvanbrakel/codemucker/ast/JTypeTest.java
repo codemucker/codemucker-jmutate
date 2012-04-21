@@ -1,12 +1,8 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.assertEquals;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.hamcrest.Description;
@@ -16,143 +12,123 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.util.SourceUtil;
-import com.bertvanbrakel.codemucker.util.SrcWriter;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
+import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.lang.matcher.IsCollectionOf;
-import com.bertvanbrakel.test.util.ClassNameUtil;
-import com.bertvanbrakel.test.util.TestHelper;
 public class JTypeTest {
 
-	TestHelper helper = new TestHelper();
-
+	MutationContext ctxt = new DefaultMutationContext();
+	
 	@Test
 	public void testIsAbstract() {
-		SrcWriter w = new SrcWriter();
-		w.println("package foo.bar");
+		assertEquals(false, newJType("class MyClass{}").getJavaModifiers().isAbstract());
+		assertEquals(false, newJType("interface MyInterface{}").getJavaModifiers().isAbstract());
+		assertEquals(false, newJType("enum MyEnum{}").getJavaModifiers().isAbstract());
 
-		w.println("class MyClass{}");
-		w.println("abstract class MyAbstractClass{}");
-		w.println("interface MyInterface{}");
-		w.println("enum MyEnum{}");
-
-		assertTrue(newJavaType(w, "foo.bar.Foo", "MyAbstractClass").getJavaModifiers().isAbstract());
-		assertFalse(newJavaType(w, "foo.bar.Foo", "MyClass").getJavaModifiers().isAbstract());
-		assertFalse(newJavaType(w, "foo.bar.Foo", "MyInterface").getJavaModifiers().isAbstract());
-		assertFalse(newJavaType(w, "foo.bar.Foo", "MyEnum").getJavaModifiers().isAbstract());	
+		assertEquals(true, newJType("abstract class MyAbstractClass{}").getJavaModifiers().isAbstract());
 	}
-
+	
 	@Test
 	public void testIsInterface() {
-		SrcWriter w = new SrcWriter();
-		w.println("package foo.bar");
-
-		w.println("class MyClass{}");
-		w.println("interface MyInterface{}");
-		w.println("enum MyEnum{}");
-
-		assertFalse(newJavaType(w, "foo.bar.Foo", "MyClass").isInterface());
-		assertTrue(newJavaType(w, "foo.bar.Foo", "MyInterface").isInterface());
-		assertFalse(newJavaType(w, "foo.bar.Foo", "MyEnum").isInterface());		
+		assertEquals(false, newJType("class MyClass{}").isInterface());
+		assertEquals(false, newJType("enum MyEnum{}").isInterface());	
+	
+		assertEquals(true, newJType("interface MyInterface{}").isInterface());
 	}
 	
 	@Test
 	public void testIsConcreteClass() {
-		SrcWriter w = new SrcWriter();
-		w.println("package foo.bar");
-
-		w.println("class MyClass{}");
-		w.println("interface MyInterface{}");
-		w.println("enum MyEnum{}");
-
-		assertTrue(newJavaType(w, "foo.bar.Foo", "MyClass").isConcreteClass());
-		assertFalse(newJavaType(w, "foo.bar.Foo", "MyInterface").isConcreteClass());
-		assertFalse(newJavaType(w, "foo.bar.Foo", "MyEnum").isConcreteClass());		
+		assertEquals(true, newJType("class MyClass{}").isConcreteClass());
+		
+		assertEquals(false, newJType("interface MyInterface{}").isConcreteClass());
+		assertEquals(false, newJType("enum MyEnum{}").isConcreteClass());
+	}
+	
+	private JType newJType(String src){
+		return ctxt.newSourceTemplate().println(src).asJType();
 	}
 
 	@Test
 	public void testIsTopLevelClass() {
-		SrcWriter w = new SrcWriter();
-		w.println("package foo.bar");
-		w.println("class MyTopClass {}");
-		w.println("class AnotherTopClass { class MyInnerClass{} }");
-
-		assertTrue(newJavaType(w, "foo.bar.Foo", "MyTopClass").isTopLevelClass());
-
-		JType type = newJavaType(w, "foo.bar.Foo", "AnotherTopClass");
-		assertTrue(type.isTopLevelClass());
-		assertFalse(type.getTypeWithName("MyInnerClass").isTopLevelClass());
-	
+		assertEquals(true, newJType("class MyTopClass {}").isTopLevelClass());
+		assertEquals(true, newJType("class AnotherTopClass { class MyInnerClass{} }").isTopLevelClass());
+		
+		assertEquals(false, newJType("class AnotherTopClass { class MyInnerClass{} }").getTypeWithName("MyInnerClass").isTopLevelClass());
 	}
 	
 	@Test
 	public void testFindJavaMethods(){
-
-		SrcWriter w = new SrcWriter();
-		w.println("package foo.bar");
-		w.println("class MyTestClass  {");
-		w.println( "public void methodA(){}" );
-		w.println( "public void methodB(){}" );
-		w.println("}");
+		SourceTemplate t = ctxt.newSourceTemplate();
+		
+		t.println("class MyTestClass  {");
+		t.println( "public void methodA(){}" );
+		t.println( "public void methodB(){}" );
+		t.println("}");
 	
-		JType type = newJavaType(w, "foo.bar.Foo", "MyTestClass");
-
-		FindResult<JMethod> foundMethods = type.findAllJavaMethods();
+		FindResult<JMethod> foundMethods = t.asJType().findAllJavaMethods();
 	
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("methodA","methodB"));		
 		
-		MatcherAssert.assertThat(foundMethods.asList(), matcher);
+		MatcherAssert.assertThat(foundMethods.toList(), matcher);
 	}
 
 	@Test
 	public void testFindJavaMethodsWithFilter(){
+		SourceTemplate t = ctxt.newSourceTemplate();
 
-		SrcWriter w = new SrcWriter();
-		w.println("package foo.bar");
-		w.println("class MyTestClass  {");
-		w.println( "public void getA(){}" );
-		w.println( "public void setB(){}" );
-		w.println( "public void getB(){}" );
-		w.println( "public void setA(){}" );
-		w.println("}");
-	
-		JType type = newJavaType(w, "foo.bar.Foo", "MyTestClass");
+		t.println("class MyTestClass  {");
+		t.println( "public void getA(){}" );
+		t.println( "public void setB(){}" );
+		t.println( "public void getB(){}" );
+		t.println( "public void setA(){}" );
+		t.println("}");
 
-		FindResult<JMethod> foundMethods = type.findMethodsMatching(new com.bertvanbrakel.test.finder.matcher.Matcher<JMethod>() {
-			@Override
-			public boolean matches(JMethod found) {
-				return found.getName().startsWith("get");
-			}
-		});
-	
+		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(JMethodMatchers.withMethodNamed("get*"));
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("getA","getB"));		
 		
-		MatcherAssert.assertThat(foundMethods.asList(), matcher);
+		MatcherAssert.assertThat(foundMethods.toList(), matcher);
 	}
 	
 
 	@Test
+	public void testGetFullName(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		
+		t.println("package foo.bar;");
+		
+		t.println("import SamePackage;");
+		t.println("import one.OnePackage;");
+		t.println("import one.two.TwoPackages;");
+		t.println("import one.two.WithInnerClass;");
+		
+		t.println("class MyTestClass  {");
+		t.println( "public SamePackage getA(){return null;}" );
+		t.println( "public TwoPackages getB(){return null;}" );
+		t.println( "public WithInnerClass.Innerclass getC(){return null;}" );
+		t.println("}");
+	
+		JType type = t.asSourceFileWithFQN("MyTestClass").getMainType();
+
+		assertEquals("foo.bar.MyTestClass", type.getFullName());
+	}
+	
+	
+	@Test
 	public void testFindJavaConstructors(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		
+		t.println("class MyTestClass { ");
+		t.println( "MyTestClass(){}" );
+		t.println( "MyTestClass(String foo){}" );
+		t.println( "public void someMethod(){}" );
+		t.println("}");
 
-		SrcWriter w = new SrcWriter();
-		w.println("package foo.bar");
-		w.println("class MyTestClass ");
-		w.println( "MyTestClass(){}" );
-		w.println( "MyTestClass(String foo){}" );
-		w.println( "public void someMethod(){}" );
-		w.println("}");
-	
-		JType type = newJavaType(w, "foo.bar.Foo", "MyTestClass");
-
-		FindResult<JMethod> foundMethods = type.findMethodsMatching(new com.bertvanbrakel.test.finder.matcher.Matcher<JMethod>() {
-			@Override
-			public boolean matches(JMethod found) {
-				return found.isConstructor();
-			}
-		});
-	
+		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(JMethodMatchers.isConstructor());
+		
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("MyTestClass","MyTestClass"));		
 		
-		MatcherAssert.assertThat(foundMethods.asList(), matcher);
+		MatcherAssert.assertThat(foundMethods.toList(), matcher);
 	}
 	
 	private List<Matcher<JMethod>> equalsMethodNames(String... methodNames){
@@ -174,22 +150,5 @@ public class JTypeTest {
 				return method.getMethodNode().getName().getIdentifier().equals(methodName);
 			}	
 		};		
-	}
-
-	public JType newJavaType(SrcWriter w, String fqClassName) {
-		String simpleClassName = ClassNameUtil.extractShortClassNamePart(fqClassName);
-		return newJavaType(w, fqClassName, simpleClassName);
-	}
-
-	public JType newJavaType(SrcWriter w, String fqClassName, String typeToGet) {
-		JSourceFile srcFile = newJavaSrc(w, fqClassName);
-		JType type = srcFile.getTopTypeWithName(typeToGet);
-
-		return type;
-	}
-
-	private JSourceFile newJavaSrc(SrcWriter writer, String fqClassName) {
-		File classRootDir = helper.createTempDir();
-		return SourceUtil.writeJavaSrc(writer, classRootDir, fqClassName);
 	}
 }

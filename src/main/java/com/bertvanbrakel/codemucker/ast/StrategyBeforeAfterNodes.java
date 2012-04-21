@@ -5,7 +5,9 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-public class StrategyBeforeAfterNodes implements InsertionStrategy {
+import com.bertvanbrakel.codemucker.transform.PlacementStrategy;
+
+public class StrategyBeforeAfterNodes implements PlacementStrategy {
 
 	private final Collection<Class<?>> afterNodesOfType;
 	private final Collection<Class<?>> beforeNodesOfType;
@@ -17,7 +19,7 @@ public class StrategyBeforeAfterNodes implements InsertionStrategy {
     }
 
 	@Override
-    public int findIndex(List<ASTNode> body) {
+    public int findIndexToPlace(List<ASTNode> body) {
 	    return findIndexToInsertAt(body, afterNodesOfType, beforeNodesOfType);
     }
 	

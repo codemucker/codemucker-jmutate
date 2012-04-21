@@ -9,6 +9,4 @@ public interface JSource {
 
 	ClassPathResource getLocation();
 
-	AstCreator getAstCreator();
-
 }

@@ -24,6 +24,14 @@ public enum JAccess {
 		return keyword;
 	}
 	
+	public String toCode(){
+		if( this == PACKAGE){
+			return "";
+		}
+		return name().toLowerCase();
+	}
+	
+	
 	public Collection<ModifierKeyword> getIncompatibleKeywords(){
 		return keywordsToUnset;
 	}

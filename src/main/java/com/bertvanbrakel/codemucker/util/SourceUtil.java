@@ -1,59 +1,40 @@
 package com.bertvanbrakel.codemucker.util;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
+import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.apache.commons.io.IOUtils;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.compiler.IProblem;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
+import junit.framework.ComparisonFailure;
 
-import com.bertvanbrakel.codemucker.ast.AssertingAstMatcher;
-import com.bertvanbrakel.codemucker.ast.AstCreator;
-import com.bertvanbrakel.codemucker.ast.DefaultAstCreator;
+import org.apache.commons.io.IOUtils;
+import org.eclipse.jdt.core.dom.ASTMatcher;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+
+import com.bertvanbrakel.codemucker.ast.JAstFlattener;
+import com.bertvanbrakel.codemucker.ast.JAstMatcher;
+import com.bertvanbrakel.codemucker.ast.JAstParser;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
+import com.bertvanbrakel.codemucker.transform.Template;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.ClassPathRoot;
+import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
 public class SourceUtil {
 
 	private static AtomicLong uniqueIdCounter = new AtomicLong();
 
-	public static JSourceFile writeNewJavaFile(SrcWriter writer) {
-		return writeJavaSrc(writer, findRootDir(), newJavaFQDN());
-	}
-
-	public static JSourceFile writeJavaSrc(SrcWriter writer, String fqClassName) {
-		return writeJavaSrc(writer, findRootDir(), fqClassName);
-	}
-	
-	public static JSourceFile writeJavaSrc(SrcWriter writer, File rootDir, String fqClassName) {
-		String relPath = fqClassName.replace('.', '/') + ".java";
-		ClassPathResource resource = writeResource(writer, rootDir, relPath);
-		JSourceFile srcFile = new JSourceFile(resource, new DefaultAstCreator());
-		return srcFile;
-	}
-
-	public static ClassPathResource writeResource(SrcWriter writer) {
+	public static ClassPathResource writeResource(Template writer) {
 		return writeResource(writer,newResourceName());
 	}
 	
-	public static ClassPathResource writeResource(SrcWriter writer, String relPath) {
+	public static ClassPathResource writeResource(Template writer, String relPath) {
 		return writeResource(writer, findRootDir(), relPath);
 	}
 
@@ -61,134 +42,67 @@ public class SourceUtil {
 	    return new File(ProjectFinder.findTargetDir(), "junit-test-generate");
     }
 	
-	public static ClassPathResource writeResource(SrcWriter writer, File rootDir, String relPath) {
-		ClassPathRoot root = new ClassPathRoot(rootDir);
-		File resourceFile = new File(rootDir.getAbsolutePath(), relPath);
-		ClassPathResource resource = new ClassPathResource(root, resourceFile, relPath, false);
+	public static ClassPathResource writeResource(Template writer, File rootDir, String relPath) {
+		Root root = new ClassPathRoot(rootDir);
+		ClassPathResource resource = new ClassPathResource(root, relPath);
 		writeResource(writer, resource);
 		return resource;
 	}
 
-	public static ClassPathResource writeResource(SrcWriter writer, ClassPathResource resource) {
-		writeFile(writer, resource.getFile());
+	public static ClassPathResource writeResource(Template writer, ClassPathResource resource) {
+		OutputStream os = null;
+		try {
+			os = resource.getOutputStream();
+			IOUtils.write(writer.interpolate(), os);
+		} catch (FileNotFoundException e) {
+	        throw new BeanGenerationException("Can't find resource " + resource,e);
+        } catch (IOException e) {
+	        throw new BeanGenerationException("Error writing resource " + resource,e);
+        } finally {
+			IOUtils.closeQuietly(os);
+		}
+		
 		return resource;
 	}
 	
-	public static void writeFile(SrcWriter writer, File destFile) {
-		FileOutputStream fos = null;
-		try {
-			if( !destFile.exists()){
-				destFile.getParentFile().mkdirs();
-				destFile.createNewFile();
-			}
-			fos = new FileOutputStream(destFile);
-			IOUtils.write(writer.getSource(), fos);
-		} catch (FileNotFoundException e) {
-	        throw new BeanGenerationException("Can't find file " + destFile==null?null:destFile.getAbsolutePath(),e);
-        } catch (IOException e) {
-	        throw new BeanGenerationException("Error writing to file " + destFile.getAbsolutePath(),e);
-        } finally {
-			IOUtils.closeQuietly(fos);
-		}
+	/**
+	 * Assert the given resources look the same once parsed into Ast's. This ignores whitespace and newline formatting
+	 */
+	public static void assertAstsMatch(ClassPathResource expected, ClassPathResource actual) {
+		CompilationUnit expectCu = getAstFromFileWithNoErrors(expected);
+		CompilationUnit actualCu = getAstFromFileWithNoErrors(actual);
+		
+		assertAstsMatch(expectCu,actualCu);
 	}
 	
-	public static void assertSourceFileAstsMatch(ClassPathResource expected, ClassPathResource actual) {
-		assertSourceFileAstsMatch(expected.getFile(), actual.getFile());
+	/**
+	 * Assert the given compilation units look the same.
+	 */
+	public static void assertAstsMatch(CompilationUnit expected, CompilationUnit actual) {
+		ASTMatcher matcher = JAstMatcher.newBuilder().setMatchDocTags(false).build();
+		boolean equals = expected.subtreeMatch(matcher, actual);
+		if( !equals ){
+			String expectFromAst = nodeToString(expected);
+			String actualFromAst = nodeToString(actual);
+			throw new ComparisonFailure("Ast's don't match", expectFromAst, actualFromAst);
+		}
+		assertTrue("ast's don't match", equals);
+		//assertEquals(expectAst, actualAst);
 	}
-
-	public static void assertSourceFileAstsMatch(File expected, File actual) {
-		assertTrue("Sources AST's don't match", sourceFileAstsMatch(expected, actual));
-	}
-
-	public static boolean sourceFileAstsMatch(File expectSrc, File actualSrc) {
-		CompilationUnit expectCu = getAstFromFileWithNoErrors(expectSrc);
-		CompilationUnit actualCu = getAstFromFileWithNoErrors(actualSrc);
-
-		boolean matchDocTags = false;
-		AssertingAstMatcher matcher = new AssertingAstMatcher(matchDocTags);
-		return expectCu.subtreeMatch(matcher, actualCu);
+	
+	private static String nodeToString(ASTNode node){
+		return JAstFlattener.asString(node);
 	}
 
 	public static JSourceFile getJavaSourceFrom(ClassPathResource resource) {
-		return new JSourceFile(resource, newDefaultAstCreator());
+		return JSourceFile.fromResource(resource, JAstParser.newDefaultParser());
 	}
 
-	public static AstCreator newDefaultAstCreator(){
-		return new DefaultAstCreator();
-	}
-	
-	public static CompilationUnit getAstFromFileWithNoErrors(File srcFile) {
-		CompilationUnit cu = getAstFromFile(srcFile);
-		
-		IProblem[] problems = cu.getProblems();
-		assertEquals("Expected no problems for file " + srcFile.getAbsolutePath(), Arrays.asList(new IProblem[]{}), Arrays.asList(problems));
-
+	public static CompilationUnit getAstFromFileWithNoErrors(ClassPathResource resource) {
+		CompilationUnit cu = JSourceFile.fromResource(resource, JAstParser.newDefaultParser()).getCompilationUnit();
 		return cu;
 	}
-	
-	public static CompilationUnit getAstFromFile(File srcFile) {
-		String src = readSource(srcFile);
-		return getAstFromSrc(src);
-	}
 
-	public static String readSource(File srcFile) {
-		FileInputStream fis = null;
-		try {
-			fis = new FileInputStream(srcFile);
-			return IOUtils.toString(fis);
-		} catch (IOException e){
-			throw new BeanGenerationException("error reading source file " + srcFile.getAbsolutePath(), e);
-		} finally {
-			IOUtils.closeQuietly(fis);
-		}
-	}
-	
-	public static TypeDeclaration getAstFromClassBody(String src) {
-		TypeDeclaration result;
-		try {
-			ASTParser parser = newParser();
-			parser.setKind(ASTParser.K_CLASS_BODY_DECLARATIONS);
-			parser.setSource(src.toCharArray());
-
-			result = (TypeDeclaration) parser.createAST(null);
-		} catch (Exception e) {
-			throw new BeanGenerationException("error parsing source", e);
-		}
-		assertNotNull(result);
-		return result;
-	}
-	
-	public static CompilationUnit getAstFromSrc(String src) {
-		CompilationUnit result;
-		try {
-			ASTParser parser = newParser();
-			parser.setSource(src.toCharArray());
-
-			result = (CompilationUnit) parser.createAST(null);
-		} catch (Exception e) {
-			throw new BeanGenerationException("error parsing source", e);
-		}
-		assertNotNull(result);
-		return result;
-	}
-
-	public static ASTParser newParser(){
-		ASTParser parser = ASTParser.newParser(AST.JLS3);
-
-		// In order to parse 1.5 code, some compiler options need to be set
-		// to 1.5
-		@SuppressWarnings("rawtypes")
-        Map options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_1_5, options);
-		parser.setCompilerOptions(options);
-		
-		return parser;
-	}
-	
-	private static String newJavaFQDN(){
-		return "com.bertvanbrakel.codemucker.randomjunit.Java" + uniqueIdCounter.incrementAndGet();
-	}
-	
 	private static String newResourceName(){
 		return "com/bertvanbrakel/codemucker/randomjunit/Resource" + uniqueIdCounter.incrementAndGet() + ".text";
 	}

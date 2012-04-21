@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.regex.Pattern;
 
 import com.bertvanbrakel.codemucker.ast.JAccess;
+import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
@@ -116,7 +117,7 @@ public class JTypeMatchers extends LogicalMatchers {
 		};
 	}
 
-	public static Matcher<JType> withName(final Class<?> matchingClassName){
+	public static Matcher<JType> withTypeNamed(final Class<?> matchingClassName){
 		return withName(matchingClassName.getName());
 	}
 	
@@ -126,6 +127,15 @@ public class JTypeMatchers extends LogicalMatchers {
 			@Override
 			public boolean matches(JType found) {
 				return pattern.matcher(found.getFullName()).matches();
+			}
+		};
+	}
+
+	public static Matcher<JType> withMethod(final Matcher<JMethod> methodMatcher){
+		return new Matcher<JType>() {
+			@Override
+			public boolean matches(JType found) {
+				return found.findMethodsMatching(methodMatcher).toList().size() > 0;
 			}
 		};
 	}
