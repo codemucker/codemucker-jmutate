@@ -44,12 +44,13 @@ public class JavaSourceFileMutatorTest {
 		t.println("public class Bob {");
 		t.println("}");
 
+		//TODO:Hmm, what is going on here? looks like ti test that itself is itself...
 		JSourceFileMutator srcFile = t.asSourceFileWithFQN("foo.bar.Alice").asMutator(context);
 		
 		JTypeMutator mutable = srcFile.getMainTypeAsMutable();
-		AbstractTypeDeclaration type = srcFile.getJSource().getMainType().getTypeNode();
+		AbstractTypeDeclaration type = srcFile.getJSource().getMainType().getAstNode();
 		
 		assertNotNull(mutable);
-		assertEquals(mutable.getJType().asType(), type);
+		assertEquals(mutable.getJType().asTypeDecl(), type);
 	}
 }

@@ -260,7 +260,7 @@ public class JSourceFinder {
 			}
 			//move on to the next type
 			while (types.hasNext()) {
-				methods = types.next().findAllJavaMethods().iterator();
+				methods = types.next().findAllJMethods().iterator();
 				if( methods.hasNext()){
 					return methods.next();
 				}

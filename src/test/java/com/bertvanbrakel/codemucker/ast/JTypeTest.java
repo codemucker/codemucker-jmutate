@@ -22,11 +22,11 @@ public class JTypeTest {
 	
 	@Test
 	public void testIsAbstract() {
-		assertEquals(false, newJType("class MyClass{}").getJavaModifiers().isAbstract());
-		assertEquals(false, newJType("interface MyInterface{}").getJavaModifiers().isAbstract());
-		assertEquals(false, newJType("enum MyEnum{}").getJavaModifiers().isAbstract());
+		assertEquals(false, newJType("class MyClass{}").getModifiers().isAbstract());
+		assertEquals(false, newJType("interface MyInterface{}").getModifiers().isAbstract());
+		assertEquals(false, newJType("enum MyEnum{}").getModifiers().isAbstract());
 
-		assertEquals(true, newJType("abstract class MyAbstractClass{}").getJavaModifiers().isAbstract());
+		assertEquals(true, newJType("abstract class MyAbstractClass{}").getModifiers().isAbstract());
 	}
 	
 	@Test
@@ -66,7 +66,7 @@ public class JTypeTest {
 		t.println( "public void methodB(){}" );
 		t.println("}");
 	
-		FindResult<JMethod> foundMethods = t.asJType().findAllJavaMethods();
+		FindResult<JMethod> foundMethods = t.asJType().findAllJMethods();
 	
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("methodA","methodB"));		
 		
@@ -147,7 +147,7 @@ public class JTypeTest {
 
 			@Override
             public boolean matchesSafely(JMethod method) {
-				return method.getMethodNode().getName().getIdentifier().equals(methodName);
+				return method.getAstNode().getName().getIdentifier().equals(methodName);
 			}	
 		};		
 	}

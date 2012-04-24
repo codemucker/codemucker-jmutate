@@ -34,11 +34,11 @@ public class JTypeMutator {
     }
 	
 	public void setAccess(JAccess access){
-		jType.getJavaModifiers().setAccess(access);
+		jType.getModifiers().setAccess(access);
 	}
 	
 	public JModifiers getJavaModifiers(){
-		return jType.getJavaModifiers();
+		return jType.getModifiers();
 	}
 	
 	public ImportDeclaration newImport(String fqn){

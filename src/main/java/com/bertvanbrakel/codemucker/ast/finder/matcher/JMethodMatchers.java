@@ -81,21 +81,21 @@ public class JMethodMatchers extends LogicalMatchers {
 		return new Matcher<JMethod>() {
 			@Override
 			public boolean matches(JMethod found) {
-				return numArgMatcher.matches(Integer.valueOf(found.getMethodNode().typeParameters().size()));
+				return numArgMatcher.matches(Integer.valueOf(found.getAstNode().typeParameters().size()));
 			}
 		};
 	}
 
 	public static Matcher<JMethod> withNameAndArgSignature(JMethod method) {
 		final String name = method.getName();
-		final int numArgs = method.getMethodNode().typeParameters().size();
+		final int numArgs = method.getAstNode().typeParameters().size();
 		final String sig = method.toClashDetectionSignature();
 
 		return new Matcher<JMethod>() {
 			@Override
 			public boolean matches(JMethod found) {
 				//test using the quickest and least resource intensive matches first
-				return numArgs == found.getMethodNode().typeParameters().size() 
+				return numArgs == found.getAstNode().typeParameters().size() 
 					&& name.equals(found.getName()) 
 					&& sig.equals(found.toClashDetectionSignature());
 			}

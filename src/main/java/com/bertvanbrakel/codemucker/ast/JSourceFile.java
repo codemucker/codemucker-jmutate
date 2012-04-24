@@ -12,7 +12,6 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -27,7 +26,7 @@ import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
-public class JSourceFile implements JSource, AstNodeProvider {
+public class JSourceFile implements JSource, AstNodeProvider<CompilationUnit> {
 	
 	private final ClassPathResource resource;
 	private final CompilationUnit compilationUnit;
@@ -117,7 +116,7 @@ public class JSourceFile implements JSource, AstNodeProvider {
 	}
 	
 	@Override
-	public ASTNode getAstNode(){
+	public CompilationUnit getAstNode(){
 		return compilationUnit;
 	}
 	

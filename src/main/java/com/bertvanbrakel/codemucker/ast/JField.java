@@ -7,12 +7,11 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
-public class JField implements JAnnotatable, AstNodeProvider {
+public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 
 	private final FieldDeclaration fieldNode;
 	
@@ -22,20 +21,16 @@ public class JField implements JAnnotatable, AstNodeProvider {
 	}
 
 	@Override
-	public ASTNode getAstNode(){
+	public FieldDeclaration getAstNode(){
 		return fieldNode;
 	}
-	
-	public FieldDeclaration getFieldNode() {
-    	return fieldNode;
-    }
 
 	public boolean hasName(String name){
 		return getNames().contains(name);
 	}
 	
 	public boolean isType(JField field){
-		return isType(field.getFieldNode().getType());
+		return isType(field.getAstNode().getType());
 	}
 	
 	public boolean isType(Type type){

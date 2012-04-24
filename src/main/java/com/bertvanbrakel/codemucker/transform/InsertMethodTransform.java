@@ -43,20 +43,20 @@ public class InsertMethodTransform {
 			JMethod existingMethod = found.get(0);
 			switch(clashStrategy){
 			case REPLACE:
-				existingMethod.getMethodNode().delete();
+				existingMethod.getAstNode().delete();
 				insert = true;
 				break;
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new CodemuckerException("Existing method %s, not replacing with %s", existingMethod.getMethodNode(), method);
+				throw new CodemuckerException("Existing method %s, not replacing with %s", existingMethod.getAstNode(), method);
 			default:
-				throw new CodemuckerException("Existing method %s, unsupported clash strategy %s", existingMethod.getMethodNode(), clashStrategy);
+				throw new CodemuckerException("Existing method %s, unsupported clash strategy %s", existingMethod.getAstNode(), clashStrategy);
 			}
 		}
 		if( insert){
 			new NodeInserter()
-				.setNodeToInsert(method.getMethodNode())
+				.setNodeToInsert(method.getAstNode())
 				.setTarget(target)
 				.setStrategy(placementStrategy)
 				.insert();
@@ -69,7 +69,7 @@ public class InsertMethodTransform {
     	return this;
 	}
 	
-	public InsertMethodTransform setTarget(JType target) {
+	public InsertMethodTransform setTarget( JType target) {
     	this.target = target;
     	return this;
 	}

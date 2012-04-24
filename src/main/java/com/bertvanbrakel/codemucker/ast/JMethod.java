@@ -6,7 +6,6 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.ParameterizedType;
@@ -19,9 +18,7 @@ import org.eclipse.jdt.core.dom.TypeParameter;
 
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 
-import org.eclipse.jdt.core.Signature;
-
-public class JMethod implements JAnnotatable, AstNodeProvider {
+public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration> {
 
 	private final MethodDeclaration methodNode;
 
@@ -32,13 +29,9 @@ public class JMethod implements JAnnotatable, AstNodeProvider {
 	}
 
 	@Override
-	public ASTNode getAstNode(){
+	public MethodDeclaration getAstNode(){
 		return methodNode;
 	}
-
-	public MethodDeclaration getMethodNode() {
-    	return methodNode;
-    }
 	
 	@SuppressWarnings("unchecked")
     public List<TypeParameter> getParameters(){
@@ -91,8 +84,8 @@ public class JMethod implements JAnnotatable, AstNodeProvider {
 	 * which can be compared to other signatures to see if these methods would clash when added 
 	 * to the same class. Signatures which don't match must be able to coexist, signatures which
 	 * are the same must result in a compilation error if both coexist. Methods which take a generic
-	 * collection for example will clash if they both share the same name and collection type, generics
-	 * are ignored.
+	 * collection for example will clash if they both share the same name and collection type, therefore 
+	 * generics are ignored in the signature string.
 	 * 
 	 * <p><pre>
 	 *  Object foo(String bar,int[] args) -- %gt; foo(java.lang.String,int[])

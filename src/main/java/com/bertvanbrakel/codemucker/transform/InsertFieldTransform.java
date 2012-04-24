@@ -43,22 +43,22 @@ public class InsertFieldTransform {
 				JField existingField = found.get(0);
 				switch(clashStrategy){
 				case REPLACE:
-					existingField.getFieldNode().delete();
+					existingField.getAstNode().delete();
 					insert = true;
 					break;
 				case IGNORE:
 					break;
 				case ERROR:
-					throw new CodemuckerException("Existing field %s, not replacing with %s", existingField.getFieldNode(), field);
+					throw new CodemuckerException("Existing field %s, not replacing with %s", existingField.getAstNode(), field);
 				default:
-					throw new CodemuckerException("Existing field %s, unsupported clash strategy %s", existingField.getFieldNode(), clashStrategy);
+					throw new CodemuckerException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), clashStrategy);
 				}
 			}
 		}
 		if( insert){
 			new NodeInserter()
                 .setTarget(target)
-                .setNodeToInsert(field.getFieldNode())
+                .setNodeToInsert(field.getAstNode())
                 //TODO:allow to override this? want to make this a non greedy class!
                 .setStrategy(placementStrategy)
                 .insert();

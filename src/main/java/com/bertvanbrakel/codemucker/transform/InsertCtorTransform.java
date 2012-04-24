@@ -50,17 +50,17 @@ public class InsertCtorTransform {
     		JMethod existingCtor = found.get(0);
     		//modify it!??
     		if( replace ){
-    			existingCtor.getMethodNode().delete();
+    			existingCtor.getAstNode().delete();
     			insert = true;
     		} else {
     			//throw?
-    			throw new CodemuckerException("Existing constructor %s, not replacing with %s", existingCtor.getMethodNode(), ctor.getMethodNode());
+    			throw new CodemuckerException("Existing constructor %s, not replacing with %s", existingCtor.getAstNode(), ctor.getAstNode());
     		}
     	}
     	if( insert){
     		new NodeInserter()
                 .setTarget(target)
-                .setNodeToInsert(ctor.getMethodNode())
+                .setNodeToInsert(ctor.getAstNode())
                 .setStrategy(strategy)
                 .insert();
     	}

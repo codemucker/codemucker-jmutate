@@ -8,6 +8,9 @@ import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+/**
+ * An Ast visitor which ignores child type declarations
+ */
 public class IgnoreableChildTypesVisitor extends BaseASTVisitor {
 
 	// a little bit of funkyness to ignore child classes

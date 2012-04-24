@@ -29,7 +29,7 @@ public class JFieldMatchers extends LogicalMatchers  {
 		return new Matcher<JField>() {
 			@Override
 			public boolean matches(JField found) {
-				return typeMatcher.matches(found.getFieldNode().getType());
+				return typeMatcher.matches(found.getAstNode().getType());
 			}
 		};
 	}
