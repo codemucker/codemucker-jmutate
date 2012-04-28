@@ -8,7 +8,6 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
-import com.bertvanbrakel.codemucker.ast.PlacementStrategies;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;

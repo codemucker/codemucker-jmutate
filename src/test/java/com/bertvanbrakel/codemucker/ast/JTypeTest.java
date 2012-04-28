@@ -3,7 +3,6 @@ package com.bertvanbrakel.codemucker.ast;
 import static com.google.common.collect.Lists.newArrayList;
 import static junit.framework.Assert.assertEquals;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.hamcrest.Description;

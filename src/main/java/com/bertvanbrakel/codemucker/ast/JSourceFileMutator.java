@@ -3,23 +3,12 @@ package com.bertvanbrakel.codemucker.ast;
 import static com.bertvanbrakel.lang.Check.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
-import org.eclipse.text.edits.MalformedTreeException;
-import org.eclipse.text.edits.TextEdit;
-import org.eclipse.text.edits.UndoEdit;
 
-import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
-import com.bertvanbrakel.test.finder.ClassPathResource;
 
 public class JSourceFileMutator {
 	private final JSourceFile source;

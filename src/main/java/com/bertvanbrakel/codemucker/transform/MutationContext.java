@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.transform;
 
-import com.bertvanbrakel.codemucker.ast.PlacementStrategies;
 import com.bertvanbrakel.codemucker.ast.JAstParser;
+import com.bertvanbrakel.codemucker.ast.PlacementStrategies;
 
 public interface MutationContext {
 	JAstParser getParser();

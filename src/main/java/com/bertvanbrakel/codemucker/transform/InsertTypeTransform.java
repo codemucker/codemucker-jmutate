@@ -5,14 +5,9 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
-import com.bertvanbrakel.codemucker.ast.PlacementStrategies;
-import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 
 public class InsertTypeTransform {
