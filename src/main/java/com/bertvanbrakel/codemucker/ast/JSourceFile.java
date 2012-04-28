@@ -20,13 +20,14 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
-public class JSourceFile implements JSource, AstNodeProvider<CompilationUnit> {
+public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
 	private final ClassPathResource resource;
 	private final CompilationUnit compilationUnit;
@@ -76,7 +77,7 @@ public class JSourceFile implements JSource, AstNodeProvider<CompilationUnit> {
 	private void internalWriteChangesToFile() {
 		//TODO:check current contents of resource to validate no changes between the time we loaded
 		//it and now?
-		String src = getModifiedSource();
+		String src = getCurrentSource();
 		OutputStream os = null;
 		try {
 			os = resource.getOutputStream();
@@ -93,7 +94,7 @@ public class JSourceFile implements JSource, AstNodeProvider<CompilationUnit> {
 	/**
 	 * Return the source as it would look with all the current modifications to the AST applied
 	 */
-	public String getModifiedSource(){
+	public String getCurrentSource(){
     	Document doc = new Document(getOriginalSource());
     	TextEdit edits = getCompilationUnit().rewrite(doc, null);
     	try {
@@ -131,12 +132,16 @@ public class JSourceFile implements JSource, AstNodeProvider<CompilationUnit> {
 		}
 	}
 
+	//TODO:code smell here, should JSource really know about the mutator? should the mutator use a builder instead?
 	public JSourceFileMutator asMutator(MutationContext ctxt){
 		return new JSourceFileMutator(ctxt, this);
 	}
 	
-	@Override
-	public ClassPathResource getLocation(){
+	/**
+	 * Return the resource location of this source file. This could be an auto generated resource location
+	 * @return
+	 */
+	public ClassPathResource getResource(){
 		return resource;
 	}
 
@@ -202,7 +207,7 @@ public class JSourceFile implements JSource, AstNodeProvider<CompilationUnit> {
 	}
 
 	public List<JType> findAllTypes(){
-		return internalFindTypesMatching(JType.MATCH_ALL_TYPES);
+		return internalFindTypesMatching(JTypeMatchers.any());
 	}
 	
 	public List<JType> findTypesMatching(Matcher<JType> matcher){
@@ -220,8 +225,8 @@ public class JSourceFile implements JSource, AstNodeProvider<CompilationUnit> {
 		return found;
 	}
 
-	private static Collection<String> extractNames(List<AbstractTypeDeclaration> types){
-		Collection<String> names = newArrayList();
+	private static List<String> extractNames(List<AbstractTypeDeclaration> types){
+		List<String> names = newArrayList();
 		for( AbstractTypeDeclaration type:types){
 			names.add(type.getName().toString());
 		}

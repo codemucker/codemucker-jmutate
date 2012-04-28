@@ -4,7 +4,6 @@ import static com.bertvanbrakel.lang.Check.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -23,6 +22,8 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.FindResultIterableBacked;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
@@ -33,20 +34,6 @@ import com.bertvanbrakel.test.finder.matcher.Matcher;
 public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclaration> {
 
 	private final AbstractTypeDeclaration typeNode;
-
-	public static final Matcher<JType> MATCH_ALL_TYPES = new Matcher<JType>() {
-		@Override
-		public boolean matches(JType found) {
-			return true;
-		}
-	};
-	
-	public static final Matcher<JMethod> MATCH_ALL_METHODS = new Matcher<JMethod>() {
-		@Override
-		public boolean matches(JMethod found) {
-			return true;
-		}
-	};
 	
 	public JType(AbstractTypeDeclaration type) {
 		checkNotNull("type", type);
@@ -79,7 +66,30 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 		}
 		return names;
 	}
+
+	public FindResult<JType> findDirectChildTypes(){
+		return findDirectChildTypesMatching(JTypeMatchers.any());
+	}
 	
+	/**
+	 * Find direct child types which match the given matcher. THis is not recursive.
+	 */
+	public FindResult<JType> findDirectChildTypesMatching(Matcher<JType> matcher){
+		List<JType> found = newArrayList();
+		if( isClass()){
+			for (TypeDeclaration child : asTypeDecl().getTypes()) {
+				JType childJavaType = new JType(child);
+				if (matcher.matches(childJavaType)) {
+					found.add(childJavaType);
+				}
+			}		
+		}
+		return FindResultIterableBacked.from(found);
+	}
+	
+	/**
+	 * Recursively find all child types matching the given matcher
+	 */
 	public FindResult<JType> findChildTypesMatching(Matcher<JType> matcher){
 		List<JType> found = newArrayList();
 		findChildTypesMatching(this, matcher, found);
@@ -90,9 +100,12 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 		findChildTypesMatching(this, matcher, found);
 	}
 	
+	/**
+	 * Recursively find all child types
+	 */
 	public List<JType> findAllChildTypes() {
-		List<JType> found = new ArrayList<JType>();
-		findChildTypesMatching(this, MATCH_ALL_TYPES, found);
+		List<JType> found = newArrayList();
+		findChildTypesMatching(this, JTypeMatchers.any(), found);
 		return found;
 	}
 	
@@ -123,7 +136,6 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	
 	private void findFieldsMatching(final Matcher<JField> matcher, final List<JField> found) {
 		int maxDepth = 0;
-		final JType parent = this;
 		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
 			@Override
 			public boolean visit(FieldDeclaration node) {
@@ -145,13 +157,12 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 
 	public FindResult<JMethod> findAllJMethods() {
 		List<JMethod> found = newArrayList();
-		findMethodsMatching(MATCH_ALL_METHODS, found);
+		findMethodsMatching(JMethodMatchers.any(), found);
 		return FindResultIterableBacked.from(found);
 	}
 	
-	private void findMethodsMatching(final Matcher<JMethod> matcher, final List<JMethod> found) {
+	private void findMethodsMatching(final Matcher<JMethod> matcher, final Collection<JMethod> found) {
 		int maxDepth = 0;
-		final JType parent = this;
 		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
 			@Override
 			public boolean visit(MethodDeclaration node) {
@@ -167,9 +178,7 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	
 	public boolean hasMethodsMatching(final Matcher<JMethod> matcher) {
 		int maxDepth = 0;
-		final JType parent = this;
 		final AtomicBoolean foundMethod = new AtomicBoolean();
-		
 		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
 			@Override
 			public boolean visit(MethodDeclaration node) {
@@ -287,7 +296,7 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	}
 	
 	@Override
-	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
+	public List<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
 		//all
 		return getAnnotations(true);
 	}
@@ -296,7 +305,7 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	 * Returns all the annotations attached to this class. This does not include annotation declarations, but rather use.
 	 * @return
 	 */
-	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(final boolean includeChildClassesInLookup){
+	public List<org.eclipse.jdt.core.dom.Annotation> getAnnotations(final boolean includeChildClassesInLookup){
 		final int maxDepth = includeChildClassesInLookup?-1:0;
 		return JAnnotation.findAnnotations(typeNode, maxDepth);
 	}

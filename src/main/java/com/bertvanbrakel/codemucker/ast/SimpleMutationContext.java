@@ -6,7 +6,7 @@ import com.bertvanbrakel.codemucker.transform.StringTemplate;
 
 public class SimpleMutationContext implements MutationContext {
 
-	private final PlacementStrategies strategyProvider  = new PlacementStrategies();
+	private final PlacementStrategies strategyProvider  = PlacementStrategies.newBuilder().build();
 	private final JAstParser parser = JAstParser.newBuilder().build();
 	
 	public SimpleMutationContext(){
@@ -32,5 +32,4 @@ public class SimpleMutationContext implements MutationContext {
     public StringTemplate newStringTemplate(){
     	return new StringTemplate();
     }
-
 }

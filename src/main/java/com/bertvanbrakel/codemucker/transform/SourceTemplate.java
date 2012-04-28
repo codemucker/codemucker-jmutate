@@ -25,7 +25,7 @@ import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.finder.ClassPathResource;
-import com.bertvanbrakel.test.finder.ClassPathRoot;
+import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
@@ -163,8 +163,10 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	
 	private static Root newTmpRoot(){
 		File dir = ProjectFinder.getDefaultResolver().getTmpDir();
-		File tmpDir = new File(dir,UUID.randomUUID().toString());
-		return new ClassPathRoot(tmpDir,Root.TYPE.GENERATED_SRC);
+		File tmpDir = new File(dir,UUID.randomUUID().toString() + "/");
+		tmpDir.mkdirs();
+		
+		return new DirectoryRoot(tmpDir,Root.RootType.GENERATED_SRC);
 	}
 
 	private TypeDeclaration toTempWrappingType() {

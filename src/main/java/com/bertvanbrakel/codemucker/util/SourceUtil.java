@@ -22,7 +22,7 @@ import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.codemucker.transform.Template;
 import com.bertvanbrakel.test.finder.ClassPathResource;
-import com.bertvanbrakel.test.finder.ClassPathRoot;
+import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
@@ -43,7 +43,7 @@ public class SourceUtil {
     }
 	
 	public static ClassPathResource writeResource(Template writer, File rootDir, String relPath) {
-		Root root = new ClassPathRoot(rootDir);
+		Root root = new DirectoryRoot(rootDir);
 		ClassPathResource resource = new ClassPathResource(root, relPath);
 		writeResource(writer, resource);
 		return resource;

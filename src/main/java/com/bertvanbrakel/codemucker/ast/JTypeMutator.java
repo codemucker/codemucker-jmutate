@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.dom.Name;
 import com.bertvanbrakel.codemucker.transform.InsertCtorTransform;
 import com.bertvanbrakel.codemucker.transform.InsertFieldTransform;
 import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
+import com.bertvanbrakel.codemucker.transform.InsertTypeTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 
 public class JTypeMutator {
@@ -58,9 +59,9 @@ public class JTypeMutator {
 	
 	public void addField(FieldDeclaration field){
 		InsertFieldTransform.newTransform()
-			.setPlacementStrategy(context.getStrategies().getFieldStrategy())
 			.setTarget(jType)
 			.setField(field)
+			.setPlacementStrategy(context.getStrategies().getFieldStrategy())
 			.apply();
 	}
 
@@ -78,9 +79,9 @@ public class JTypeMutator {
 			throw new CodemuckerException("Trying to add a constructor as a method. Try adding it as a constructor instead. Ctor is " + method);
 		}
 		InsertMethodTransform.newTransform()
-    		.setPlacementStrategy(context.getStrategies().getMethodStrategy())
     		.setTarget(jType)
     		.setMethod(method)
+    		.setPlacementStrategy(context.getStrategies().getMethodStrategy())
     		.apply();
 	}
 
@@ -93,9 +94,25 @@ public class JTypeMutator {
 	
 	public void addCtor(MethodDeclaration ctor){
 		InsertCtorTransform.newTransform()
-    		.setStrategy(context.getStrategies().getCtorStrategy())
     		.setTarget(jType)
     		.setCtor(ctor)
+    		.setPlacementStrategy(context.getStrategies().getCtorStrategy())
     		.apply();
 	}
+	
+	public void addType(String src){
+		AbstractTypeDeclaration type = context.newSourceTemplate()
+			.setTemplate(src)
+			.asType();
+		addType(type);
+	}
+	
+	public void addType(AbstractTypeDeclaration type){
+		InsertTypeTransform.newTransform()
+			.setTarget(jType)
+			.setType(type)
+			.setPlacementStrategy(context.getStrategies().getTypeStrategy())
+			.apply();
+	}
+
 }

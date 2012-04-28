@@ -1,5 +1,6 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static junit.framework.Assert.assertEquals;
 
 import java.util.ArrayList;
@@ -132,7 +133,7 @@ public class JTypeTest {
 	}
 	
 	private List<Matcher<JMethod>> equalsMethodNames(String... methodNames){
-		List<Matcher<JMethod>> matchers = new ArrayList<Matcher<JMethod>>();
+		List<Matcher<JMethod>> matchers = newArrayList();
 		for( String methodName:methodNames){
 			matchers.add(equalsMethodName(methodName));
 		}

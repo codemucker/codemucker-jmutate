@@ -8,6 +8,8 @@ import com.bertvanbrakel.test.finder.matcher.Matcher;
 
 public interface FindResult<T> extends Iterable<T> {
 
+	public boolean isEmpty();
+	
 	public List<T> toList();
 
 	/**

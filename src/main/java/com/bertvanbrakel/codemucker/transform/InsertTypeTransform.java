@@ -11,80 +11,81 @@ import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.PlacementStrategies;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 
-public class InsertMethodTransform {
+public class InsertTypeTransform {
 	private JType target;
-	private JMethod method;
+	private JType type;
 	private ClashStrategy clashStrategy;
 	private PlacementStrategy placementStrategy;
 
-
-	public static InsertMethodTransform newTransform(){
-		return new InsertMethodTransform();
+	public static InsertTypeTransform newTransform(){
+		return new InsertTypeTransform();
 	}
 	
-	public InsertMethodTransform (){
+	public InsertTypeTransform (){
 		//setUseDefaultPlacementStrategy();
 		setUseDefaultClashStrategy();
 	}
 	
 	public void apply() {
 		checkState(target != null, "missing target");
-		checkState(method != null, "missing method");
+		checkState(type != null, "missing type");
+		checkState(target != null, "missing target");
 		checkState(clashStrategy != null, "missing clash strategy");
 		checkState(placementStrategy != null, "missing placement strategy");
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		List<JMethod> found = target.findMethodsMatching(JMethodMatchers.withNameAndArgSignature(method)).toList();
+		List<JType> found = target.findChildTypesMatching(JTypeMatchers.withName(type.getSimpleName())).toList();
 		if( !found.isEmpty()){
 			insert = false;
-			JMethod existingMethod = found.get(0);
+			JType existingType = found.get(0);
 			switch(clashStrategy){
 			case REPLACE:
-				existingMethod.getAstNode().delete();
+				existingType.getAstNode().delete();
 				insert = true;
 				break;
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new CodemuckerException("Existing method %s, not replacing with %s", existingMethod.getAstNode(), method);
+				throw new CodemuckerException("Existing type %s, not replacing with %s", existingType.getAstNode(), type);
 			default:
-				throw new CodemuckerException("Existing method %s, unsupported clash strategy %s", existingMethod.getAstNode(), clashStrategy);
+				throw new CodemuckerException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), clashStrategy);
 			}
 		}
 		if( insert){
 			new NodeInserter()
-				.setNodeToInsert(method.getAstNode())
+				.setNodeToInsert(type.getAstNode())
 				.setTarget(target)
 				.setStrategy(placementStrategy)
 				.insert();
-		
 		}
     }
 
-	public InsertMethodTransform setTarget(AbstractTypeDeclaration target) {
+	public InsertTypeTransform setTarget(AbstractTypeDeclaration target) {
     	setTarget(new JType(target));
     	return this;
 	}
 	
-	public InsertMethodTransform setTarget( JType target) {
+	public InsertTypeTransform setTarget( JType target) {
     	this.target = target;
     	return this;
 	}
 
-	public InsertMethodTransform setMethod(MethodDeclaration method) {
-    	setMethod(new JMethod(method));
+	public InsertTypeTransform setType(AbstractTypeDeclaration type) {
+    	setType(new JType(type));
     	return this;
 	}
 	
-	public InsertMethodTransform setMethod(JMethod newMethod) {
-    	this.method = newMethod;
+	public InsertTypeTransform setType(JType type) {
+    	this.type = type;
     	return this;
 	}
 
-	public InsertMethodTransform setPlacementStrategy(PlacementStrategy strategy) {
+	public InsertTypeTransform setPlacementStrategy(PlacementStrategy strategy) {
     	this.placementStrategy = strategy;
     	return this;
     }
@@ -94,7 +95,7 @@ public class InsertMethodTransform {
 //    	return this;
 //    }
 	
-	public InsertMethodTransform setClashStrategy(ClashStrategy clashStrategy) {
+	public InsertTypeTransform setClashStrategy(ClashStrategy clashStrategy) {
 		if( clashStrategy == null ){
 			setUseDefaultClashStrategy();
 		} else {
@@ -103,7 +104,7 @@ public class InsertMethodTransform {
     	return this;
     }
 	
-	public InsertMethodTransform setUseDefaultClashStrategy() {
+	public InsertTypeTransform setUseDefaultClashStrategy() {
     	this.clashStrategy = ClashStrategy.ERROR;
     	return this;
     }

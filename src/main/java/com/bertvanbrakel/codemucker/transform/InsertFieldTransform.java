@@ -26,13 +26,14 @@ public class InsertFieldTransform {
 	}
 	
 	public InsertFieldTransform(){
-		setUseDefaultPlacementStrategy();
+		//setUseDefaultPlacementStrategy();
 		setUseDefaultClashStrategy();
 	}
 	
 	public void apply() {
 		checkState(target != null,"missing target");
 		checkState(field != null,"missing field");
+		checkState(clashStrategy != null,"missing clash strategy");
 		checkState(placementStrategy != null,"missing strategy");
 		
 	    boolean insert = true;
@@ -86,18 +87,14 @@ public class InsertFieldTransform {
 	}
 
 	public InsertFieldTransform setPlacementStrategy(PlacementStrategy strategy) {
-    	if( strategy == null){
-    		setUseDefaultPlacementStrategy();
-    	} else {
-    		this.placementStrategy = strategy;
-    	}
+    	this.placementStrategy = strategy;
     	return this;
 	}
 	
-	public InsertFieldTransform setUseDefaultPlacementStrategy() {
-    	this.placementStrategy = PlacementStrategies.STRATEGY_FIELD;
-    	return this;
-	}
+//	public InsertFieldTransform setUseDefaultPlacementStrategy() {
+//    	this.placementStrategy = PlacementStrategies.STRATEGY_FIELD;
+//    	return this;
+//	}
 	
 	public InsertFieldTransform setClashStrategy(ClashStrategy clashStrategy) {
 		if (clashStrategy == null) {

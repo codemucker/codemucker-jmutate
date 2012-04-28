@@ -25,7 +25,7 @@ public class InsertCtorTransform {
 	}
 	
 	public InsertCtorTransform(){
-		setUseDefaultStrategy();
+	//	setUseDefaultStrategy();
 	}
 	
 	public void apply(){
@@ -91,18 +91,14 @@ public class InsertCtorTransform {
     	return this;
     }
 
-	public InsertCtorTransform setStrategy(PlacementStrategy strategy) {
-    	if( strategy == null){
-    		setUseDefaultStrategy();
-    	} else {
-    		this.strategy = strategy;
-    	}
+	public InsertCtorTransform setPlacementStrategy(PlacementStrategy strategy) {
+    	this.strategy = strategy;
     	return this;
 	}
-
-	public InsertCtorTransform setUseDefaultStrategy() {
-    	this.strategy = PlacementStrategies.STRATEGY_CTOR;
-    	return this;
-	}
+//
+//	public InsertCtorTransform setUseDefaultStrategy() {
+//    	this.strategy = PlacementStrategies.STRATEGY_CTOR;
+//    	return this;
+//	}
 
 }

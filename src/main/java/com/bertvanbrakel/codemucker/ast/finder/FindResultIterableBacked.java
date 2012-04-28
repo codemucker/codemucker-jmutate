@@ -3,6 +3,7 @@ package com.bertvanbrakel.codemucker.ast.finder;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -14,6 +15,7 @@ import com.bertvanbrakel.test.finder.matcher.Matcher;
 public class FindResultIterableBacked<T> implements FindResult<T> {
 
 	private final Iterable<T> source;
+	private Boolean empty;
 
 	public static <T> FindResultIterableBacked<T> from(Iterable<T> source){
 		return new FindResultIterableBacked<T>(source);
@@ -21,6 +23,18 @@ public class FindResultIterableBacked<T> implements FindResult<T> {
 	
 	public static <T> FindResultIterableBacked<T> from(Iterator<T> results){
 		return new FindResultIterableBacked<T>(toIterable(results));
+	}
+	
+	@Override
+	public boolean isEmpty(){
+		if( empty == null){
+			if( source instanceof Collection){
+				empty = ((Collection<?>)source).isEmpty();
+			} else {
+				empty = source.iterator().hasNext();
+			}
+		}
+		return empty.booleanValue();
 	}
 	
 	private static <T> Iterable<T> toIterable(Iterator<T> iter){

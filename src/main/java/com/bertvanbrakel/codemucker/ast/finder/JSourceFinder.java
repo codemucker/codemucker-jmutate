@@ -4,8 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
-import java.io.File;
-import java.io.FileFilter;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -21,10 +19,10 @@ import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JSourceFileVisitor;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.test.finder.ClassPathResource;
-import com.bertvanbrakel.test.finder.ClassPathRoot;
 import com.bertvanbrakel.test.finder.LoggingMatchedCallback;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -33,23 +31,7 @@ import com.google.common.collect.ImmutableList;
 public class JSourceFinder {
 
 	private static final String JAVA_EXTENSION = "java";
-	private static FileFilter DIR_FILTER = new FileFilter() {
-		private static final char HIDDEN_DIR_PREFIX = '.';//like .git, .svn,....
-		
-		@Override
-		public boolean accept(File dir) {
-			return dir.isDirectory() && dir.getName().charAt(0) != HIDDEN_DIR_PREFIX && !dir.getName().equals("CVS");
-		}
-	};
 	
-	private static FileFilter FILE_FILTER = new FileFilter() {
-		@Override
-		public boolean accept(File f) {
-			return f.isFile();
-		}
-	};
-	
-//	private final JContext context;
 	private final Collection<Root> classPathRoots;
 	private final JSourceFinderFilterCallback filter;
 	private final JSourceFinderMatchedCallback matchedCallback;
@@ -177,16 +159,12 @@ public class JSourceFinder {
 	
 	public FindResult<ClassPathResource> findResources(){
 		Collection<ClassPathResource> resources = newHashSet();
-		Collection<Root> sourceDirs = getSourceDirsToSearch();
-		for (Root root: sourceDirs) {
+		Collection<Root> roots = getRootsToSearch();
+		for (Root root: roots) {
 			if( filter.matches((Object)root) && filter.matches(root)){
-    			if( root.isDirectory()){
-    				matchedCallback.onMatched(root);
-    				walkResourceDir(resources, (ClassPathRoot)root);
-        		} else {
-        			ignoredCallback.onIgnored(root);
-        			//throw new CodemuckerException("can't currently walk non directory class path roots. Path: " + root.getPathName());
-        		}
+				matchedCallback.onMatched(root);
+				
+				collectResources(root, resources);
     		} else {
     			ignoredCallback.onIgnored(root);
     		}
@@ -194,37 +172,27 @@ public class JSourceFinder {
 		return FindResultIterableBacked.from(resources);
 	}
 	
-	private Collection<Root> getSourceDirsToSearch() {
+	private void collectResources(Root root,final Collection<ClassPathResource> found){
+		Function<ClassPathResource, Boolean> collector = new Function<ClassPathResource, Boolean>() {
+			@Override
+            public Boolean apply(ClassPathResource child) {
+				
+				if (filter.matches((Object)child) && filter.matches(child)) {
+					matchedCallback.onMatched(child);
+					found.add(child);
+				} else {
+					ignoredCallback.onIgnored(child);
+				}
+				return true;
+            }
+		};
+		root.walkResources(collector);
+	}
+	
+	private Collection<Root> getRootsToSearch() {
 		return classPathRoots;
 	}
-	
-	private void walkResourceDir(Collection<ClassPathResource> found, ClassPathRoot root) {
-		walkDir(found, root, "", root.getPath());
-	}
-	
-	private void walkDir(Collection<ClassPathResource> found, Root rootDir, String parentPath, File dir) {
-//		ClassPathResource dirResource = new ClassPathResource(rootDir, dir, parentPath + "/", false);
-//		if (!filter.matches((Object)dirResource) || !filter.matches(dirResource)) {
-//			ignoredCallback.onIgnored(dirResource);
-//			return;
-//		}
-		File[] files = dir.listFiles(FILE_FILTER);
-		for (File f : files) {
-			String relPath = parentPath + "/" + f.getName();
-			ClassPathResource child = new ClassPathResource(rootDir, relPath);
-			if (filter.matches((Object)child) && filter.matches(child)) {
-				matchedCallback.onMatched(child);
-				found.add(child);
-			} else {
-				ignoredCallback.onIgnored(child);
-			}
-		}
-		File[] childDirs = dir.listFiles(DIR_FILTER);
-		for (File childDir : childDirs) {
-			walkDir(found, rootDir, parentPath + "/" + childDir.getName(), childDir);
-		}
-	}
-	
+
 	private static class JMethodIterator implements Iterator<JMethod> {
 
 		private final Iterator<JType> types;

@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.bertvanbrakel.test.finder.ClassFinderException;
-import com.bertvanbrakel.test.finder.ClassPathRoot;
+import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
-import com.bertvanbrakel.test.finder.Root.TYPE;
+import com.bertvanbrakel.test.finder.Root.RootType;
 import com.bertvanbrakel.test.util.ProjectFinder;
 import com.bertvanbrakel.test.util.ProjectResolver;
 
@@ -47,13 +47,13 @@ public class SearchPathsBuilder {
 		SearchPathsBuilder copy = new SearchPathsBuilder();
 		copy.classPathsRoots.putAll(classPathsRoots);
 		if (includeClassesDir) {
-			copy.addClassPaths(resolver.getMainSrcDirs(),TYPE.MAIN_SRC);
+			copy.addClassPaths(resolver.getMainSrcDirs(),RootType.MAIN_SRC);
 		}
 		if (includeTestDir) {
-			copy.addClassPaths(resolver.getTestSrcDirs(),TYPE.TEST_SRC);
+			copy.addClassPaths(resolver.getTestSrcDirs(),RootType.TEST_SRC);
 		}
 		if (includeGeneratedDir) {
-			copy.addClassPaths(resolver.getGeneratedSrcDirs(),TYPE.GENERATED_SRC);
+			copy.addClassPaths(resolver.getGeneratedSrcDirs(),RootType.GENERATED_SRC);
 		}
 		if (includeClasspath) {
 			copy.addClassPaths(findClassPathDirs());
@@ -118,15 +118,15 @@ public class SearchPathsBuilder {
     	return this;
     }
 	
-	public SearchPathsBuilder addClassPaths(Collection<File> paths, TYPE type) {
+	public SearchPathsBuilder addClassPaths(Collection<File> paths, RootType type) {
 		for(File path:paths){
-			addClassPath(new ClassPathRoot(path,type));
+			addClassPath(new DirectoryRoot(path,type));
 		}
     	return this;
     }
 	
 	public SearchPathsBuilder addClassPathDir(File path) {
-		addClassPath(new ClassPathRoot(path,TYPE.UNKNOWN));
+		addClassPath(new DirectoryRoot(path,RootType.UNKNOWN));
     	return this;
     }
 
