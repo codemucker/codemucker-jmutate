@@ -1,4 +1,4 @@
-package com.bertvanbrakel.codemucker.ast;
+package com.bertvanbrakel.codemucker.transform;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import com.bertvanbrakel.codemucker.transform.PlacementStrategy;
+import com.bertvanbrakel.codemucker.ast.StrategyBeforeAfterNodes;
 
 public class PlacementStrategies {
 

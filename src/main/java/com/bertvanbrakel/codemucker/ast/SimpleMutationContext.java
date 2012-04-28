@@ -1,6 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
 import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.PlacementStrategies;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.codemucker.transform.StringTemplate;
 
