@@ -117,16 +117,20 @@ public class JAstFlattener extends GenericVisitor {
    * The string buffer into which the serialized representation of the AST is
    * written.
    */
-  protected StringBuilder buffer;
+  protected final StringBuilder buffer;
   
   private boolean newLineEnabled = true;
 
   /**
    * Creates a new AST printer.
    */
-  public JAstFlattener() {
-    this.buffer= new StringBuilder();
-  }
+	public JAstFlattener() {
+		this(new StringBuilder());
+	}
+
+	public JAstFlattener(StringBuilder sb) {
+		this.buffer = sb;
+	}
 
   /**
    * Returns the string accumulated in the visit.

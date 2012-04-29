@@ -18,16 +18,25 @@ package com.bertvanbrakel.codemucker.bean;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.assertAstsMatch;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.getJavaSourceFrom;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.writeResource;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.ast.JAccess;
+import com.bertvanbrakel.codemucker.ast.JField;
+import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
+import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.JTypeMutator;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.transform.InsertCtorTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.PlacementStrategy;
+import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder;
+import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder.RETURN;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
@@ -61,7 +70,15 @@ public class BeanBuilderGeneratorTest {
 		srcBefore.println( "@BeanProperty");
 		srcBefore.println( "private String myField;" );
 		srcBefore.println("}");
+		JType before = srcBefore.asJType();
 
+		
+		SetterMethodBuilder.newBuilder()
+			.setAccess(JAccess.PUBLIC)
+			.setContext(ctxt)
+			.setMarkedGenerated(true)
+			.setReturnType(RETURN.TARGET)
+			.setType(type)
 		SourceTemplate srcExpected = ctxt.newSourceTemplate();
 		srcExpected.println("package com.bertvanbrakel.codegen.bean;");
 		srcExpected.println( "public class TestBeanModify {");

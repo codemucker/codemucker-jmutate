@@ -1,6 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.lang.annotation.Annotation;
@@ -35,6 +36,15 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 	
 	public boolean isType(Type type){
 		return fieldNode.getType().equals(type) ;
+	}
+	
+	/**
+	 * Get the name of this field. If there are multiple names throw an error
+	 */
+	public String getName() {
+		List<String> names = getNames();
+		checkState(names.size() == 1, "expect only a single name");
+		return names.get(0);
 	}
 	
 	public List<String> getNames(){
