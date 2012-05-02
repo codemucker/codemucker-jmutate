@@ -2,46 +2,33 @@ package com.bertvanbrakel.codemucker.transform;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.List;
-
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.JField;
-import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
 
-public class InsertFieldTransform {
+public final class InsertFieldTransform extends AbstractNodeInsertTransform<InsertFieldTransform>{
 
-	private JType target;
 	private JField field;
-	private ClashStrategy clashStrategy = ClashStrategy.ERROR;
-
-	private PlacementStrategy placementStrategy;
 	
 	public static InsertFieldTransform newTransform(){
 		return new InsertFieldTransform();
 	}
 	
-	public InsertFieldTransform(){
-		//setUseDefaultPlacementStrategy();
-		setUseDefaultClashStrategy();
-	}
-	
 	public void apply() {
-		checkState(target != null,"missing target");
+		checkFieldsSet();
 		checkState(field != null,"missing field");
-		checkState(clashStrategy != null,"missing clash strategy");
-		checkState(placementStrategy != null,"missing strategy");
 		
 	    boolean insert = true;
 		for( String fieldName:field.getNames()){
-			List<JField> found = target.findFieldsMatching(JFieldMatchers.withName(fieldName)).toList();
-			if( !found.isEmpty()){
+			//TODO:unwrap single field decl with multiple field (all same type/assignment)
+			FindResult<JField> found = getTarget().findFieldsMatching(JFieldMatchers.withName(fieldName));
+			if(!found.isEmpty()){
 				insert = false;
-				JField existingField = found.get(0);
-				switch(clashStrategy){
+				JField existingField = found.getFirst();
+				switch(getClashStrategy()){
 				case REPLACE:
 					existingField.getAstNode().delete();
 					insert = true;
@@ -51,29 +38,19 @@ public class InsertFieldTransform {
 				case ERROR:
 					throw new CodemuckerException("Existing field %s, not replacing with %s", existingField.getAstNode(), field);
 				default:
-					throw new CodemuckerException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), clashStrategy);
+					throw new CodemuckerException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), getClashStrategy());
 				}
 			}
 		}
 		if( insert){
 			new NodeInserter()
-                .setTarget(target)
+                .setTarget(getTarget())
                 .setNodeToInsert(field.getAstNode())
                 //TODO:allow to override this? want to make this a non greedy class!
-                .setStrategy(placementStrategy)
+                .setStrategy(getPlacementStrategy())
                 .insert();
 		}
     }
-
-	public InsertFieldTransform setTarget(AbstractTypeDeclaration target) {
-    	setTarget(new JType(target));
-    	return this;
-	}
-	
-	public InsertFieldTransform setTarget(JType target) {
-    	this.target = target;
-    	return this;
-	}
 
 	public InsertFieldTransform setField(FieldDeclaration field) {
     	setField(new JField(field));
@@ -82,30 +59,6 @@ public class InsertFieldTransform {
 	
 	public InsertFieldTransform setField(JField field) {
     	this.field = field;
-    	return this;
-	}
-
-	public InsertFieldTransform setPlacementStrategy(PlacementStrategy strategy) {
-    	this.placementStrategy = strategy;
-    	return this;
-	}
-	
-//	public InsertFieldTransform setUseDefaultPlacementStrategy() {
-//    	this.placementStrategy = PlacementStrategies.STRATEGY_FIELD;
-//    	return this;
-//	}
-	
-	public InsertFieldTransform setClashStrategy(ClashStrategy clashStrategy) {
-		if (clashStrategy == null) {
-			setUseDefaultClashStrategy();
-		} else {
-			this.clashStrategy = clashStrategy;
-		}
-		return this;
-	}
-	
-	public InsertFieldTransform setUseDefaultClashStrategy() {
-		this.clashStrategy = ClashStrategy.ERROR;
     	return this;
 	}
 }

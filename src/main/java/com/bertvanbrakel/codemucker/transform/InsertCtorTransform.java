@@ -2,65 +2,57 @@ package com.bertvanbrakel.codemucker.transform;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.List;
-
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.JMethod;
-import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
 
-public class InsertCtorTransform {
+public final class InsertCtorTransform extends AbstractNodeInsertTransform<InsertCtorTransform> {
 	
 	private JMethod ctor;
-	private JType target;
-	private boolean replace;
-	private PlacementStrategy strategy;
 
 	public static InsertCtorTransform newTransform(){
 		return new InsertCtorTransform();
 	}
 	
-	public InsertCtorTransform(){
-	//	setUseDefaultStrategy();
-	}
-	
 	public void apply(){
+		checkFieldsSet();
 		checkState(ctor != null, "missing constructor");
-		checkState(target != null, "missing target");
-		checkState(strategy != null, "missing strategy");
-
+		
 		boolean insert = true;
-
 		if( !ctor.isConstructor()){
 			throw new CodemuckerException("Constructor method is not a constructor. Method is %s",ctor);
 			
 		}
-		if( !target.getSimpleName().equals(ctor.getName())){
-			throw new CodemuckerException("Constructor method name should be the same as the target type. Expected name to be %s but as %s",target.getSimpleName(),ctor.getName());
+		if( !getTarget().getSimpleName().equals(ctor.getName())){
+			throw new CodemuckerException("Constructor method name should be the same as the target type. Expected name to be %s but as %s",getTarget().getSimpleName(),ctor.getName());
 		}
 		
-		List<JMethod> found = target.findMethodsMatching(JMethodMatchers.withMethodNamed(ctor.getName())).toList();
-		
+		FindResult<JMethod> found = getTarget().findMethodsMatching(JMethodMatchers.withNameAndArgSignature(ctor));
     	if( !found.isEmpty()){
     		insert = false;
-    		JMethod existingCtor = found.get(0);
+    		JMethod existingCtor = found.getFirst();
     		//modify it!??
-    		if( replace ){
-    			existingCtor.getAstNode().delete();
-    			insert = true;
-    		} else {
-    			//throw?
-    			throw new CodemuckerException("Existing constructor %s, not replacing with %s", existingCtor.getAstNode(), ctor.getAstNode());
-    		}
+    		switch(getClashStrategy()){
+			case REPLACE:
+				existingCtor.getAstNode().delete();
+				insert = true;
+				break;
+			case IGNORE:
+				break;
+			case ERROR:
+				throw new CodemuckerException("Existing ctor %s, not replacing with %s", existingCtor.getAstNode(), ctor);
+			default:
+				throw new CodemuckerException("Existing ctor method %s, unsupported clash strategy %s", existingCtor.getAstNode(), getClashStrategy());
+			}
     	}
-    	if( insert){
+    	if(insert){
     		new NodeInserter()
-                .setTarget(target)
+                .setTarget(getTarget())
                 .setNodeToInsert(ctor.getAstNode())
-                .setStrategy(strategy)
+                .setStrategy(getPlacementStrategy())
                 .insert();
     	}
 	}
@@ -74,30 +66,4 @@ public class InsertCtorTransform {
     	this.ctor = constructor;
     	return this;
 	}
-
-	public InsertCtorTransform setTarget(AbstractTypeDeclaration target) {
-    	setTarget(new JType(target));
-    	return this;
-	}
-	
-	public InsertCtorTransform setTarget(JType javaType) {
-    	this.target = javaType;
-    	return this;
-	}
-
-	public InsertCtorTransform setReplace(boolean replace) {
-    	this.replace = replace;
-    	return this;
-    }
-
-	public InsertCtorTransform setPlacementStrategy(PlacementStrategy strategy) {
-    	this.strategy = strategy;
-    	return this;
-	}
-//
-//	public InsertCtorTransform setUseDefaultStrategy() {
-//    	this.strategy = PlacementStrategies.STRATEGY_CTOR;
-//    	return this;
-//	}
-
 }

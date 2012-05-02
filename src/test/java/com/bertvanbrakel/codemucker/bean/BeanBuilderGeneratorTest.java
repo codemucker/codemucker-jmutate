@@ -93,7 +93,6 @@ public class BeanBuilderGeneratorTest {
     			.build();
 			
 			InsertMethodTransform inserter = InsertMethodTransform.newTransform()
-				.setUseDefaultClashStrategy()
 				.setTarget(after)
 				.setPlacementStrategy(ctxt.getStrategies().getMethodStrategy())
 				;

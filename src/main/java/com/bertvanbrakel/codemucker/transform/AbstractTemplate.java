@@ -24,6 +24,11 @@ public abstract class AbstractTemplate<S extends AbstractTemplate<S>> implements
 		return self();
 	}
 	
+	public S v(String name,Object val){
+		setVar(name,val);
+		return self();
+	}
+	
 	public S setVar(String name,Object val){
 		this.vars.put(name,val);
 		return self();

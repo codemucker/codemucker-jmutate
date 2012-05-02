@@ -26,16 +26,15 @@ public class JFieldMatchers extends LogicalMatchers  {
 		return MATCH_ANY;
 	}
 	
-	public static Matcher<JField> withFQN(final Matcher<String> fqnMatcher){
-		return new Matcher<JField>() {
-			@Override
-			public boolean matches(JField found) {
-				
-				return typeMatcher.matches(found.getAstNode().getType());
-			}
-		};
-	}
-	
+//	public static Matcher<JField> withFQN(final Matcher<String> fqnMatcher){
+//		return new Matcher<JField>() {
+//			@Override
+//			public boolean matches(JField found) {
+//				return fqnMatcher.matches(found.getAstNode().getType());
+//			}
+//		};
+//	}
+//	
 	public static Matcher<JField> ofType(final Matcher<Type> typeMatcher){
 		return new Matcher<JField>() {
 			@Override

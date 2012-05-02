@@ -2,18 +2,9 @@ package com.bertvanbrakel.codemucker.util;
 
 import java.util.Collection;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ArrayType;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ParameterizedType;
-import org.eclipse.jdt.core.dom.PrimitiveType;
-import org.eclipse.jdt.core.dom.QualifiedType;
-import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.Type;
 
-import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.JAstFlattener;
-import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.google.common.collect.ImmutableList;
 
 public class TypeUtil {
