@@ -83,4 +83,9 @@ public class FindResultIterableBacked<T> implements FindResult<T> {
 		}
 	    return map;
     }
+
+	@Override
+    public T getFirst() {
+	    return iterator().next();
+    }
 }

@@ -16,31 +16,29 @@
 package com.bertvanbrakel.codemucker.bean;
 
 import static com.bertvanbrakel.codemucker.util.SourceUtil.assertAstsMatch;
-import static com.bertvanbrakel.codemucker.util.SourceUtil.getJavaSourceFrom;
-import static com.bertvanbrakel.codemucker.util.SourceUtil.writeResource;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.annotation.BeanProperty;
+import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JMethod;
-import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.JTypeMutator;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
-import com.bertvanbrakel.codemucker.transform.InsertCtorTransform;
+import com.bertvanbrakel.codemucker.ast.finder.FindResult;
+import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
+import com.bertvanbrakel.codemucker.transform.GetterMethodBuilder;
+import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
-import com.bertvanbrakel.codemucker.transform.PlacementStrategy;
 import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder;
 import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder.RETURN;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
-import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
 public class BeanBuilderGeneratorTest {
@@ -61,48 +59,64 @@ public class BeanBuilderGeneratorTest {
 	}
 
 	@Test
-	public void test_addGetter_and_setter() throws Exception {
+	public void test_add_setter() throws Exception {
 		MutationContext ctxt = new SimpleMutationContext();
 		
-		SourceTemplate srcBefore = ctxt.newSourceTemplate();
-		srcBefore.println("package com.bertvanbrakel.codegen.bean;");
-		srcBefore.println( "public class TestBeanModify {");
-		srcBefore.println( "@BeanProperty");
-		srcBefore.println( "private String myField;" );
-		srcBefore.println("}");
+		SourceTemplate srcBefore = ctxt.newSourceTemplate()
+			.println("package com.bertvanbrakel.codegen.bean;")
+			.println("import " + BeanProperty.class.getName() + ";")
+			.println( "public class TestBeanModify {")
+			.println( "@BeanProperty")
+			.println( "private String myField;" )
+			.println("}");
+		
 		JType before = srcBefore.asJType();
+		JType after = srcBefore.asJType();
+		
+		FindResult<JField> fields = before.findFieldsMatching(JFieldMatchers.withAnnotation(BeanProperty.class));
+		for( JField f:fields){
+			
+			JMethod setter = SetterMethodBuilder.newBuilder()
+    			.setAccess(JAccess.PUBLIC)
+    			.setContext(ctxt)
+    			.setFromField(f)
+    			.setTarget(after)
+    			.setMarkedGenerated(true)
+    			.setReturnType(RETURN.VOID)
+    			.build();
+			
+			JMethod getter = GetterMethodBuilder.newBuilder()
+    			.setAccess(JAccess.PUBLIC)
+    			.setContext(ctxt)
+    			.setFromField(f)
+    			.setMarkedGenerated(true)
+    			.build();
+			
+			InsertMethodTransform inserter = InsertMethodTransform.newTransform()
+				.setUseDefaultClashStrategy()
+				.setTarget(after)
+				.setPlacementStrategy(ctxt.getStrategies().getMethodStrategy())
+				;
+			
+			inserter.setMethod(setter).apply();
+			inserter.setMethod(getter).apply();
 
+		}
+			
+		JType expectType = ctxt.newSourceTemplate()
+			.println("package com.bertvanbrakel.codegen.bean;")
+			.println("import " + BeanProperty.class.getName() + ";")
+			.println( "public class TestBeanModify {")
+			.println( "@BeanProperty")
+			.println( "private String myField;" )
+			.print("@").p(Pattern.class.getName()).p("(name=\"bean.setter\") public void setMyField(String myField ){ this.myField = myField;}" ).nl()
+			.print("@").p(Pattern.class.getName()).p("(name=\"bean.getter\") public String getMyField(){ return this.myField;}" ).nl()
+			
+			//.println( "public String getMyField(){ return this.myField;}" )
+			.println("}")
+			.asJType();
 		
-		SetterMethodBuilder.newBuilder()
-			.setAccess(JAccess.PUBLIC)
-			.setContext(ctxt)
-			.setMarkedGenerated(true)
-			.setReturnType(RETURN.TARGET)
-			.setType(type)
-		SourceTemplate srcExpected = ctxt.newSourceTemplate();
-		srcExpected.println("package com.bertvanbrakel.codegen.bean;");
-		srcExpected.println( "public class TestBeanModify {");
-		srcExpected.println( "@BeanProperty");
-		srcExpected.println( "private String myField;" );
-		srcExpected.println( "public void setMyField(String myField ){ this.myField = myField;}" );
-		srcExpected.println( "public String getMyField(){ return this.myField;}" );
-		srcExpected.println("}");
-
-		ClassPathResource modifiedSrcFile = writeResource(srcBefore);
-		ClassPathResource srcFileExpected = writeResource(srcExpected);
-		
-		JSourceFile source = getJavaSourceFrom(modifiedSrcFile);
-		JTypeMutator mut = source.getTopTypeWithName("TestBeanModify").asMutator(ctxt);
-		
-		//now lets add a getter and setter
-		mut.addMethod("public void setMyField(String myField ){ this.myField = myField;}");
-		mut.addMethod("public String getMyField(){ return this.myField;}");
-		
-		//write new AST back to file
-		source.writeModificationsToDisk();
-		
-		//then check it matches what we expect
-		assertAstsMatch(srcFileExpected, modifiedSrcFile);
+		assertAstsMatch(expectType.getCompilationUnit(),after.getCompilationUnit());
 	}
 	
 	private void addProperty(BeanDefinition def, Class<?> propertyType) {

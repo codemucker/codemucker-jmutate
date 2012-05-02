@@ -128,6 +128,7 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	public FindResult<JField> findAllFields(){
 		return findFieldsMatching(JFieldMatchers.any());
 	}
+	
 	public FindResult<JField> findFieldsMatching(Matcher<JField> matcher) {
 		List<JField> found = newArrayList();
 		findFieldsMatching(matcher, found);
@@ -208,10 +209,10 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	public CompilationUnit getCompilationUnit(){
 		ASTNode parent = typeNode;
 		while( parent != null){
-			parent = parent.getParent();
 			if( parent instanceof CompilationUnit){
 				return (CompilationUnit)parent;
 			}
+			parent = parent.getParent();			
 		}
 		throw new CodemuckerException("Couldn't find compilation unit. Unexpected");
 	}
@@ -322,5 +323,13 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	public boolean isImplementing(Class<?> require) {
 	    throw new UnsupportedOperationException("TODO, implements me!");
     }
-	
+
+	@Override
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("JType [");
+		getAstNode().accept(new JAstFlattener(sb));
+		sb.append("]");
+		return sb.toString();
+	}
 }

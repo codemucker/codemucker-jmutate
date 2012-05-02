@@ -26,6 +26,8 @@ public interface FindResult<T> extends Iterable<T> {
 	 */
 	public <K> Map<K,T> toMap(KeyProvider<K, T> keyProvider);
 
+	public T getFirst();
+	
 	public static interface KeyProvider<K,V> {
 		public K getKeyFor(V value);
 	}

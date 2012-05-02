@@ -38,11 +38,22 @@ public abstract class AbstractTemplate<S extends AbstractTemplate<S>> implements
 		return self();
 	}
 
+	public S pl(char c){
+		println(c);
+		return self();
+	}
+	
 	public S println(char c){
 		print(c);
 		println();
 		return self();
 	}	
+	
+
+	public S pl(CharSequence template){
+		println(template);
+		return self();
+	}
 	
 	public S println(CharSequence template){
 		print(template);
@@ -50,11 +61,26 @@ public abstract class AbstractTemplate<S extends AbstractTemplate<S>> implements
 		return self();
 	}	
 
+	public S nl(){
+		println();
+		return self();
+	}
+	
 	public S println(){
 		this.buffer.append("\n");
 		return self();
 	}
-
+	
+	public S p(char c){
+		print(c);
+		return self();
+	}
+	
+	public S p(CharSequence c){
+		print(c);
+		return self();
+	}
+	
 	public S print(char c){
 		this.buffer.append(c);
 		return self();

@@ -170,7 +170,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	}
 
 	private TypeDeclaration toTempWrappingType() {
-		String tmpTypeName = "TmpAutoKlass__" + SourceTemplate.class.getSimpleName() + "__";
+		String tmpTypeName = SourceTemplate.class.getSimpleName() + "__TmpWrapperKlass__";
 		String src = "class " + tmpTypeName + "{" + interpolate()  + "}";
 		CompilationUnit cu = parser.parseCompilationUnit(src);
 		List<?> types = cu.types();

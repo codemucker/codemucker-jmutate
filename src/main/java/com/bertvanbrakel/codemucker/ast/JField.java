@@ -12,6 +12,8 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
+import com.bertvanbrakel.codemucker.util.TypeUtil;
+
 public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 
 	private final FieldDeclaration fieldNode;
@@ -36,6 +38,21 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 	
 	public boolean isType(Type type){
 		return fieldNode.getType().equals(type) ;
+	}
+	
+	public Type getType(){
+		return fieldNode.getType();
+	}
+	
+	/**
+	 * Returns the full type signature
+	 * @return
+	 */
+	public String getTypeSignature(){
+		//TODO:return the actual FQDN, instead of the bad implementation of TypeUtils
+		StringBuilder sb = new StringBuilder();
+		TypeUtil.toName(fieldNode.getType(), sb);
+		return sb.toString();
 	}
 	
 	/**

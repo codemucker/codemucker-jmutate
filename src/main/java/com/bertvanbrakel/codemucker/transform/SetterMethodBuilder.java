@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
+import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JMethod;
@@ -48,7 +49,9 @@ public class SetterMethodBuilder {
 		        .setVar("fieldName", name);
 
 		if (markedGenerated) {
-			template.print("@Pattern(name=\"");
+			template.print('@');
+			template.print(Pattern.class.getName());
+			template.print("(name=\"");
 			template.print(pattern);
 			template.println("\")");
 		}
@@ -81,8 +84,8 @@ public class SetterMethodBuilder {
 	}
 
 	public SetterMethodBuilder setFromField(JField f) {
-		String name = f.getName();
-		String type = f.getAstNode().g
+		setName(f.getName());
+		setType(f.getTypeSignature());
 		return this;
 	}
 

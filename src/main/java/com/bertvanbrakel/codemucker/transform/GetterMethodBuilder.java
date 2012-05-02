@@ -2,11 +2,14 @@ package com.bertvanbrakel.codemucker.transform;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.help.internal.util.StringUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
+import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JAccess;
+import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JMethod;
-import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.util.TypeUtil;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
@@ -16,16 +19,19 @@ public class GetterMethodBuilder {
 	private String pattern = "bean.getter";
 	private String fieldName;
 	private String fieldType;
-	private JType target;
 	private boolean cloneOnReturn;
 	private MutationContext context;
 	private JAccess access = JAccess.PUBLIC;
 	
+	
+	public static GetterMethodBuilder newBuilder(){
+		return new GetterMethodBuilder();
+	}
+	
 	public JMethod build(){
 		checkState(context != null, "missing context");
-		checkState(target != null, "missing target");
-		checkState(fieldName != null, "missing name");
-		checkState(fieldType != null, "missing type");
+		checkState(!StringUtils.isBlank(fieldName), "missing name");
+		checkState(!StringUtils.isBlank(fieldType), "missing type");
 
 		return new JMethod(toMethod());
 	}
@@ -40,24 +46,30 @@ public class GetterMethodBuilder {
 			.setVar("fieldName", fieldName);
 
 		if( markedGenerated){
-			template.print("@Pattern(name=\"");
-			template.print(pattern);
-			template.println("\")");
+			template
+				.p('@')
+				.p(Pattern.class.getName())
+				.p("(name=\"")
+				.p(pattern)
+				.pl("\")");
 		}
-		template.print(access.toCode());
-		template.println(" ${fieldType} ${methodName}(${fieldType}(){");
-		if( !TypeUtil.isPrimitive(fieldType)){
-    		if(cloneOnReturn){
-    			template.println("return this.${fieldName}==null?null:this.${fieldName}.clone();");
-    		} else {
-    			template.println("return this.${fieldName};");	
-    		}
+		template.p(access.toCode()).p(" ${fieldType} ${methodName}(){");
+		boolean clone = cloneOnReturn && !TypeUtil.isPrimitive(fieldType); 
+		if(clone){
+    		template.pl("return this.${fieldName}==null?null:this.${fieldName}.clone();");
+		} else {
+			template.pl("return this.${fieldName};");
 		}
-		template.println("}");
-		
+		template.p("}");
 		return template.asMethodNode();
 	}
 	
+	public GetterMethodBuilder setFromField(JField f) {
+		setFieldName(f.getName());
+		setFieldType(f.getTypeSignature());
+		return this;
+	}
+
 	public GetterMethodBuilder setAccess(JAccess access) {
     	this.access  = access;
     	return this;
@@ -73,12 +85,8 @@ public class GetterMethodBuilder {
 		return this;
 	}
 
-	public void setMarkedGenerated(boolean markedGenerated) {
+	public GetterMethodBuilder setMarkedGenerated(boolean markedGenerated) {
     	this.markedGenerated = markedGenerated;
-    }
-
-	public GetterMethodBuilder setTarget(JType target) {
-    	this.target = target;
     	return this;
 	}
 

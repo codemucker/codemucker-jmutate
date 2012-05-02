@@ -28,6 +28,8 @@ import com.google.common.collect.Lists;
  */
 @NotThreadSafe
 public class JAstParser {
+	private static final int PAD_LINE_NUM = 4; 
+	
 	private final ASTParser parser;
 	private final boolean checkParse;
 	private final boolean recordModifications;
@@ -77,6 +79,9 @@ public class JAstParser {
 				return Objects.toStringHelper("Problem")
 					.add("msg", problem.getMessage())
 					.add("line", problem.getSourceLineNumber())
+					.add("char", problem.getSourceStart() + PAD_LINE_NUM)
+					//.add("to", problem.getSourceEnd() + PAD_LINE_NUM)
+					
 //					.add( "id", problem.getID() )
 					.toString();
             }
@@ -94,9 +99,9 @@ public class JAstParser {
 			if( lineNum > 0){
 				sb.append('\n');
 			}
-			sb.append('[');
-			sb.append(Strings.padEnd(Integer.toString(lineNum), 4, ' '));
-			sb.append(']');
+			//sb.append('[');
+			sb.append(Strings.padEnd(Integer.toString(lineNum) + ".", PAD_LINE_NUM, ' '));
+			//sb.append(" ");
 			
 			sb.append(line);
 			lineNum++;
