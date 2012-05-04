@@ -50,8 +50,7 @@ public class BeanPropertyPatternTest {
 			.pl("}")
 			.asJType();
 		
-		new BeanPropertyPattern()
-			.setCtxt(ctxt)
+		ctxt.create(BeanPropertyPattern.class)
 			.setTarget(target)
 			.setPropertyName("myField")
 			.setPropertyType("String")

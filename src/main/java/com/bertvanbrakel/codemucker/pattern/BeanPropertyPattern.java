@@ -14,14 +14,18 @@ import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder;
 import com.bertvanbrakel.codemucker.transform.SimpleFieldBuilder;
 import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder.RETURN;
+import com.google.inject.Inject;
 
 public class BeanPropertyPattern {
 
+	@Inject
 	private MutationContext ctxt;
+	
 	private JType target;
 	private String propertyName;
 	private String propertyType;
 
+	@Inject
 	public BeanPropertyPattern setCtxt(MutationContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
@@ -48,16 +52,13 @@ public class BeanPropertyPattern {
 		checkNotBlank("propertyName", propertyName);
 		checkNotBlank("propertyType", propertyType);
 
-		JField field = SimpleFieldBuilder.newBuilder()
-			.setContext(ctxt)
-			
+		JField field = ctxt.create(SimpleFieldBuilder.class)
 			.setMarkedGenerated(true)
 			.setType(propertyType)
 			.setName(propertyName)
 			.build();
 				
-		JMethod setter = SetterMethodBuilder.newBuilder()
-			.setContext(ctxt)
+		JMethod setter = ctxt.create(SetterMethodBuilder.class)
 			.setTarget(target)
 			.setFromField(field)
 			.setAccess(JAccess.PUBLIC)
@@ -65,8 +66,7 @@ public class BeanPropertyPattern {
 			.setReturnType(RETURN.VOID)
 			.build();
 		
-		JMethod getter = GetterMethodBuilder.newBuilder()
-			.setContext(ctxt)
+		JMethod getter = ctxt.create(GetterMethodBuilder.class)
 			.setFromField(field)
 			.setAccess(JAccess.PUBLIC)
 			.setMarkedGenerated(true)
@@ -78,7 +78,7 @@ public class BeanPropertyPattern {
 			.setPlacementStrategy(ctxt.getStrategies().getFieldStrategy())
 			.apply();
 		
-		InsertMethodTransform inserter = InsertMethodTransform.newTransform()
+		InsertMethodTransform inserter = ctxt.create(InsertMethodTransform.class)
 			.setTarget(target)
 			.setPlacementStrategy(ctxt.getStrategies().getMethodStrategy())
 		;

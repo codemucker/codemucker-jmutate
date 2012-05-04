@@ -26,12 +26,12 @@ import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 
 public class SetterMethodBuilderTest {
 
+	MutationContext ctxt = new SimpleMutationContext();
+	
 	@Test
 	public void test_create_with_defaults() throws Exception {
-		MutationContext ctxt = new SimpleMutationContext();
 		
-		JField actual = SimpleFieldBuilder.newBuilder()
-			.setContext(ctxt)
+		JField actual = ctxt.create(SimpleFieldBuilder.class)
 			.setType("String")
 			.setName("myField")
 			.build();
@@ -45,10 +45,8 @@ public class SetterMethodBuilderTest {
 	
 	@Test
 	public void test_create_non_defaults() throws Exception {
-		MutationContext ctxt = new SimpleMutationContext();
 		
-		JField actual = SimpleFieldBuilder.newBuilder()
-			.setContext(ctxt)
+		JField actual = ctxt.create(SimpleFieldBuilder.class)
 			.setAccess(JAccess.PUBLIC)
 			.setPattern("my.pattern")
 			.setMarkedGenerated(true)
@@ -62,5 +60,4 @@ public class SetterMethodBuilderTest {
 		
 		assertAstsMatch(expect,actual);
 	}
-	
 }

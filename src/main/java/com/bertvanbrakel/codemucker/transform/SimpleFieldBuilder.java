@@ -38,8 +38,7 @@ public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilde
 	}
 	
 	private FieldDeclaration toFieldNode(){
-		SourceTemplate t = getContext()
-			.newSourceTemplate()
+		SourceTemplate t = getContext().newSourceTemplate()
 			.setVar("fieldName", name)
 			.setVar("fieldType", type);
 

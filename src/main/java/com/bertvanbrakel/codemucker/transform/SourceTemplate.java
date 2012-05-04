@@ -28,12 +28,16 @@ import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.util.ProjectFinder;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 @NotThreadSafe
 public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 {
+	@Inject
 	private final JAstParser parser;
 	
+	@Inject
 	public SourceTemplate(JAstParser parser){
 		this.parser = checkNotNull(parser,"expect parser");
 	}

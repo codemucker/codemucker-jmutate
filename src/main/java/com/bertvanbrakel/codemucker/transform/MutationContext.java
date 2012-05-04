@@ -7,6 +7,8 @@ public interface MutationContext {
 	PlacementStrategies getStrategies();
 	SourceTemplate newSourceTemplate();
 	StringTemplate newStringTemplate();
+	<T> T create(Class<T> type);
+	<T> T fill(T instance);
 	
 	//could cache some of this stuff, and track changes?
 //	JTypeMutator getMutator(AbstractTypeDeclaration type);

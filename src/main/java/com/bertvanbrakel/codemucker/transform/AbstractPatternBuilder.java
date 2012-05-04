@@ -4,11 +4,15 @@ import static com.google.common.base.Preconditions.checkState;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.inject.Inject;
+
 public abstract class AbstractPatternBuilder<S extends AbstractPatternBuilder<S>> {
 
+	@Inject
+	private MutationContext context;
+	
 	private boolean markedGenerated;
 	private String pattern;
-	private MutationContext context;
 	
 	protected void checkFieldsSet(){
 		checkState(context != null, "expect mutation context");

@@ -5,11 +5,15 @@ import static com.google.common.base.Preconditions.checkState;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.JType;
+import com.google.inject.Inject;
 
 public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTransform<S>> {
 
 	private JType target;
+	
+	@Inject(optional=true)
 	private ClashStrategy clashStrategy = ClashStrategy.ERROR;
+	@Inject(optional=true)
 	private PlacementStrategy placementStrategy;
 
 	protected void checkFieldsSet(){

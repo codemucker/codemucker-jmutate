@@ -26,12 +26,11 @@ import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 
 public class GetterMethodBuilderTest {
 
+	MutationContext ctxt = new SimpleMutationContext();
+	
 	@Test
 	public void test_default_create(){
-		MutationContext ctxt = new SimpleMutationContext();
-	
-		JMethod actual = GetterMethodBuilder.newBuilder()
-			.setContext(ctxt)
+		JMethod actual = ctxt.create(GetterMethodBuilder.class)
 			.setFieldName("myField")
 			.setFieldType("my.org.Foo")
 			.build();
@@ -45,10 +44,7 @@ public class GetterMethodBuilderTest {
 	
 	@Test
 	public void test_non_default() throws Exception {
-		MutationContext ctxt = new SimpleMutationContext();
-		
-		JMethod actual = GetterMethodBuilder.newBuilder()
-			.setContext(ctxt)
+		JMethod actual = ctxt.create(GetterMethodBuilder.class)
 			.setAccess(JAccess.PROTECTED)
 			.setMarkedGenerated(true)
 			.setFieldName("myField")
