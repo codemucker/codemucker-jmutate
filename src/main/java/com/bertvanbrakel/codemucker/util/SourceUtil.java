@@ -6,15 +6,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.concurrent.atomic.AtomicLong;
 
+import junit.framework.AssertionFailedError;
 import junit.framework.ComparisonFailure;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.internal.ui.javaeditor.ASTProvider;
 
+import com.bertvanbrakel.codemucker.ast.AstNodeProvider;
 import com.bertvanbrakel.codemucker.ast.JAstFlattener;
 import com.bertvanbrakel.codemucker.ast.JAstMatcher;
 import com.bertvanbrakel.codemucker.ast.JAstParser;
@@ -74,14 +79,31 @@ public class SourceUtil {
 		
 		assertAstsMatch(expectCu,actualCu);
 	}
+
+	
+	public static <T extends ASTNode> void assertAstsMatch(AstNodeProvider<T> expected, AstNodeProvider<T> actual) {
+		assertAstsMatch(expected.getAstNode(),actual.getAstNode());
+	}
 	
 	/**
-	 * Assert the given compilation units look the same.
+	 * Assert the given Nodes look the same.
 	 */
-	public static void assertAstsMatch(CompilationUnit expected, CompilationUnit actual) {
+	public static void assertAstsMatch(ASTNode expected, ASTNode actual) {
 		ASTMatcher matcher = JAstMatcher.newBuilder().setMatchDocTags(false).build();
-		boolean equals = expected.subtreeMatch(matcher, actual);
-		if( !equals ){
+			
+		boolean equals = false;
+		try {
+			equals = expected.subtreeMatch(matcher, actual);
+		} catch( AssertionFailedError e){
+			String expectFromAst = nodeToString(expected);
+			String actualFromAst = nodeToString(actual);
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			
+			throw new ComparisonFailure("Error comparing asts. Dont't match. Exception is " + sw, expectFromAst, actualFromAst);		
+		}
+		if (!equals) {
 			String expectFromAst = nodeToString(expected);
 			String actualFromAst = nodeToString(actual);
 			throw new ComparisonFailure("Ast's don't match", expectFromAst, actualFromAst);

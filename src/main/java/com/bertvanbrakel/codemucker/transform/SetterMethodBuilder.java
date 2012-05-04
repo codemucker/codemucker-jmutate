@@ -1,9 +1,9 @@
 package com.bertvanbrakel.codemucker.transform;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import static com.bertvanbrakel.lang.Check.checkNotBlank;
+import static com.bertvanbrakel.lang.Check.checkNotNull;
+import static com.bertvanbrakel.lang.Check.checkTrue;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.bertvanbrakel.codemucker.annotation.Pattern;
@@ -37,9 +37,9 @@ public final class SetterMethodBuilder extends AbstractPatternBuilder<SetterMeth
 	public JMethod build() {
 		checkFieldsSet();
 		
-		checkState(target != null, "missing target");
-		checkState(!StringUtils.isBlank(name), "missing name");
-		checkState(!StringUtils.isBlank(type), "missing type");
+		checkNotNull("target", target);
+		checkNotBlank("name", name);
+		checkNotBlank("type", type);
 
 		return new JMethod(toMethod());
 	}
@@ -48,15 +48,18 @@ public final class SetterMethodBuilder extends AbstractPatternBuilder<SetterMeth
 		SourceTemplate template = getContext().newSourceTemplate();
 
 		String upperName = ClassNameUtil.upperFirstChar(name);
-		template.setVar("methodName", "set" + upperName).setVar("argType", type).setVar("argName", name)
-		        .setVar("fieldName", name);
+		template
+			.setVar("methodName", "set" + upperName)
+			.setVar("argType", type)
+			.setVar("argName", name)
+		    .setVar("fieldName", name);
 
 		if (isMarkedGenerated()) {
-			template.print('@');
-			template.print(Pattern.class.getName());
-			template.print("(name=\"");
-			template.print(getPattern());
-			template.println("\")");
+			template.p('@')
+    			.p(Pattern.class.getName())
+    			.p("(name=\"")
+    			.p(getPattern())
+    			.pl("\")");
 		}
 		template.print(access.toCode());
 		template.println(" ${returnType} ${methodName}(${argType} ${argName}) {");
@@ -74,7 +77,7 @@ public final class SetterMethodBuilder extends AbstractPatternBuilder<SetterMeth
 			template.setVar("returnType", "void");
 			break;
 		default:
-			checkArgument(false, "don't know how to handle return type:" + returnType);
+			checkTrue("returnType",returnType, false, "unknown type");
 		}
 		template.println("}");
 
@@ -111,6 +114,4 @@ public final class SetterMethodBuilder extends AbstractPatternBuilder<SetterMeth
 		this.target = target;
 		return this;
 	}
-
-
 }

@@ -1,13 +1,12 @@
 package com.bertvanbrakel.codemucker.transform;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.bertvanbrakel.lang.Check.checkNotNull;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 
+import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JField;
-import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.util.TypeUtil;
 
 public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilder> {
@@ -18,8 +17,7 @@ public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilde
 
 	private String name;
 	private String type;
-	private JType target;
-	private JAccess access = JAccess.PUBLIC;
+	private JAccess access = JAccess.PRIVATE;
 	private Object defaultValue;
 	private int modifiers;
 
@@ -28,14 +26,13 @@ public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilde
 	}
 	
 	public SimpleFieldBuilder(){
-		setPattern("bea.property");
+		setPattern("bean.property");
 	}
 	
 	public JField build(){
 		checkFieldsSet();
-		checkState(target != null, "missing target");
-		checkState(!StringUtils.isBlank(name), "missing name");
-		checkState(!StringUtils.isBlank(type), "missing type");
+		checkNotNull("name", name);
+		checkNotNull("type", type);
 
 		return new JField(toFieldNode());
 	}
@@ -47,10 +44,11 @@ public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilde
 			.setVar("fieldType", type);
 
 		if(isMarkedGenerated()){
-			t.p("@Pattern(name=\"")
+			t.p('@')
+			.p(Pattern.class.getName())
+			.p("(name=\"")
 			.p(getPattern())
-			.p('"')
-			.p(')');
+			.pl("\")");
 		}
 		t.print(access.toCode());
 		t.print(" ${fieldType} ${fieldName}");
@@ -62,8 +60,7 @@ public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilde
 			t.pl(";");
 		}
 	
-		FieldDeclaration field = t.asFieldNode();
-		return field;
+		return t.asFieldNode();
 	}
 	
 	private String getQuoteCharForValue(){

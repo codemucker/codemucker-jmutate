@@ -1,8 +1,7 @@
 package com.bertvanbrakel.codemucker.transform;
 
-import static com.google.common.base.Preconditions.checkState;
+import static com.bertvanbrakel.lang.Check.checkNotBlank;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.bertvanbrakel.codemucker.annotation.Pattern;
@@ -29,15 +28,14 @@ public final class GetterMethodBuilder extends AbstractPatternBuilder<GetterMeth
 	
 	public JMethod build(){
 		checkFieldsSet();
-		checkState(!StringUtils.isBlank(fieldName), "missing name");
-		checkState(!StringUtils.isBlank(fieldType), "missing type");
+		checkNotBlank("fieldName", fieldName);
+		checkNotBlank("fieldType", fieldType);
 
 		return new JMethod(toMethod());
 	}
 	
 	private MethodDeclaration toMethod(){
-		SourceTemplate template = getContext().newSourceTemplate();
-		
+		SourceTemplate template = getContext().newSourceTemplate();		
 		String upperName = ClassNameUtil.upperFirstChar(fieldName);
 		template
 			.setVar("methodName", "get" + upperName)
