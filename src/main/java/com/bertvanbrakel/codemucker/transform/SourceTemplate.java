@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
@@ -42,8 +43,8 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		this.parser = checkNotNull(parser,"expect parser");
 	}
 	
-	public ASTNode asExpression() {
-		return parser.parseNode(interpolate(),ASTParser.K_EXPRESSION);
+	public Expression asExpression() {
+		return (Expression) parser.parseNode(interpolate(),ASTParser.K_EXPRESSION);
 	}
 
 	public JField asJField(){

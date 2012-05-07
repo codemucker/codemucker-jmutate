@@ -7,7 +7,9 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
@@ -30,6 +32,47 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 
 	public boolean hasName(String name){
 		return getNames().contains(name);
+	}
+	
+	public List<SingleJField> asSingleFields(){
+		final List<SingleJField> singles = newArrayList();
+		BaseASTVisitor visitor = new BaseASTVisitor(){
+			@Override
+            public boolean visit(VariableDeclarationFragment node) {
+				singles.add(new SingleJField(JField.this,node));
+				return false;
+            }
+		};
+		fieldNode.accept(visitor);
+		return singles;
+	}
+
+	public static class SingleJField {
+		private final JField parent;
+		private final VariableDeclarationFragment frag;
+
+		public SingleJField(JField parent, VariableDeclarationFragment frag) {
+	        super();
+	        this.parent = parent;
+	        this.frag = frag;
+        }
+
+		public String getName() {
+			return frag.getName().getIdentifier();
+		}
+
+		public Expression getInitilizer() {
+			return frag.getInitializer();
+		}
+
+		public Type getType() {
+			return parent.getType();
+		}
+	}
+	
+	
+	public JAccess getAccess(){
+		return getJavaModifiers().asAccess();
 	}
 	
 	public boolean isType(JField field){
@@ -62,6 +105,10 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 		List<String> names = getNames();
 		checkState(names.size() == 1, "expect only a single name");
 		return names.get(0);
+	}
+	
+	public boolean isMultiNamed(){
+		return getNames().size() > 1;
 	}
 	
 	public List<String> getNames(){

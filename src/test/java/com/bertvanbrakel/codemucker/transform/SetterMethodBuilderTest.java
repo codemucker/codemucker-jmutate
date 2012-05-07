@@ -15,14 +15,13 @@
  */
 package com.bertvanbrakel.codemucker.transform;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.assertAstsMatch;
-
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class SetterMethodBuilderTest {
 
@@ -31,7 +30,7 @@ public class SetterMethodBuilderTest {
 	@Test
 	public void test_create_with_defaults() throws Exception {
 		
-		JField actual = ctxt.create(SimpleFieldBuilder.class)
+		JField actual = ctxt.create(FieldBuilder.class)
 			.setType("String")
 			.setName("myField")
 			.build();
@@ -40,13 +39,13 @@ public class SetterMethodBuilderTest {
 			.pl( "private String myField;" )
 			.asJField();
 		
-		assertAstsMatch(expect,actual);
+		SourceAsserts.assertAstsMatch(expect,actual);
 	}
 	
 	@Test
 	public void test_create_non_defaults() throws Exception {
 		
-		JField actual = ctxt.create(SimpleFieldBuilder.class)
+		JField actual = ctxt.create(FieldBuilder.class)
 			.setAccess(JAccess.PUBLIC)
 			.setPattern("my.pattern")
 			.setMarkedGenerated(true)
@@ -58,6 +57,6 @@ public class SetterMethodBuilderTest {
 			.pl('@').p(Pattern.class.getName()).p("(name=\"my.pattern\")").p( "public java.lang.Object myField;" ).nl()
 			.asJField();
 		
-		assertAstsMatch(expect,actual);
+		SourceAsserts.assertAstsMatch(expect,actual);
 	}
 }

@@ -59,7 +59,7 @@ public class JAstParser {
 			IProblem[] problems = cu.getProblems();
 			if (problems.length > 0) {
 				String problemString = Joiner.on("\n").join(Lists.transform(newArrayList(problems), problemToStringFunc()));
-				fail(String.format("Parsing error for source %s, problems are %s", prependLineNumbers(src), problemString));
+				fail(String.format("Parsing error for source %s\n, problems are %s", prependLineNumbers(src), problemString));
 			}
 		}
 		if (recordModifications) {

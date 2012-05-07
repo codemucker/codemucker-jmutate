@@ -2,14 +2,19 @@ package com.bertvanbrakel.codemucker.transform;
 
 import static com.bertvanbrakel.lang.Check.checkNotNull;
 
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.internal.corext.dom.ASTFlattener;
 
 import com.bertvanbrakel.codemucker.annotation.Pattern;
+import com.bertvanbrakel.codemucker.ast.Flattener;
 import com.bertvanbrakel.codemucker.ast.JAccess;
+import com.bertvanbrakel.codemucker.ast.JAstFlattener;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.util.TypeUtil;
 
-public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilder> {
+public class FieldBuilder extends AbstractPatternBuilder<FieldBuilder> {
 
 	public static enum RETURN {
 		VOID, TARGET, ARG;
@@ -18,14 +23,14 @@ public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilde
 	private String name;
 	private String type;
 	private JAccess access = JAccess.PRIVATE;
-	private Object defaultValue;
+	private Expression initializer;
 	private int modifiers;
 
-	public static SimpleFieldBuilder newBuilder(){
-		return new SimpleFieldBuilder();
+	public static FieldBuilder newBuilder(){
+		return new FieldBuilder();
 	}
 	
-	public SimpleFieldBuilder(){
+	public FieldBuilder(){
 		setPattern("bean.property");
 	}
 	
@@ -51,10 +56,11 @@ public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilde
 		}
 		t.print(access.toCode());
 		t.print(" ${fieldType} ${fieldName}");
-		if( defaultValue != null){
-			t.setVar("defaultValue", defaultValue);
-			t.pl(" = ${quote}${defaultValue}${quote};");
-			t.setVar("quote", getQuoteCharForValue());
+		if( initializer != null){
+			String valAsString = getContext().create(Flattener.class).flatten(initializer);
+			t.setVar("initializer", valAsString);
+			t.pl(" = ${initializer};");
+//			t.setVar("quote", getQuoteCharForValue());
 		} else {
 			t.pl(";");
 		}
@@ -72,18 +78,38 @@ public class SimpleFieldBuilder extends AbstractPatternBuilder<SimpleFieldBuilde
 		return "";
 	}
 
-	public SimpleFieldBuilder setAccess(JAccess access) {
+	public FieldBuilder setAccess(JAccess access) {
     	this.access  = access;
     	return this;
     }
 
-	public SimpleFieldBuilder setName(String name) {
+	public FieldBuilder setName(String name) {
 		this.name = name;
 		return this;
 	}
 
-	public SimpleFieldBuilder setType(String type) {
+	public FieldBuilder setType(String type) {
 		this.type = type;
 		return this;
 	}
+	
+	public FieldBuilder setType(Type type) {
+		this.type = JAstFlattener.asString(type);
+		return this;
+	}
+	
+	public FieldBuilder setInitializer(String value) {
+		this.initializer = getContext()
+			.newSourceTemplate()
+			.p(value)
+			.asExpression();
+		return this;
+	}
+	
+	public FieldBuilder setInitializer(Expression expression) {
+		this.initializer = expression;
+		return this;
+	}
+	
+	
 }

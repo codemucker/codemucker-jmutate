@@ -11,8 +11,9 @@ import com.bertvanbrakel.codemucker.transform.GetterMethodBuilder;
 import com.bertvanbrakel.codemucker.transform.InsertFieldTransform;
 import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.PlacementStrategies;
 import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder;
-import com.bertvanbrakel.codemucker.transform.SimpleFieldBuilder;
+import com.bertvanbrakel.codemucker.transform.FieldBuilder;
 import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder.RETURN;
 import com.google.inject.Inject;
 
@@ -20,14 +21,23 @@ public class BeanPropertyPattern {
 
 	@Inject
 	private MutationContext ctxt;
-	
+
+	@Inject
+	private PlacementStrategies strategies;
+
 	private JType target;
 	private String propertyName;
-	private String propertyType;
+	private String propertyType;	
 
 	@Inject
 	public BeanPropertyPattern setCtxt(MutationContext ctxt) {
 		this.ctxt = ctxt;
+		return this;
+	}
+
+	@Inject
+	public BeanPropertyPattern setPlacementStrategies(PlacementStrategies strategies) {
+		this.strategies = strategies;
 		return this;
 	}
 
@@ -52,7 +62,7 @@ public class BeanPropertyPattern {
 		checkNotBlank("propertyName", propertyName);
 		checkNotBlank("propertyType", propertyType);
 
-		JField field = ctxt.create(SimpleFieldBuilder.class)
+		JField field = ctxt.create(FieldBuilder.class)
 			.setMarkedGenerated(true)
 			.setType(propertyType)
 			.setName(propertyName)
@@ -72,15 +82,15 @@ public class BeanPropertyPattern {
 			.setMarkedGenerated(true)
 			.build();
 		
-		InsertFieldTransform.newTransform()
+		ctxt.create(InsertFieldTransform.class)
 			.setTarget(target)
 			.setField(field)
-			.setPlacementStrategy(ctxt.getStrategies().getFieldStrategy())
+			.setPlacementStrategy(strategies.getFieldStrategy())
 			.apply();
 		
 		InsertMethodTransform inserter = ctxt.create(InsertMethodTransform.class)
 			.setTarget(target)
-			.setPlacementStrategy(ctxt.getStrategies().getMethodStrategy())
+			.setPlacementStrategy(strategies.getMethodStrategy())
 		;
 
 		inserter.setMethod(setter).apply();

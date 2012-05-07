@@ -15,14 +15,13 @@
  */
 package com.bertvanbrakel.codemucker.transform;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.assertAstsMatch;
-
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class GetterMethodBuilderTest {
 
@@ -39,7 +38,7 @@ public class GetterMethodBuilderTest {
     		.pl("public my.org.Foo getMyField(){ return this.myField; }")
     		.asJMethod();
     	
-    	assertAstsMatch(expect,actual);
+    	SourceAsserts.assertAstsMatch(expect,actual);
 	}
 	
 	@Test
@@ -56,6 +55,6 @@ public class GetterMethodBuilderTest {
 			.pl("protected my.org.Foo getMyField(){return this.myField;}")
     		.asJMethod();
     	
-    	assertAstsMatch(expect,actual);
+    	SourceAsserts.assertAstsMatch(expect,actual);
 	}
 }

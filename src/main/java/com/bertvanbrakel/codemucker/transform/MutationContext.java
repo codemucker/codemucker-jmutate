@@ -1,14 +1,16 @@
 package com.bertvanbrakel.codemucker.transform;
 
-import com.bertvanbrakel.codemucker.ast.JAstParser;
 
 public interface MutationContext {
-	JAstParser getParser();
-	PlacementStrategies getStrategies();
+	//JAstParser getParser();
 	SourceTemplate newSourceTemplate();
-	StringTemplate newStringTemplate();
+	//StringTemplate newStringTemplate();
 	<T> T create(Class<T> type);
 	<T> T fill(T instance);
+	
+	//below should all now be provided via 'create' above
+	//PlacementStrategies getStrategies();
+	
 	
 	//could cache some of this stuff, and track changes?
 //	JTypeMutator getMutator(AbstractTypeDeclaration type);

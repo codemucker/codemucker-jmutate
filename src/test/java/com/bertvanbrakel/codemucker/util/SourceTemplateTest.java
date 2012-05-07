@@ -15,7 +15,6 @@
  */
 package com.bertvanbrakel.codemucker.util;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.assertAstsMatch;
 import static com.bertvanbrakel.codemucker.util.SourceUtil.writeResource;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
@@ -46,7 +45,7 @@ public class SourceTemplateTest {
 		ClassPathResource srcFile = writeResource(src);
 		ClassPathResource srcFile2 = writeResource(src);
 
-		assertAstsMatch(srcFile, srcFile2);
+		SourceAsserts.assertAstsMatch(srcFile, srcFile2);
 	}
 
 	@Test
@@ -75,7 +74,7 @@ public class SourceTemplateTest {
 		ClassPathResource srcFile = writeResource(src1);
 		ClassPathResource srcFile2 = writeResource(src2);
 
-		assertAstsMatch(srcFile, srcFile2);
+		SourceAsserts.assertAstsMatch(srcFile, srcFile2);
 	}
 	
 	@Test
@@ -99,7 +98,7 @@ public class SourceTemplateTest {
 
 		Throwable expect = null;
 		try {
-			assertAstsMatch(srcFile, srcFile2);
+			SourceAsserts.assertAstsMatch(srcFile, srcFile2);
 		} catch (AssertionFailedError e){
 			expect = e;
 		}

@@ -2,13 +2,14 @@ package com.bertvanbrakel.codemucker.ast;
 
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.PlacementStrategies;
+import com.bertvanbrakel.codemucker.transform.PlacementStrategy;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
-import com.bertvanbrakel.codemucker.transform.StringTemplate;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.name.Named;
 
 public class SimpleMutationContext implements MutationContext {
 
@@ -27,6 +28,11 @@ public class SimpleMutationContext implements MutationContext {
         }
 		
 		@Provides
+		public Flattener provideFlattener(){
+			return create(SimpleFlattener.class);
+		}
+		
+		@Provides
 		@Singleton
 		public MutationContext provideContext(){
 			return SimpleMutationContext.this;
@@ -40,31 +46,59 @@ public class SimpleMutationContext implements MutationContext {
 		
 		@Provides
 		@Singleton
+		@Named("field")
+		public PlacementStrategy provideFieldPlacement(){
+			return strategyProvider.getFieldStrategy();
+		}
+		
+		@Provides
+		@Singleton
+		@Named("ctor")
+		public PlacementStrategy provideCtorPlacement(){
+			return strategyProvider.getCtorStrategy();
+		}
+		
+		@Provides
+		@Singleton
+		@Named("method")
+		public PlacementStrategy provideMethodPlacement(){
+			return strategyProvider.getMethodStrategy();
+		}
+		
+		@Provides
+		@Singleton
+		@Named("type")
+		public PlacementStrategy provideTypePlacement(){
+			return strategyProvider.getTypeStrategy();
+		}
+		
+		@Provides
+		@Singleton
 		public JAstParser provideParser(){
 			return parser;
 		}	
 	}
 
-	@Override
-    public PlacementStrategies getStrategies() {
-	    return strategyProvider;
-    }
-
-	@Override
-    public JAstParser getParser() {
-	    return parser;
-    }
+//	@Override
+//    public PlacementStrategies getStrategies() {
+//	    return strategyProvider;
+//    }
+//
+//	@Override
+//    public JAstParser getParser() {
+//	    return parser;
+//    }
 	
 	@Override
     public SourceTemplate newSourceTemplate(){
     	return create(SourceTemplate.class);
     }
     
-	@Override
-    public StringTemplate newStringTemplate(){
-    	return create(StringTemplate.class);
-    }
-	
+//	@Override
+//    public StringTemplate newStringTemplate(){
+//    	return create(StringTemplate.class);
+//    }
+//	
 	@Override
 	public <T> T create(Class<T> type){
 		return injector.getInstance(type);

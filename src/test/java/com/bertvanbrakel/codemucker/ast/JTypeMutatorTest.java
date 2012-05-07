@@ -16,7 +16,7 @@ import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
-import com.bertvanbrakel.codemucker.util.SourceUtil;
+import com.bertvanbrakel.codemucker.util.SourceAsserts;
 import com.bertvanbrakel.test.util.TestHelper;
 
 public class JTypeMutatorTest {
@@ -91,6 +91,6 @@ public class JTypeMutatorTest {
         	.setTemplate(expectSrc)
         	.asCompilationUnit();
         
-        SourceUtil.assertAstsMatch(expectCu, expectCu);
+        SourceAsserts.assertAstsMatch(expectCu, expectCu);
     }
 }

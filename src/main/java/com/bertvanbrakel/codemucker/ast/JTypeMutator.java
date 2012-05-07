@@ -14,11 +14,13 @@ import com.bertvanbrakel.codemucker.transform.InsertFieldTransform;
 import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
 import com.bertvanbrakel.codemucker.transform.InsertTypeTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.PlacementStrategies;
+import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 
 public class JTypeMutator {
 	
 	private final JType jType;
-	private final MutationContext context;
+	private final MutationContext ctxt;
 	
 	public JTypeMutator(MutationContext context, AbstractTypeDeclaration type) {
 		this(context, new JType(type));
@@ -27,7 +29,7 @@ public class JTypeMutator {
 	public JTypeMutator(MutationContext context, JType javaType) {
 		checkNotNull("javaType", javaType);
 		this.jType = checkNotNull("type",javaType);
-		this.context = checkNotNull("context",context);
+		this.ctxt = checkNotNull("context",context);
 	}
 
 	public JType getJType() {
@@ -51,22 +53,22 @@ public class JTypeMutator {
 	}
 	
 	public void addField(String src){
-		FieldDeclaration field = context.newSourceTemplate()
+		FieldDeclaration field = newSourceTemplate()
 			.setTemplate(src)
 			.asFieldNode();
 		addField(field);
 	}
 	
 	public void addField(FieldDeclaration field){
-		InsertFieldTransform.newTransform()
+		ctxt.create(InsertFieldTransform.class)
 			.setTarget(jType)
 			.setField(field)
-			.setPlacementStrategy(context.getStrategies().getFieldStrategy())
+			.setPlacementStrategy(getStrategies().getFieldStrategy())
 			.apply();
 	}
 
 	public void addMethod(String src){
-		MethodDeclaration method = context.newSourceTemplate()
+		MethodDeclaration method = newSourceTemplate()
 			.setTemplate(src)
 			.asMethodNode();
 		addMethod(method);
@@ -78,30 +80,30 @@ public class JTypeMutator {
 			//addCtor(method);
 			throw new CodemuckerException("Trying to add a constructor as a method. Try adding it as a constructor instead. Ctor is " + method);
 		}
-		InsertMethodTransform.newTransform()
+		ctxt.create(InsertMethodTransform.class)
     		.setTarget(jType)
     		.setMethod(method)
-    		.setPlacementStrategy(context.getStrategies().getMethodStrategy())
+    		.setPlacementStrategy(getStrategies().getMethodStrategy())
     		.apply();
 	}
 
 	public void addCtor(String src){
-		MethodDeclaration ctor = context.newSourceTemplate()
+		MethodDeclaration ctor = newSourceTemplate()
 			.setTemplate(src)
 			.asConstructor();
 		addCtor(ctor);
 	}
 	
 	public void addCtor(MethodDeclaration ctor){
-		InsertCtorTransform.newTransform()
+		ctxt.create(InsertCtorTransform.class)
     		.setTarget(jType)
     		.setCtor(ctor)
-    		.setPlacementStrategy(context.getStrategies().getCtorStrategy())
+    		.setPlacementStrategy(getStrategies().getCtorStrategy())
     		.apply();
 	}
 	
 	public void addType(String src){
-		AbstractTypeDeclaration type = context.newSourceTemplate()
+		AbstractTypeDeclaration type = newSourceTemplate()
 			.setTemplate(src)
 			.asType();
 		addType(type);
@@ -111,8 +113,15 @@ public class JTypeMutator {
 		InsertTypeTransform.newTransform()
 			.setTarget(jType)
 			.setType(type)
-			.setPlacementStrategy(context.getStrategies().getTypeStrategy())
+			.setPlacementStrategy(getStrategies().getTypeStrategy())
 			.apply();
 	}
-
+	
+	private SourceTemplate newSourceTemplate(){
+		return ctxt.create(SourceTemplate.class);
+	}
+	
+	private PlacementStrategies getStrategies(){
+		return ctxt.create(PlacementStrategies.class);
+	}
 }

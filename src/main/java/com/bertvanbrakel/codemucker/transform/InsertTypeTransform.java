@@ -11,6 +11,7 @@ import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
 
 public class InsertTypeTransform {
+	
 	private JType target;
 	private JType type;
 	private ClashStrategy clashStrategy;
@@ -21,7 +22,6 @@ public class InsertTypeTransform {
 	}
 	
 	public InsertTypeTransform (){
-		//setUseDefaultPlacementStrategy();
 		setUseDefaultClashStrategy();
 	}
 	
@@ -85,11 +85,6 @@ public class InsertTypeTransform {
     	return this;
     }
 	
-//	public InsertMethodTransform setUseDefaultPlacementStrategy() {
-//    	this.placementStrategy = PlacementStrategies.STRATEGY_METHOD;
-//    	return this;
-//    }
-	
 	public InsertTypeTransform setClashStrategy(ClashStrategy clashStrategy) {
 		if( clashStrategy == null ){
 			setUseDefaultClashStrategy();
@@ -103,6 +98,4 @@ public class InsertTypeTransform {
     	this.clashStrategy = ClashStrategy.ERROR;
     	return this;
     }
-	
-
 }

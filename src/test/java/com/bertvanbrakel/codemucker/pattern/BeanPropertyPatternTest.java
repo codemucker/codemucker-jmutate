@@ -15,8 +15,6 @@
  */
 package com.bertvanbrakel.codemucker.pattern;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.assertAstsMatch;
-
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.annotation.BeanProperty;
@@ -24,6 +22,7 @@ import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class BeanPropertyPatternTest {
 
@@ -56,6 +55,6 @@ public class BeanPropertyPatternTest {
 			.setPropertyType("String")
 			.apply();
 		
-		assertAstsMatch(expectType.getCompilationUnit(),target.getCompilationUnit());
+		SourceAsserts.assertAstsMatch(expectType.getCompilationUnit(),target.getCompilationUnit());
 	}
 }

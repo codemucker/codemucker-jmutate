@@ -131,6 +131,11 @@ public class JAstFlattener extends GenericVisitor {
 	public JAstFlattener(StringBuilder sb) {
 		this.buffer = sb;
 	}
+	
+	@Override
+	public String toString(){
+		return buffer.toString();
+	}
 
   /**
    * Returns the string accumulated in the visit.

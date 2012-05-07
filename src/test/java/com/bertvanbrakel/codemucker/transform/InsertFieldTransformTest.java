@@ -15,14 +15,13 @@
  */
 package com.bertvanbrakel.codemucker.transform;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.assertAstsMatch;
-
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class InsertFieldTransformTest {
 
@@ -37,7 +36,7 @@ public class InsertFieldTransformTest {
 		
 		JType after = srcBefore.asJType();
 		
-		JField field = SimpleFieldBuilder.newBuilder()
+		JField field = FieldBuilder.newBuilder()
 			.setContext(ctxt)
 			.setMarkedGenerated(true)
 			.setPattern("mypattern")
@@ -49,7 +48,7 @@ public class InsertFieldTransformTest {
 		InsertFieldTransform.newTransform()
 			.setTarget(after)
 			.setField(field)
-			.setPlacementStrategy(ctxt.getStrategies().getFieldStrategy())
+			.setPlacementStrategy(ctxt.create(PlacementStrategies.class).getFieldStrategy())
 			.apply();
 	
 		JType expectType = ctxt.newSourceTemplate()
@@ -59,6 +58,6 @@ public class InsertFieldTransformTest {
 			.pl("}")
 			.asJType();
 		
-		assertAstsMatch(expectType,after);
+		SourceAsserts.assertAstsMatch(expectType,after);
 	}
 }
