@@ -11,9 +11,9 @@ public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTr
 
 	private JType target;
 	
-	@Inject(optional=true)
+	@Inject
 	private ClashStrategy clashStrategy = ClashStrategy.ERROR;
-	@Inject(optional=true)
+	//@Inject
 	private PlacementStrategy placementStrategy;
 
 	protected void checkFieldsSet(){

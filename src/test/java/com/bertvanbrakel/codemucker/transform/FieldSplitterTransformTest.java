@@ -23,7 +23,7 @@ public class FieldSplitterTransformTest {
 		
 		JField field = actual.findFieldsMatching(JFieldMatchers.withName("a")).getFirst();
 		
-		ctxt.create(FieldSplitterTransform.class)
+		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
 			.setField(field)
 			.apply();
@@ -50,7 +50,7 @@ public class FieldSplitterTransformTest {
 		
 		JField field = actual.findFieldsMatching(JFieldMatchers.withName("a")).getFirst();
 		
-		ctxt.create(FieldSplitterTransform.class)
+		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
 			.setField(field)
 			.apply();

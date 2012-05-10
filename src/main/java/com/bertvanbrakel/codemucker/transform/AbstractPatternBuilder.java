@@ -4,13 +4,17 @@ import static com.google.common.base.Preconditions.checkState;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 public abstract class AbstractPatternBuilder<S extends AbstractPatternBuilder<S>> {
 
 	@Inject
 	private MutationContext context;
 	
+	@Inject
+	@Named(ContextNames.MARK_GENERATED)
 	private boolean markedGenerated;
 	private String pattern;
 	

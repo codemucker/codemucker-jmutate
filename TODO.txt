@@ -1,0 +1,2 @@
+rename JSourceFinder to SourceFinder
+rewrite all BeanGenerator stuff to use the AST builders and transformers

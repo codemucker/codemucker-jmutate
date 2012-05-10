@@ -5,9 +5,12 @@ import static com.google.common.base.Preconditions.checkState;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
+import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 public final class InsertFieldTransform extends AbstractNodeInsertTransform<InsertFieldTransform>{
 
@@ -51,6 +54,11 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
                 .insert();
 		}
 		return this;
+    }
+
+	@Inject
+    public void injectPlacementStrategy(@Named(ContextNames.FIELD) PlacementStrategy strategy) {
+	    setPlacementStrategy(strategy);
     }
 
 	public InsertFieldTransform setField(FieldDeclaration field) {

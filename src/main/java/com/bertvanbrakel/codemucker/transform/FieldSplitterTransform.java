@@ -42,13 +42,13 @@ public class FieldSplitterTransform {
 		checkNotNull("field", field);
 		checkNotNull("context", ctxt);
 		
-		InsertFieldTransform inserter = ctxt.create(InsertFieldTransform.class)
+		InsertFieldTransform inserter = ctxt.obtain(InsertFieldTransform.class)
 			.setTarget(target)
-			.setPlacementStrategy(ctxt.create(PlacementStrategies.class).getFieldStrategy())
+			.setPlacementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
 			.setClashStrategy(ClashStrategy.REPLACE);
 		
 		//copy the shared field info
-		FieldBuilder fieldBuilder = ctxt.create(FieldBuilder.class)
+		FieldBuilder fieldBuilder = ctxt.obtain(FieldBuilder.class)
 			.setAccess(field.getAccess())
 			.setType(field.getType());
 			

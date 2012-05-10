@@ -57,7 +57,7 @@ public class FieldBuilder extends AbstractPatternBuilder<FieldBuilder> {
 		t.print(access.toCode());
 		t.print(" ${fieldType} ${fieldName}");
 		if( initializer != null){
-			String valAsString = getContext().create(Flattener.class).flatten(initializer);
+			String valAsString = getContext().obtain(Flattener.class).flatten(initializer);
 			t.setVar("initializer", valAsString);
 			t.pl(" = ${initializer};");
 //			t.setVar("quote", getQuoteCharForValue());

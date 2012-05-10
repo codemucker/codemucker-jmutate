@@ -5,9 +5,12 @@ import static com.google.common.base.Preconditions.checkState;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
+import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 public final class InsertCtorTransform extends AbstractNodeInsertTransform<InsertCtorTransform> {
 	
@@ -56,6 +59,11 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
                 .insert();
     	}
 	}
+
+	@Inject
+    public void injectPlacementStrategy(@Named(ContextNames.CTOR) PlacementStrategy strategy) {
+	    setPlacementStrategy(strategy);
+    }
 
 	public InsertCtorTransform setCtor(MethodDeclaration constructor) {
     	setCtor(new JMethod(constructor));

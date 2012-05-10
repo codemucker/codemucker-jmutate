@@ -7,30 +7,25 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
+import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
-public class InsertTypeTransform {
+public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeTransform>{
 	
-	private JType target;
 	private JType type;
-	private ClashStrategy clashStrategy;
-	private PlacementStrategy placementStrategy;
-
+	
 	public static InsertTypeTransform newTransform(){
 		return new InsertTypeTransform();
 	}
 	
-	public InsertTypeTransform (){
-		setUseDefaultClashStrategy();
-	}
-	
 	public void apply() {
-		checkState(target != null, "missing target");
+		checkFieldsSet();
 		checkState(type != null, "missing type");
-		checkState(target != null, "missing target");
-		checkState(clashStrategy != null, "missing clash strategy");
-		checkState(placementStrategy != null, "missing placement strategy");
+		
+		JType target = getTarget();
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
@@ -38,7 +33,7 @@ public class InsertTypeTransform {
 		if( !found.isEmpty()){
 			insert = false;
 			JType existingType = found.get(0);
-			switch(clashStrategy){
+			switch(getClashStrategy()){
 			case REPLACE:
 				existingType.getAstNode().delete();
 				insert = true;
@@ -48,27 +43,22 @@ public class InsertTypeTransform {
 			case ERROR:
 				throw new CodemuckerException("Existing type %s, not replacing with %s", existingType.getAstNode(), type);
 			default:
-				throw new CodemuckerException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), clashStrategy);
+				throw new CodemuckerException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), getClashStrategy());
 			}
 		}
 		if( insert){
 			new NodeInserter()
 				.setNodeToInsert(type.getAstNode())
 				.setTarget(target)
-				.setStrategy(placementStrategy)
+				.setStrategy(getPlacementStrategy())
 				.insert();
 		}
     }
-
-	public InsertTypeTransform setTarget(AbstractTypeDeclaration target) {
-    	setTarget(new JType(target));
-    	return this;
-	}
 	
-	public InsertTypeTransform setTarget( JType target) {
-    	this.target = target;
-    	return this;
-	}
+	@Inject
+    public void injectPlacementStrategy(@Named(ContextNames.TYPE) PlacementStrategy strategy) {
+	    setPlacementStrategy(strategy);
+    }
 
 	public InsertTypeTransform setType(AbstractTypeDeclaration type) {
     	setType(new JType(type));
@@ -80,22 +70,5 @@ public class InsertTypeTransform {
     	return this;
 	}
 
-	public InsertTypeTransform setPlacementStrategy(PlacementStrategy strategy) {
-    	this.placementStrategy = strategy;
-    	return this;
-    }
 	
-	public InsertTypeTransform setClashStrategy(ClashStrategy clashStrategy) {
-		if( clashStrategy == null ){
-			setUseDefaultClashStrategy();
-		} else {
-			this.clashStrategy = clashStrategy;
-		}
-    	return this;
-    }
-	
-	public InsertTypeTransform setUseDefaultClashStrategy() {
-    	this.clashStrategy = ClashStrategy.ERROR;
-    	return this;
-    }
 }

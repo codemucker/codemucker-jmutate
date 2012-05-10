@@ -60,7 +60,7 @@ public class JTypeMutator {
 	}
 	
 	public void addField(FieldDeclaration field){
-		ctxt.create(InsertFieldTransform.class)
+		ctxt.obtain(InsertFieldTransform.class)
 			.setTarget(jType)
 			.setField(field)
 			.setPlacementStrategy(getStrategies().getFieldStrategy())
@@ -80,10 +80,9 @@ public class JTypeMutator {
 			//addCtor(method);
 			throw new CodemuckerException("Trying to add a constructor as a method. Try adding it as a constructor instead. Ctor is " + method);
 		}
-		ctxt.create(InsertMethodTransform.class)
+		ctxt.obtain(InsertMethodTransform.class)
     		.setTarget(jType)
     		.setMethod(method)
-    		.setPlacementStrategy(getStrategies().getMethodStrategy())
     		.apply();
 	}
 
@@ -95,7 +94,7 @@ public class JTypeMutator {
 	}
 	
 	public void addCtor(MethodDeclaration ctor){
-		ctxt.create(InsertCtorTransform.class)
+		ctxt.obtain(InsertCtorTransform.class)
     		.setTarget(jType)
     		.setCtor(ctor)
     		.setPlacementStrategy(getStrategies().getCtorStrategy())
@@ -118,10 +117,10 @@ public class JTypeMutator {
 	}
 	
 	private SourceTemplate newSourceTemplate(){
-		return ctxt.create(SourceTemplate.class);
+		return ctxt.obtain(SourceTemplate.class);
 	}
 	
 	private PlacementStrategies getStrategies(){
-		return ctxt.create(PlacementStrategies.class);
+		return ctxt.obtain(PlacementStrategies.class);
 	}
 }

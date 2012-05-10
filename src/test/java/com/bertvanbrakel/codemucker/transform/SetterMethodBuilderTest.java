@@ -30,7 +30,7 @@ public class SetterMethodBuilderTest {
 	@Test
 	public void test_create_with_defaults() throws Exception {
 		
-		JField actual = ctxt.create(FieldBuilder.class)
+		JField actual = ctxt.obtain(FieldBuilder.class)
 			.setType("String")
 			.setName("myField")
 			.build();
@@ -45,7 +45,7 @@ public class SetterMethodBuilderTest {
 	@Test
 	public void test_create_non_defaults() throws Exception {
 		
-		JField actual = ctxt.create(FieldBuilder.class)
+		JField actual = ctxt.obtain(FieldBuilder.class)
 			.setAccess(JAccess.PUBLIC)
 			.setPattern("my.pattern")
 			.setMarkedGenerated(true)

@@ -1,22 +1,35 @@
 package com.bertvanbrakel.codemucker.transform;
 
+import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.google.inject.ImplementedBy;
 
+@ImplementedBy(SimpleMutationContext.class)
 public interface MutationContext {
-	//JAstParser getParser();
+
+	/**
+	 * Shortcut for {@link #create(SourceTemplate.class)}
+	 * 
+	 * @return
+	 */
 	SourceTemplate newSourceTemplate();
-	//StringTemplate newStringTemplate();
-	<T> T create(Class<T> type);
+	
+	/**
+	 * Obtain an instance of the given class. This may be a singleton or a new instance and may or may
+	 * not be fully initialised depending on the class. This allows callers to be decoupled from
+	 * much of the initialisation and hence the need to pass loads of parameters around
+	 * 
+	 * @param type
+	 * @return
+	 */
+	<T> T obtain(Class<T> type);
+	
+	/**
+	 * Given an existing instance try to populate it with all it's dependencies.
+	 * 
+	 * <p>This may be removed as currently it seems unused</p>
+	 * 
+	 * @param instance
+	 * @return
+	 */
 	<T> T fill(T instance);
-	
-	//below should all now be provided via 'create' above
-	//PlacementStrategies getStrategies();
-	
-	
-	//could cache some of this stuff, and track changes?
-//	JTypeMutator getMutator(AbstractTypeDeclaration type);
-//	JTypeMutator getMutator(JType type);
-//	JFieldM getMutator(FieldDeclaration field);
-//	JTypeMutator getMutator(JField field);
-//	JSourceFileMutator getMutator(CompilationUnit cu);
-//	JSourceFileMutator getMutator(JSourceFile source);
 }

@@ -37,6 +37,7 @@ public class JSourceFinder {
 	private final JSourceFinderMatchedCallback matchedCallback;
 	private final JSourceFinderIgnoredCallback ignoredCallback;
 	private final JSourceFinderErrorCallback errorCallback;
+	
 	private final ASTParser parser;
 
 	private final Matcher<JType> TYPE_MATCHER = new Matcher<JType>(){

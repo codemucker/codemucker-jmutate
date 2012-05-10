@@ -28,7 +28,9 @@ public class BeanPropertyPatternTest {
 
 	@Test
 	public void test_add_field_getter_setter() throws Exception {
-		MutationContext ctxt = new SimpleMutationContext();
+		MutationContext ctxt = SimpleMutationContext.newBuilder()
+			.setMarkGenerated(true)
+			.build();
 		
 		JType expectType = ctxt.newSourceTemplate()
     		.pl("package com.bertvanbrakel.codegen.bean;")
@@ -49,7 +51,7 @@ public class BeanPropertyPatternTest {
 			.pl("}")
 			.asJType();
 		
-		ctxt.create(BeanPropertyPattern.class)
+		ctxt.obtain(BeanPropertyPattern.class)
 			.setTarget(target)
 			.setPropertyName("myField")
 			.setPropertyType("String")

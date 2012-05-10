@@ -29,7 +29,7 @@ public class GetterMethodBuilderTest {
 	
 	@Test
 	public void test_default_create(){
-		JMethod actual = ctxt.create(GetterMethodBuilder.class)
+		JMethod actual = ctxt.obtain(GetterMethodBuilder.class)
 			.setFieldName("myField")
 			.setFieldType("my.org.Foo")
 			.build();
@@ -43,7 +43,7 @@ public class GetterMethodBuilderTest {
 	
 	@Test
 	public void test_non_default() throws Exception {
-		JMethod actual = ctxt.create(GetterMethodBuilder.class)
+		JMethod actual = ctxt.obtain(GetterMethodBuilder.class)
 			.setAccess(JAccess.PROTECTED)
 			.setMarkedGenerated(true)
 			.setFieldName("myField")
