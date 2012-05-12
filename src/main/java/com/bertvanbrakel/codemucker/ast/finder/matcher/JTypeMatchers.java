@@ -117,16 +117,30 @@ public class JTypeMatchers extends LogicalMatchers {
 		};
 	}
 
-	public static Matcher<JType> withTypeNamed(final Class<?> matchingClassName){
-		return withName(matchingClassName.getName());
+	public static Matcher<JType> withFQN(final Class<?> matchingClassName){
+		return withFQN(convertInnerClassName(matchingClassName.getName()));
 	}
 	
-	public static Matcher<JType> withName(final String antPattern){
+	private static String convertInnerClassName(String classname){
+		return classname.replace('$', '.');
+	}
+	
+	public static Matcher<JType> withFQN(final String antPattern){
 		return new Matcher<JType>() {
 			private final Pattern pattern = TestUtils.antExpToPattern(antPattern);
 			@Override
 			public boolean matches(JType found) {
 				return pattern.matcher(found.getFullName()).matches();
+			}
+		};
+	}
+	
+	public static Matcher<JType> withSimpleName(final String antPattern){
+		return new Matcher<JType>() {
+			private final Pattern pattern = TestUtils.antExpToPattern(antPattern);
+			@Override
+			public boolean matches(JType found) {
+				return pattern.matcher(found.getSimpleName()).matches();
 			}
 		};
 	}

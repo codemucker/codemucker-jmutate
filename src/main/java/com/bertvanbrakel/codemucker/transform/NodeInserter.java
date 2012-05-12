@@ -10,7 +10,7 @@ import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.JType;
 
 /**
- * Inserts generic nodes using an insertion strategy
+ * Inserts generic nodes using an insertion placement strategy
  */
 public class NodeInserter {
 
@@ -18,18 +18,24 @@ public class NodeInserter {
 	private ASTNode nodeToInsert;
 	private PlacementStrategy strategy;
 	
-	public void insert() {
+	/**
+	 * Insert the node.
+	 * 
+	 * @return the node which was inserted
+	 */
+	public ASTNode insert() {
 		checkNotNull(target, "expect target");
 		checkNotNull(nodeToInsert, "expect node to insert");
 		checkNotNull(strategy,"expect strategy");
 		
-		ASTNode copy = ASTNode.copySubtree(target.getAst(), nodeToInsert);
+		ASTNode node = ASTNode.copySubtree(target.getAst(), nodeToInsert);
 		List<ASTNode> body = target.getBodyDeclarations();
 		int index = strategy.findIndexToPlace(body);
-		if( index < 0){
+		if (index < 0) {
 			throw new CodemuckerException("Insertion strategy %s couldn't find an index to insert %s into", strategy, nodeToInsert);
 		}
-		body.add(index, copy);
+		body.add(index, node);
+		return node;
 	}
 
 	public NodeInserter setTarget(JType javaType) {
@@ -45,5 +51,5 @@ public class NodeInserter {
 	public NodeInserter setStrategy(PlacementStrategy strategy) {
     	this.strategy = strategy;
     	return this;
-    }
+    }	
 }

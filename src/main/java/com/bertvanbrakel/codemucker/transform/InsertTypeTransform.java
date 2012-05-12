@@ -21,6 +21,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		return new InsertTypeTransform();
 	}
 	
+	@Override
 	public void apply() {
 		checkFieldsSet();
 		checkState(type != null, "missing type");
@@ -29,7 +30,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		List<JType> found = target.findChildTypesMatching(JTypeMatchers.withName(type.getSimpleName())).toList();
+		List<JType> found = target.findChildTypesMatching(JTypeMatchers.withFQN(type.getSimpleName())).toList();
 		if( !found.isEmpty()){
 			insert = false;
 			JType existingType = found.get(0);
@@ -46,14 +47,14 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 				throw new CodemuckerException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), getClashStrategy());
 			}
 		}
-		if( insert){
+		if(insert){
 			new NodeInserter()
 				.setNodeToInsert(type.getAstNode())
 				.setTarget(target)
 				.setStrategy(getPlacementStrategy())
 				.insert();
 		}
-    }
+	}
 	
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.TYPE) PlacementStrategy strategy) {

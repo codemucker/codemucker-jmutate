@@ -22,6 +22,8 @@ public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTr
 		checkState(clashStrategy != null, "missing clash strategy");
 	}
 	
+	public abstract void apply();
+	
 	public S setTarget(AbstractTypeDeclaration target) {
     	setTarget(new JType(target));
     	return self();

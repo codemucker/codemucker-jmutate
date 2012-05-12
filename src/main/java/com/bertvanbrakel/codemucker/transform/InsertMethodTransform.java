@@ -20,6 +20,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 		return new InsertMethodTransform();
 	}
 	
+	@Override
 	public void apply() {
 		checkFieldsSet();
 		checkState(method != null, "missing method");
@@ -49,9 +50,8 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 				.setTarget(getTarget())
 				.setStrategy(getPlacementStrategy())
 				.insert();
-		
 		}
-    }
+	}
 
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.METHOD) PlacementStrategy strategy) {

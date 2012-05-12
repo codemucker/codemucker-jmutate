@@ -13,6 +13,8 @@
  *******************************************************************************/
 package com.bertvanbrakel.codemucker.ast;
 
+import static org.apache.commons.lang3.StringUtils.getCommonPrefix;
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -111,6 +113,8 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.core.dom.WildcardType;
 import org.eclipse.jdt.internal.corext.dom.GenericVisitor;
 
+import com.bertvanbrakel.codemucker.util.JavaNameUtil;
+
 public class JAstFlattener extends GenericVisitor {
 
   /**
@@ -155,13 +159,12 @@ public class JAstFlattener extends GenericVisitor {
 
   public static String asString(ASTNode node) {
     Assert.isTrue(node.getAST().apiLevel() == AST.JLS3);
-
+    
     JAstFlattener flattener= new JAstFlattener();
-    node.accept(flattener);
+    node.accept(flattener);   
     return flattener.getResult();
   }
-
-
+ 
   protected boolean visitNode(ASTNode node) {
     Assert.isTrue(false, "No implementation to flatten node: " + node.toString()); //$NON-NLS-1$
     return false;

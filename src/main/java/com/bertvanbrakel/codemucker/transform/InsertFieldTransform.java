@@ -20,7 +20,8 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 		return new InsertFieldTransform();
 	}
 	
-	public InsertFieldTransform apply() {
+	@Override
+	public void apply() {
 		checkFieldsSet();
 		checkState(field != null,"missing field");
 		
@@ -53,8 +54,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
                 .setStrategy(getPlacementStrategy())
                 .insert();
 		}
-		return this;
-    }
+	}
 
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.FIELD) PlacementStrategy strategy) {

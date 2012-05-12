@@ -32,11 +32,11 @@ public class JSourceMatchers extends IntegerMatchers {
 	}
 	
 	public static Matcher<JSourceFile> withName(Class<?> className){
-		return containsType(JTypeMatchers.withTypeNamed(className));
+		return containsType(JTypeMatchers.withFQN(className));
 	}
 	
 	public static Matcher<JSourceFile> withName(String antPattern){
-		return containsType(JTypeMatchers.withName(antPattern));
+		return containsType(JTypeMatchers.withFQN(antPattern));
 	}
 	
 	public static Matcher<JSourceFile> excludeEnum() {

@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
 import static com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers.withMethodNamed;
-import static com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers.withTypeNamed;
+import static com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers.withFQN;
 import static junit.framework.Assert.assertEquals;
 
 import java.util.Collection;
@@ -19,7 +19,7 @@ public class JMethodTest {
 	public void test_clash_signature_generations(){
 		//TODO:how to make this shorter?
 		FindResult<JType> found = JSourceFinder.newBuilder()
-			.setFilter(FilterBuilder.newBuilder().addIncludeTypes(withTypeNamed(JMethodTest.class)))
+			.setFilter(FilterBuilder.newBuilder().addIncludeTypes(withFQN(JMethodTest.class)))
 			.setSearchPaths(SearchPathsBuilder.newBuilder().setIncludeTestDir(true).setIncludeClassesDir(false))
 			.build()
 			.findTypes();

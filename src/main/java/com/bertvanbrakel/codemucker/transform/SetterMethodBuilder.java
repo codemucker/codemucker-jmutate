@@ -67,11 +67,11 @@ public final class SetterMethodBuilder extends AbstractPatternBuilder<SetterMeth
 		switch (returnType) {
 		case ARG:
 			template.setVar("returnType", type);
-			template.println("return this;");
+			template.println("return ${argName};");
 			break;
 		case TARGET:
 			template.setVar("returnType", target.getSimpleName());
-			template.println("return ${argName};");
+			template.println("return this;");
 			break;
 		case VOID:
 			template.setVar("returnType", "void");

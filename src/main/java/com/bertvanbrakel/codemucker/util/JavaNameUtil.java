@@ -8,12 +8,18 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.ParameterizedType;
+import org.eclipse.jdt.core.dom.PrimitiveType;
+import org.eclipse.jdt.core.dom.QualifiedType;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SimpleType;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
@@ -22,6 +28,43 @@ import com.google.common.base.Joiner;
 
 public class JavaNameUtil {
 
+	public static String getQualifiedName(Type t){
+		StringBuilder sb = new StringBuilder();
+		resolveQualifiedNameFor(t, sb);
+		return sb.toString();
+	}
+	
+	public static void resolveQualifiedNameFor(Type t, StringBuilder sb){
+		if (t.isPrimitiveType()) {
+			sb.append(((PrimitiveType) t).getPrimitiveTypeCode().toString());
+		} else if (t.isSimpleType()) {
+			SimpleType st = (SimpleType) t;
+			sb.append(JavaNameUtil.getQualifiedName(st.getName()));
+		} else if (t.isQualifiedType()) {
+			QualifiedType qt = (QualifiedType) t;
+			sb.append(JavaNameUtil.getQualifiedName(qt.getName()));
+		} else if (t.isArrayType()) {
+			ArrayType at = (ArrayType) t;
+			resolveQualifiedNameFor(at.getComponentType(), sb);
+			sb.append("[]");
+		} else if( t.isParameterizedType()){
+			ParameterizedType pt = (ParameterizedType)t;
+			resolveQualifiedNameFor(pt.getType(),sb);
+			sb.append("<");
+			boolean comma = false;
+			for( Type typeArg:(List<Type>)pt.typeArguments()){
+				if( comma){
+					sb.append(',');
+				}
+				comma = true;
+				resolveQualifiedNameFor(typeArg, sb);
+			}
+			sb.append(">");
+		} else {
+			throw new CodemuckerException("Currently don't know how to handle type:" + t);
+		}
+	}
+	
 	public static String getQualifiedNameFor(AbstractTypeDeclaration type) {
 		//TODO:handle anonymous inner classes....
 		List<String> parts = newArrayListWithCapacity(5);
