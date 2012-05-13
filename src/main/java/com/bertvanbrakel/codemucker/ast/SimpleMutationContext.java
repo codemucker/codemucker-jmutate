@@ -1,5 +1,10 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import org.eclipse.jdt.core.formatter.CodeFormatter;
+import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
+import org.eclipse.jdt.internal.formatter.DefaultCodeFormatter;
+import org.eclipse.jdt.internal.formatter.DefaultCodeFormatterOptions;
+
 import com.bertvanbrakel.codemucker.NamedAnnotation;
 import com.bertvanbrakel.codemucker.transform.ClashStrategy;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
@@ -7,7 +12,6 @@ import com.bertvanbrakel.codemucker.transform.PlacementStrategies;
 import com.bertvanbrakel.codemucker.transform.PlacementStrategy;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.google.inject.AbstractModule;
-import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
@@ -44,6 +48,17 @@ public class SimpleMutationContext implements MutationContext {
 			bind(Object.class).annotatedWith(new NamedAnnotation(ContextNames.CTOR)).toInstance(provideDefaultCtorPlacement());
 			bind(Object.class).annotatedWith(new NamedAnnotation(ContextNames.METHOD)).toInstance(provideDefaultMethodPlacement());
 			bind(Object.class).annotatedWith(new NamedAnnotation(ContextNames.TYPE)).toInstance(provideDefaultTypePlacement());
+		}
+
+		@Provides
+		public CodeFormatter provideCodeFormatter(){
+			return new DefaultCodeFormatter(getFormattingOptions());
+		}
+		
+		private DefaultCodeFormatterOptions getFormattingOptions(){
+			DefaultCodeFormatterOptions opts = new DefaultCodeFormatterOptions(DefaultCodeFormatterConstants.getJavaConventionsSettings());
+			//TODO:add custom options from format file
+			return opts;
 		}
 		
 		@Provides

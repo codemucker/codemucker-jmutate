@@ -5,6 +5,7 @@ import static com.bertvanbrakel.lang.Check.*;
 import java.util.List;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
+import com.bertvanbrakel.codemucker.ast.Flattener;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.JField.SingleJField;
@@ -43,6 +44,10 @@ public class BeanBuilderPattern {
 
 		JType builder = getOrCreateBeanBuilder(target);
 	    generateBuilderGettersAndSetters(target, builder);
+	    //generateBeanCtor(target);
+	    //generateBuilderBuildMethod()
+	    //TODO:generate build method!
+	    //Need to find ctor args..
 	}
 
 	private JType getOrCreateBeanBuilder(JType type) {

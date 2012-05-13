@@ -31,8 +31,12 @@ public class SourceUtil {
 	}
 
 	private static File findRootDir() {
-	    return new File(ProjectFinder.findTargetDir(), "junit-test-generate");
-    }
+	    File dir = new File(ProjectFinder.findTargetDir(), "junit-test-generate/");
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+	    return dir;
+	}
 	
 	public static ClassPathResource writeResource(Template template, File rootDir, String relPath) {
 		Root root = new DirectoryRoot(rootDir);

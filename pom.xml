@@ -30,17 +30,17 @@
 			<id>maven.eclipse.org</id>
 			<url>http://maven.eclipse.org/nexus/content/groups/public/</url>
 		</repository>
-		<repository>
-			<id>xtend</id>
-			<url>http://build.eclipse.org/common/xtend/maven/</url>
-		</repository>
+<!-- 		<repository> -->
+<!-- 			<id>xtend</id> -->
+<!-- 			<url>http://build.eclipse.org/common/xtend/maven/</url> -->
+<!-- 		</repository> -->
 	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>xtend</id>
-			<url>http://build.eclipse.org/common/xtend/maven/</url>
-		</pluginRepository>
-	</pluginRepositories>
+<!-- 	<pluginRepositories> -->
+<!-- 		<pluginRepository> -->
+<!-- 			<id>xtend</id> -->
+<!-- 			<url>http://build.eclipse.org/common/xtend/maven/</url> -->
+<!-- 		</pluginRepository> -->
+<!-- 	</pluginRepositories> -->
 
 
 	<dependencies>
@@ -58,6 +58,11 @@
             <groupId>com.bertvanbrakel</groupId>
             <artifactId>bertvanbrakel-lang</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.simpleframework</groupId>
+            <artifactId>simple-xml</artifactId>
+            <version>2.0.4</version>
         </dependency>
         		<!-- <dependency> -->
 		<!-- <groupId>com.google.code.javaparser</groupId> -->
@@ -83,7 +88,7 @@
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.8.2</version>
-			<scope>test</scope>
+<!-- 			<scope>test</scope> -->
 		</dependency>
 		<dependency>
 			<groupId>junit-addons</groupId>
@@ -121,11 +126,11 @@
 			<artifactId>ui</artifactId>
 			<version>3.3.0-v20070607-0010</version>
 		</dependency>
-		<dependency>
-			<groupId>org.eclipse.xtend2</groupId>
-			<artifactId>org.eclipse.xtend2.lib</artifactId>
-			<version>${xtend.version}</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.eclipse.xtend2</groupId> -->
+<!-- 			<artifactId>org.eclipse.xtend2.lib</artifactId> -->
+<!-- 			<version>${xtend.version}</version> -->
+<!-- 		</dependency> -->
 		<!-- <dependency> -->
 		<!-- <groupId>org.eclipse.xtext</groupId> -->
 		<!-- <artifactId>org.eclipse.xtext.xtend2.lib</artifactId> -->
@@ -141,52 +146,52 @@
 	<build>
 		<plugins>
 
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.7</version>
-				<executions>
-					<execution>
-						<id>add-source</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>xtend-gen</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.4.1</version>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>xtend-gen</directory>
-							<includes>
-								<include>**</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.eclipse.xtend2</groupId>
-				<artifactId>xtend-maven-plugin</artifactId>
-				<version>${xtend.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.codehaus.mojo</groupId> -->
+<!-- 				<artifactId>build-helper-maven-plugin</artifactId> -->
+<!-- 				<version>1.7</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<id>add-source</id> -->
+<!-- 						<phase>generate-sources</phase> -->
+<!-- 						<goals> -->
+<!-- 							<goal>add-source</goal> -->
+<!-- 						</goals> -->
+<!-- 						<configuration> -->
+<!-- 							<sources> -->
+<!-- 								<source>xtend-gen</source> -->
+<!-- 							</sources> -->
+<!-- 						</configuration> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<artifactId>maven-clean-plugin</artifactId> -->
+<!-- 				<version>2.4.1</version> -->
+<!-- 				<configuration> -->
+<!-- 					<filesets> -->
+<!-- 						<fileset> -->
+<!-- 							<directory>xtend-gen</directory> -->
+<!-- 							<includes> -->
+<!-- 								<include>**</include> -->
+<!-- 							</includes> -->
+<!-- 						</fileset> -->
+<!-- 					</filesets> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.eclipse.xtend2</groupId> -->
+<!-- 				<artifactId>xtend-maven-plugin</artifactId> -->
+<!-- 				<version>${xtend.version}</version> -->
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<goals> -->
+<!-- 							<goal>compile</goal> -->
+<!-- 							<goal>testCompile</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 		</plugins>
 	</build>
 </project>

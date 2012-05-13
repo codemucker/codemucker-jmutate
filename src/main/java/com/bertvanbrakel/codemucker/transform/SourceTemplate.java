@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -30,7 +29,6 @@ import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.util.ProjectFinder;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 @NotThreadSafe
 public class SourceTemplate extends AbstractTemplate<SourceTemplate>

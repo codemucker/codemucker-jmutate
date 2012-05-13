@@ -6,5 +6,5 @@ public interface Flattener {
 
 	public String flatten(ASTNode node);
 
-	public void flatten(ASTNode node, StringBuilder sb);
+	//public void flatten(ASTNode node, StringBuilder sb);
 }

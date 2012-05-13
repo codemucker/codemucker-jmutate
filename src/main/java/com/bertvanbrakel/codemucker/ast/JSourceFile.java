@@ -21,7 +21,6 @@ import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
-import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
@@ -100,11 +99,10 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
     	try {
     		edits.apply(doc);
     	} catch (MalformedTreeException e) {
-    		throw new BeanGenerationException("can't apply changes", e);
+    		throw new CodemuckerException("can't apply changes", e);
     	} catch (BadLocationException e) {
-    		throw new BeanGenerationException("can't apply changes", e);
+    		throw new CodemuckerException("can't apply changes", e);
     	}
-    
     	String updatedSrc = doc.get();
     	return updatedSrc;
 	}		
