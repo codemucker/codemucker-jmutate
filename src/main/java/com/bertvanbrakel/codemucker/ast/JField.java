@@ -19,8 +19,8 @@ import com.bertvanbrakel.codemucker.util.TypeUtil;
 public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 
 	private final FieldDeclaration fieldNode;
-	
-	public JField(FieldDeclaration fieldNode) {
+
+	public JField(final FieldDeclaration fieldNode) {
 		checkNotNull(fieldNode, "expect field declaration");
 		this.fieldNode = fieldNode;
 	}
@@ -30,15 +30,15 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 		return fieldNode;
 	}
 
-	public boolean hasName(String name){
+	public boolean hasName(final String name){
 		return getNames().contains(name);
 	}
-	
+
 	public List<SingleJField> asSingleFields(){
 		final List<SingleJField> singles = newArrayList();
-		BaseASTVisitor visitor = new BaseASTVisitor(){
+		final BaseASTVisitor visitor = new BaseASTVisitor(){
 			@Override
-            public boolean visit(VariableDeclarationFragment node) {
+            public boolean visit(final VariableDeclarationFragment node) {
 				singles.add(new SingleJField(JField.this,node));
 				return false;
             }
@@ -51,7 +51,7 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 		private final JField parent;
 		private final VariableDeclarationFragment frag;
 
-		public SingleJField(JField parent, VariableDeclarationFragment frag) {
+		public SingleJField(final JField parent, final VariableDeclarationFragment frag) {
 	        super();
 	        this.parent = parent;
 	        this.frag = frag;
@@ -69,53 +69,50 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 			return parent.getType();
 		}
 	}
-	
-	
+
+
 	public JAccess getAccess(){
 		return getJavaModifiers().asAccess();
 	}
-	
-	public boolean isType(JField field){
+
+	public boolean isType(final JField field){
 		return isType(field.getAstNode().getType());
 	}
-	
-	public boolean isType(Type type){
+
+	public boolean isType(final Type type){
 		return fieldNode.getType().equals(type) ;
 	}
-	
+
 	public Type getType(){
 		return fieldNode.getType();
 	}
-	
+
 	/**
 	 * Returns the full type signature
 	 * @return
 	 */
 	public String getTypeSignature(){
-		//TODO:return the actual FQDN, instead of the bad implementation of TypeUtils
-		StringBuilder sb = new StringBuilder();
-		TypeUtil.toName(fieldNode.getType(), sb);
-		return sb.toString();
+		return TypeUtil.toTypeSignature(fieldNode.getType());
 	}
-	
+
 	/**
 	 * Get the name of this field. If there are multiple names throw an error
 	 */
 	public String getName() {
-		List<String> names = getNames();
+		final List<String> names = getNames();
 		checkState(names.size() == 1, "expect only a single name");
 		return names.get(0);
 	}
-	
+
 	public boolean isMultiNamed(){
 		return getNames().size() > 1;
 	}
-	
+
 	public List<String> getNames(){
 		final List<String> names = newArrayList();
-		BaseASTVisitor visitor = new BaseASTVisitor(){
+		final BaseASTVisitor visitor = new BaseASTVisitor(){
 			@Override
-            public boolean visit(VariableDeclarationFragment node) {
+            public boolean visit(final VariableDeclarationFragment node) {
 				names.add(node.getName().getIdentifier());
 				return false;
             }
@@ -124,10 +121,10 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 		return names;
 	}
 
-	public boolean isAccess(JAccess access) {
+	public boolean isAccess(final JAccess access) {
 		return getJavaModifiers().asAccess().equals(access);
 	}
-	
+
 	@SuppressWarnings("unchecked")
     public JModifiers getJavaModifiers(){
 		return new JModifiers(fieldNode.getAST(),fieldNode.modifiers());
@@ -135,15 +132,15 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-    public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass) {
+    public <A extends Annotation> boolean hasAnnotationOfType(final Class<A> annotationClass) {
 		return JAnnotation.hasAnnotation(annotationClass, fieldNode.modifiers());
 	}
 
 	@Override
-	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass) {
+	public <A extends Annotation> JAnnotation getAnnotationOfType(final Class<A> annotationClass) {
 		return JAnnotation.getAnnotationOfType(fieldNode, JAnnotation.ANY_DEPTH, annotationClass);
 	}
-	
+
 	@Override
 	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
 		return JAnnotation.findAnnotations(fieldNode);

@@ -1,6 +1,8 @@
 package com.bertvanbrakel.codemucker.pattern;
 
 
+import java.util.Collection;
+
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.annotation.GenerateBuilder;
@@ -37,18 +39,30 @@ public class BeanBuilderPatternTest {
 		SourceTemplate t=ctxt.newSourceTemplate();
 		t.pl("@GenerateBuilder");
 		t.pl("public static class TestBuilderBean {");
-		t.pl("	private String foo;");
-		t.pl("	private String bar;");
+		t.pl("	private String myString;");
+		t.pl("	private int myInt;");
+		t.pl("	private Collection<String> col;");
+		
+		t.pl("	public TestBuilderBean(java.lang.String myString,int myInt,java.util.Collection<java.lang.String> col){this.myString = myString;this.myInt=myInt;this.col=col;}");
 		t.pl("	public static class Builder {");
-		t.pl("		private java.lang.String foo;");
-		t.pl("		private java.lang.String bar;");
-		t.pl("		public Builder setFoo(java.lang.String foo){");
-		t.pl("			this.foo = foo;");
+		t.pl("		private java.lang.String myString;");
+		t.pl("		private int myInt;");
+		t.pl("		private java.util.Collection<java.lang.String> col;");
+		
+		t.pl("		public Builder setMyString(java.lang.String myString){");
+		t.pl("			this.myString = myString;");
 		t.pl("			return this;");
 		t.pl("		}");
-		t.pl("		public Builder setBar(java.lang.String bar){");
-		t.pl("			this.bar = bar;");
+		t.pl("		public Builder setMyInt(int myInt){");
+		t.pl("			this.myInt = myInt;");
 		t.pl("			return this;");
+		t.pl("		}");
+		t.pl("		public Builder setCol(java.util.Collection<java.lang.String> col){");
+		t.pl("			this.col = col;");
+		t.pl("			return this;");
+		t.pl("		}");
+		t.pl("		public TestBuilderBean build(){");
+		t.pl("			return new TestBuilderBean(myString,myInt,col);");
 		t.pl("		}");
 		t.pl("	}");
 		t.pl("}");
@@ -72,8 +86,8 @@ public class BeanBuilderPatternTest {
 
 	@GenerateBuilder
 	public static class TestBuilderBean {
-		private String foo;
-		private String bar;
-		
+		private String myString;
+		private int myInt;
+		private Collection<String> col;
 	}
 }

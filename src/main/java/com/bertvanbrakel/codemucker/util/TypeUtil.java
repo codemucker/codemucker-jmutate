@@ -21,22 +21,29 @@ public class TypeUtil {
 			, "java.lang.String"
 			, "long"
 	);
-	
-	public static boolean isPrimitive(String type){
+
+	public static boolean isPrimitive(final String type){
 		return PRIMITIVES.contains(type);
 	}
-	
-	public static boolean typeValueRequiresSingleQuotes(String type){
+
+	public static boolean typeValueRequiresSingleQuotes(final String type){
 		return type != null && "char".equals(type) || "java.lang.Character".equals(type);
 	}
-	
-	public static boolean typeValueRequiresDoubleQuotes(String type){
+
+	public static boolean typeValueRequiresDoubleQuotes(final String type){
 		return type != null && "String".equals(type) || "java.lang.String".equals(type);
 	}
-	
-	public static void toName(Type t, StringBuilder sb){
+
+	public static String toTypeSignature(final Type t){
+        //TODO:return the actual FQDN, instead of the bad implementation of TypeUtils
+        final StringBuilder sb = new StringBuilder();
+        toTypeSignature(t, sb);
+        return sb.toString();
+    }
+
+	public static void toTypeSignature(final Type t, final StringBuilder sb){
 		//TODO:may need to look up the imports to convert to FQDN?
-		JAstFlattener flattener = new JAstFlattener(sb);
+		final JAstFlattener flattener = new JAstFlattener(sb);
 		t.accept(flattener);
 	}
 }
