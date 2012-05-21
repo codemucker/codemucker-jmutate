@@ -43,11 +43,11 @@ public class BeanBuilderPatternTest {
 		t.pl("	private int myInt;");
 		t.pl("	private Collection<String> col;");
 		
-		t.pl("	public TestBuilderBean(java.lang.String myString,int myInt,java.util.Collection<java.lang.String> col){this.myString = myString;this.myInt=myInt;this.col=col;}");
+		t.pl("	public TestBuilderBean(String myString,int myInt,Collection<String> col){this.myString = myString;this.myInt=myInt;this.col=col;}");
 		t.pl("	public static class Builder {");
-		t.pl("		private java.lang.String myString;");
+		t.pl("		private String myString;");
 		t.pl("		private int myInt;");
-		t.pl("		private java.util.Collection<java.lang.String> col;");
+		t.pl("		private Collection<String> col;");
 		
 		t.pl("		public Builder setMyString(java.lang.String myString){");
 		t.pl("			this.myString = myString;");

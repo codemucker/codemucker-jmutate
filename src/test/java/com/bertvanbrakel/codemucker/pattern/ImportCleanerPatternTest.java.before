@@ -1,0 +1,20 @@
+public class BeanBefore {
+		private java.lang.String myField;
+		private java.util.Map<java.lang.Integer, java.util.Collection<java.lang.String>> myMap;
+
+		public java.lang.String getMyField() {
+			return myField;
+		}
+
+		public void setMyField(java.lang.String myField) {
+			this.myField = myField;
+		}
+
+		public java.util.Map<java.lang.Integer, java.util.Collection<java.lang.String>> myMap() {
+			return myMap;
+		}
+
+		public void setmyMap(ava.util.Map<java.lang.Integer, java.util.Collection<java.lang.String>> myMap) {
+			this.myMap = myMap;
+		}
+	}

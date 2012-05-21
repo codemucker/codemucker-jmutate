@@ -5,14 +5,12 @@ import static com.bertvanbrakel.lang.Check.checkNotNull;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.internal.corext.dom.ASTFlattener;
 
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.Flattener;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JAstFlattener;
 import com.bertvanbrakel.codemucker.ast.JField;
-import com.bertvanbrakel.codemucker.util.TypeUtil;
 
 public class FieldBuilder extends AbstractPatternBuilder<FieldBuilder> {
 
@@ -60,22 +58,11 @@ public class FieldBuilder extends AbstractPatternBuilder<FieldBuilder> {
 			String valAsString = getContext().obtain(Flattener.class).flatten(initializer);
 			t.setVar("initializer", valAsString);
 			t.pl(" = ${initializer};");
-//			t.setVar("quote", getQuoteCharForValue());
 		} else {
 			t.pl(";");
 		}
 	
 		return t.asFieldNode();
-	}
-	
-	private String getQuoteCharForValue(){
-		if( TypeUtil.typeValueRequiresDoubleQuotes(type)){
-			return "\"";
-		}
-		if( TypeUtil.typeValueRequiresDoubleQuotes(type)){
-			return "'";
-		}
-		return "";
 	}
 
 	public FieldBuilder setAccess(JAccess access) {
@@ -110,6 +97,4 @@ public class FieldBuilder extends AbstractPatternBuilder<FieldBuilder> {
 		this.initializer = expression;
 		return this;
 	}
-	
-	
 }

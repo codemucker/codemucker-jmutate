@@ -47,7 +47,7 @@ public class JavaNameUtil {
 			ArrayType at = (ArrayType) t;
 			resolveQualifiedNameFor(at.getComponentType(), sb);
 			sb.append("[]");
-		} else if( t.isParameterizedType()){
+		} else if(t.isParameterizedType()){
 			ParameterizedType pt = (ParameterizedType)t;
 			resolveQualifiedNameFor(pt.getType(),sb);
 			sb.append("<");

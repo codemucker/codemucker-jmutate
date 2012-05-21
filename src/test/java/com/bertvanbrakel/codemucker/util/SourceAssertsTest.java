@@ -15,7 +15,7 @@
  */
 package com.bertvanbrakel.codemucker.util;
 
-import static com.bertvanbrakel.codemucker.util.SourceUtil.writeResource;
+import static com.bertvanbrakel.codemucker.util.ResourceWriter.writeResource;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import junit.framework.AssertionFailedError;
@@ -28,7 +28,7 @@ import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 
-public class SourceTemplateTest {
+public class SourceAssertsTest {
 
 	private MutationContext ctxt = new SimpleMutationContext();
 	

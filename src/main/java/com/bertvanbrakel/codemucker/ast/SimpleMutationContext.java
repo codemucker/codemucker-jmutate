@@ -124,26 +124,11 @@ public class SimpleMutationContext implements MutationContext {
 		}	
 	}
 
-//	@Override
-//    public PlacementStrategies getStrategies() {
-//	    return strategyProvider;
-//    }
-//
-//	@Override
-//    public JAstParser getParser() {
-//	    return parser;
-//    }
-	
 	@Override
     public SourceTemplate newSourceTemplate(){
     	return obtain(SourceTemplate.class);
     }
-    
-//	@Override
-//    public StringTemplate newStringTemplate(){
-//    	return create(StringTemplate.class);
-//    }
-//	
+
 	@Override
 	public <T> T obtain(Class<T> type){
 		return injector.getInstance(type);
@@ -168,5 +153,4 @@ public class SimpleMutationContext implements MutationContext {
 		}
 		
 	}
-	
 }

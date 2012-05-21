@@ -27,8 +27,6 @@ import com.google.inject.Inject;
 
 /**
  * Add or update a builder to build a bean
- *
- * TODO:generate the 'build' method
  */
 public class BeanBuilderPattern {
 
@@ -37,6 +35,11 @@ public class BeanBuilderPattern {
 
 	private JType target;
 
+	/**
+	 * WHat the name of the builder class will be
+	 */
+	private String builderClassName = "Builder";
+	
 	/**
 	 * How do we collect the fields? Do we keep a local copy, set it on the bean directly via direct field access,
 	 * or via the beans setter methods?
@@ -47,24 +50,32 @@ public class BeanBuilderPattern {
 
 	private final MODE mode = MODE.COPYOF;
 
+	private boolean useQualifiedName = true;
+	
 	public void apply() {
 		checkNotNull("ctxt", ctxt);
 		checkNotNull("target", target);
 
-		final JType builder = getOrCreateBeanBuilder(target);
-	    generateBuilderGettersAndSetters(target, builder);
+		Iterable<SingleJField> fields = collectSingleFields(findFeildsToInclude(target));
 	    
-	    Iterable<SingleJField> fields = collectSingleFields(findFeildsToInclude(target));
-	    
+		final JType builder = getOrCreateBuilderClass(target);
+		
+		ctxt.obtain(BuilderMutateMethodsPattern.class)
+			.setSingleFields(fields)
+			.setTarget(builder)
+			.apply();
+		
 	    ctxt.obtain(BeanFieldCtorPattern.class)
 	    	.setTarget(target)
 	    	.setSingleFields(fields)
+	    	.setUseQualaifiedName(useQualifiedName)
 	    	.apply();
 	    
-	    
-	    generateBuilderBuildMethod(target,builder, fields);
-	    //TODO:generate build method!
-	    //Need to find ctor args..
+	    ctxt.obtain(BuilderBuildMethodPattern.class)
+	    	.setTarget(builder)
+	    	.setBean(target)
+	    	.setSingleFields(fields)
+	    	.apply();
 	}
 
 	private static List<SingleJField> collectSingleFields(Iterable<JField> fields) {
@@ -74,39 +85,147 @@ public class BeanBuilderPattern {
 		}
 		return singles;
 	}
+
+	private Iterable<JField> findFeildsToInclude(final JType target){
+	    return target.findFieldsMatching(new Matcher<JField>() {
+            @Override
+            public boolean matches(final JField field) {
+                final JModifiers mods = field.getJavaModifiers();
+                if( mods.isFinal() || mods.isStatic() || mods.isStrictFp()){
+                    return false;
+                }
+                //TODO:detect annotations. Depending on mode: all by default, or need explicit
+                return true;
+            }
+        });
+	}
 	
-	private void generateBuilderBuildMethod(final JType target,JType builder, final Iterable<SingleJField> fields) {
-		SourceTemplate t = ctxt.newSourceTemplate();
-		t.setVar("beanType", target.getSimpleName());
-		t.p("public ${beanType} build(){");
-		t.p("return new ${beanType}(");
-		boolean comma = false;
-		//TODO:use single fields!
-		for (SingleJField f : fields) {
-			if (comma) {
-				t.p(",");
-			}
-			comma = true;
-			t.p(f.getName());
-		}
-		t.p(");");
-		t.p("}");
+    private JType getOrCreateBuilderClass(final JType type) {
+	    JType builder;
+	    final List<JType> builders = type.findDirectChildTypesMatching(JTypeMatchers.withSimpleName(builderClassName)).toList();
+		if (builders.size() == 1) {
+	    	builder = builders.get(0);
+		} else if (builders.size() == 0) {
+	    	builder = ctxt.newSourceTemplate()
+	    		.setVar("builderClassName",builderClassName)
+	    		.pl("public static class ${builderClassName} {} ")
+	    		.asJType();
+
+	    	ctxt.obtain(InsertTypeTransform.class)
+	    		.setTarget(type)
+	    		.setType(builder)
+	    		.apply();
+	    	//we want a handle to the inserted nodes. These are copied on insert so adding anything to the
+	    	//original node doesn't make it in. Hence we need to lookup the newly created
+	    	//builder
+	    	builder = type.findDirectChildTypesMatching(JTypeMatchers.withSimpleName(builderClassName)).toList().get(0);
+	    } else {
+	    	throw new CodemuckerException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
+	    }
+	    return builder;
+    }
+
+	public BeanBuilderPattern setCtxt(final MutationContext ctxt) {
+    	this.ctxt = ctxt;
+    	return this;
+    }
+
+	public BeanBuilderPattern setTarget(final JType type) {
+    	this.target = type;
+    	return this;
+	}
+	
+	public BeanBuilderPattern setUseQualifiedName(boolean useQualifiedName) {
+		this.useQualifiedName = useQualifiedName;
+		return this;
+	}
+	
+	public static class BuilderBuildMethodPattern {
+		@Inject
+		private MutationContext ctxt;
+		//rename, possibly not a bean ..?
+		private JType bean;
+		//rename to builder?
+		private JType target;
+		private List<SingleJField> fields;
 		
-		JMethod buildMethod = t.asJMethod();
-		ctxt.obtain(InsertMethodTransform.class)
-			.setTarget(builder)
-			.setMethod(buildMethod)
-			.apply();
+		
+		public void apply() {
+			checkNotNull("ctxt", ctxt);
+			checkNotNull("target", target);
+			checkNotNull("bean", bean);
+			checkNotNull("fields", fields);
+
+			JMethod buildMethod = createBuildMethod();
+			ctxt.obtain(InsertMethodTransform.class)
+				.setTarget(target)
+				.setMethod(buildMethod)
+				.apply();
+		}
+
+		private JMethod createBuildMethod() {
+			SourceTemplate t = ctxt.newSourceTemplate();
+			t.setVar("beanType", bean.getSimpleName());
+			t.p("public ${beanType} build(){");
+			t.p("return new ${beanType}(");
+			boolean comma = false;
+			//TODO:use single fields!
+			for (SingleJField f : fields) {
+				if (comma) {
+					t.p(",");
+				}
+				comma = true;
+				t.p(f.getName());
+			}
+			t.p(");");
+			t.p("}");
+			
+			JMethod buildMethod = t.asJMethod();
+			return buildMethod;
+		}
+		
+		public BuilderBuildMethodPattern setCtxt(MutationContext ctxt) {
+			this.ctxt = ctxt;
+			return this;
+		}
+		
+		public BuilderBuildMethodPattern setBean(JType bean) {
+			this.bean = bean;
+			return this;
+		}
+
+		public BuilderBuildMethodPattern setTarget(JType target) {
+			this.target = target;
+			return this;
+		}
+
+		public BuilderBuildMethodPattern setFields(Iterable<JField> fields) {
+			List<SingleJField> singles = newArrayList();
+			for(JField field:fields){
+				singles.addAll(field.asSingleFields());
+			}
+			setSingleFields(singles);
+			return this;
+		}
+		
+		public BuilderBuildMethodPattern setSingleFields(Iterable<SingleJField> fields) {
+			this.fields = newArrayList(fields);
+			return this;
+		}
 	}
 
-	private static class BeanFieldCtorPattern {
+	public static class BeanFieldCtorPattern {
 		@Inject
 		private MutationContext ctxt;
 		private JType target;
 		private List<SingleJField> fields;
-		
+		private Boolean useQualaifiedName = true;
 		private void apply() {
-		   final MethodDeclaration ctor = createCtorFromFields();
+			checkNotNull("ctxt", ctxt);
+			checkNotNull("target", target);
+			checkNotNull("fields", fields);
+
+			final MethodDeclaration ctor = createCtorFromFields();
 	
 		    ctxt.obtain(InsertCtorTransform.class)
 		        .setTarget(target)
@@ -127,9 +246,13 @@ public class BeanBuilderPattern {
 		            t.pl(",");
 		        }
 		        comma = true;
-		       // t.p(TypeUtil.toTypeSignature(field.getType()));
-		        t.p(JavaNameUtil.getQualifiedName(field.getType()));
-		        t.p(" ");
+		       // if( field.getType().isParameterizedType())
+				if (useQualaifiedName) {
+					t.p(JavaNameUtil.getQualifiedName(field.getType()));
+				} else {
+					t.p(TypeUtil.toTypeSignature(field.getType()));
+				}
+				t.p(" ");
 		        t.p(field.getName());
 		    }
 		    t.pl(") {");
@@ -167,69 +290,62 @@ public class BeanBuilderPattern {
 			this.fields = newArrayList(fields);
 			return this;
 		}
-	    
+
+		public BeanFieldCtorPattern setUseQualaifiedName(Boolean useQualaifiedName) {
+			this.useQualaifiedName = useQualaifiedName;
+			return this;
+		}
+		
 	}
 
-    private JType getOrCreateBeanBuilder(final JType type) {
-	    JType builder;
-	    final List<JType> builders = type.findDirectChildTypesMatching(JTypeMatchers.withSimpleName("Builder")).toList();
-		if (builders.size() == 1) {
-	    	builder = builders.get(0);
-		} else if (builders.size() == 0) {
-	    	builder = ctxt.newSourceTemplate()
-	    		.pl("public static class Builder {} ")
-	    		.asJType();
+    public static class BuilderMutateMethodsPattern {
+    	
+    	@Inject
+    	private MutationContext ctxt;
+    	private JType target;
+    	private List<SingleJField> fields;
+		
+		public void apply() {	
+			checkNotNull("ctxt", ctxt);
+			checkNotNull("target", target);
+			checkNotNull("fields", fields);
 
-	    	ctxt.obtain(InsertTypeTransform.class)
-	    		.setTarget(type)
-	    		.setType(builder)
-	    		.apply();
-	    	//we want a handle to the inserted nodes. These are copied on insert so adding anything to the
-	    	//original node doesn't make it in
-	    	builder = type.findDirectChildTypesMatching(JTypeMatchers.withSimpleName("Builder")).toList().get(0);
-	    } else {
-	    	throw new CodemuckerException("expected only a single builder on %s", type);
-	    }
-	    return builder;
-    }
-
-	private void generateBuilderGettersAndSetters(final JType target, final JType builder) {
-	    //add the builder fields and setters
-	    final BeanPropertyPattern pattern = ctxt.obtain(BeanPropertyPattern.class)
-	    	.setTarget(builder)
-	    	.setCreateAccessor(false)
-	    	.setSetterReturn(SetterMethodBuilder.RETURN.TARGET);
-
-	    for(final JField f:findFeildsToInclude(target)){
-	    	pattern.setPropertyType(f.getType());
-			for (final SingleJField sf : f.asSingleFields()) {
-				pattern.setPropertyName(sf.getName());
+			//add the builder fields and setters
+		    final BeanPropertyPattern pattern = ctxt.obtain(BeanPropertyPattern.class)
+		    	.setTarget(target)
+		    	.setCreateAccessor(false)
+		    	.setSetterReturn(SetterMethodBuilder.RETURN.TARGET);
+	
+		    for(final SingleJField field:fields){
+		    	pattern.setPropertyType(field.getType());
+				pattern.setPropertyName(field.getName());
 				pattern.apply();
-			}
+		    }
 	    }
+		
+		public BuilderMutateMethodsPattern setCtxt(MutationContext ctxt) {
+			this.ctxt = ctxt;
+			return this;
+		}
+
+		public BuilderMutateMethodsPattern setTarget(JType target) {
+			this.target = target;
+			return this;
+		}
+
+		public BuilderMutateMethodsPattern setFields(Iterable<JField> fields) {
+			List<SingleJField> singles = newArrayList();
+			for(JField field:fields){
+				singles.addAll(field.asSingleFields());
+			}
+			setSingleFields(singles);
+			return this;
+		}
+		
+		public BuilderMutateMethodsPattern setSingleFields(Iterable<SingleJField> fields) {
+			this.fields = newArrayList(fields);
+			return this;
+		}
+	    
     }
-
-	private Iterable<JField> findFeildsToInclude(final JType target){
-	    return target.findFieldsMatching(new Matcher<JField>() {
-            @Override
-            public boolean matches(final JField field) {
-                final JModifiers mods = field.getJavaModifiers();
-                if( mods.isFinal() || mods.isStatic() || mods.isStrictFp()){
-                    return false;
-                }
-                //TODO:detect annotations. Depending on mode: all by default, or need explicit
-                return true;
-            }
-        });
-	}
-
-	public BeanBuilderPattern setCtxt(final MutationContext ctxt) {
-    	this.ctxt = ctxt;
-    	return this;
-    }
-
-	public BeanBuilderPattern setTarget(final JType type) {
-    	this.target = type;
-    	return this;
-	}
 }

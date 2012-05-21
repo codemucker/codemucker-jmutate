@@ -13,6 +13,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.bertvanbrakel.codemucker.ast.AstNodeProvider;
+import com.bertvanbrakel.codemucker.ast.JAstFlattener;
 import com.bertvanbrakel.codemucker.ast.JAstMatcher;
 import com.bertvanbrakel.codemucker.ast.JAstParser;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
@@ -47,8 +48,8 @@ public class SourceAsserts {
     	try {
     		equals = expected.subtreeMatch(matcher, actual);
     	} catch( AssertionFailedError e){
-    		String expectFromAst = SourceUtil.nodeToString(expected);
-    		String actualFromAst = SourceUtil.nodeToString(actual);
+    		String expectFromAst = nodeToString(expected);
+    		String actualFromAst = nodeToString(actual);
     		StringWriter sw = new StringWriter();
     		PrintWriter pw = new PrintWriter(sw);
     		e.printStackTrace(pw);
@@ -56,8 +57,8 @@ public class SourceAsserts {
     		throw new ComparisonFailure("Error comparing asts. Dont't match. Exception is " + sw, expectFromAst, actualFromAst);		
     	}
     	if (!equals) {
-    		String expectFromAst = SourceUtil.nodeToString(expected);
-    		String actualFromAst = SourceUtil.nodeToString(actual);
+    		String expectFromAst = nodeToString(expected);
+    		String actualFromAst = nodeToString(actual);
     		throw new ComparisonFailure("Ast's don't match", expectFromAst, actualFromAst);
     	}
     	assertTrue("ast's don't match", equals);
@@ -68,4 +69,8 @@ public class SourceAsserts {
     	CompilationUnit cu = JSourceFile.fromResource(resource, JAstParser.newDefaultParser()).getCompilationUnit();
     	return cu;
     }
+	
+	public static String nodeToString(ASTNode node){
+		return JAstFlattener.asString(node);
+	}
 }
