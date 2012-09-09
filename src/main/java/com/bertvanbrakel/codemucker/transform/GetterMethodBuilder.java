@@ -11,7 +11,7 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.util.TypeUtil;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
-public final class GetterMethodBuilder extends AbstractPatternBuilder<GetterMethodBuilder> {
+public final class GetterMethodBuilder extends AbstractBuilder<GetterMethodBuilder> {
 
 	private String fieldName;
 	private String fieldType;

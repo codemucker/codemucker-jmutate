@@ -31,5 +31,5 @@ public interface MutationContext {
 	 * @param instance
 	 * @return
 	 */
-	<T> T fill(T instance);
+	<T> T injectDependencies(T instance);
 }

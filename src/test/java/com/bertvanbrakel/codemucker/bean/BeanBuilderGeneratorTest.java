@@ -9,6 +9,7 @@ import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
+@Deprecated
 public class BeanBuilderGeneratorTest {
 	
 	@Test

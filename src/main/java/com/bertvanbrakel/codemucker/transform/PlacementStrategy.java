@@ -10,11 +10,12 @@ public interface PlacementStrategy {
 
 	
 	/**
-	 * Find the index to place the given node at. Anything less than zero indicates no position could be found. This could indicate to callers
-	 * to use an alternative strategy
-	 * 
+	 * Find the index to place a node into. Anything less than zero indicates no position could be found. This could indicate to callers
+	 * to use an alternative strategy.
+	 * @param nodeToInsert TODO
 	 * @param body
+	 * 
 	 * @return
 	 */
-	public int findIndexToPlace(List<ASTNode> node);
+	public int findIndexToPlaceInto(ASTNode nodeToInsert, List<ASTNode> nodes);
 }

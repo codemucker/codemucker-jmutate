@@ -1,5 +1,8 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import static com.google.common.collect.Lists.newArrayList;
+
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -12,34 +15,37 @@ public class StrategyBeforeAfterNodes implements PlacementStrategy {
 	private final Collection<Class<?>> afterNodesOfType;
 	private final Collection<Class<?>> beforeNodesOfType;
 
-	public StrategyBeforeAfterNodes(Collection<Class<?>> afterNodesOfType, Collection<Class<?>> beforeNodesOfType) {
+	private StrategyBeforeAfterNodes(Collection<Class<?>> afterNodesOfType, Collection<Class<?>> beforeNodesOfType) {
 	    super();
-	    this.afterNodesOfType = afterNodesOfType;
-	    this.beforeNodesOfType = beforeNodesOfType;
+	    this.afterNodesOfType = newArrayList(afterNodesOfType);
+	    this.beforeNodesOfType = newArrayList(beforeNodesOfType);
     }
 
+	public static Builder newBuilder(){
+		return new Builder();
+	}
+	
 	@Override
-    public int findIndexToPlace(List<ASTNode> body) {
-	    return findIndexToInsertAt(body, afterNodesOfType, beforeNodesOfType);
+    public int findIndexToPlaceInto(ASTNode nodeToInsert, List<ASTNode> nodes) {
+	    return findIndexToInsertAt(nodes, afterNodesOfType, beforeNodesOfType);
     }
 	
-	private int findIndexToInsertAt(List<ASTNode> nodes, Collection<Class<?>> afterNodesOfType,
-	        Collection<Class<?>> beforeNodesOfType) {
-		int index = findLastIndexOf(nodes, afterNodesOfType);
-		if (index != INDEX_NOT_FOUND) {
+	private int findIndexToInsertAt(List<ASTNode> nodes, Collection<Class<?>> afterNodesOfType, Collection<Class<?>> beforeNodesOfType) {
+		int index = findLastIndexOfTypeIn(afterNodesOfType, nodes);
+		if (index != PlacementStrategy.INDEX_NOT_FOUND) {
 			index++;
 		} else {
-			index = findFirstIndexOf(nodes, beforeNodesOfType);
+			index = findFirstIndexOfTypeIn(beforeNodesOfType, nodes);
 		}
-		if (index == INDEX_NOT_FOUND) {
+		if (index == PlacementStrategy.INDEX_NOT_FOUND) {
 			index = 0;
 		}
 		return index;
 	}
 
-	private int findLastIndexOf(List<ASTNode> nodes, Collection<Class<?>> nodeTypes) {
+	private int findLastIndexOfTypeIn(Collection<Class<?>> nodeTypes,Collection<ASTNode> nodes) {
 		int idx = 0;
-		int last = INDEX_NOT_FOUND;
+		int last = PlacementStrategy.INDEX_NOT_FOUND;
 		for (ASTNode node : nodes) {
 			if (nodeTypes.contains(node.getClass())) {
 				last = idx;
@@ -49,7 +55,7 @@ public class StrategyBeforeAfterNodes implements PlacementStrategy {
 		return last;
 	}
 
-	private int findFirstIndexOf(List<ASTNode> nodes, Collection<Class<?>> nodeTypes) {
+	private int findFirstIndexOfTypeIn(Collection<Class<?>> nodeTypes,Collection<ASTNode> nodes) {
 		int idx = 0;
 		for (ASTNode node : nodes) {
 			if (nodeTypes.contains(node.getClass())) {
@@ -57,7 +63,27 @@ public class StrategyBeforeAfterNodes implements PlacementStrategy {
 			}
 			idx++;
 		}
-		return INDEX_NOT_FOUND;
+		return PlacementStrategy.INDEX_NOT_FOUND;
+	}
+	
+	public static class Builder {
+		
+		private final Collection<Class<?>> afterNodesOfType = newArrayList();
+		private final Collection<Class<?>> beforeNodesOfType = newArrayList();
+		
+		public StrategyBeforeAfterNodes build(){
+			return new StrategyBeforeAfterNodes(afterNodesOfType,beforeNodesOfType);
+		}
+		
+		public Builder beforeNodes(Class<?>... nodes){
+			beforeNodesOfType.addAll(Arrays.asList(nodes));
+			return this;
+		}
+
+		public Builder afterNodes(Class<?>... nodes){
+			afterNodesOfType.addAll(Arrays.asList(nodes));
+			return this;
+		}
 	}
 
 }

@@ -50,7 +50,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		if(insert){
 			new NodeInserter()
 				.setNodeToInsert(type.getAstNode())
-				.setTarget(target)
+				.setTargetToInsertInto(target)
 				.setStrategy(getPlacementStrategy())
 				.insert();
 		}

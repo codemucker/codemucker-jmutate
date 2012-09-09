@@ -12,7 +12,9 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.google.inject.Inject;
 
 /**
- * Builds a method to generate the given node using a source template
+ * Builds a method to generate the given node using a source template. This means, pass an existing source node (i.e
+ * some existing code) and convert this into a method which when runs regenerates the original node. Useful when
+ * wanting to take existing code and tweak it.
  */
 public class NodeToSourceBuilder {
 
@@ -22,24 +24,21 @@ public class NodeToSourceBuilder {
 	@Inject
 	private Flattener flattener;
 	
+	//the node to copy
 	private ASTNode node;
 
 	public JMethod build(){
-	
 		String src = flattener.flatten(node);
 		SourceTemplate t = ctxt.newSourceTemplate();
 		
-		t.p("public void generateNode(")
-		 .p(MutationContext.class.getName())
-		 .p(" ctxt")
-		 .pl("){")
+		t.p("public void generateNode(").p(MutationContext.class.getName()).p(" ctxt").pl("){")
 		 .p(SourceTemplate.class.getName()).p(" t = ctxt.newSourceTemplate();");
 	
 		BufferedReader reader = new BufferedReader(new StringReader(src));
 		String line;
 		try {
 			while ((line = reader.readLine()) != null) {
-				t.p(" t.pl(\"").p(escapeSrc(line)).pl("\");");
+				t.p(" t.pl(\"").p(escapeSource(line)).pl("\");");
 			}
         } catch (IOException e) {
 	        //never thrown
@@ -50,7 +49,7 @@ public class NodeToSourceBuilder {
 		return t.asJMethod();
 	}
 	
-	private static String escapeSrc(String line){
+	private static String escapeSource(String line){
 		return line.replaceAll("\"", "\\\"");
 	}
 	

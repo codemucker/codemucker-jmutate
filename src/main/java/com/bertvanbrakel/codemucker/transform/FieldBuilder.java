@@ -12,7 +12,7 @@ import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JAstFlattener;
 import com.bertvanbrakel.codemucker.ast.JField;
 
-public class FieldBuilder extends AbstractPatternBuilder<FieldBuilder> {
+public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 
 	public static enum RETURN {
 		VOID, TARGET, ARG;

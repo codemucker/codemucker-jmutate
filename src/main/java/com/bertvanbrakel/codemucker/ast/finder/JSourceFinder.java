@@ -24,6 +24,7 @@ import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.inject.Inject;
 
 /**
  * Utility class to find source files, java types, and methods
@@ -38,6 +39,7 @@ public class JSourceFinder {
 	private final JSourceFinderIgnoredCallback ignoredCallback;
 	private final JSourceFinderErrorCallback errorCallback;
 	
+	@Inject
 	private final ASTParser parser;
 
 	private final Matcher<JType> TYPE_MATCHER = new Matcher<JType>(){
@@ -89,6 +91,7 @@ public class JSourceFinder {
 		return new Builder();
 	}
 
+	@Inject
 	public JSourceFinder(
 			ASTParser parser
 			, Iterable<Root> classPathRoots

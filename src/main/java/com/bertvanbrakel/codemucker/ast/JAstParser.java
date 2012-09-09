@@ -28,7 +28,7 @@ import com.google.common.collect.Lists;
  */
 @NotThreadSafe
 public class JAstParser {
-	private static final int PAD_LINE_NUM = 4; 
+	private static final int LINE_NUM_PADDING = 4; 
 	
 	private final ASTParser parser;
 	private final boolean checkParse;
@@ -79,7 +79,7 @@ public class JAstParser {
 				return Objects.toStringHelper("Problem")
 					.add("msg", problem.getMessage())
 					.add("line", problem.getSourceLineNumber())
-					.add("char", problem.getSourceStart() + PAD_LINE_NUM)
+					.add("char", problem.getSourceStart() + LINE_NUM_PADDING)
 					//.add("to", problem.getSourceEnd() + PAD_LINE_NUM)
 					
 //					.add( "id", problem.getID() )
@@ -89,18 +89,18 @@ public class JAstParser {
 	}
 	
 	/**
-	 * Prepend the line number to each line. Lines are delimited by '\n' or '\n\r'
+	 * Prepend the line number to each line. Lines are delimited by '\n' or '\r\n'
 	 */
 	private String prependLineNumbers(CharSequence src){
 		StringBuilder sb = new StringBuilder();
-		Iterable<String> lines = Splitter.on(Pattern.compile("\n\r|\n")).split(src);
+		Iterable<String> lines = Splitter.on(Pattern.compile("\r\n|\n")).split(src);
 		int lineNum = 1;
 		for( String line:lines){
 			if( lineNum > 0){
 				sb.append('\n');
 			}
 			//sb.append('[');
-			sb.append(Strings.padEnd(Integer.toString(lineNum) + ".", PAD_LINE_NUM, ' '));
+			sb.append(Strings.padEnd(Integer.toString(lineNum) + ".", LINE_NUM_PADDING, ' '));
 			//sb.append(" ");
 			
 			sb.append(line);

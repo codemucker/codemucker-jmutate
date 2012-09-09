@@ -47,7 +47,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 		if(insert){
 			new NodeInserter()
 				.setNodeToInsert(method.getAstNode())
-				.setTarget(getTarget())
+				.setTargetToInsertInto(getTarget())
 				.setStrategy(getPlacementStrategy())
 				.insert();
 		}

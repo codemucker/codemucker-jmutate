@@ -1,0 +1,35 @@
+import com.acme.my.own.which.should.Stay;
+import static com.google.common.collect.Maps.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Collection;
+
+public class Bean {
+		private java.lang.String myField;
+		private java.util.Map<java.lang.Integer, java.util.Collection<java.lang.String>> myMap;
+
+		public java.lang.String getMyField() {
+			return myField;
+		}
+
+		public void setMyField(java.lang.String myField) {
+			this.myField = myField;
+		}
+
+		public java.util.Map<java.lang.Integer, java.util.Collection<java.lang.String>> getMyMap() {
+			return myMap;
+		}
+
+		public void setMyMap(java.util.Map<java.lang.Integer, java.util.Collection<java.lang.String>> myMap) {
+			this.myMap = myMap;
+		}
+		
+		private class BeanChild 
+		{
+			private java.util.Collection<String> childFields;
+		
+			public void setChildFields(java.util.Collection<String> childFields){
+				this.childFields = new java.util.ArrayList<String>(childFields);
+			}
+		}
+	}

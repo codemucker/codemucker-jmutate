@@ -49,7 +49,7 @@ public class BeanBuilderPatternTest {
 		t.pl("		private int myInt;");
 		t.pl("		private Collection<String> col;");
 		
-		t.pl("		public Builder setMyString(java.lang.String myString){");
+		t.pl("		public Builder setMyString(String myString){");
 		t.pl("			this.myString = myString;");
 		t.pl("			return this;");
 		t.pl("		}");
@@ -57,7 +57,7 @@ public class BeanBuilderPatternTest {
 		t.pl("			this.myInt = myInt;");
 		t.pl("			return this;");
 		t.pl("		}");
-		t.pl("		public Builder setCol(java.util.Collection<java.lang.String> col){");
+		t.pl("		public Builder setCol(Collection<String> col){");
 		t.pl("			this.col = col;");
 		t.pl("			return this;");
 		t.pl("		}");

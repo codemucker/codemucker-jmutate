@@ -13,7 +13,7 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
-public final class SetterMethodBuilder extends AbstractPatternBuilder<SetterMethodBuilder> {
+public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuilder> {
 
 	public static enum RETURN {
 		VOID, TARGET, ARG;

@@ -2,9 +2,6 @@ package com.bertvanbrakel.codemucker.transform;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -23,7 +20,7 @@ public class PlacementStrategies {
 		return new Builder();
 	}
 	
-	public PlacementStrategies(
+	private PlacementStrategies(
 			PlacementStrategy fieldStrategy
 			, PlacementStrategy ctorStrategy
             , PlacementStrategy methodStrategy
@@ -51,41 +48,45 @@ public class PlacementStrategies {
 		return typeStrategy;
 	}
 
-	private static Collection<Class<?>> col(Class<?>... types) {
-		return Arrays.asList(types);
-	}
-	
 	public static class Builder {
 
-		private static final PlacementStrategy DEFAULT_STRATEGY_FIELD = new StrategyBeforeAfterNodes(
-				col(FieldDeclaration.class),
-			    col(MethodDeclaration.class, TypeDeclaration.class, EnumDeclaration.class));
-		private static final PlacementStrategy DEFAULT_STRATEGY_METHOD = new StrategyBeforeAfterNodes(
-				col(MethodDeclaration.class, FieldDeclaration.class, EnumDeclaration.class),
-		        col(TypeDeclaration.class));
-		private static final PlacementStrategy DEFAULT_STRATEGY_CTOR = new StrategyBeforeAfterNodes(
-				col(FieldDeclaration.class, EnumDeclaration.class), 
-				col(TypeDeclaration.class));
-		private static final PlacementStrategy DEFAULT_STRATEGY_CLASS = new StrategyBeforeAfterNodes(
-				col(FieldDeclaration.class, MethodDeclaration.class, EnumDeclaration.class, TypeDeclaration.class),
-			    col());
+		private static final PlacementStrategy DEFAULT_STRATEGY_FIELD = StrategyBeforeAfterNodes.newBuilder()
+			.afterNodes(FieldDeclaration.class)
+			.beforeNodes(MethodDeclaration.class, TypeDeclaration.class, EnumDeclaration.class)
+			.build();	
+		private static final PlacementStrategy DEFAULT_STRATEGY_METHOD = StrategyBeforeAfterNodes.newBuilder()
+			.afterNodes(MethodDeclaration.class, FieldDeclaration.class, EnumDeclaration.class)
+		    .beforeNodes(TypeDeclaration.class)
+		    .build();
+		private static final PlacementStrategy DEFAULT_STRATEGY_CTOR = StrategyBeforeAfterNodes.newBuilder()
+			.afterNodes(FieldDeclaration.class, EnumDeclaration.class)
+			.beforeNodes(TypeDeclaration.class)
+			.build();
+		private static final PlacementStrategy DEFAULT_STRATEGY_CLASS = StrategyBeforeAfterNodes.newBuilder()
+			.afterNodes(FieldDeclaration.class, MethodDeclaration.class, EnumDeclaration.class, TypeDeclaration.class)
+			.build();
 
 		private PlacementStrategy fieldStrategy;
 		private PlacementStrategy methodStrategy;
 		private PlacementStrategy ctorStrategy;
 		private PlacementStrategy typeStrategy;
 
-		public Builder(){
-			setUseDefaultClassStrategy();
-			setUseDefaultCtorStrategy();
-			setUseDefaultFieldStrategy();
-			setUseDefaultMethodStrategy();
-		}
-		
+		private Builder(){
+		}		
+
 		public PlacementStrategies build(){
 			return new PlacementStrategies(fieldStrategy,ctorStrategy,methodStrategy,typeStrategy);
 		}
-		
+
+		public Builder setDefaults(){
+			setUseDefaultClassStrategy();
+			setUseDefaultCtorStrategy();
+			setUseDefaultFieldStrategy();
+			setUseDefaultMethodStrategy();	
+
+			return this;
+		}
+
 		public Builder setUseDefaultFieldStrategy() {
 			setFieldStrategy(DEFAULT_STRATEGY_FIELD);
 			return this;
@@ -125,6 +126,5 @@ public class PlacementStrategies {
 			this.typeStrategy = typeStrategy;
 			return this;
 		}
-		
 	}
 }

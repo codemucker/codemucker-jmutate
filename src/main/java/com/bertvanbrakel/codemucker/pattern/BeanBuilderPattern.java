@@ -14,6 +14,7 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JModifiers;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.transform.ImportCleanerTransform;
 import com.bertvanbrakel.codemucker.transform.InsertCtorTransform;
 import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
 import com.bertvanbrakel.codemucker.transform.InsertTypeTransform;
@@ -60,21 +61,26 @@ public class BeanBuilderPattern {
 	    
 		final JType builder = getOrCreateBuilderClass(target);
 		
-		ctxt.obtain(BuilderMutateMethodsPattern.class)
+		ctxt.obtain(BeanBuilderPropertiesPattern.class)
 			.setSingleFields(fields)
 			.setTarget(builder)
 			.apply();
 		
-	    ctxt.obtain(BeanFieldCtorPattern.class)
+	    ctxt.obtain(BeanBuilderFieldCtorPattern.class)
 	    	.setTarget(target)
 	    	.setSingleFields(fields)
-	    	.setUseQualaifiedName(useQualifiedName)
+	    	.setUseQualifiedName(useQualifiedName)
 	    	.apply();
 	    
-	    ctxt.obtain(BuilderBuildMethodPattern.class)
+	    ctxt.obtain(BeanBuilderBuildMethodPattern.class)
 	    	.setTarget(builder)
 	    	.setBean(target)
 	    	.setSingleFields(fields)
+	    	.apply();
+	    
+	    ctxt.obtain(ImportCleanerTransform.class)
+	    	.setAddMissingImports(true)
+	    	.setNodeToClean(target)
 	    	.apply();
 	}
 
@@ -140,7 +146,7 @@ public class BeanBuilderPattern {
 		return this;
 	}
 	
-	public static class BuilderBuildMethodPattern {
+	public static class BeanBuilderBuildMethodPattern {
 		@Inject
 		private MutationContext ctxt;
 		//rename, possibly not a bean ..?
@@ -184,22 +190,22 @@ public class BeanBuilderPattern {
 			return buildMethod;
 		}
 		
-		public BuilderBuildMethodPattern setCtxt(MutationContext ctxt) {
+		public BeanBuilderBuildMethodPattern setCtxt(MutationContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}
 		
-		public BuilderBuildMethodPattern setBean(JType bean) {
+		public BeanBuilderBuildMethodPattern setBean(JType bean) {
 			this.bean = bean;
 			return this;
 		}
 
-		public BuilderBuildMethodPattern setTarget(JType target) {
+		public BeanBuilderBuildMethodPattern setTarget(JType target) {
 			this.target = target;
 			return this;
 		}
 
-		public BuilderBuildMethodPattern setFields(Iterable<JField> fields) {
+		public BeanBuilderBuildMethodPattern setFields(Iterable<JField> fields) {
 			List<SingleJField> singles = newArrayList();
 			for(JField field:fields){
 				singles.addAll(field.asSingleFields());
@@ -208,18 +214,19 @@ public class BeanBuilderPattern {
 			return this;
 		}
 		
-		public BuilderBuildMethodPattern setSingleFields(Iterable<SingleJField> fields) {
+		public BeanBuilderBuildMethodPattern setSingleFields(Iterable<SingleJField> fields) {
 			this.fields = newArrayList(fields);
 			return this;
 		}
 	}
 
-	public static class BeanFieldCtorPattern {
+	public static class BeanBuilderFieldCtorPattern {
 		@Inject
 		private MutationContext ctxt;
 		private JType target;
 		private List<SingleJField> fields;
-		private Boolean useQualaifiedName = true;
+		private Boolean useQualifiedName = true;
+		
 		private void apply() {
 			checkNotNull("ctxt", ctxt);
 			checkNotNull("target", target);
@@ -247,7 +254,7 @@ public class BeanBuilderPattern {
 		        }
 		        comma = true;
 		       // if( field.getType().isParameterizedType())
-				if (useQualaifiedName) {
+				if (useQualifiedName) {
 					t.p(JavaNameUtil.getQualifiedName(field.getType()));
 				} else {
 					t.p(TypeUtil.toTypeSignature(field.getType()));
@@ -267,17 +274,17 @@ public class BeanBuilderPattern {
 	        return ctor;
 	    }
 
-		public BeanFieldCtorPattern setCtxt(MutationContext ctxt) {
+		public BeanBuilderFieldCtorPattern setCtxt(MutationContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}
 
-		public BeanFieldCtorPattern setTarget(JType target) {
+		public BeanBuilderFieldCtorPattern setTarget(JType target) {
 			this.target = target;
 			return this;
 		}
 
-		public BeanFieldCtorPattern setFields(Iterable<JField> fields) {
+		public BeanBuilderFieldCtorPattern setFields(Iterable<JField> fields) {
 			List<SingleJField> singles = newArrayList();
 			for(JField field:fields){
 				singles.addAll(field.asSingleFields());
@@ -286,19 +293,19 @@ public class BeanBuilderPattern {
 			return this;
 		}
 		
-		public BeanFieldCtorPattern setSingleFields(Iterable<SingleJField> fields) {
+		public BeanBuilderFieldCtorPattern setSingleFields(Iterable<SingleJField> fields) {
 			this.fields = newArrayList(fields);
 			return this;
 		}
 
-		public BeanFieldCtorPattern setUseQualaifiedName(Boolean useQualaifiedName) {
-			this.useQualaifiedName = useQualaifiedName;
+		public BeanBuilderFieldCtorPattern setUseQualifiedName(Boolean useQualaifiedName) {
+			this.useQualifiedName = useQualaifiedName;
 			return this;
 		}
 		
 	}
 
-    public static class BuilderMutateMethodsPattern {
+    public static class BeanBuilderPropertiesPattern {
     	
     	@Inject
     	private MutationContext ctxt;
@@ -323,17 +330,17 @@ public class BeanBuilderPattern {
 		    }
 	    }
 		
-		public BuilderMutateMethodsPattern setCtxt(MutationContext ctxt) {
+		public BeanBuilderPropertiesPattern setCtxt(MutationContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}
 
-		public BuilderMutateMethodsPattern setTarget(JType target) {
+		public BeanBuilderPropertiesPattern setTarget(JType target) {
 			this.target = target;
 			return this;
 		}
 
-		public BuilderMutateMethodsPattern setFields(Iterable<JField> fields) {
+		public BeanBuilderPropertiesPattern setFields(Iterable<JField> fields) {
 			List<SingleJField> singles = newArrayList();
 			for(JField field:fields){
 				singles.addAll(field.asSingleFields());
@@ -342,7 +349,7 @@ public class BeanBuilderPattern {
 			return this;
 		}
 		
-		public BuilderMutateMethodsPattern setSingleFields(Iterable<SingleJField> fields) {
+		public BeanBuilderPropertiesPattern setSingleFields(Iterable<SingleJField> fields) {
 			this.fields = newArrayList(fields);
 			return this;
 		}

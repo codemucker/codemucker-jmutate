@@ -22,7 +22,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class SimpleMutationContext implements MutationContext {
 
-	private final PlacementStrategies strategyProvider  = PlacementStrategies.newBuilder().build();
+	private final PlacementStrategies strategyProvider  = PlacementStrategies.newBuilder().setDefaults().build();
 	private final JAstParser parser = JAstParser.newBuilder().build();
 	private final boolean markGenerated;
 	private final Injector injector;
@@ -135,14 +135,18 @@ public class SimpleMutationContext implements MutationContext {
 	}
 	
 	@Override
-	public <T> T fill(T instance){
+	public <T> T injectDependencies(T instance){
 		injector.injectMembers(instance);
 		return instance;
 	}
 	
 	public static class Builder {
+	
 		private boolean markGenerated = false;
 
+		private Builder(){
+		}
+			
 		public SimpleMutationContext build(){
 			return new SimpleMutationContext(markGenerated);
 		}

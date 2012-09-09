@@ -26,7 +26,6 @@ public class FieldSplitterTransform {
 		return this;
 	}
 
-	
 	public FieldSplitterTransform setTarget(JType target) {
 		this.target = target;
 		return this;

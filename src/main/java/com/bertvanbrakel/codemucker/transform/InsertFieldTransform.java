@@ -48,7 +48,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 		}
 		if( insert){
 			new NodeInserter()
-                .setTarget(getTarget())
+                .setTargetToInsertInto(getTarget())
                 .setNodeToInsert(field.getAstNode())
                 //TODO:allow to override this? want to make this a non greedy class!
                 .setStrategy(getPlacementStrategy())

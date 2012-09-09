@@ -31,7 +31,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 			
 		}
 		if( !getTarget().getSimpleName().equals(ctor.getName())){
-			throw new CodemuckerException("Constructor method name should be the same as the target type. Expected name to be %s but as %s",getTarget().getSimpleName(),ctor.getName());
+			throw new CodemuckerException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),ctor.getName());
 		}
 		
 		FindResult<JMethod> found = getTarget().findMethodsMatching(JMethodMatchers.withNameAndArgSignature(ctor));
@@ -54,7 +54,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
     	}
     	if(insert){
     		new NodeInserter()
-                .setTarget(getTarget())
+                .setTargetToInsertInto(getTarget())
                 .setNodeToInsert(ctor.getAstNode())
                 .setStrategy(getPlacementStrategy())
                 .insert();

@@ -47,14 +47,10 @@ public class SourceAsserts {
     	boolean equals = false;
     	try {
     		equals = expected.subtreeMatch(matcher, actual);
+    	} catch( ComparisonFailure e){
+    		throw generateComparisonFailure(expected, actual, e);		
     	} catch( AssertionFailedError e){
-    		String expectFromAst = nodeToString(expected);
-    		String actualFromAst = nodeToString(actual);
-    		StringWriter sw = new StringWriter();
-    		PrintWriter pw = new PrintWriter(sw);
-    		e.printStackTrace(pw);
-    		
-    		throw new ComparisonFailure("Error comparing asts. Dont't match. Exception is " + sw, expectFromAst, actualFromAst);		
+    		throw generateComparisonFailure(expected, actual, e);	
     	}
     	if (!equals) {
     		String expectFromAst = nodeToString(expected);
@@ -64,6 +60,16 @@ public class SourceAsserts {
     	assertTrue("ast's don't match", equals);
     	//assertEquals(expectAst, actualAst);
     }
+
+	private static ComparisonFailure generateComparisonFailure(ASTNode expected, ASTNode actual, AssertionFailedError e) {
+		String expectFromAst = nodeToString(expected);
+		String actualFromAst = nodeToString(actual);
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		
+		return new ComparisonFailure("Error comparing asts. Dont't match. Exception is " + sw, expectFromAst, actualFromAst);
+	}
 
 	private static CompilationUnit getAstFromFileWithNoErrors(ClassPathResource resource) {
     	CompilationUnit cu = JSourceFile.fromResource(resource, JAstParser.newDefaultParser()).getCompilationUnit();
