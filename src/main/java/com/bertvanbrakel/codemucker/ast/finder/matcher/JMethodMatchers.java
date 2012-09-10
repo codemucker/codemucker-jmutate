@@ -81,7 +81,7 @@ public class JMethodMatchers extends LogicalMatchers {
 		return new Matcher<JMethod>() {
 			@Override
 			public boolean matches(JMethod found) {
-				return numArgMatcher.matches(Integer.valueOf(found.getAstNode().typeParameters().size()));
+				return numArgMatcher.matches(found.getAstNode().parameters().size());
 			}
 		};
 	}
