@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.bertvanbrakel.test.util.ProjectFinder;
 
+@Deprecated
 public class GenerationContext {
 
 	private File srcMainDir;

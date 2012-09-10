@@ -9,6 +9,7 @@ import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
 
 @NotThreadSafe
+@Deprecated
 public class BeanBuilderWriter extends AbstractBeanWriter {
 
 	private final String beanTypeName;

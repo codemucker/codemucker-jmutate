@@ -9,6 +9,7 @@ import com.bertvanbrakel.test.util.ClassNameUtil;
  * Write a bean as an interface
  */
 @NotThreadSafe
+@Deprecated
 public class BeanReadInterfaceWriter extends AbstractBeanWriter {
 
 	public BeanReadInterfaceWriter(String beanClassName) {

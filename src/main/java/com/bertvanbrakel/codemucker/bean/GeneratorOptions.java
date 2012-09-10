@@ -2,6 +2,7 @@ package com.bertvanbrakel.codemucker.bean;
 
 import com.bertvanbrakel.test.bean.BeanOptions;
 
+@Deprecated
 public class GeneratorOptions extends BeanOptions {
 
 	private boolean markeGeneratedClass = true;

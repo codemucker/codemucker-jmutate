@@ -6,6 +6,7 @@ import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.lang.interpolator.Interpolator;
 
 @NotThreadSafe
+@Deprecated
 public abstract class AbstractClassWriter {
 	
 	private StringBuilder sb = new StringBuilder();

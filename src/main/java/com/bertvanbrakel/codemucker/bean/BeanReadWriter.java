@@ -7,6 +7,7 @@ import com.bertvanbrakel.test.bean.BeanDefinition;
  * Write a bean with no setters, only getters
  */
 @NotThreadSafe
+@Deprecated
 public class BeanReadWriter extends AbstractBeanWriter {
 
 	public BeanReadWriter(String beanClassName) {

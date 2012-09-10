@@ -14,6 +14,7 @@ import com.bertvanbrakel.test.bean.PropertyDefinition;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
 @NotThreadSafe
+@Deprecated
 public abstract class AbstractBeanWriter extends AbstractClassWriter implements BeanGenerator {
 	
 	protected final BeanBuilderOptions options;

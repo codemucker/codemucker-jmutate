@@ -39,6 +39,7 @@ import com.bertvanbrakel.test.bean.PropertiesExtractor;
  * or void), akak all other non property methods)
  */
 @NotThreadSafe
+@Deprecated
 public class BeanBuilderGenerator {
 
 	private static final Logger LOG =  Logger.getLogger(BeanBuilderGenerator.class);

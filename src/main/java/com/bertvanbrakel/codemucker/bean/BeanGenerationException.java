@@ -1,5 +1,6 @@
 package com.bertvanbrakel.codemucker.bean;
 
+@Deprecated
 public class BeanGenerationException extends RuntimeException {
 
 	public BeanGenerationException(String message, Throwable cause, Object... args) {

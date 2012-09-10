@@ -1,5 +1,6 @@
 package com.bertvanbrakel.codemucker.bean;
 
+@Deprecated
 public class BeanBuilderOptions extends GeneratorOptions {
 
 	/**

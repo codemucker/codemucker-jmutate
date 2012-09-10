@@ -4,6 +4,7 @@ import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 
 @NotThreadSafe
+@Deprecated
 public class BeanWriteWriter extends AbstractBeanWriter {
 
 	public BeanWriteWriter(String beanClassName) {
