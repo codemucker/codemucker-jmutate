@@ -13,8 +13,6 @@
  *******************************************************************************/
 package com.bertvanbrakel.codemucker.ast;
 
-import static org.apache.commons.lang3.StringUtils.getCommonPrefix;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -112,8 +110,6 @@ import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.core.dom.WildcardType;
 import org.eclipse.jdt.internal.corext.dom.GenericVisitor;
-
-import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 
 public class JAstFlattener extends GenericVisitor {
 

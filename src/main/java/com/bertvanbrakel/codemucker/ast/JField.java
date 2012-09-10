@@ -7,7 +7,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;

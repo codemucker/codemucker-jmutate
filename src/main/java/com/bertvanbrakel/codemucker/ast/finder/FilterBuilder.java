@@ -141,4 +141,15 @@ public class FilterBuilder {
 		types.addExclude(matcher);
 		return this;
 	}
+	
+	public FilterBuilder addIncludeMethods(Matcher<JMethod> matcher){
+		methods.addInclude(matcher);
+		return this;
+	}
+	
+	public FilterBuilder addExcludeMethods(Matcher<JMethod> matcher){
+		methods.addExclude(matcher);
+		return this;
+	}
+	
 }
