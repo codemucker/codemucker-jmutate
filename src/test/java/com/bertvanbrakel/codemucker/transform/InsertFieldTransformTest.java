@@ -49,7 +49,7 @@ public class InsertFieldTransformTest {
 			.setTarget(after)
 			.setField(field)
 			.setPlacementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
-			.apply();
+			.transform();
 	
 		JType expectType = ctxt.newSourceTemplate()
 			.pl("package com.bertvanbrakel.codegen.bean;")

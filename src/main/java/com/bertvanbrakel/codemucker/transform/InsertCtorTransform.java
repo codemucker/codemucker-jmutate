@@ -21,7 +21,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 	}
 	
 	@Override
-	public void apply(){
+	public void transform(){
 		checkFieldsSet();
 		checkState(ctor != null, "missing constructor");
 		

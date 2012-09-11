@@ -56,7 +56,7 @@ public class FieldSplitterTransform {
 				.setName(single.getName())
 				.setInitializer(single.getInitilizer())
 				.build();	
-			inserter.setField(newField).apply();
+			inserter.setField(newField).transform();
 		}
 		//remove the old fields
 		field.getAstNode().delete();

@@ -64,7 +64,7 @@ public class JTypeMutator {
 			.setTarget(jType)
 			.setField(field)
 			.setPlacementStrategy(getStrategies().getFieldStrategy())
-			.apply();
+			.transform();
 	}
 
 	public void addMethod(String src){
@@ -83,7 +83,7 @@ public class JTypeMutator {
 		ctxt.obtain(InsertMethodTransform.class)
     		.setTarget(jType)
     		.setMethod(method)
-    		.apply();
+    		.transform();
 	}
 
 	public void addCtor(String src){
@@ -98,7 +98,7 @@ public class JTypeMutator {
     		.setTarget(jType)
     		.setCtor(ctor)
     		.setPlacementStrategy(getStrategies().getCtorStrategy())
-    		.apply();
+    		.transform();
 	}
 	
 	public void addType(String src){
@@ -113,7 +113,7 @@ public class JTypeMutator {
 			.setTarget(jType)
 			.setType(type)
 			.setPlacementStrategy(getStrategies().getTypeStrategy())
-			.apply();
+			.transform();
 	}
 	
 	private SourceTemplate newSourceTemplate(){

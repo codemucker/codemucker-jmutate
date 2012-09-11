@@ -7,8 +7,7 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.google.inject.Inject;
 
-public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTransform<S>> {
-
+public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTransform<S>> implements Transform {
 	private JType target;
 	
 	@Inject
@@ -22,7 +21,8 @@ public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTr
 		checkState(clashStrategy != null, "missing clash strategy");
 	}
 	
-	public abstract void apply();
+	@Override
+	public abstract void transform();
 	
 	public S setTarget(AbstractTypeDeclaration target) {
     	setTarget(new JType(target));

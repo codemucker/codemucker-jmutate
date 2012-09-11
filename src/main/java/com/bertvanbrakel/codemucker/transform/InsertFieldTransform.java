@@ -21,7 +21,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	}
 	
 	@Override
-	public void apply() {
+	public void transform() {
 		checkFieldsSet();
 		checkState(field != null,"missing field");
 		

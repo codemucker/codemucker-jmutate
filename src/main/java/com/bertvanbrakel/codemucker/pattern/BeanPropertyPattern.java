@@ -47,7 +47,7 @@ public class BeanPropertyPattern {
 		ctxt.obtain(InsertFieldTransform.class)
 			.setTarget(target)
 			.setField(field)
-			.apply();
+			.transform();
 	
 		InsertMethodTransform inserter = ctxt.obtain(InsertMethodTransform.class)
 			.setTarget(target)
@@ -62,7 +62,7 @@ public class BeanPropertyPattern {
 				.build();
 			inserter
 				.setMethod(setter)
-				.apply();
+				.transform();
 		}
 		if (createAccessor) {
 			JMethod getter = ctxt.obtain(GetterMethodBuilder.class)
@@ -71,7 +71,7 @@ public class BeanPropertyPattern {
 				.build();
 			inserter
 				.setMethod(getter)
-				.apply();
+				.transform();
 		}
 	}
 	

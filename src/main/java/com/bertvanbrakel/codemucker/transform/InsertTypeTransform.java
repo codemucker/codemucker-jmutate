@@ -22,7 +22,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 	}
 	
 	@Override
-	public void apply() {
+	public void transform() {
 		checkFieldsSet();
 		checkState(type != null, "missing type");
 		

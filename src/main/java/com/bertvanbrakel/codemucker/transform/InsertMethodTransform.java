@@ -21,7 +21,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 	}
 	
 	@Override
-	public void apply() {
+	public void transform() {
 		checkFieldsSet();
 		checkState(method != null, "missing method");
 		
