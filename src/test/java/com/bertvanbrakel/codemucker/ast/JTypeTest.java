@@ -108,7 +108,7 @@ public class JTypeTest {
 		t.println( "public WithInnerClass.Innerclass getC(){return null;}" );
 		t.println("}");
 	
-		JType type = t.asSourceFileWithFQN("MyTestClass").getMainType();
+		JType type = t.asSourceFileWithFullName("MyTestClass").getMainType();
 
 		assertEquals("foo.bar.MyTestClass", type.getFullName());
 	}

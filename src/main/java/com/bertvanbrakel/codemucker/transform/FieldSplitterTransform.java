@@ -7,7 +7,15 @@ import com.bertvanbrakel.codemucker.ast.JField.SingleJField;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.google.inject.Inject;
 /**
- * Split a multi field declaration into individual ones
+ * Split a multi field declaration into individual ones. E.g.
+ * 
+ * <pre>string a,b,c = "foo":</pre>
+ * 
+ * would be converted to 
+ * 
+ * <pre>
+ * string a = "";
+ * </pre>
  */
 public class FieldSplitterTransform {
 

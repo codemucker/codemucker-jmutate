@@ -94,11 +94,11 @@ public class JavaNameUtil {
 		if (name.isQualifiedName()) {
 			return name.getFullyQualifiedName();
 		} else {
-			return resolveFqn((SimpleName)name);
+			return resolveFullName((SimpleName)name);
 		}
 	}
 
-	/* package for testing */ static String resolveFqn(SimpleName name) {
+	/* package for testing */ static String resolveFullName(SimpleName name) {
 		CompilationUnit cu = getCompilationUnit(name);
 		String fqdn = resolveFqnFromDeclaredTypes(cu, name);
 		if (fqdn == null) {

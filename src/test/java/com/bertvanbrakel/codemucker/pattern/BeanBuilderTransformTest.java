@@ -24,7 +24,7 @@ public class BeanBuilderTransformTest {
 	
 	@Test
 	public void test_apply_pattern(){
-		FindResult<JType> types = findMatchingTypes();
+		FindResult<JType> types = findTypesToTransform();
 		JType type = types.getFirst();
 		
 		ctxt.obtain(BeanBuilderTransform.class)
@@ -69,7 +69,7 @@ public class BeanBuilderTransformTest {
 		return t.asJType();	
 	}
 
-	private FindResult<JType> findMatchingTypes() {
+	private FindResult<JType> findTypesToTransform() {
 	    FindResult<JType> found = JSourceFinder.newBuilder()
 			.setSearchPaths(SearchPathsBuilder.newBuilder()
 				.setIncludeClassesDir(false)
@@ -77,7 +77,7 @@ public class BeanBuilderTransformTest {
 			)
 			.setFilter(FilterBuilder.newBuilder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
-				.addIncludeTypes(JTypeMatchers.withFQN(TestBuilderBean.class))
+				.addIncludeTypes(JTypeMatchers.withFullName(TestBuilderBean.class))
 			)	
 			.build()
 			.findTypes();

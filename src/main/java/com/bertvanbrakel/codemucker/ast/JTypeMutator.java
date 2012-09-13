@@ -89,7 +89,7 @@ public class JTypeMutator {
 	public void addCtor(String src){
 		MethodDeclaration ctor = newSourceTemplate()
 			.setTemplate(src)
-			.asConstructor();
+			.asConstructorNode();
 		addCtor(ctor);
 	}
 	
@@ -104,7 +104,7 @@ public class JTypeMutator {
 	public void addType(String src){
 		AbstractTypeDeclaration type = newSourceTemplate()
 			.setTemplate(src)
-			.asType();
+			.asTypeNode();
 		addType(type);
 	}
 	

@@ -16,12 +16,12 @@ import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
-import com.bertvanbrakel.codemucker.transform.ImportCleanerTransform;
+import com.bertvanbrakel.codemucker.transform.FixImportsTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
-public class ImportCleanerTransformTest {
+public class FixImportsTransformTest {
 
 	MutationContext ctxt = new SimpleMutationContext();
 	
@@ -31,7 +31,7 @@ public class ImportCleanerTransformTest {
 		CompilationUnit expected = readTemplate("add_imports.after").asCompilationUnit();
 		
 		//do the actual import clean
-		ctxt.obtain(ImportCleanerTransform.class)
+		ctxt.obtain(FixImportsTransform.class)
 			.setNodeToClean(actual)
 			.apply();
 		
@@ -44,7 +44,7 @@ public class ImportCleanerTransformTest {
 		CompilationUnit expected = readTemplate("existing_imports_only.after").asCompilationUnit();
 		
 		//do the actual import clean
-		ctxt.obtain(ImportCleanerTransform.class)
+		ctxt.obtain(FixImportsTransform.class)
 			.setNodeToClean(actual)
 			.setAddMissingImports(false)
 			.apply();
@@ -77,7 +77,7 @@ public class ImportCleanerTransformTest {
 				.setIncludeTestDir(true)
 			)
 			.setFilter(FilterBuilder.newBuilder()
-				.addIncludeTypes(JTypeMatchers.withFQN(type))		
+				.addIncludeTypes(JTypeMatchers.withFullName(type))		
 			)
 			.build()
 			.findTypes()

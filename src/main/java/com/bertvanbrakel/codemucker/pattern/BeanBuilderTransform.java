@@ -14,7 +14,7 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JModifiers;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
-import com.bertvanbrakel.codemucker.transform.ImportCleanerTransform;
+import com.bertvanbrakel.codemucker.transform.FixImportsTransform;
 import com.bertvanbrakel.codemucker.transform.InsertCtorTransform;
 import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
 import com.bertvanbrakel.codemucker.transform.InsertTypeTransform;
@@ -80,7 +80,7 @@ public class BeanBuilderTransform implements Transform {
 	    	.setSingleFields(fields)
 	    	.apply();
 	    
-	    ctxt.obtain(ImportCleanerTransform.class)
+	    ctxt.obtain(FixImportsTransform.class)
 	    	.setAddMissingImports(true)
 	    	.setNodeToClean(target)
 	    	.apply();
@@ -272,7 +272,7 @@ public class BeanBuilderTransform implements Transform {
 	
 		    t.pl("}");
 
-		    final MethodDeclaration ctor = t.asConstructor();
+		    final MethodDeclaration ctor = t.asConstructorNode();
 	        return ctor;
 	    }
 
@@ -320,7 +320,7 @@ public class BeanBuilderTransform implements Transform {
 			checkNotNull("fields", fields);
 
 			//add the builder fields and setters
-		    final BeanPropertyPattern pattern = ctxt.obtain(BeanPropertyPattern.class)
+		    final BeanPropertyTransform pattern = ctxt.obtain(BeanPropertyTransform.class)
 		    	.setTarget(target)
 		    	.setCreateAccessor(false)
 		    	.setSetterReturn(SetterMethodBuilder.RETURN.TARGET);
@@ -328,7 +328,7 @@ public class BeanBuilderTransform implements Transform {
 		    for(final SingleJField field:fields){
 		    	pattern.setPropertyType(field.getType());
 				pattern.setPropertyName(field.getName());
-				pattern.apply();
+				pattern.transform();
 		    }
 	    }
 		

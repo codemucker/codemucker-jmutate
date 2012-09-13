@@ -24,10 +24,10 @@ import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
-public class BeanPropertyPatternTest {
+public class BeanPropertyTransformTest {
 
 	@Test
-	public void test_add_field_getter_setter() throws Exception {
+	public void testTransformNoPreExisting() throws Exception {
 		MutationContext ctxt = SimpleMutationContext.newBuilder()
 			.setMarkGenerated(true)
 			.build();
@@ -51,11 +51,11 @@ public class BeanPropertyPatternTest {
 			.pl("}")
 			.asJType();
 		
-		ctxt.obtain(BeanPropertyPattern.class)
+		ctxt.obtain(BeanPropertyTransform.class)
 			.setTarget(target)
 			.setPropertyName("myField")
 			.setPropertyType("String")
-			.apply();
+			.transform();
 		
 		SourceAsserts.assertAstsMatch(expectType.getCompilationUnit(),target.getCompilationUnit());
 	}

@@ -15,13 +15,14 @@ import com.bertvanbrakel.codemucker.transform.InsertFieldTransform;
 import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder;
+import com.bertvanbrakel.codemucker.transform.Transform;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 import com.google.inject.Inject;
 
 /**
  * Generate a bean field, access and mutator (getter and setter) on a given target
  */
-public class BeanPropertyPattern {
+public class BeanPropertyTransform implements Transform {
 
 	@Inject
 	private MutationContext ctxt;
@@ -33,7 +34,8 @@ public class BeanPropertyPattern {
 	private boolean createMutator = true;
 	private SetterMethodBuilder.RETURN setterReturn = SetterMethodBuilder.RETURN.VOID;
 	
-	public void apply(){
+	@Override
+	public void transform(){
 		checkNotNull("ctxt", ctxt);
 		checkNotNull("target", target);
 		checkNotBlank("propertyName", propertyName);
@@ -74,45 +76,45 @@ public class BeanPropertyPattern {
 				.transform();
 		}
 	}
-	
+	 
 	@Inject
-	public BeanPropertyPattern setCtxt(MutationContext ctxt) {
+	public BeanPropertyTransform setCtxt(MutationContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}
 
-	public BeanPropertyPattern setTarget(JType target) {
+	public BeanPropertyTransform setTarget(JType target) {
 		this.target = target;
 		return this;
 	}
 
-	public BeanPropertyPattern setPropertyName(String propertyName) {
+	public BeanPropertyTransform setPropertyName(String propertyName) {
 		this.propertyName = propertyName;
 		return this;
 	}
 
-	public BeanPropertyPattern setPropertyType(Type propertyType) {
+	public BeanPropertyTransform setPropertyType(Type propertyType) {
 		String typeAsString = JavaNameUtil.getQualifiedName(propertyType);
 		setPropertyType(typeAsString);
 		return this;
 	}
 
-	public BeanPropertyPattern setPropertyType(String propertyType) {
+	public BeanPropertyTransform setPropertyType(String propertyType) {
 		this.propertyType = propertyType;
 		return this;
 	}
 
-	public BeanPropertyPattern setCreateAccessor(boolean createAccessor) {
+	public BeanPropertyTransform setCreateAccessor(boolean createAccessor) {
     	this.createAccessor = createAccessor;
 		return this;
 	}
 
-	public BeanPropertyPattern setCreateMutator(boolean createMutator) {
+	public BeanPropertyTransform setCreateMutator(boolean createMutator) {
     	this.createMutator = createMutator;
 		return this;
 	}
 
-	public BeanPropertyPattern setSetterReturn(SetterMethodBuilder.RETURN setterReturn) {
+	public BeanPropertyTransform setSetterReturn(SetterMethodBuilder.RETURN setterReturn) {
     	this.setterReturn = setterReturn;
 		return this;
 	}

@@ -108,13 +108,13 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 			comma = true;
 			//sb.append(org.eclipse.jdt.internal.core.util.Util.getSignature(arg.getType()));
 			//String,int,Map,.......	
-			toNonGenericFQN(arg.getType(),sb);
+			toNonGenericFullName(arg.getType(),sb);
 		}
 		sb.append(")");
 	    return sb.toString();
     }
 	
-	private void toNonGenericFQN(Type t, StringBuilder sb){
+	private void toNonGenericFullName(Type t, StringBuilder sb){
 		if (t.isPrimitiveType()) {
 			sb.append(((PrimitiveType) t).getPrimitiveTypeCode().toString());
 		} else if (t.isSimpleType()) {
@@ -125,11 +125,11 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 			sb.append(JavaNameUtil.getQualifiedName(qt.getName()));
 		} else if (t.isArrayType()) {
 			ArrayType at = (ArrayType) t;
-			toNonGenericFQN(at.getComponentType(), sb);
+			toNonGenericFullName(at.getComponentType(), sb);
 			sb.append("[]");
 		} else if( t.isParameterizedType()){
 			ParameterizedType pt = (ParameterizedType)t;
-			toNonGenericFQN(pt.getType(),sb);
+			toNonGenericFullName(pt.getType(),sb);
 		} else {
 			throw new CodemuckerException("Currently don't know how to handle type:" + t);
 		}

@@ -31,7 +31,7 @@ public class JavaSourceFileTest {
 		String shortName = ClassNameUtil.extractShortClassNamePart(fqn);
 		SourceTemplate template = ctxt.newSourceTemplate();
 		template.println("public class " + shortName + "  {}");
-		return template.asSourceFileWithFQN(fqn);
+		return template.asSourceFileWithFullName(fqn);
 	}
 
 }

@@ -89,7 +89,7 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 		this.initializer = getContext()
 			.newSourceTemplate()
 			.p(value)
-			.asExpression();
+			.asExpressionNode();
 		return this;
 	}
 	

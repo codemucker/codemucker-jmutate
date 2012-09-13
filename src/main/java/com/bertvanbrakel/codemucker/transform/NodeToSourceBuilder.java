@@ -12,9 +12,9 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.google.inject.Inject;
 
 /**
- * Builds a method to generate the given node using a source template. This means, pass an existing source node (i.e
- * some existing code) and convert this into a method which when runs regenerates the original node. Useful when
- * wanting to take existing code and tweak it.
+ * Builds a method to generate the given node source using a source template. This means, pass an existing source node (i.e
+ * some existing code) and convert this into a method which when runs regenerates the original node source. Useful when
+ * wanting to take existing code and turn it into a template.
  */
 public class NodeToSourceBuilder {
 

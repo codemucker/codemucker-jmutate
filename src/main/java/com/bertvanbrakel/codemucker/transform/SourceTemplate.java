@@ -41,7 +41,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		this.parser = checkNotNull(parser,"expect parser");
 	}
 	
-	public Expression asExpression() {
+	public Expression asExpressionNode() {
 		return (Expression) parser.parseNode(interpolate(),ASTParser.K_EXPRESSION);
 	}
 
@@ -56,7 +56,11 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		return fieldNode;
 	}
 
-	public MethodDeclaration asConstructor(){
+	/**
+	 * Parse the current template as a constructor checking to ensure this is a syntatically valid ctor.
+	 * @return
+	 */
+	public MethodDeclaration asConstructorNode(){
 		//TODO:decide and sort out exception types to throw. Assertions or custom bean assertions?
 		TypeDeclaration type = toTempWrappingType();
 		assertEquals("Expected a single constructor", 1, type.getMethods().length);
@@ -72,6 +76,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		return new JMethod(asMethodNode());
 	}
 	
+	
 	public MethodDeclaration asMethodNode(){
 		TypeDeclaration type = toTempWrappingType();
 		assertEquals("Expected a single method", 1, type.getMethods().length);
@@ -79,11 +84,19 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		return method;
 	}
 	
+	/**
+	 * Parse the current template as a type and wrap as a JType
+	 * @return
+	 */
 	public JType asJType(){
-		return new JType(asType());
+		return new JType(asTypeNode());
 	}
 	
-	public AbstractTypeDeclaration asType() {
+	/**
+	 * Parse the current template as a type
+	 * @return
+	 */
+	public AbstractTypeDeclaration asTypeNode() {
 		CompilationUnit cu = asCompilationUnit();
 		if( cu.types().size() == 1){
 			return (AbstractTypeDeclaration) cu.types().get(0);
@@ -95,18 +108,26 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		throw new CodemuckerException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolate());
 	}
 
+	/**
+	 * Parse the current template as a compilation unit and use the package declarations in the current template, or 
+	 * the default package if there is none, to generate the 
+	 * base part of the full class name. Use the given simple name to  determine the name of the file within the package.
+	 * 
+	 * @param simpleName the file name. E.g. MyClass
+	 * @return
+	 */
 	public JSourceFile asSourceFileWithSimpleName(String simpleName) {
 		checkLegalIdentifier(simpleName);
 
 		CharSequence src = interpolate();
 		CompilationUnit cu = parser.parseCompilationUnit(src);
-		String fqn = simpleNameToFQN(simpleName, cu);
+		String fqn = simpleNameToFullNameIn(simpleName, cu);
 		ClassPathResource resource = newTmpResourceWithPath(fqnToRelPath(fqn));
 		
 		return new JSourceFile(resource, cu, src);
 	}
 
-	private static String simpleNameToFQN(String simpleName, CompilationUnit cu) {
+	private static String simpleNameToFullNameIn(String simpleName, CompilationUnit cu) {
 	    PackageDeclaration pkg = cu.getPackage();
 		if( pkg != null){
 			return pkg.getName().getFullyQualifiedName() + "." + simpleName;
@@ -114,7 +135,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 			return simpleName;
 		}
     }
-	public JSourceFile asSourceFileWithFQN(String fqn) {
+	public JSourceFile asSourceFileWithFullName(String fqn) {
 		return asSourceFileWithPath(fqnToRelPath(fqn));
 	}
 	
@@ -173,7 +194,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	}
 
 	private TypeDeclaration toTempWrappingType() {
-		String tmpTypeName = SourceTemplate.class.getSimpleName() + "__TmpWrapperKlass__";
+		String tmpTypeName = SourceTemplate.class.getSimpleName() + "__TmpCodeMuckerWrapperKlass__";
 		String src = "class " + tmpTypeName + "{" + interpolate()  + "}";
 		CompilationUnit cu = parser.parseCompilationUnit(src);
 		List<?> types = cu.types();

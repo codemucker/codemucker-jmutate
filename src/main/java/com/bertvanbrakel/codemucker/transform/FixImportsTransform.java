@@ -31,7 +31,7 @@ import com.google.inject.Inject;
  * Converts types in a class to short names and adds an import. Useful when generating code to use fully qualified
  * names in code modifications, then apply this after to insert correct imports,
  */
-public class ImportCleanerTransform {
+public class FixImportsTransform {
 
 	@Inject
 	private MutationContext ctxt;
@@ -153,22 +153,22 @@ public class ImportCleanerTransform {
 		return map;
 	}
 
-	public ImportCleanerTransform setNodeToClean(AstNodeProvider<?> provider) {
+	public FixImportsTransform setNodeToClean(AstNodeProvider<?> provider) {
 		setNodeToClean(provider.getAstNode());
 		return this;
 	}
 
-	public ImportCleanerTransform setNodeToClean(ASTNode node) {
+	public FixImportsTransform setNodeToClean(ASTNode node) {
 		this.node = node;
 		return this;
 	}
 
-	public ImportCleanerTransform setCtxt(MutationContext ctxt) {
+	public FixImportsTransform setCtxt(MutationContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}
 	
-	public ImportCleanerTransform setAddMissingImports(boolean b) {
+	public FixImportsTransform setAddMissingImports(boolean b) {
 		this.addMissingImports = b;
 		return this;
 	}

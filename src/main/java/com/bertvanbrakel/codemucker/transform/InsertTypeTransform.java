@@ -30,7 +30,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		List<JType> found = target.findChildTypesMatching(JTypeMatchers.withFQN(type.getSimpleName())).toList();
+		List<JType> found = target.findChildTypesMatching(JTypeMatchers.withFullName(type.getSimpleName())).toList();
 		if( !found.isEmpty()){
 			insert = false;
 			JType existingType = found.get(0);
