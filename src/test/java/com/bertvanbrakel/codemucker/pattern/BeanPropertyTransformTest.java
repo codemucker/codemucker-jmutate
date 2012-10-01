@@ -26,12 +26,41 @@ import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class BeanPropertyTransformTest {
 
-	@Test
-	public void testTransformNoPreExisting() throws Exception {
-		MutationContext ctxt = SimpleMutationContext.newBuilder()
+	private MutationContext ctxt = SimpleMutationContext.newBuilder()
 			.setMarkGenerated(true)
 			.build();
 		
+	@Test
+	public void testTransformNoPreExisting() throws Exception {
+		
+		//given
+		JType target = aBeanWithNoProperties(ctxt);
+		//when
+		whenAPropertyTransformIsApplied(ctxt, target);
+		//then
+		JType expectType = aBeanWithProperty(ctxt);
+    	SourceAsserts.assertRootAstsMatch(expectType,target);
+	}
+
+	private void whenAPropertyTransformIsApplied(MutationContext ctxt, JType target) {
+		ctxt.obtain(BeanPropertyTransform.class)
+			.setTarget(target)
+			.setPropertyName("myField")
+			.setPropertyType("String")
+			.transform();
+	}
+
+	private JType aBeanWithNoProperties(MutationContext ctxt) {
+		JType target = ctxt.newSourceTemplate()
+				.pl("package com.bertvanbrakel.codegen.bean;")
+				.pl("import " + BeanProperty.class.getName() + ";")
+				.pl( "public class TestBeanModify {")
+				.pl("}")
+				.asJType();
+		return target;
+	}
+
+	private JType aBeanWithProperty(MutationContext ctxt) {
 		JType expectType = ctxt.newSourceTemplate()
     		.pl("package com.bertvanbrakel.codegen.bean;")
     		.pl("import " + BeanProperty.class.getName() + ";")
@@ -43,20 +72,8 @@ public class BeanPropertyTransformTest {
     		//.println( "public String getMyField(){ return this.myField;}" )
     		.pl("}")
     		.asJType();
-    	
-		JType target = ctxt.newSourceTemplate()
-			.pl("package com.bertvanbrakel.codegen.bean;")
-			.pl("import " + BeanProperty.class.getName() + ";")
-			.pl( "public class TestBeanModify {")
-			.pl("}")
-			.asJType();
-		
-		ctxt.obtain(BeanPropertyTransform.class)
-			.setTarget(target)
-			.setPropertyName("myField")
-			.setPropertyType("String")
-			.transform();
-		
-		SourceAsserts.assertAstsMatch(expectType.getCompilationUnit(),target.getCompilationUnit());
+		return expectType;
 	}
+
+
 }

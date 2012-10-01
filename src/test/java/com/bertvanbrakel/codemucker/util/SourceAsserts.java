@@ -31,6 +31,10 @@ public class SourceAsserts {
     	assertAstsMatch(expectCu,actualCu);
     }
 
+    public static <T extends ASTNode> void assertRootAstsMatch(AstNodeProvider<T> expected, AstNodeProvider<T> actual) {
+		assertRootAstsMatch(expected.getAstNode(),actual.getAstNode());
+	}
+    
     /**
      * Assert the Nodes provided look the same. Formatting is ignored
      */
@@ -38,6 +42,9 @@ public class SourceAsserts {
     	assertAstsMatch(expected.getAstNode(),actual.getAstNode());
     }
 
+	public static void assertRootAstsMatch(ASTNode expected, ASTNode actual) {
+		assertAstsMatch(expected.getRoot(),actual.getRoot());
+	}
 	/**
      * Assert the given Nodes look the same. Formatting is ignored
      */
