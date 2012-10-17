@@ -8,9 +8,9 @@ import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.IntegerMatchers;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JMethodMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.matcher.IntegerMatchers;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 
 public class BeanBuilderPatternFinderTest {

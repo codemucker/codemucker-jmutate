@@ -1,4 +1,4 @@
-package com.bertvanbrakel.codemucker.ast.finder.matcher;
+package com.bertvanbrakel.codemucker.ast.matcher;
 
 import java.util.regex.Pattern;
 

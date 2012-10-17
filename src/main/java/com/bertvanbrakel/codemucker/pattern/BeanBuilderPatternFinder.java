@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.pattern;
 
 import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.Transform;
 import com.google.inject.Inject;

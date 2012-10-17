@@ -1,4 +1,4 @@
-package com.bertvanbrakel.codemucker.ast.finder.matcher;
+package com.bertvanbrakel.codemucker.ast.matcher;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.codemucker.matcher.IntegerMatchers;
 import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 

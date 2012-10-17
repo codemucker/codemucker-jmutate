@@ -9,7 +9,7 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 

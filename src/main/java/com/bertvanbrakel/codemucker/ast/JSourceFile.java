@@ -20,7 +20,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.matcher.Matcher;

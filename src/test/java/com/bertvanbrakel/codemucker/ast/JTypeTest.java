@@ -12,7 +12,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JMethodMatchers;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.lang.matcher.IsCollectionOf;

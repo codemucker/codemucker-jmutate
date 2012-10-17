@@ -5,7 +5,7 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JFieldMatchers;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class FieldSplitterTransformTest {

@@ -8,7 +8,7 @@ import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JMethodMatchers;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 

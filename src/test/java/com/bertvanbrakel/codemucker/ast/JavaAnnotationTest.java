@@ -13,7 +13,7 @@ import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JSourceMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JSourceMatchers;
 
 public class JavaAnnotationTest {
 

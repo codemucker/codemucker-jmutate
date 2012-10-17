@@ -21,9 +21,9 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.FindResultIterableBacked;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JFieldMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JMethodMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 import com.bertvanbrakel.test.finder.matcher.Matcher;

@@ -1,10 +1,11 @@
-package com.bertvanbrakel.codemucker.ast.finder.matcher;
+package com.bertvanbrakel.codemucker.ast.matcher;
 
 import java.lang.annotation.Annotation;
 import java.util.regex.Pattern;
 
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JMethod;
+import com.bertvanbrakel.codemucker.matcher.IntegerMatchers;
 import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.TestUtils;

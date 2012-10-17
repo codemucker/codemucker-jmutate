@@ -8,7 +8,7 @@ import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JFieldMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JFieldMatchers;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 

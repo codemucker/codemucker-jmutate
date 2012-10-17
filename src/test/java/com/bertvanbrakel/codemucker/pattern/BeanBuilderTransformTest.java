@@ -12,7 +12,7 @@ import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
-import com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
 import com.bertvanbrakel.codemucker.pattern.BeanBuilderTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
@@ -27,12 +27,16 @@ public class BeanBuilderTransformTest {
 		FindResult<JType> types = findTypesToTransform();
 		JType type = types.getFirst();
 		
-		ctxt.obtain(BeanBuilderTransform.class)
-			.setTarget(type)
-			.transform();
+		whenTransformAppliedTo(type);
 		
 	    JType expected = generateExpect(ctxt);
 	    SourceAsserts.assertAstsMatch(expected, type);
+	}
+
+	private void whenTransformAppliedTo(JType type) {
+		ctxt.obtain(BeanBuilderTransform.class)
+			.setTarget(type)
+			.transform();
 	}
 	
 	public JType generateExpect(MutationContext ctxt){

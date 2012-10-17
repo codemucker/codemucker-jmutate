@@ -1,4 +1,4 @@
-package com.bertvanbrakel.codemucker.ast.finder.matcher;
+package com.bertvanbrakel.codemucker.matcher;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

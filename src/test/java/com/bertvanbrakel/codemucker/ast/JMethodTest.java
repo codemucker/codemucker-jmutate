@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static com.bertvanbrakel.codemucker.ast.finder.matcher.JMethodMatchers.withMethodNamed;
-import static com.bertvanbrakel.codemucker.ast.finder.matcher.JTypeMatchers.withFullName;
+import static com.bertvanbrakel.codemucker.ast.matcher.JMethodMatchers.withMethodNamed;
+import static com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers.withFullName;
 import static junit.framework.Assert.assertEquals;
 
 import java.util.Collection;
