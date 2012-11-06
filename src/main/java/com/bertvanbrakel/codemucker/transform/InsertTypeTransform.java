@@ -9,7 +9,7 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -30,7 +30,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		List<JType> found = target.findChildTypesMatching(JTypeMatchers.withFullName(type.getSimpleName())).toList();
+		List<JType> found = target.findChildTypesMatching(AType.withFullName(type.getSimpleName())).toList();
 		if( !found.isEmpty()){
 			insert = false;
 			JType existingType = found.get(0);

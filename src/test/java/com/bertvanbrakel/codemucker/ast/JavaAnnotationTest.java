@@ -13,7 +13,7 @@ import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
-import com.bertvanbrakel.codemucker.ast.matcher.JSourceMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.ASourceFile;
 
 public class JavaAnnotationTest {
 
@@ -25,7 +25,7 @@ public class JavaAnnotationTest {
 				.setIncludeTestDir(true)
 			)
 			.setFilter(FilterBuilder.newBuilder()
-				.setIncludeSource(JSourceMatchers.withName(JavaAnnotationTest.class))
+				.setIncludeSource(ASourceFile.withName(JavaAnnotationTest.class))
 			)
 			.build();
 	

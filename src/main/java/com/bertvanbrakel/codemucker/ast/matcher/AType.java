@@ -13,7 +13,7 @@ import com.google.common.base.Strings;
 /**
  * Provides convenience static methods for creating {@link Matcher<JType>} matchers
  */
-public class JTypeMatchers extends LogicalMatchers {
+public class AType extends LogicalMatchers {
 
 	private static final Matcher<JType> ANONYMOUS_MATCHER = new Matcher<JType>() {
 		@Override
@@ -50,7 +50,7 @@ public class JTypeMatchers extends LogicalMatchers {
 		}
 	};
 	
-	private JTypeMatchers() {
+	private AType() {
     	//prevent instantiation
 	}
 	

@@ -21,9 +21,9 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.FindResultIterableBacked;
-import com.bertvanbrakel.codemucker.ast.matcher.JFieldMatchers;
-import com.bertvanbrakel.codemucker.ast.matcher.JMethodMatchers;
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AField;
+import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
@@ -68,7 +68,7 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	}
 
 	public FindResult<JType> findDirectChildTypes(){
-		return findDirectChildTypesMatching(JTypeMatchers.any());
+		return findDirectChildTypesMatching(AType.any());
 	}
 	
 	/**
@@ -105,7 +105,7 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	 */
 	public List<JType> findAllChildTypes() {
 		List<JType> found = newArrayList();
-		findChildTypesMatching(this, JTypeMatchers.any(), found);
+		findChildTypesMatching(this, AType.any(), found);
 		return found;
 	}
 	
@@ -126,7 +126,7 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 	}
 
 	public FindResult<JField> findAllFields(){
-		return findFieldsMatching(JFieldMatchers.any());
+		return findFieldsMatching(AField.any());
 	}
 	
 	public FindResult<JField> findFieldsMatching(Matcher<JField> matcher) {
@@ -158,7 +158,7 @@ public class JType implements JAnnotatable, AstNodeProvider<AbstractTypeDeclarat
 
 	public FindResult<JMethod> findAllJMethods() {
 		List<JMethod> found = newArrayList();
-		findMethodsMatching(JMethodMatchers.any(), found);
+		findMethodsMatching(AMethod.any(), found);
 		return FindResultIterableBacked.from(found);
 	}
 	

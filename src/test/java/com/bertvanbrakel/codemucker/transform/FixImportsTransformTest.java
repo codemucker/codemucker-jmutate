@@ -15,7 +15,7 @@ import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.transform.FixImportsTransform;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
@@ -77,7 +77,7 @@ public class FixImportsTransformTest {
 				.setIncludeTestDir(true)
 			)
 			.setFilter(FilterBuilder.newBuilder()
-				.addIncludeTypes(JTypeMatchers.withFullName(type))		
+				.addIncludeTypes(AType.withFullName(type))		
 			)
 			.build()
 			.findTypes()

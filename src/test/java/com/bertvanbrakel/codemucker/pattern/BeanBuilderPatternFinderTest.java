@@ -8,9 +8,9 @@ import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
-import com.bertvanbrakel.codemucker.ast.matcher.JMethodMatchers;
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
-import com.bertvanbrakel.codemucker.matcher.IntegerMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
+import com.bertvanbrakel.codemucker.matcher.AInt;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 
 public class BeanBuilderPatternFinderTest {
@@ -30,7 +30,7 @@ public class BeanBuilderPatternFinderTest {
 					.setFilter(FilterBuilder.newBuilder()
 						//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 						//TODO:have matchers return confidences?? then finder can add that to results..
-						.addIncludeTypes(JTypeMatchers.withFullName("*Builder"))
+						.addIncludeTypes(AType.withFullName("*Builder"))
 						//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 					)	
 			.build()
@@ -42,7 +42,7 @@ public class BeanBuilderPatternFinderTest {
 			System.out.println( type.getFullName());
 			
 			//builds what???
-			FindResult<JMethod> methods = type.findMethodsMatching(JMethodMatchers.withMethodNamed("build*"));
+			FindResult<JMethod> methods = type.findMethodsMatching(AMethod.withMethodNamed("build*"));
 			for (JMethod method : methods) {
 				//could do checks on the build method here. COntains args? maybe not good?
 				//return null? another warning
@@ -55,9 +55,9 @@ public class BeanBuilderPatternFinderTest {
 	@Test
 	public void TestFindLongCtorClasses() {
 		Matcher<JMethod> methodMatcher =
-			JMethodMatchers.all(
-						JMethodMatchers.isConstructor(), 
-						JMethodMatchers.withNumArgs(IntegerMatchers.greaterOrEqualTo(3))
+			AMethod.all(
+				AMethod.isConstructor(), 
+				AMethod.withNumArgs(AInt.greaterOrEqualTo(3))
 			);
 		Iterable<JMethod> found = JSourceFinder.newBuilder()
 				.setSearchPaths(SearchPathsBuilder.newBuilder()
@@ -86,5 +86,8 @@ public class BeanBuilderPatternFinderTest {
 		//where the fields are modifiable via public methods (or their call chains)
 		 //(so find all caller of this method, and their callers etc...)
 		// -->all references to this class, and a method call is made, object db?
+	
+	
+	
 	}
 }

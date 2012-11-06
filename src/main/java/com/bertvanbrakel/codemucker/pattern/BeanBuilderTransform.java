@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JField.SingleJField;
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JModifiers;
 import com.bertvanbrakel.codemucker.ast.JType;
@@ -110,7 +110,7 @@ public class BeanBuilderTransform implements Transform {
 	
     private JType getOrCreateBuilderClass(final JType type) {
 	    JType builder;
-	    final List<JType> builders = type.findDirectChildTypesMatching(JTypeMatchers.withSimpleName(builderClassName)).toList();
+	    final List<JType> builders = type.findDirectChildTypesMatching(AType.withSimpleName(builderClassName)).toList();
 		if (builders.size() == 1) {
 	    	builder = builders.get(0);
 		} else if (builders.size() == 0) {
@@ -126,7 +126,7 @@ public class BeanBuilderTransform implements Transform {
 	    	//we want a handle to the inserted nodes. These are copied on insert so adding anything to the
 	    	//original node doesn't make it in. Hence we need to lookup the newly created
 	    	//builder
-	    	builder = type.findDirectChildTypesMatching(JTypeMatchers.withSimpleName(builderClassName)).toList().get(0);
+	    	builder = type.findDirectChildTypesMatching(AType.withSimpleName(builderClassName)).toList().get(0);
 	    } else {
 	    	throw new CodemuckerException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
 	    }

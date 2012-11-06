@@ -5,7 +5,7 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
-import com.bertvanbrakel.codemucker.ast.matcher.JFieldMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AField;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class FieldSplitterTransformTest {
@@ -21,7 +21,7 @@ public class FieldSplitterTransformTest {
 			.pl("}")
 			.asJType();
 		
-		JField field = actual.findFieldsMatching(JFieldMatchers.withName("a")).getFirst();
+		JField field = actual.findFieldsMatching(AField.withName("a")).getFirst();
 		
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
@@ -48,7 +48,7 @@ public class FieldSplitterTransformTest {
 			.pl("}")
 			.asJType();
 		
-		JField field = actual.findFieldsMatching(JFieldMatchers.withName("a")).getFirst();
+		JField field = actual.findFieldsMatching(AField.withName("a")).getFirst();
 		
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)

@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.pattern;
 
 import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.Transform;
 import com.google.inject.Inject;
@@ -15,7 +15,7 @@ public class BeanBuilderPatternFinder {
 		return FilterBuilder.newBuilder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.addIncludeTypes(JTypeMatchers.withFullName("*Builder"));
+				.addIncludeTypes(AType.withFullName("*Builder"));
 			
 	}
 	

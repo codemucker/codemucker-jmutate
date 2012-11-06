@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
 
 public class JavaSourceFinderTest {
 
@@ -23,7 +23,7 @@ public class JavaSourceFinderTest {
 				.setIncludeTestDir(true)
 			)
 			.setFilter(FilterBuilder.newBuilder()
-				.addIncludeTypes(JTypeMatchers.withAnnotation(MyAnnotation.class))
+				.addIncludeTypes(AType.withAnnotation(MyAnnotation.class))
 			)
 			.build();
 		boolean found = false;

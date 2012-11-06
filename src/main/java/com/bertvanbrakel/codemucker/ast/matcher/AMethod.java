@@ -5,12 +5,12 @@ import java.util.regex.Pattern;
 
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JMethod;
-import com.bertvanbrakel.codemucker.matcher.IntegerMatchers;
+import com.bertvanbrakel.codemucker.matcher.AInt;
 import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.TestUtils;
 
-public class JMethodMatchers extends LogicalMatchers {
+public class AMethod extends LogicalMatchers {
 
 	/**
 	 * Return a matcher which matches using the given ant style method name expression
@@ -75,7 +75,7 @@ public class JMethodMatchers extends LogicalMatchers {
 	}
 
 	public static Matcher<JMethod> withNumArgs(final int numArgs) {
-		return withNumArgs(IntegerMatchers.equalTo(numArgs));
+		return withNumArgs(AInt.equalTo(numArgs));
 	}
 
 	public static Matcher<JMethod> withNumArgs(final Matcher<Integer> numArgMatcher) {

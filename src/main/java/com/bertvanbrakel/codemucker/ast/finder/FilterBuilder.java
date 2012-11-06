@@ -7,8 +7,8 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder.JSourceFinderFilterCallback;
-import com.bertvanbrakel.codemucker.ast.matcher.JSourceMatchers;
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.ASourceFile;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.matcher.IncludeExcludeMatcherBuilder;
@@ -88,12 +88,12 @@ public class FilterBuilder {
 	}
 
 	public FilterBuilder setAssignableTo(Class<?> superclass) {
-		setIncludeSource(JSourceMatchers.assignableTo(superclass));
+		setIncludeSource(ASourceFile.assignableTo(superclass));
 		return this;
 	}
 	
 	public <T extends Annotation> FilterBuilder withAnnotation(Class<T> annotation){
-		setIncludeSource(JSourceMatchers.withAnnotation(annotation));
+		setIncludeSource(ASourceFile.withAnnotation(annotation));
 		return this;
 	}
 	
@@ -103,17 +103,17 @@ public class FilterBuilder {
 	}
 	
 	public FilterBuilder setExcludeEnum() {
-		setExcludeSource(JSourceMatchers.includeEnum());
+		setExcludeSource(ASourceFile.includeEnum());
 		return this;
 	}
 
 	public FilterBuilder setExcludeAnonymous() {
-		setExcludeSource(JSourceMatchers.includeAnonymous());
+		setExcludeSource(ASourceFile.includeAnonymous());
 		return this;
 	}
 
 	public FilterBuilder setExcludeInterfaces() {
-		setExcludeSource(JSourceMatchers.includeInterfaces());
+		setExcludeSource(ASourceFile.includeInterfaces());
 		return this;
 	}
 
@@ -123,12 +123,12 @@ public class FilterBuilder {
 	}
 	
 	public FilterBuilder addIncludeTypesWithMethods(Matcher<JMethod> matcher){
-		addIncludeTypes(JTypeMatchers.withMethod(matcher));
+		addIncludeTypes(AType.withMethod(matcher));
 		return this;
 	}
 	
 	public FilterBuilder addExcludeTypesWithMethods(Matcher<JMethod> matcher){
-		addExcludeTypes(JTypeMatchers.withMethod(matcher));
+		addExcludeTypes(AType.withMethod(matcher));
 		return this;
 	}
 	

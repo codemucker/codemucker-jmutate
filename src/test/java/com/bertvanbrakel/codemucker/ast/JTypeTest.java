@@ -12,7 +12,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.matcher.JMethodMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.lang.matcher.IsCollectionOf;
@@ -84,7 +84,7 @@ public class JTypeTest {
 		t.println( "public void setA(){}" );
 		t.println("}");
 
-		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(JMethodMatchers.withMethodNamed("get*"));
+		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.withMethodNamed("get*"));
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("getA","getB"));		
 		
 		MatcherAssert.assertThat(foundMethods.toList(), matcher);
@@ -124,7 +124,7 @@ public class JTypeTest {
 		t.println( "public void someMethod(){}" );
 		t.println("}");
 
-		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(JMethodMatchers.isConstructor());
+		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.isConstructor());
 		
 		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("MyTestClass","MyTestClass"));		
 		

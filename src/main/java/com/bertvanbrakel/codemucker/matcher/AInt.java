@@ -7,7 +7,7 @@ import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.google.common.base.Objects;
 
 
-public class IntegerMatchers extends LogicalMatchers {
+public class AInt extends LogicalMatchers {
 
 	public static Matcher<Integer> equalTo(final int require) {
 		return new Matcher<Integer>() {

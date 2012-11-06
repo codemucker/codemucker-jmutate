@@ -11,7 +11,7 @@ import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.TestUtils;
 
-public class JFieldMatchers extends LogicalMatchers  {
+public class AField extends LogicalMatchers  {
 
 	private static final Matcher<JField> MATCH_ANY  = new Matcher<JField>() {
 		

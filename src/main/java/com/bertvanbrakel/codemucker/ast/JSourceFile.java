@@ -20,7 +20,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
-import com.bertvanbrakel.codemucker.ast.matcher.JTypeMatchers;
+import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
@@ -205,7 +205,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 
 	public List<JType> findAllTypes(){
-		return internalFindTypesMatching(JTypeMatchers.any());
+		return internalFindTypesMatching(AType.any());
 	}
 	
 	public List<JType> findTypesMatching(Matcher<JType> matcher){
