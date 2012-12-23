@@ -30,25 +30,44 @@ import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.util.ProjectFinder;
 import com.google.inject.Inject;
 
+/**
+ * Template which exposes various parse methods to convert the template text into various Java ast nodes
+ */
 @NotThreadSafe
 public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 {
 	@Inject
 	private final JAstParser parser;
 	
+	/**
+	 * Used by the DI container to set the default
+	 * @param parser
+	 */
 	@Inject
 	public SourceTemplate(JAstParser parser){
 		this.parser = checkNotNull(parser,"expect parser");
 	}
 	
+	/**
+	 * Try to parse the template text as an expression
+	 * @return
+	 */
 	public Expression asExpressionNode() {
 		return (Expression) parser.parseNode(interpolate(),ASTParser.K_EXPRESSION);
 	}
 
+	/**
+	 * Try to parse the template text as a field and wrap as a JField
+	 * @return
+	 */
 	public JField asJField(){
 		return new JField(asFieldNode());
 	}
 	
+	/**
+	 * Try to parse the template text as a field
+	 * @return
+	 */
 	public FieldDeclaration asFieldNode(){
 		TypeDeclaration type = toTempWrappingType();
 		assertEquals("expected a single field", 1, type.getFields().length);
@@ -57,7 +76,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	}
 
 	/**
-	 * Parse the current template as a constructor checking to ensure this is a syntatically valid ctor.
+	 * Parse the current template as a constructor checking to ensure this is a syntactically valid constructor.
 	 * @return
 	 */
 	public MethodDeclaration asConstructorNode(){
@@ -72,11 +91,19 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		return method;
 	}
 	
+	/**
+	 * Try to parse the template text as a method and wrap as a JMethod
+	 * 
+	 * @return
+	 */
 	public JMethod asJMethod(){
 		return new JMethod(asMethodNode());
 	}
 	
-	
+	/**
+	 * Try to parse the template text as a method
+	 * @return
+	 */
 	public MethodDeclaration asMethodNode(){
 		TypeDeclaration type = toTempWrappingType();
 		assertEquals("Expected a single method", 1, type.getMethods().length);
@@ -135,6 +162,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 			return simpleName;
 		}
     }
+	
 	public JSourceFile asSourceFileWithFullName(String fqn) {
 		return asSourceFileWithPath(fqnToRelPath(fqn));
 	}
@@ -143,6 +171,13 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		return  fqn.replace('.','/');
 	}
 
+	/**
+	 * Try to parse the template text as a compilation unit and save to the given relative path as a 
+	 * java source file. A temporary resource root directory is used.
+	 * 
+	 * @param relPath
+	 * @return
+	 */
 	public JSourceFile asSourceFileWithPath(String relPath) {
 		relPath = checkRelPath(relPath) + ".java";
 		
@@ -203,6 +238,11 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		return type;
 	}
 
+	/**
+	 * Try to parse the template text as a compilation unit
+	 * 
+	 * @return
+	 */
 	public CompilationUnit asCompilationUnit() {
 		return parser.parseCompilationUnit(interpolate());
 	}

@@ -53,16 +53,30 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 		}
 	}
 
+	/**
+	 * Used by the DI container to set the default
+	 */
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.METHOD) PlacementStrategy strategy) {
 	    setPlacementStrategy(strategy);
     }
 
+	
+	/**
+	 * The method to transform
+	 * @param method
+	 * @return
+	 */
 	public InsertMethodTransform setMethod(MethodDeclaration method) {
     	setMethod(new JMethod(method));
     	return this;
 	}
 	
+	/**
+	 * The method to transform
+	 * @param newMethod
+	 * @return
+	 */
 	public InsertMethodTransform setMethod(JMethod newMethod) {
     	this.method = newMethod;
     	return this;

@@ -61,16 +61,31 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
     	}
     }
 
+	/**
+	 * Used by the DI container to set the default
+	 */
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.CTOR) PlacementStrategy strategy) {
 	    setPlacementStrategy(strategy);
     }
 
+	/**
+	 * The constructor to transform
+	 * 
+	 * @param constructor
+	 * @return
+	 */
 	public InsertCtorTransform setCtor(MethodDeclaration constructor) {
     	setCtor(new JMethod(constructor));
     	return this;
 	}
 	
+	/**
+	 * The constructor to transform
+	 * 
+	 * @param constructor
+	 * @return
+	 */
 	public InsertCtorTransform setCtor(JMethod constructor) {
     	this.ctor = constructor;
     	return this;

@@ -44,7 +44,7 @@ public class GetterMethodBuilderTest {
 	@Test
 	public void test_non_default() throws Exception {
 		JMethod actual = ctxt.obtain(GetterMethodBuilder.class)
-			.setAccess(JAccess.PROTECTED)
+			.setMethodAccess(JAccess.PROTECTED)
 			.setMarkedGenerated(true)
 			.setFieldName("myField")
 			.setFieldType("my.org.Foo")

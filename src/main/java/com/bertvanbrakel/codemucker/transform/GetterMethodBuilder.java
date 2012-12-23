@@ -67,7 +67,7 @@ public final class GetterMethodBuilder extends AbstractBuilder<GetterMethodBuild
 		return this;
 	}
 
-	public GetterMethodBuilder setAccess(JAccess access) {
+	public GetterMethodBuilder setMethodAccess(JAccess access) {
     	this.access  = access;
     	return this;
     }

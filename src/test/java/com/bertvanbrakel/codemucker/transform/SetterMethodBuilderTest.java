@@ -31,8 +31,8 @@ public class SetterMethodBuilderTest {
 	public void test_create_with_defaults() throws Exception {
 		
 		JField actual = ctxt.obtain(FieldBuilder.class)
-			.setType("String")
-			.setName("myField")
+			.setFieldType("String")
+			.setFieldName("myField")
 			.build();
 		
 		JField expect = ctxt.newSourceTemplate()
@@ -46,11 +46,11 @@ public class SetterMethodBuilderTest {
 	public void test_create_non_defaults() throws Exception {
 		
 		JField actual = ctxt.obtain(FieldBuilder.class)
-			.setAccess(JAccess.PUBLIC)
+			.setFieldAccess(JAccess.PUBLIC)
 			.setPattern("my.pattern")
 			.setMarkedGenerated(true)
-			.setType("java.lang.Object")
-			.setName("myField")
+			.setFieldType("java.lang.Object")
+			.setFieldName("myField")
 			.build();
 		
 		JField expect = ctxt.newSourceTemplate()

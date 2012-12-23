@@ -7,7 +7,7 @@ import com.google.inject.ImplementedBy;
 public interface MutationContext {
 
 	/**
-	 * Shortcut for {@link #create(SourceTemplate.class)}
+	 * Shortcut for {@link #obtain(SourceTemplate.class)}
 	 * 
 	 * @return
 	 */
@@ -22,14 +22,4 @@ public interface MutationContext {
 	 * @return
 	 */
 	<T> T obtain(Class<T> type);
-	
-	/**
-	 * Given an existing instance try to populate it with all it's dependencies.
-	 * 
-	 * <p>This may be removed as currently it seems unused</p>
-	 * 
-	 * @param instance
-	 * @return
-	 */
-	<T> T injectDependencies(T instance);
 }

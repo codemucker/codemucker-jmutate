@@ -24,6 +24,9 @@ public class SimpleMutationContext implements MutationContext {
 
 	private final PlacementStrategies strategyProvider  = PlacementStrategies.newBuilder().setDefaults().build();
 	private final JAstParser parser = JAstParser.newBuilder().build();
+	/**
+	 * If set, generated classes will be marked as such
+	 */
 	private final boolean markGenerated;
 	private final Injector injector;
 	
@@ -132,12 +135,6 @@ public class SimpleMutationContext implements MutationContext {
 	@Override
 	public <T> T obtain(Class<T> type){
 		return injector.getInstance(type);
-	}
-	
-	@Override
-	public <T> T injectDependencies(T instance){
-		injector.injectMembers(instance);
-		return instance;
 	}
 	
 	public static class Builder {

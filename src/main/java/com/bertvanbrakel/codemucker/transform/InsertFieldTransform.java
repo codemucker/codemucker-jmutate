@@ -56,16 +56,30 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 		}
 	}
 
+	/**
+	 * Used by the DI container to set the default
+	 */
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.FIELD) PlacementStrategy strategy) {
 	    setPlacementStrategy(strategy);
     }
-
+	
+	/**
+	 * The field to transform
+	 * 
+	 * @param field
+	 * @return
+	 */
 	public InsertFieldTransform setField(FieldDeclaration field) {
     	setField(new JField(field));
     	return this;
 	}
 	
+	/**
+	 * The field to transform
+	 * @param field
+	 * @return
+	 */
 	public InsertFieldTransform setField(JField field) {
     	this.field = field;
     	return this;

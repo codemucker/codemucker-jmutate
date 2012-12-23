@@ -56,13 +56,13 @@ public class FieldSplitterTransform {
 		
 		//copy the shared field info
 		FieldBuilder fieldBuilder = ctxt.obtain(FieldBuilder.class)
-			.setAccess(field.getAccess())
-			.setType(field.getType());
+			.setFieldAccess(field.getAccess())
+			.setFieldType(field.getType());
 			
 		for( SingleJField single:field.asSingleFields()){
 			JField newField = fieldBuilder
-				.setName(single.getName())
-				.setInitializer(single.getInitilizer())
+				.setFieldName(single.getName())
+				.setFieldInitializer(single.getInitilizer())
 				.build();	
 			inserter.setField(newField).transform();
 		}

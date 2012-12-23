@@ -84,23 +84,23 @@ public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuild
 		return template.asMethodNode();
 	}
 
-	public SetterMethodBuilder setAccess(JAccess access) {
+	public SetterMethodBuilder setMethodAccess(JAccess access) {
 		this.access = access;
 		return this;
 	}
 
 	public SetterMethodBuilder setFromField(JField f) {
-		setName(f.getName());
-		setType(f.getTypeSignature());
+		setFieldName(f.getName());
+		setFieldType(f.getTypeSignature());
 		return this;
 	}
 
-	public SetterMethodBuilder setName(String name) {
+	public SetterMethodBuilder setFieldName(String name) {
 		this.name = name;
 		return this;
 	}
 
-	public SetterMethodBuilder setType(String type) {
+	public SetterMethodBuilder setFieldType(String type) {
 		this.type = type;
 		return this;
 	}

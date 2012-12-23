@@ -40,8 +40,8 @@ public class InsertFieldTransformTest {
 			.setContext(ctxt)
 			.setMarkedGenerated(true)
 			.setPattern("mypattern")
-			.setType("String")
-			.setName("myField")
+			.setFieldType("String")
+			.setFieldName("myField")
 			.build();
 		
 		//this is what we are testing

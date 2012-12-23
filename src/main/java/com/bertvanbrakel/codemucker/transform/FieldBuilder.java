@@ -22,7 +22,6 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 	private String type;
 	private JAccess access = JAccess.PRIVATE;
 	private Expression initializer;
-	private int modifiers;
 
 	public static FieldBuilder newBuilder(){
 		return new FieldBuilder();
@@ -65,27 +64,27 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 		return t.asFieldNode();
 	}
 
-	public FieldBuilder setAccess(JAccess access) {
+	public FieldBuilder setFieldAccess(JAccess access) {
     	this.access  = access;
     	return this;
     }
 
-	public FieldBuilder setName(String name) {
+	public FieldBuilder setFieldName(String name) {
 		this.name = name;
 		return this;
 	}
 
-	public FieldBuilder setType(String type) {
+	public FieldBuilder setFieldType(String type) {
 		this.type = type;
 		return this;
 	}
 	
-	public FieldBuilder setType(Type type) {
+	public FieldBuilder setFieldType(Type type) {
 		this.type = JAstFlattener.asString(type);
 		return this;
 	}
 	
-	public FieldBuilder setInitializer(String value) {
+	public FieldBuilder setFieldInitializer(String value) {
 		this.initializer = getContext()
 			.newSourceTemplate()
 			.p(value)
@@ -93,7 +92,7 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 		return this;
 	}
 	
-	public FieldBuilder setInitializer(Expression expression) {
+	public FieldBuilder setFieldInitializer(Expression expression) {
 		this.initializer = expression;
 		return this;
 	}

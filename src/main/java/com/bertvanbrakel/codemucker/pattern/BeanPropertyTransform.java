@@ -42,8 +42,8 @@ public class BeanPropertyTransform implements Transform {
 		checkNotBlank("propertyType", propertyType);
 
 		JField field = ctxt.obtain(FieldBuilder.class)
-			.setType(propertyType)
-			.setName(propertyName)
+			.setFieldType(propertyType)
+			.setFieldName(propertyName)
 			.build();
 		
 		ctxt.obtain(InsertFieldTransform.class)
@@ -59,7 +59,7 @@ public class BeanPropertyTransform implements Transform {
 			JMethod setter = ctxt.obtain(SetterMethodBuilder.class)
 				.setTarget(target)
 				.setFromField(field)
-				.setAccess(JAccess.PUBLIC)
+				.setMethodAccess(JAccess.PUBLIC)
 				.setReturnType(setterReturn)
 				.build();
 			inserter
@@ -69,7 +69,7 @@ public class BeanPropertyTransform implements Transform {
 		if (createAccessor) {
 			JMethod getter = ctxt.obtain(GetterMethodBuilder.class)
 				.setFromField(field)
-				.setAccess(JAccess.PUBLIC)
+				.setMethodAccess(JAccess.PUBLIC)
 				.build();
 			inserter
 				.setMethod(getter)

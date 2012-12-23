@@ -56,16 +56,29 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		}
 	}
 	
+	/**
+	 * Used by the DI container to set the default
+	 */
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.TYPE) PlacementStrategy strategy) {
 	    setPlacementStrategy(strategy);
     }
 
+	/**
+	 * The type to transform
+	 * @param type
+	 * @return
+	 */
 	public InsertTypeTransform setType(AbstractTypeDeclaration type) {
     	setType(new JType(type));
     	return this;
 	}
 	
+	/**
+	 * The type to transform
+	 * @param type
+	 * @return
+	 */
 	public InsertTypeTransform setType(JType type) {
     	this.type = type;
     	return this;

@@ -27,7 +27,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
 /**
- * Utility class to find source files, java types, and methods
+ * Utility class to find source files, java types, and methods.
+ * 
+ * Usage:
+ * 
+ * 
  */
 public class JSourceFinder {
 
