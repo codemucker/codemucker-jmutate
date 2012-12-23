@@ -163,6 +163,13 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		}
     }
 	
+	/**
+	 * Try to parse the template text as a source file with the given relative source path. A temporary
+	 * root will be used.
+	 * 
+	 * @param fqn the fully qualified source name without the file extension. As in 'foo.bar.MyClass'.
+	 * @return
+	 */
 	public JSourceFile asSourceFileWithFullName(String fqn) {
 		return asSourceFileWithPath(fqnToRelPath(fqn));
 	}
