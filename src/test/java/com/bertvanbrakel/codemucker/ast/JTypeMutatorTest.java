@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -12,9 +12,9 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.a.TestBean;
 import com.bertvanbrakel.codemucker.ast.a.TestBeanSimple;
-import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 import com.bertvanbrakel.test.util.TestHelper;
@@ -62,12 +62,12 @@ public class JTypeMutatorTest {
 	private JTypeMutator findType(String simpleClassName){
 		JSourceFinder finder = JSourceFinder.newBuilder()
 			.setSearchPaths(
-				SearchPathsBuilder.newBuilder()
+				SearchPath.newBuilder()
 					.setIncludeClassesDir(false)
 					.setIncludeTestDir(true)
 			)
 			.setFilter(
-				FilterBuilder.newBuilder()
+				Filter.newBuilder()
 					.setIncludeFileName("*/ast/a/" + simpleClassName + ".java")
 			)
 			.build();

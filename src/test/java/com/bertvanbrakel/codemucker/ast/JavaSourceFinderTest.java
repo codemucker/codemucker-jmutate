@@ -1,16 +1,15 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 
 public class JavaSourceFinderTest {
@@ -18,16 +17,16 @@ public class JavaSourceFinderTest {
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
 		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchPaths(SearchPathsBuilder.newBuilder()
+			.setSearchPaths(SearchPath.newBuilder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)
-			.setFilter(FilterBuilder.newBuilder()
+			.setFilter(Filter.newBuilder()
 				.addIncludeTypes(AType.withAnnotation(MyAnnotation.class))
 			)
 			.build();
 		boolean found = false;
-		List<JType> foundTypes = list(finder.findTypes());
+		List<JType> foundTypes = finder.findTypes().toList();
 		
 		for( JType type:foundTypes){
 			assertEquals(ClassWithAnnotation.class.getSimpleName(), type.getSimpleName());
@@ -43,21 +42,12 @@ public class JavaSourceFinderTest {
 	@Test
 	public void testFindWithMethods(){
 		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchPaths(SearchPathsBuilder.newBuilder()
+			.setSearchPaths(SearchPath.newBuilder()
 				.setIncludeClassesDir(true)
 				.setIncludeTestDir(true)
 			)
 			.build();
 		finder.findMethods();
-	}
-	
-	
-	private static <T> List<T> list(Iterable<T> it) {
-		List<T> list = new ArrayList<T>();
-		for (T item : it) {
-			list.add(item);
-		}
-		return list;
 	}
 
 	public static @interface MyAnnotation {

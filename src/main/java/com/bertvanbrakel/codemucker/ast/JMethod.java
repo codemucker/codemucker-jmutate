@@ -6,7 +6,10 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.ArrayType;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.PrimitiveType;
@@ -28,6 +31,32 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		this.methodNode = methodNode;
 	}
 
+	public JType getJType(){
+		return JType.from(getType());
+	}
+	
+	public AbstractTypeDeclaration getType(){
+		ASTNode node = getAstNode();
+		while( node != null ){
+			if(node instanceof AbstractTypeDeclaration){
+				return (AbstractTypeDeclaration)node;
+			}
+			node = node.getParent();
+		}
+		throw new CodemuckerException("Couldn't find parent type. Unexpected");
+	}
+	
+	public CompilationUnit getCompilationUnit(){
+		ASTNode node = getAstNode();
+		while( node != null ){
+			if(node instanceof CompilationUnit){
+				return (CompilationUnit)node;
+			}
+			node = node.getParent();
+		}
+		throw new CodemuckerException("Couldn't find compilation unit. Unexpected");
+	}
+	
 	@Override
 	public MethodDeclaration getAstNode(){
 		return methodNode;
@@ -135,4 +164,16 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		}
 	}
 	
+//	@Override
+//	public String toString(){
+//		return Objects
+//			.toStringHelper(JMethod.class)
+//			.add("name", toClashDetectionSignature())
+//			.toString();
+//	}
+	
+	@Override
+	public String toString(){
+		return getAstNode().toString();
+	}
 }

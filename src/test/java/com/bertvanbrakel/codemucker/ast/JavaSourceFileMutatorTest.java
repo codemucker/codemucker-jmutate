@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.junit.Test;
@@ -48,7 +48,7 @@ public class JavaSourceFileMutatorTest {
 		JSourceFileMutator srcFile = t.asSourceFileWithFullName("foo.bar.Alice").asMutator(context);
 		
 		JTypeMutator mutable = srcFile.getMainTypeAsMutable();
-		AbstractTypeDeclaration type = srcFile.getJSource().getMainType().getAstNode();
+		AbstractTypeDeclaration type = srcFile.getJSource().getMainType().asAbstractTypeDecl();
 		
 		assertNotNull(mutable);
 		assertEquals(mutable.getJType().asTypeDecl(), type);

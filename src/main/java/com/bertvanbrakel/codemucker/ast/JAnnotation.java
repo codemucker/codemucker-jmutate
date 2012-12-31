@@ -1,6 +1,5 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -72,33 +71,41 @@ public class JAnnotation {
 	 * @return
 	 */
 	public static List<org.eclipse.jdt.core.dom.Annotation> findAnnotations(ASTNode node, int maxDepth){
-		final List<org.eclipse.jdt.core.dom.Annotation> annons = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
-		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth){	
-			@Override
-            public boolean visit(ImportDeclaration node) {
-	    		return false;
-			}
-			
-			@Override
-			public boolean visit(MarkerAnnotation node) {
-				annons.add(node);
-				return false;
-			}
-
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				annons.add(node);
-				return false;
-			}
-
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				annons.add(node);
-				return false;
-			}
-		};
-		node.accept(visitor);
-		return annons;
+		NodeCollector collector = new NodeCollector.Builder()
+			.ignoreChildTypes()
+			.ignoreType(ImportDeclaration.class)
+			.collectType(MarkerAnnotation.class)
+			.collectType(SingleMemberAnnotation.class)
+			.collectType(NormalAnnotation.class)
+			.build();
+//		
+//		final List<org.eclipse.jdt.core.dom.Annotation> annons = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
+//		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth){	
+//			@Override
+//            public boolean visit(ImportDeclaration node) {
+//	    		return false;
+//			}
+//			
+//			@Override
+//			public boolean visit(MarkerAnnotation node) {
+//				annons.add(node);
+//				return false;
+//			}
+//
+//			@Override
+//			public boolean visit(SingleMemberAnnotation node) {
+//				annons.add(node);
+//				return false;
+//			}
+//
+//			@Override
+//			public boolean visit(NormalAnnotation node) {
+//				annons.add(node);
+//				return false;
+//			}
+//		};
+		node.accept(collector);
+		return collector.getCollectedAs();
 	}
 
 	public String getValueForAttribute(String name){

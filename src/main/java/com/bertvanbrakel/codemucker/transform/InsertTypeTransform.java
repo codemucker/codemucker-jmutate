@@ -70,7 +70,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 	 * @return
 	 */
 	public InsertTypeTransform setType(AbstractTypeDeclaration type) {
-    	setType(new JType(type));
+    	setType(JType.from(type));
     	return this;
 	}
 	

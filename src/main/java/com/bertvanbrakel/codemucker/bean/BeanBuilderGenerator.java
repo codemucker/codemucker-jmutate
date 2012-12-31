@@ -1,6 +1,6 @@
 package com.bertvanbrakel.codemucker.bean;
 
-import static junit.framework.Assert.assertNotNull;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -50,6 +50,13 @@ public class AType extends LogicalMatchers {
 		}
 	};
 	
+	private static Matcher<JType> ABSTRACT_MATCHER = new Matcher<JType>() {
+		@Override
+		public boolean matches(JType found) {
+			return found.isAbstract();
+		}
+	};
+	
 	private AType() {
     	//prevent instantiation
 	}
@@ -62,6 +69,14 @@ public class AType extends LogicalMatchers {
 	@SuppressWarnings("unchecked")
     public static Matcher<JType> none() {
 		return LogicalMatchers.none();
+	}
+	
+	public static Matcher<JType> any(Matcher<JType>... matchers) {
+		return LogicalMatchers.any(matchers);
+	}
+	
+    public static Matcher<JType> all(Matcher<JType>... matchers) {
+		return LogicalMatchers.all(matchers);
 	}
 	
 	public static Matcher<JType> inPackage(final String pkgAntExpression){
@@ -106,6 +121,10 @@ public class AType extends LogicalMatchers {
 
 	public static Matcher<JType> isEnum(){
 		return ENUM_MATCHER;
+	}
+	
+	public static Matcher<JType> isAbstract(){
+		return ABSTRACT_MATCHER;
 	}
 	
 	public static Matcher<JType> withAccess(final JAccess access){

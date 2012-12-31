@@ -3,7 +3,6 @@ package com.bertvanbrakel.codemucker.ast;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 import org.eclipse.jdt.core.dom.AST;
@@ -91,6 +90,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 import org.eclipse.jdt.core.dom.WildcardType;
+import org.junit.Assert;
 
 /**
  * A Matcher which throws {@link AssertionFailedError} when nodes don't match. This is so useful error messages are generated

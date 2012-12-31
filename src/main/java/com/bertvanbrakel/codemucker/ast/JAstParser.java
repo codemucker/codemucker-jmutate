@@ -3,7 +3,7 @@ package com.bertvanbrakel.codemucker.ast;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static junit.framework.Assert.fail;
+import static org.junit.Assert.fail;
 
 import java.util.Map;
 import java.util.regex.Pattern;

@@ -66,6 +66,9 @@ public class JavaNameUtil {
 	}
 	
 	public static String getQualifiedNameFor(AbstractTypeDeclaration type) {
+		if( type.resolveBinding() != null){
+			return type.resolveBinding().getQualifiedName();
+		}
 		//TODO:handle anonymous inner classes....
 		List<String> parts = newArrayListWithCapacity(5);
 		//just adds the simple name
@@ -99,6 +102,9 @@ public class JavaNameUtil {
 	}
 
 	/* package for testing */ static String resolveFullName(SimpleName name) {
+		if(name.resolveTypeBinding() != null){
+			return name.resolveTypeBinding().getQualifiedName();
+		}
 		CompilationUnit cu = getCompilationUnit(name);
 		String fqdn = resolveFqnFromDeclaredTypes(cu, name);
 		if (fqdn == null) {
@@ -107,6 +113,8 @@ public class JavaNameUtil {
 		if( fqdn == null ){
 			fqdn = resolveFqdnFromClassLoader(name);
 		}
+		//TODO:look in all parent type, interfaces for a type declared as such
+		//...
 		if (fqdn == null) {
 			throw new CodemuckerException("Could not resolve simple name '%s' defined in '%s'", name.getFullyQualifiedName(), getCompilationUnit(name));
 		}

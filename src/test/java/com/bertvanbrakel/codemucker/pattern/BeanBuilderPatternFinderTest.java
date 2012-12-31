@@ -4,10 +4,10 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
 import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.matcher.AInt;
@@ -16,18 +16,18 @@ import com.bertvanbrakel.test.finder.matcher.Matcher;
 public class BeanBuilderPatternFinderTest {
 
 	@Test
-	public void TestFindBuilders() {
+	public void testFindBuilders() {
 		//find classes with the name 'Builder' - confidence 90%
 		//classes which subclass anything called 'builder' - confidence 80%
 		//classes where most methods return itself - confidence 60%
 		//classes which contain a method starting with 'build' - confidence 70%
 		
 		FindResult<JType> foundBuilders = JSourceFinder.newBuilder()
-				.setSearchPaths(SearchPathsBuilder.newBuilder()
+				.setSearchPaths(SearchPath.newBuilder()
 						.setIncludeClassesDir(true)
 						.setIncludeTestDir(true)
 					)
-					.setFilter(FilterBuilder.newBuilder()
+					.setFilter(Filter.newBuilder()
 						//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 						//TODO:have matchers return confidences?? then finder can add that to results..
 						.addIncludeTypes(AType.withFullName("*Builder"))
@@ -53,18 +53,18 @@ public class BeanBuilderPatternFinderTest {
 	}
 	
 	@Test
-	public void TestFindLongCtorClasses() {
+	public void testFindLongCtorClasses() {
 		Matcher<JMethod> methodMatcher =
 			AMethod.all(
 				AMethod.isConstructor(), 
 				AMethod.withNumArgs(AInt.greaterOrEqualTo(3))
 			);
 		Iterable<JMethod> found = JSourceFinder.newBuilder()
-				.setSearchPaths(SearchPathsBuilder.newBuilder()
+				.setSearchPaths(SearchPath.newBuilder()
 						.setIncludeClassesDir(true)
 						.setIncludeTestDir(true)
 					)
-					.setFilter(FilterBuilder.newBuilder()
+					.setFilter(Filter.newBuilder()
 						//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 						//TODO:have matchers return confidences?? then finder can add that to results..
 						.addIncludeTypesWithMethods(methodMatcher)
@@ -81,7 +81,7 @@ public class BeanBuilderPatternFinderTest {
 	}
 	
 	@Test
-	public void TestFindImmutableClasses() {
+	public void testFindImmutableClasses() {
 		//find classes where fields are not all final
 		//where the fields are modifiable via public methods (or their call chains)
 		 //(so find all caller of this method, and their callers etc...)

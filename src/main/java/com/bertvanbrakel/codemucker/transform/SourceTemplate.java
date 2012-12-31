@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.transform;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.util.List;
@@ -116,7 +116,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public JType asJType(){
-		return new JType(asTypeNode());
+		return JType.from(asTypeNode());
 	}
 	
 	/**

@@ -1,6 +1,6 @@
 package com.bertvanbrakel.codemucker.util;
 
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

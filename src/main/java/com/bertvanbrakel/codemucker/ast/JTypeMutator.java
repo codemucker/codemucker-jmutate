@@ -23,7 +23,7 @@ public class JTypeMutator {
 	private final MutationContext ctxt;
 	
 	public JTypeMutator(MutationContext context, AbstractTypeDeclaration type) {
-		this(context, new JType(type));
+		this(context, JType.from(type));
 	}
 	
 	public JTypeMutator(MutationContext context, JType javaType) {

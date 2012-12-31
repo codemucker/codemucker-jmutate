@@ -172,7 +172,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		for( AbstractTypeDeclaration type:types){
 			//fqn is actually just the shortname
 			if( simpleName.equals(type.getName().getFullyQualifiedName())){
-				return new JType(type);
+				return JType.from(type);
 			}
 		}
 		Collection<String> names = extractNames(types);
@@ -234,7 +234,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	public List<JType> getTopJTypes() {
 		List<JType> javaTypes = newArrayList();
 		for( AbstractTypeDeclaration type:getTopTypes()){
-			javaTypes.add(new JType(type));
+			javaTypes.add(JType.from(type));
 		}
 		return javaTypes;
 	}

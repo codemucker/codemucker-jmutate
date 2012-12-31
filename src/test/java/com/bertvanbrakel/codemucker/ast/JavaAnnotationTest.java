@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 
@@ -9,10 +9,10 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.annotation.Generated;
-import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
 import com.bertvanbrakel.codemucker.ast.matcher.ASourceFile;
 
 public class JavaAnnotationTest {
@@ -20,11 +20,11 @@ public class JavaAnnotationTest {
 	@Test
 	public void test_resolveSimpleName(){
 		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchPaths(SearchPathsBuilder.newBuilder()
+			.setSearchPaths(SearchPath.newBuilder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)
-			.setFilter(FilterBuilder.newBuilder()
+			.setFilter(Filter.newBuilder()
 				.setIncludeSource(ASourceFile.withName(JavaAnnotationTest.class))
 			)
 			.build();

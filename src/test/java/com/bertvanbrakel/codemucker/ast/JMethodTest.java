@@ -2,16 +2,16 @@ package com.bertvanbrakel.codemucker.ast;
 
 import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.withMethodNamed;
 import static com.bertvanbrakel.codemucker.ast.matcher.AType.withFullName;
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.util.Collection;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.finder.FilterBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPathsBuilder;
+import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
 
 public class JMethodTest {
 
@@ -19,8 +19,8 @@ public class JMethodTest {
 	public void test_clash_signature_generations(){
 		//TODO:how to make this shorter?
 		FindResult<JType> found = JSourceFinder.newBuilder()
-			.setFilter(FilterBuilder.newBuilder().addIncludeTypes(withFullName(JMethodTest.class)))
-			.setSearchPaths(SearchPathsBuilder.newBuilder().setIncludeTestDir(true).setIncludeClassesDir(false))
+			.setFilter(Filter.newBuilder().addIncludeTypes(withFullName(JMethodTest.class)))
+			.setSearchPaths(SearchPath.newBuilder().setIncludeTestDir(true).setIncludeClassesDir(false))
 			.build()
 			.findTypes();
 		JMethod method1 = found.toList().get(0).findMethodsMatching(withMethodNamed("signatureClassTestMethod")).toList().get(0);

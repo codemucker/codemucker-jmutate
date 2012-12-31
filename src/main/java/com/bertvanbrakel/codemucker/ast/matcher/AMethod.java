@@ -28,6 +28,14 @@ public class AMethod extends LogicalMatchers {
 		};
 	}
 
+	public static Matcher<JMethod> all(Matcher<JMethod>... matchers) {
+		return LogicalMatchers.all(matchers);
+	}
+	
+	public static Matcher<JMethod> any(Matcher<JMethod>... matchers) {
+		return LogicalMatchers.any(matchers);
+	}
+	
 	@SuppressWarnings("unchecked")
     public static Matcher<JMethod> any() {
 		return LogicalMatchers.any();
@@ -38,6 +46,10 @@ public class AMethod extends LogicalMatchers {
 		return LogicalMatchers.none();
 	}
 
+	public static Matcher<JMethod> isNotConstructor() {
+		return not(isConstructor());
+	}
+	
 	public static Matcher<JMethod> isConstructor() {
 		return new Matcher<JMethod>() {
 			@Override
@@ -56,7 +68,7 @@ public class AMethod extends LogicalMatchers {
 		};
 	}
 
-	public static <A extends Annotation> Matcher<JMethod> withMethodLevelAnnotation(final Class<A> annotationClass) {
+	public static <A extends Annotation> Matcher<JMethod> withMethodAnnotation(final Class<A> annotationClass) {
 		return new Matcher<JMethod>() {
 			@Override
 			public boolean matches(JMethod found) {
@@ -102,5 +114,4 @@ public class AMethod extends LogicalMatchers {
 			}
 		};
 	}
-	
 }
