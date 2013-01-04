@@ -195,7 +195,7 @@ public class JTypeTest {
 
 		assertEquals("foo.bar.MyTestClass", type.getFullName());
 	}
-	
+
 	@Test
 	public void testImplementsClass(){
 		SourceTemplate t = ctxt.newSourceTemplate();
@@ -203,12 +203,14 @@ public class JTypeTest {
 		t.pl("class MyClass {");
 		t.pl("	class MyChildClass1 {}");
 		t.pl("	class MyChildClass2 extends ${extends} {}");
+		t.pl("	class MyChildClass3 extends MyChildClass2 {}");
 		t.pl("}");
 		
 		JType type = t.asJType();
 
 		assertFalse(type.getChildTypeWithName("MyChildClass1").isImplementing(MyExtendedClass.class));
 		assertTrue(type.getChildTypeWithName("MyChildClass2").isImplementing(MyExtendedClass.class));
+		assertTrue(type.getChildTypeWithName("MyChildClass3").isImplementing(MyExtendedClass.class));
 	}
 	
 	public static class MyExtendedClass {

@@ -98,6 +98,8 @@ public class BaseASTVisitor extends ASTVisitor {
 	private boolean debug = false;
 	
 	private int depth = 0;
+	
+	private boolean continueVisit = true;
 
 	public BaseASTVisitor enableDebug(){
 		debug = true;
@@ -129,7 +131,7 @@ public class BaseASTVisitor extends ASTVisitor {
 	}
 	
 	protected boolean visitNode(ASTNode node) {
-		return true;
+		return continueVisit;
 	}
 
 	protected void endVisitNode(ASTNode node) {
@@ -139,6 +141,10 @@ public class BaseASTVisitor extends ASTVisitor {
 	 */
 	public BaseASTVisitor() {
 		super();
+	}
+	
+	protected void stopProcessing(){
+		continueVisit = false;
 	}
 
 	/**

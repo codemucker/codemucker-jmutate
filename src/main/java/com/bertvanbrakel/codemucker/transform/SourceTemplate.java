@@ -164,6 +164,39 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
     }
 	
 	/**
+	 * Try to parse the template text as a source file trying to automatically detect the source path
+	 * based on the first top level type. A temporary
+	 * root will be used.
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public JSourceFile asSourceFile() {	
+		CharSequence src = interpolate();
+		CompilationUnit cu = parser.parseCompilationUnit(src);
+		List<AbstractTypeDeclaration> types = cu.types();
+		
+		JType mainType;
+		if(types.isEmpty()){
+			throw new CodemuckerException("no types found in compilation unit so couldn't determine source path to generate");
+		} else if(types.size() == 1){
+			mainType = JType.from(types.get(0));
+		} else {
+			for(AbstractTypeDeclaration node:types){
+				JType type = JType.from(node);
+				if( type.getModifiers().isPublic()){
+					mainType = type;
+				}
+			}
+			throw new CodemuckerException("Multiple top level types in compilation unit and could not determine one to use. Try setting one to public access");
+		}
+		
+		String fullName = mainType.getFullName();
+		ClassPathResource resource = newTmpResourceWithPath(fqnToRelPath(fullName));
+		return new JSourceFile(resource, cu, src);
+	}
+	
+	/**
 	 * Try to parse the template text as a source file with the given relative source path. A temporary
 	 * root will be used.
 	 * 

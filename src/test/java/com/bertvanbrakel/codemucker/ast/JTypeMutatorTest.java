@@ -14,7 +14,7 @@ import com.bertvanbrakel.codemucker.ast.a.TestBean;
 import com.bertvanbrakel.codemucker.ast.a.TestBeanSimple;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
+import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 import com.bertvanbrakel.test.util.TestHelper;
@@ -61,8 +61,8 @@ public class JTypeMutatorTest {
 	
 	private JTypeMutator findType(String simpleClassName){
 		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchPaths(
-				SearchPath.newBuilder()
+			.setSearchRoots(
+				SearchRoots.newBuilder()
 					.setIncludeClassesDir(false)
 					.setIncludeTestDir(true)
 			)

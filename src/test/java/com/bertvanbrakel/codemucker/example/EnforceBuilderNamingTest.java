@@ -1,8 +1,10 @@
 package com.bertvanbrakel.codemucker.example;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.JAccess;
@@ -12,18 +14,21 @@ import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder.JFindListener;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
+import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
+import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.*;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 public class EnforceBuilderNamingTest 
 {
 	@Test
+	@Ignore
 	public void testEnsureBuildersAreCorrectlyNamed()
 	{
 		Iterable<JType> builders = JSourceFinder.newBuilder()
-				.setSearchPaths(SearchPath.newBuilder()
+				.setSearchRoots(SearchRoots.newBuilder()
 					.setIncludeClassesDir(true)
 					.setIncludeTestDir(true)
 				)
@@ -47,7 +52,7 @@ public class EnforceBuilderNamingTest
 		List<String> ignoreMethodsNamed = Lists.newArrayList("build","newBuilder","copyOf");
 		
 		for (JType builder : builders) {			
-			FindResult<JMethod> buildMethod = builder.findMethodsMatching(AMethod.withMethodNamed("build"));
+			FindResult<JMethod> buildMethod = builder.findMethodsMatching(withMethodNamed("build"));
 			Assert.assertFalse("expect to find a build method on " + builder.getFullName(), buildMethod.isEmpty());
 			//TODO:check return type of builder
 			//TODO:check no args
@@ -57,7 +62,7 @@ public class EnforceBuilderNamingTest
 			
 			System.out.println("builder: " + builder.getFullName());
 			
-			for( JMethod method : builder.findAllJMethods().filter(AMethod.all(AMethod.withAccess(JAccess.PUBLIC),AMethod.isNotConstructor()))){
+			for( JMethod method : builder.findAllJMethods().filter(all(withAccess(JAccess.PUBLIC),isNotConstructor()))){
 				System.out.println("method: " + method.getAstNode().getReturnType2() + " " +  method.toClashDetectionSignature());
 				
 				if( !ignoreMethodsNamed.contains(method.getName()) && !method.getName().startsWith("build")){
@@ -90,21 +95,27 @@ public class EnforceBuilderNamingTest
 	public void testEnsureAllTestMethodsStartWithTest()
 	{
 		Iterable<JMethod> methods = JSourceFinder.newBuilder()
-				.setSearchPaths(SearchPath.newBuilder()
+				.setSearchRoots(SearchRoots.newBuilder()
 					.setIncludeClassesDir(false)
 					.setIncludeTestDir(true)
 				)
 				.setFilter(Filter.newBuilder()
 					//.addIncludeTypes(AType.withFullName("*Test"))
-					.addIncludeMethods(AMethod.withMethodAnnotation(Test.class))
+					.addIncludeMethods(withMethodAnnotation(Test.class))
 				)
 				.build()
 				.findMethods();
+
+		Collection<String> failures = Lists.newArrayList();
+		
 		for (JMethod method : methods) {
 			if( !method.getName().startsWith("test") ){
 				String msg = String.format("Expected test method %s.%s to start with 'test'", method.getJType().getFullName(), method.getName());
-				Assert.fail(msg);
+				failures.add(msg);
 			}
+		}
+		if( failures.size() > 0){
+			Assert.fail("\n" + Joiner.on("\n").join(failures));
 		}
 	}
 	

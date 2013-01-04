@@ -11,7 +11,7 @@ import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
+import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
@@ -74,7 +74,7 @@ public class BeanBuilderTransformTest {
 
 	private FindResult<JType> findTypesToTransform() {
 	    FindResult<JType> found = JSourceFinder.newBuilder()
-			.setSearchPaths(SearchPath.newBuilder()
+			.setSearchRoots(SearchRoots.newBuilder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)

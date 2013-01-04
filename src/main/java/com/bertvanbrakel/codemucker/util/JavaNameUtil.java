@@ -27,7 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 
 public class JavaNameUtil {
-
+	
 	public static String getQualifiedName(Type t){
 		StringBuilder sb = new StringBuilder();
 		resolveQualifiedNameFor(t, sb);
@@ -35,7 +35,9 @@ public class JavaNameUtil {
 	}
 	
 	public static void resolveQualifiedNameFor(Type t, StringBuilder sb){
-		if (t.isPrimitiveType()) {
+		if(t.resolveBinding() != null ){
+			sb.append(t.resolveBinding().getQualifiedName());
+		} else if (t.isPrimitiveType()) {
 			sb.append(((PrimitiveType) t).getPrimitiveTypeCode().toString());
 		} else if (t.isSimpleType()) {
 			SimpleType st = (SimpleType) t;
@@ -88,6 +90,19 @@ public class JavaNameUtil {
 		Collections.reverse(parts);
 		return Joiner.on('.').join(parts);
 	}
+	
+	public static String getQualifiedNameElseShort(Name name) {
+		if (name.isQualifiedName()) {
+			return name.getFullyQualifiedName();
+		} else {
+			String fqdn = resolveFullNameOrNull((SimpleName)name);
+			if (fqdn == null) {
+				fqdn = ((SimpleName)name).getIdentifier();
+			}
+			return fqdn;
+		}
+	}
+	
 	/**
 	 * Extract teh fuly qualified name from the given name, looking up parent if required
 	 * @param name
@@ -97,11 +112,15 @@ public class JavaNameUtil {
 		if (name.isQualifiedName()) {
 			return name.getFullyQualifiedName();
 		} else {
-			return resolveFullName((SimpleName)name);
+			String fqdn = resolveFullNameOrNull((SimpleName)name);
+			if (fqdn == null) {
+				throw new CodemuckerException("Could not resolve simple name '%s' defined in '%s'", name.getFullyQualifiedName(), getCompilationUnit(name));
+			}
+			return fqdn;
 		}
 	}
 
-	/* package for testing */ static String resolveFullName(SimpleName name) {
+	/* package for testing */ static String resolveFullNameOrNull(SimpleName name) {
 		if(name.resolveTypeBinding() != null){
 			return name.resolveTypeBinding().getQualifiedName();
 		}
@@ -110,14 +129,13 @@ public class JavaNameUtil {
 		if (fqdn == null) {
 			fqdn = resolveFqnFromImports(cu, name);
 		}
+		
 		if( fqdn == null ){
 			fqdn = resolveFqdnFromClassLoader(name);
 		}
 		//TODO:look in all parent type, interfaces for a type declared as such
 		//...
-		if (fqdn == null) {
-			throw new CodemuckerException("Could not resolve simple name '%s' defined in '%s'", name.getFullyQualifiedName(), getCompilationUnit(name));
-		}
+		
 		return fqdn;
 	}
 

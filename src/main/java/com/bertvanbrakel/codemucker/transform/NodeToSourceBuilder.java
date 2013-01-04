@@ -7,7 +7,7 @@ import java.io.StringReader;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
-import com.bertvanbrakel.codemucker.ast.Flattener;
+import com.bertvanbrakel.codemucker.ast.AstNodeFlattener;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.google.inject.Inject;
 
@@ -22,7 +22,7 @@ public class NodeToSourceBuilder {
 	private MutationContext ctxt;
 
 	@Inject
-	private Flattener flattener;
+	private AstNodeFlattener flattener;
 	
 	//the node to copy
 	private ASTNode node;
@@ -53,7 +53,7 @@ public class NodeToSourceBuilder {
 		return line.replaceAll("\"", "\\\"");
 	}
 	
-	public NodeToSourceBuilder setFlattener(Flattener flattener) {
+	public NodeToSourceBuilder setFlattener(AstNodeFlattener flattener) {
 		this.flattener = flattener;
 		return this;
 	}

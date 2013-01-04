@@ -99,7 +99,7 @@ public class SourceAssertsTest {
 		Throwable expect = null;
 		try {
 			SourceAsserts.assertAstsMatch(srcFile, srcFile2);
-		} catch (AssertionFailedError e){
+		} catch (AssertionError e){
 			expect = e;
 		}
 		assertNotNull("Expected exception",expect);

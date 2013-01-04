@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
+import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 
 public class JavaSourceFinderTest {
@@ -17,7 +17,7 @@ public class JavaSourceFinderTest {
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
 		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchPaths(SearchPath.newBuilder()
+			.setSearchRoots(SearchRoots.newBuilder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)
@@ -42,7 +42,7 @@ public class JavaSourceFinderTest {
 	@Test
 	public void testFindWithMethods(){
 		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchPaths(SearchPath.newBuilder()
+			.setSearchRoots(SearchRoots.newBuilder()
 				.setIncludeClassesDir(true)
 				.setIncludeTestDir(true)
 			)

@@ -76,7 +76,7 @@ public class SimpleMutationContext implements MutationContext {
 		}
 		
 		@Provides
-		public Flattener provideFlattener(){
+		public AstNodeFlattener provideFlattener(){
 			return obtain(SimpleFlattener.class);
 		}
 		

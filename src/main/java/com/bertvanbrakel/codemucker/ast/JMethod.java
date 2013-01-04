@@ -75,6 +75,10 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 	    return methodNode.isConstructor();
     }
 	
+	public boolean isVoid(){
+		return methodNode.getReturnType2() == null || "void".equals(methodNode.getReturnType2().toString());
+	}
+	
 	@SuppressWarnings("unchecked")
     public JModifiers getJavaModifiers(){
 		return new JModifiers(methodNode.getAST(),methodNode.modifiers());
@@ -143,12 +147,13 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 	    return sb.toString();
     }
 	
+	//TODO:fallback to simple name if not full path found???
 	private void toNonGenericFullName(Type t, StringBuilder sb){
 		if (t.isPrimitiveType()) {
 			sb.append(((PrimitiveType) t).getPrimitiveTypeCode().toString());
 		} else if (t.isSimpleType()) {
 			SimpleType st = (SimpleType) t;
-			sb.append(JavaNameUtil.getQualifiedName(st.getName()));
+			sb.append(JavaNameUtil.getQualifiedNameElseShort(st.getName()));
 		} else if (t.isQualifiedType()) {
 			QualifiedType qt = (QualifiedType) t;
 			sb.append(JavaNameUtil.getQualifiedName(qt.getName()));
@@ -156,7 +161,7 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 			ArrayType at = (ArrayType) t;
 			toNonGenericFullName(at.getComponentType(), sb);
 			sb.append("[]");
-		} else if( t.isParameterizedType()){
+		} else if(t.isParameterizedType()){
 			ParameterizedType pt = (ParameterizedType)t;
 			toNonGenericFullName(pt.getType(),sb);
 		} else {

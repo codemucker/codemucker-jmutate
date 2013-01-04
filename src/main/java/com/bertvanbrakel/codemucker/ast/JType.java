@@ -19,8 +19,11 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.FindResultImpl;
@@ -30,12 +33,15 @@ import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.google.common.collect.Lists;
 
 /**
  * A convenience wrapper around an Ast java type
  */
 public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 
+	private static final TypeDeclaration[] EmptyTypes = new TypeDeclaration[]{};
+	
 	private final ASTNode typeNode;
 	
 	public static JType from(AbstractTypeDeclaration type){
@@ -199,21 +205,19 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	}
 	
 	private void findMethodsMatching(final Matcher<JMethod> matcher, final Collection<JMethod> found) {
-		int maxDepth = 0;
-		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
-			@Override
-			public boolean visit(MethodDeclaration node) {
-				if(super.visit(node)){
-					JMethod javaMethod = new JMethod(node);
-					if (matcher.matches(javaMethod)) {
-						found.add(javaMethod);
-					}
-					return true;
-				}
-				return false;
+		NodeCollector collector = NodeCollector.newBuilder()
+			.ignoreChildTypes()
+			.collectType(MethodDeclaration.class)
+			.build();
+		this.typeNode.accept(collector);
+		
+		List<MethodDeclaration> nodes = collector.getCollectedAs();
+		for (MethodDeclaration node : nodes) {
+			JMethod javaMethod = new JMethod(node);
+			if (matcher.matches(javaMethod)) {
+				found.add(javaMethod);
 			}
-		};
-		this.typeNode.accept(visitor);
+		}
 	}
 	
 	public boolean hasMethodsMatching(final Matcher<JMethod> matcher) {
@@ -260,16 +264,16 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return JavaNameUtil.getPackageFor(typeNode);
 	}
 
+	public boolean isAccess(JAccess access) {
+		return getModifiers().asAccess().equals(access);
+	}
+
 	public boolean isAnonymousClass() {
 		return typeNode instanceof AnonymousClassDeclaration;
 	}
 	
 	public boolean isAbstract() {
 		return getModifiers().isAbstract();
-	}
-	
-	public boolean isAccess(JAccess access) {
-		return getModifiers().asAccess().equals(access);
 	}
 	
 	public boolean isEnum() {
@@ -311,7 +315,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	public AnonymousClassDeclaration asAnonymousClassDecl() {
 		return (AnonymousClassDeclaration) typeNode;
 	}
-	
+
 	@Override
 	public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass) {
 		return hasAnnotationOfType(annotationClass, false);
@@ -345,8 +349,20 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return JAnnotation.findAnnotations(typeNode, maxDepth);
 	}
 	
-	public abstract boolean isImplementing(Class<?> require);
-
+	public boolean isImplementing(Class<?> require) {
+		String requireFullName = require.getName();	
+		for (Type type : findExtends()) {
+			String fn = JavaNameUtil.getQualifiedName(type);
+			//System.out.println("fnp=" + fn);
+			if(fn.equals(requireFullName)){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	protected abstract Collection<Type> findExtends();
+	
 	@Override
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
@@ -357,6 +373,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	}
 
 	public static class AbstractTypeJType extends JType {
+
 		private final AbstractTypeDeclaration typeNode;
 		
 		public AbstractTypeJType(AbstractTypeDeclaration type) {
@@ -371,7 +388,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		public String getSimpleName(){
 			return typeNode.getName().getIdentifier();
 		}
-		
+
 		@SuppressWarnings("unchecked")
 	    public List<ASTNode> getBodyDeclarations() {
 		    return typeNode.bodyDeclarations();
@@ -389,18 +406,28 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		public boolean isTopLevelClass() {
 			return typeNode.isPackageMemberTypeDeclaration();
 		}
-		
-		public boolean isImplementing(Class<?> require) {
-			String fullName = getFullName();
-			try {
-				Class<?> thisClass = Thread.currentThread().getContextClassLoader().loadClass(fullName);
-				return require.isAssignableFrom(thisClass);
-			} catch(ClassNotFoundException e){
-				throw new CodemuckerException(String.format("Couldn't find compiled class for type '%s'", fullName),e);
+
+		@SuppressWarnings("unchecked")
+		@Override
+		protected Collection<Type> findExtends() {
+			Collection<Type> types = Lists.newArrayList();
+			if( isConcreteClass()){
+				TypeDeclaration type = asTypeDecl();
+				if( type.getSuperclassType() != null){
+					types.add(type.getSuperclassType());
+//					if( type.getSuperclassType().resolveBinding()!= null){
+//						for(ITypeBinding bind: type.getSuperclassType().resolveBinding().getDeclaredTypes()){
+//							bind.
+//						}
+//					}
+				}
+				types.addAll(type.superInterfaceTypes());	
 			}
+			return types;
 		}
 	}
 	
+	//TODO:count occurrances in the source file
 	public static class AnonynousClassJType extends JType {
 		private static final List<IExtendedModifier> modifiers = Collections.emptyList();
 		
@@ -412,11 +439,40 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		}
 		
 		public String getFullName(){
-			return "";
+			return findParentType().getFullName() + "." + extractAnonymousClassNumber();//typeNode.getName().getIdentifier();
 		}
 		
 		public String getSimpleName(){
-			return "";
+			return findParentType().getSimpleName() + "." + extractAnonymousClassNumber();//typeNode.getName().getIdentifier();
+		}
+		
+		private JType findParentType(){
+			ASTNode parent = typeNode;
+			while( parent != null && !(parent instanceof CompilationUnit)){
+				if( parent instanceof AbstractTypeDeclaration ){
+					return JType.from((AbstractTypeDeclaration) parent);
+				}
+				parent = parent.getParent();
+			}
+			throw new CodemuckerException("couldn't find parent type");
+		}
+		
+		private int extractAnonymousClassNumber(){
+			final String propName = "codemucker.anon.class.num";
+			Integer num = (Integer) typeNode.getProperty(propName);
+			if(num == null){
+				BaseASTVisitor visitor = new BaseASTVisitor(){
+					int count = 0;
+					@Override
+					public boolean visit(AnonymousClassDeclaration node) {
+						node.setProperty(propName, count++);
+						return super.visit(node);
+					}
+				};
+				getCompilationUnit().accept(visitor);
+				num = (Integer) typeNode.getProperty(propName);
+			}
+			return num;
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -437,11 +493,18 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			return false;
 		}
 		
-		public boolean isImplementing(Class<?> require) {
-		
-			//TODO:look at extends...
-			throw new UnsupportedOperationException("Don't support 'implements' for anonymous classes yet");
+		@SuppressWarnings("unchecked")
+		@Override
+		protected Collection<Type> findExtends() {
+			Collection<Type> types = Lists.newArrayList();
+			if( isConcreteClass()){
+				TypeDeclaration type = asTypeDecl();
+				if( type.getSuperclassType() != null){
+					types.add(type.getSuperclassType());
+				}
+				types.addAll(type.superInterfaceTypes());	
+			}
+			return types;
 		}
 	}
-
 }

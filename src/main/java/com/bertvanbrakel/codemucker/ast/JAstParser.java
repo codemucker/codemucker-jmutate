@@ -144,6 +144,7 @@ public class JAstParser {
 		private ASTParser parser;
 		private boolean checkParse = true;
 		private boolean recordModifications = true;
+		private boolean resolveBindings = true;
 
 		@SuppressWarnings("unchecked")
         private Map<Object,Object> options = newHashMap(JavaCore.getOptions());
@@ -172,7 +173,9 @@ public class JAstParser {
 		}
 		
 		private ASTParser newDefaultAstParser(){
-			return ASTParser.newParser(AST.JLS3);
+			ASTParser parser = ASTParser.newParser(AST.JLS3);
+			parser.setResolveBindings(resolveBindings);
+			return parser;
 		}
 
 		public Builder setCheckParse(boolean checkParse) {
@@ -180,6 +183,11 @@ public class JAstParser {
 			return this;
 		}
 
+		public Builder setResolveBindings(boolean resolveBindings) {
+			this.resolveBindings = resolveBindings;
+			return this;
+		}
+		
 		public Builder setRecordModifications(boolean recordModifications) {
 			this.recordModifications = recordModifications;
 			return this;

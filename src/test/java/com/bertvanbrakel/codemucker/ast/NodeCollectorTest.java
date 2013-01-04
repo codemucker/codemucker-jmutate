@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
+import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 
@@ -17,7 +17,7 @@ public class NodeCollectorTest {
 	MutationContext ctxt = new SimpleMutationContext();
 	
 	@Test
-	public void collectMethodTest() {
+	public void testCollectMethod() {
 		SourceTemplate t = ctxt.newSourceTemplate();
 		t.pl("class MyClass {");
 		t.pl("void myMethod(){}");
@@ -38,7 +38,7 @@ public class NodeCollectorTest {
 	}
 	
 	@Test
-	public void collectMethodIgnoreChildTypeTest() {
+	public void testCollectMethodIgnoreChildType() {
 		SourceTemplate t = ctxt.newSourceTemplate();
 		t.pl("class MyClass {");
 		t.pl("void myMethod1(){}");

@@ -23,17 +23,18 @@ public class NodeCollector extends BaseASTVisitor {
 	
 	private final List<ASTNode> matchedNodes = Lists.newArrayList();
 	private final Matcher<ASTNode> nodeMatcher;
-	private final Map<Class<?>, NodeCounter> nodeCounters = Maps.newHashMap();
+	private final Map<Class<?>, NodeDepthCounter> nodeCounters = Maps.newHashMap();
 	
 	private int depth = 0;
 			
 	public static Builder newBuilder(){
 		return new Builder();
 	}
+	
 	private NodeCollector(Collection<NodeCritera> criteria, Matcher<ASTNode> nodeMatcher){
 		for (NodeCritera crit : criteria) {
-			NodeCounter counter = new NodeCounter();
-			counter.max = crit.max;
+			NodeDepthCounter counter = new NodeDepthCounter();
+			counter.maxDepth = crit.max;
 			for (Class<?> nodeType : crit.nodeTypes) {
 				//todo:detect duplicate
 				this.nodeCounters.put(nodeType, counter);
@@ -47,7 +48,7 @@ public class NodeCollector extends BaseASTVisitor {
 		super.visitNode(node);
 		boolean visit = true;
 		if (depth > 0) {
-			NodeCounter counter = getCounterFor(node);
+			NodeDepthCounter counter = getCounterFor(node);
 			if (counter != null) {
 				visit = counter.visit();
 			}
@@ -62,19 +63,19 @@ public class NodeCollector extends BaseASTVisitor {
 	@Override
 	protected void endVisitNode(ASTNode node) {
 		super.endVisitNode(node);
-		if (depth > 0) {
-			NodeCounter counter = getCounterFor(node);
-			if( counter != null){	
+		if (depth > 1) { //always one more than the visit node
+			NodeDepthCounter counter = getCounterFor(node);
+			if(counter != null){	
 				counter.endVisit();
 			}
 		}
 		depth--;
 	}
 	
-	private NodeCounter getCounterFor(ASTNode node){
+	private NodeDepthCounter getCounterFor(ASTNode node){
 		return nodeCounters.get(node.getClass());
 	}
-	
+
 	public List<ASTNode> getCollected(){
 		return matchedNodes;
 	}
@@ -83,7 +84,6 @@ public class NodeCollector extends BaseASTVisitor {
 	public <T extends ASTNode> List<T> getCollectedAs(){
 		return  (List<T>) matchedNodes;
 	}
-	
 	
 	static class NodeCritera {
 		
@@ -104,18 +104,24 @@ public class NodeCollector extends BaseASTVisitor {
 		}
 	}
 	
-	private class NodeCounter {
-		int max;
-		int count;
+	private class NodeDepthCounter {
+		int maxDepth;
+		int currentDepth;
+		
 		boolean visit(){
-			if( max > count){
-				return true;
+			boolean visit = false;
+			if( maxDepth > currentDepth){
+				visit = true;
 			}
-			return false;
+			currentDepth++;
+			return visit;
 		}
 		
 		void endVisit(){
-			count--;
+			if(currentDepth <= 0){
+				throw new IllegalStateException("depth can't be negative");
+			}
+			currentDepth--;
 		}
 	}
 	

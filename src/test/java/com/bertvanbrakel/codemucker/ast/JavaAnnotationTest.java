@@ -12,7 +12,7 @@ import com.bertvanbrakel.codemucker.annotation.Generated;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
+import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.ASourceFile;
 
 public class JavaAnnotationTest {
@@ -20,7 +20,7 @@ public class JavaAnnotationTest {
 	@Test
 	public void test_resolveSimpleName(){
 		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchPaths(SearchPath.newBuilder()
+			.setSearchRoots(SearchRoots.newBuilder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)

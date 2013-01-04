@@ -77,24 +77,24 @@ public class JSourceFinder {
 	public JSourceFinder(
 			ASTParser parser
 			, Iterable<Root> classPathRoots
-			, JFindMatcher filters
+			, JFindMatcher matchers
 			, JFindListener listener
 			) {
 		this(parser,
 			classPathRoots,
-			filters.getObjectMatcher(),
-			filters.getRootMatcher(),
-			filters.getResourceMatcher(),			
-			filters.getSourceMatcher(),
-			filters.getTypeMatcher(),
-			filters.getMethodMatcher(),
+			matchers.getObjectMatcher(),
+			matchers.getRootMatcher(),
+			matchers.getResourceMatcher(),			
+			matchers.getSourceMatcher(),
+			matchers.getTypeMatcher(),
+			matchers.getMethodMatcher(),
 			listener
 		);
 	}
 
 	public JSourceFinder(
 			ASTParser parser
-			, Iterable<Root> classPathRoots
+			, Iterable<Root> roots
 			, Matcher<Object> objectFilter
 			, Matcher<Root> rootFilter
 			, Matcher<ClassPathResource> resourceFilter
@@ -104,10 +104,10 @@ public class JSourceFinder {
 			, JFindListener listener
 			) {
 		
-		checkNotNull(classPathRoots, "expect class path roots");
+		checkNotNull(roots, "expect class path roots");
 		
 		this.parser = checkNotNull(parser, "expect parser");
-		this.classPathRoots = ImmutableList.<Root>builder().addAll(classPathRoots).build();
+		this.classPathRoots = ImmutableList.<Root>builder().addAll(roots).build();
 
 		this.rootMatcher = join(checkNotNull(rootFilter, "expect root filter"), objectFilter);
 		this.resourceFilter = join(checkNotNull(resourceFilter, "expect resource filter"), objectFilter);
@@ -118,11 +118,11 @@ public class JSourceFinder {
 		this.listener = checkNotNull(listener, "expect find listener");
 	}
 	
-	private static <T> Matcher<T> join(final Matcher<T> filter,final Matcher<Object> objFilter){
+	private static <T> Matcher<T> join(final Matcher<T> matcher,final Matcher<Object> objMatcher){
 		return new Matcher<T>(){
 			@Override
 			public boolean matches(T found) {
-				return objFilter.matches(found) && filter.matches(found);
+				return objMatcher.matches(found) && matcher.matches(found);
 			}
 		};
 	}
@@ -242,18 +242,18 @@ public class JSourceFinder {
 			return parser != null ? parser : JAstParser.newDefaultParser();
 		}
 
-		public Builder setSearchPaths(SearchPath.Builder searchPath) {
-        	setSearchPaths(searchPath.build());
+		public Builder setSearchRoots(SearchRoots.Builder searchRoots) {
+        	setSearchRoots(searchRoots.build());
         	return this;
         }
 		
-	 	public Builder setSearchPaths(IsBuilder<? extends Iterable<Root>> builder) {
-        	setSearchPaths(builder.build());
+	 	public Builder setSearchRoots(IsBuilder<? extends Iterable<Root>> rootsBuilder) {
+        	setSearchRoots(rootsBuilder.build());
         	return this;
         }
 	 	
-	 	public Builder setSearchPaths(Iterable<Root> classPathRoots) {
-        	this.roots = nullSafeList(classPathRoots);
+	 	public Builder setSearchRoots(Iterable<Root> roots) {
+        	this.roots = nullSafeList(roots);
         	return this;
         }
 	 	

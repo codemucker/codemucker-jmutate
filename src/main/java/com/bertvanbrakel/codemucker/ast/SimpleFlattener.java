@@ -12,7 +12,7 @@ import org.eclipse.text.edits.TextEdit;
 
 import com.google.inject.Inject;
 
-public class SimpleFlattener implements Flattener {
+public class SimpleFlattener implements AstNodeFlattener {
 	
 	private CodeFormatter formatter;
 	

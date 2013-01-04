@@ -7,7 +7,7 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 
 import com.bertvanbrakel.codemucker.annotation.Pattern;
-import com.bertvanbrakel.codemucker.ast.Flattener;
+import com.bertvanbrakel.codemucker.ast.AstNodeFlattener;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JAstFlattener;
 import com.bertvanbrakel.codemucker.ast.JField;
@@ -54,7 +54,7 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 		t.print(access.toCode());
 		t.print(" ${fieldType} ${fieldName}");
 		if( initializer != null){
-			String valAsString = getContext().obtain(Flattener.class).flatten(initializer);
+			String valAsString = getContext().obtain(AstNodeFlattener.class).flatten(initializer);
 			t.setVar("initializer", valAsString);
 			t.pl(" = ${initializer};");
 		} else {

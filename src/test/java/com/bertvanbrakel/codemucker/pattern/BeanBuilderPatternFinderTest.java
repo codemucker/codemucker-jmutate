@@ -7,7 +7,7 @@ import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchPath;
+import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.matcher.AInt;
@@ -23,7 +23,7 @@ public class BeanBuilderPatternFinderTest {
 		//classes which contain a method starting with 'build' - confidence 70%
 		
 		FindResult<JType> foundBuilders = JSourceFinder.newBuilder()
-				.setSearchPaths(SearchPath.newBuilder()
+				.setSearchRoots(SearchRoots.newBuilder()
 						.setIncludeClassesDir(true)
 						.setIncludeTestDir(true)
 					)
@@ -60,7 +60,7 @@ public class BeanBuilderPatternFinderTest {
 				AMethod.withNumArgs(AInt.greaterOrEqualTo(3))
 			);
 		Iterable<JMethod> found = JSourceFinder.newBuilder()
-				.setSearchPaths(SearchPath.newBuilder()
+				.setSearchRoots(SearchRoots.newBuilder()
 						.setIncludeClassesDir(true)
 						.setIncludeTestDir(true)
 					)
