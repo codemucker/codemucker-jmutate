@@ -61,7 +61,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public JField asJField(){
-		return new JField(asFieldNode());
+		return JField.from(asFieldNode());
 	}
 	
 	/**
@@ -97,7 +97,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public JMethod asJMethod(){
-		return new JMethod(asMethodNode());
+		return JMethod.from(asMethodNode());
 	}
 	
 	/**

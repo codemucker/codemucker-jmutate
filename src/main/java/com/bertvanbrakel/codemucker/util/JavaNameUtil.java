@@ -179,7 +179,6 @@ public class JavaNameUtil {
 				// do nothing. Just try next prefix
 			} catch (NoClassDefFoundError e) {
 				// do nothing. Just try next prefix
-				System.out.println("bad");
 			}
 		}
 		return null;

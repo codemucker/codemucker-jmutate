@@ -31,7 +31,7 @@ public final class GetterMethodBuilder extends AbstractBuilder<GetterMethodBuild
 		checkNotBlank("fieldName", fieldName);
 		checkNotBlank("fieldType", fieldType);
 
-		return new JMethod(toMethod());
+		return JMethod.from(toMethod());
 	}
 	
 	private MethodDeclaration toMethod(){

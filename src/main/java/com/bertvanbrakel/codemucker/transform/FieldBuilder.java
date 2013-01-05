@@ -36,7 +36,7 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 		checkNotNull("name", name);
 		checkNotNull("type", type);
 
-		return new JField(toFieldNode());
+		return JField.from(toFieldNode());
 	}
 	
 	private FieldDeclaration toFieldNode(){

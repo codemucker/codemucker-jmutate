@@ -28,8 +28,8 @@ public class JMethodTest {
 		JMethod method1 = methods.get(0);
 		JMethod method2 = methods.get(1);
 		
-		assertEquals("myMethod(java.lang.String,java.util.Collection)", method1.toClashDetectionSignature());
-		assertEquals("myMethod(java.lang.String[][],java.util.Collection,int)", method2.toClashDetectionSignature());
+		assertEquals("myMethod(java.lang.String,java.util.Collection)", method1.getClashDetectionSignature());
+		assertEquals("myMethod(java.lang.String[][],java.util.Collection,int)", method2.getClashDetectionSignature());
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class JMethodTest {
 		
 		JMethod method = t.asSourceFile().getMainType().findAllJMethods().getFirst();
 		
-		assertEquals("myMethod(MyInterface)", method.toClashDetectionSignature());
+		assertEquals("myMethod(MyInterface)", method.getClashDetectionSignature());
 	}
 	
 	public static interface MyInterface{};

@@ -4,17 +4,16 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 
-public class JSearchIndexTest {
+public class JSearchEngineTest {
 
 	@Test
-	public void testSearch(){
-		JSearchIndex index = new JSearchIndex(SearchRoots.newBuilder()
+	public void smokeTest(){
+		JSearchEngine engine = new JSearchEngine(SearchRoots.newBuilder()
 			.setIncludeClassesDir(true)
 			.setIncludeTestDir(true)
 			.build());
 		
-		index.find();
-		
-		
+		engine.find();
+		engine.close();
 	}
 }

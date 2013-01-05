@@ -28,6 +28,8 @@ import com.bertvanbrakel.test.util.ClassNameUtil;
 
 public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
+	//TODO:cache calculated fields, but clear on node modification
+	
 	private final ClassPathResource resource;
 	private final CompilationUnit compilationUnit;
 	private final CharSequence sourceCode;
@@ -119,15 +121,15 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		return compilationUnit;
 	}
 	
-	public void visit(JSourceFileVisitor visitor) {
+	public void visit(JFindVisitor visitor) {
 		if (visitor.visit(this)) {
 			CompilationUnit cu = getCompilationUnit();
 			if (visitor.visit(cu)) {
 				cu.accept(visitor);
-				visitor.endVisit(cu);
 			}
-			visitor.endVisit(this);
+			visitor.endVisit(cu);
 		}
+		visitor.endVisit(this);
 	}
 
 	//TODO:code smell here, should JSource really know about the mutator? should the mutator use a builder instead?

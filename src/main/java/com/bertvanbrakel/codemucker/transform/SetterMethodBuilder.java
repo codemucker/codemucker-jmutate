@@ -41,7 +41,7 @@ public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuild
 		checkNotBlank("name", name);
 		checkNotBlank("type", type);
 
-		return new JMethod(toMethod());
+		return JMethod.from(toMethod());
 	}
 
 	private MethodDeclaration toMethod() {

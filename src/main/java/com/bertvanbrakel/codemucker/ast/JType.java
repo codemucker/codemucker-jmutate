@@ -182,7 +182,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
 			@Override
 			public boolean visit(FieldDeclaration node) {
-				JField field = new JField(node);
+				JField field = JField.from(node);
 				if (matcher.matches(field)) {
 					found.add(field);
 				}
@@ -213,7 +213,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		
 		List<MethodDeclaration> nodes = collector.getCollectedAs();
 		for (MethodDeclaration node : nodes) {
-			JMethod javaMethod = new JMethod(node);
+			JMethod javaMethod = JMethod.from(node);
 			if (matcher.matches(javaMethod)) {
 				found.add(javaMethod);
 			}
@@ -226,7 +226,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
 			@Override
 			public boolean visit(MethodDeclaration node) {
-				JMethod javaMethod = new JMethod(node);
+				JMethod javaMethod = JMethod.from(node);
 				if (matcher.matches(javaMethod)) {
 					foundMethod.set(true);
 					return false;
@@ -353,7 +353,6 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		String requireFullName = require.getName();	
 		for (Type type : findExtends()) {
 			String fn = JavaNameUtil.getQualifiedName(type);
-			//System.out.println("fnp=" + fn);
 			if(fn.equals(requireFullName)){
 				return true;
 			}

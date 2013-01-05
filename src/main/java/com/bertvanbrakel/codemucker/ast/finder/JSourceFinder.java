@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import com.bertvanbrakel.codemucker.ast.JAstParser;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
-import com.bertvanbrakel.codemucker.ast.JSourceFileVisitor;
+import com.bertvanbrakel.codemucker.ast.JFindVisitor;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.lang.IsBuilder;
 import com.bertvanbrakel.test.finder.ClassPathResource;
@@ -126,7 +126,7 @@ public class JSourceFinder {
 			}
 		};
 	}
-	public void visit(JSourceFileVisitor visitor) {
+	public void visit(JFindVisitor visitor) {
 		for (JSourceFile srcFile : findSources()) {
 			srcFile.visit(visitor);
 		}

@@ -76,7 +76,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 	 * @return
 	 */
 	public InsertCtorTransform setCtor(MethodDeclaration constructor) {
-    	setCtor(new JMethod(constructor));
+    	setCtor(JMethod.from(constructor));
     	return this;
 	}
 	

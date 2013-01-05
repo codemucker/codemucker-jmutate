@@ -25,7 +25,11 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 
 	private final MethodDeclaration methodNode;
 
-	public JMethod(MethodDeclaration methodNode) {
+	public static JMethod from(MethodDeclaration methodNode){
+		return new JMethod(methodNode);
+	}
+	
+	private JMethod(MethodDeclaration methodNode) {
 		checkNotNull(methodNode, "expect java method node");
 
 		this.methodNode = methodNode;
@@ -127,7 +131,7 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 	 * </pre></p>
 	 * @return the signature
 	 */
-	public String toClashDetectionSignature() {
+	public String getClashDetectionSignature() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getName());
 		sb.append("(");

@@ -19,7 +19,11 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 
 	private final FieldDeclaration fieldNode;
 
-	public JField(final FieldDeclaration fieldNode) {
+	public static JField from(FieldDeclaration node){
+		return new JField(node);
+	}
+	
+	private JField(final FieldDeclaration fieldNode) {
 		checkNotNull(fieldNode, "expect field declaration");
 		this.fieldNode = fieldNode;
 	}

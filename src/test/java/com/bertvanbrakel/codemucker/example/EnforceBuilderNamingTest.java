@@ -36,16 +36,6 @@ public class EnforceBuilderNamingTest
 					.addIncludeTypes(AType.withSimpleName("*Builder"))
 					.addExcludeTypes(AType.isAbstract())
 				)
-				.setListener(new JFindListener() {
-					@Override
-					public void onMatched(Object obj) {
-						System.out.println("matched:" + obj);
-					}
-					
-					@Override
-					public void onIgnored(Object obj) {	
-					}
-				})
 				.build()
 				.findTypes();
 		
@@ -63,7 +53,7 @@ public class EnforceBuilderNamingTest
 			System.out.println("builder: " + builder.getFullName());
 			
 			for( JMethod method : builder.findAllJMethods().filter(all(withAccess(JAccess.PUBLIC),isNotConstructor()))){
-				System.out.println("method: " + method.getAstNode().getReturnType2() + " " +  method.toClashDetectionSignature());
+				//System.out.println("method: " + method.getAstNode().getReturnType2() + " " +  method.getClashDetectionSignature());
 				
 				if( !ignoreMethodsNamed.contains(method.getName()) && !method.getName().startsWith("build")){
 					//not getter?
@@ -77,7 +67,7 @@ public class EnforceBuilderNamingTest
 					if( !method.getAstNode().getReturnType2().toString().equals(builderTypeName)){
 						String msg = String.format("Expected builder method %s.%s to return the enclosing builder '%s' but got '%s' for \n\n method \n%s\n in parent \n%s ", 
 									method.getJType().getFullName(),
-									method.toClashDetectionSignature(),
+									method.getClashDetectionSignature(),
 									builderTypeName,
 									method.getAstNode().getReturnType2().toString(),
 									method.getAstNode(),

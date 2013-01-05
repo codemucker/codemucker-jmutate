@@ -68,7 +68,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 	 * @return
 	 */
 	public InsertMethodTransform setMethod(MethodDeclaration method) {
-    	setMethod(new JMethod(method));
+    	setMethod(JMethod.from(method));
     	return this;
 	}
 	

@@ -102,7 +102,7 @@ public class AMethod extends LogicalMatchers {
 	public static Matcher<JMethod> withNameAndArgSignature(JMethod method) {
 		final String name = method.getName();
 		final int numArgs = method.getAstNode().typeParameters().size();
-		final String sig = method.toClashDetectionSignature();
+		final String sig = method.getClashDetectionSignature();
 
 		return new Matcher<JMethod>() {
 			@Override
@@ -110,7 +110,7 @@ public class AMethod extends LogicalMatchers {
 				//test using the quickest and least resource intensive matches first
 				return numArgs == found.getAstNode().typeParameters().size() 
 					&& name.equals(found.getName()) 
-					&& sig.equals(found.toClashDetectionSignature());
+					&& sig.equals(found.getClashDetectionSignature());
 			}
 		};
 	}

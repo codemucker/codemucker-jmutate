@@ -71,7 +71,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	 * @return
 	 */
 	public InsertFieldTransform setField(FieldDeclaration field) {
-    	setField(new JField(field));
+    	setField(JField.from(field));
     	return this;
 	}
 	

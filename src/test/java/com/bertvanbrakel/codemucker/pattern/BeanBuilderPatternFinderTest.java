@@ -76,7 +76,7 @@ public class BeanBuilderPatternFinderTest {
 
 		for (JMethod method : found) {
 			System.out.print( method.getAstNode().parameters().size());
-			System.out.println( " " + method.toClashDetectionSignature());	
+			System.out.println( " " + method.getClashDetectionSignature());	
 		}
 	}
 	
