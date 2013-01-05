@@ -19,13 +19,6 @@ public class JFindVisitor extends BaseASTVisitor {
 
 	public void endVisit(ClassPathResource resource) {
 	}
-	
-	public boolean visitClass(String className) {
-		return true;
-	}
-
-	public void endVisitClass(String className) {
-	}
 
 	public boolean visit(JSourceFile f) {
 		return true;

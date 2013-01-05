@@ -3,7 +3,8 @@ package com.bertvanbrakel.codemucker.ast;
 import java.io.Closeable;
 import java.util.List;
 
-import com.bertvanbrakel.codemucker.ast.finder.JFinder;
+import com.bertvanbrakel.codemucker.ast.finder.JSearchScope;
+import com.bertvanbrakel.codemucker.ast.finder.JSearchScopeVisitor;
 import com.bertvanbrakel.test.finder.Root;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
@@ -40,10 +41,10 @@ public class JSearchEngine implements Closeable {
 	}
 
 	public void index(List<Root> roots) {
-		JFinder finder = JFinder.newBuilder().setSearchRoots(roots).build();
-        JFindVisitor indexer = new JSearchIndexingVisitor(db);
+		JSearchScope searchScope = JSearchScope.newBuilder().setSearchRoots(roots).build();
+        JSearchScopeVisitor indexer = new JSearchIndexingVisitor(db,searchScope.getParser());
         
-        finder.accept(indexer);
+        searchScope.accept(indexer);
 	}
 	
 	//TODO:add search query

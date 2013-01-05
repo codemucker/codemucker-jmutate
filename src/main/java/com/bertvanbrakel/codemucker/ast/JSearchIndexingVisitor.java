@@ -1,5 +1,6 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
@@ -8,6 +9,7 @@ import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import com.bertvanbrakel.codemucker.ast.finder.JSearchScopeVisitor;
 import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.Root;
 import com.google.common.base.Preconditions;
@@ -15,7 +17,7 @@ import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 
 //TODO:remove existing entries if exists
-public class JSearchIndexingVisitor extends JFindVisitor {
+public class JSearchIndexingVisitor extends BaseASTVisitor implements JSearchScopeVisitor {
 	
 	static enum Mode {
 		CREATE,UPDATE;
@@ -37,13 +39,19 @@ public class JSearchIndexingVisitor extends JFindVisitor {
 	
 	private int saveCount = 0;
 	
-	public JSearchIndexingVisitor(OGraphDatabase db){
-		this(db,Mode.CREATE);
+	private final ASTParser parser;
+	
+	private static final String JAVA_EXTENSION = "java";
+		
+	public JSearchIndexingVisitor(OGraphDatabase db, ASTParser parser){
+		this(db,parser, Mode.CREATE);
 	}
 	
-	private JSearchIndexingVisitor(OGraphDatabase db, JSearchIndexingVisitor.Mode mode){
+	private JSearchIndexingVisitor(OGraphDatabase db, ASTParser parser, JSearchIndexingVisitor.Mode mode){
 		Preconditions.checkNotNull(db,"db");
+		Preconditions.checkNotNull(parser,"parser");
 		this.db = db;
+		this.parser = parser;
 	}
 	
 	@Override
@@ -72,6 +80,13 @@ public class JSearchIndexingVisitor extends JFindVisitor {
 		resourceDoc.setClassName("Resource");
 		resourceDoc.field("path", resource.getRelPath());
 		
+		if( resource.hasExtension(JAVA_EXTENSION)){
+			JSourceFile source = JSourceFile.fromResource(resource, parser);
+			if( visit(source) ){
+				source.getAstNode().accept(this);
+			}
+			endVisit(source);
+		}
 		return true;
 	}
 
@@ -81,17 +96,7 @@ public class JSearchIndexingVisitor extends JFindVisitor {
 		currentResource = null;
 	}
 
-	@Override
-	public boolean visitClass(String className) {
-		return true;
-	}
-
-	@Override
-	public void endVisitClass(String className) {
-	}
-
-	@Override
-	public boolean visit(JSourceFile source) {
+	private boolean visit(JSourceFile source) {
 		currentSource = source;
 		
 		sourceDoc.reset();
@@ -104,8 +109,7 @@ public class JSearchIndexingVisitor extends JFindVisitor {
 		return true;
 	}
 
-	@Override
-	public void endVisit(JSourceFile source) {
+	private void endVisit(JSourceFile source) {
 		save(sourceDoc, source.getClassnameBasedOnPath());
 		currentSource = null;
 	}
