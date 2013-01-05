@@ -35,7 +35,7 @@ public class JAstParser {
 	private final boolean recordModifications;
 	private final Map<?,?> options;
 	
-	public static Builder newBuilder(){
+	public static Builder builder(){
 		return new Builder();
 	}
 	
@@ -133,11 +133,11 @@ public class JAstParser {
 	}
 
 	public static JAstParser newDefaultJParser() {
-		return newBuilder().build();
+		return builder().build();
 	}
 
 	public static ASTParser newDefaultParser() {
-		return newBuilder().build().parser;
+		return builder().build().parser;
 	}
 	
 	public static class Builder {
@@ -154,6 +154,12 @@ public class JAstParser {
 			// to atleast 1.5
 			setSourceLevel(JavaCore.VERSION_1_6);
 		}
+		
+		public Builder setDefaults() {
+        	setParser(newDefaultAstParser());
+        	setSourceLevel(JavaCore.VERSION_1_6);
+        	return this;
+        }
 		
 		public Builder setParser(ASTParser parser) {
         	this.parser = parser;

@@ -60,14 +60,14 @@ public class JTypeMutatorTest {
 	}
 	
 	private JTypeMutator findType(String simpleClassName){
-		JSourceFinder finder = JSourceFinder.newBuilder()
+		JSourceFinder finder = JSourceFinder.builder()
 			.setSearchRoots(
-				SearchRoots.newBuilder()
+				SearchRoots.builder()
 					.setIncludeClassesDir(false)
 					.setIncludeTestDir(true)
 			)
 			.setFilter(
-				Filter.newBuilder()
+				Filter.builder()
 					.setIncludeFileName("*/ast/a/" + simpleClassName + ".java")
 			)
 			.build();

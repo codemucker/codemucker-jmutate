@@ -1,5 +1,11 @@
 package com.bertvanbrakel.codemucker.example;
 
+import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.all;
+import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.isNotConstructor;
+import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.withAccess;
+import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.withMethodAnnotation;
+import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.withMethodNamed;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -13,10 +19,7 @@ import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder.JFindListener;
 import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
-import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
-import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.*;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -27,12 +30,12 @@ public class EnforceBuilderNamingTest
 	@Ignore
 	public void testEnsureBuildersAreCorrectlyNamed()
 	{
-		Iterable<JType> builders = JSourceFinder.newBuilder()
-				.setSearchRoots(SearchRoots.newBuilder()
+		Iterable<JType> builders = JSourceFinder.builder()
+				.setSearchRoots(SearchRoots.builder()
 					.setIncludeClassesDir(true)
 					.setIncludeTestDir(true)
 				)
-				.setFilter(Filter.newBuilder()
+				.setFilter(Filter.builder()
 					.addIncludeTypes(AType.withSimpleName("*Builder"))
 					.addExcludeTypes(AType.isAbstract())
 				)
@@ -84,12 +87,12 @@ public class EnforceBuilderNamingTest
 	@Test
 	public void testEnsureAllTestMethodsStartWithTest()
 	{
-		Iterable<JMethod> methods = JSourceFinder.newBuilder()
-				.setSearchRoots(SearchRoots.newBuilder()
+		Iterable<JMethod> methods = JSourceFinder.builder()
+				.setSearchRoots(SearchRoots.builder()
 					.setIncludeClassesDir(false)
 					.setIncludeTestDir(true)
 				)
-				.setFilter(Filter.newBuilder()
+				.setFilter(Filter.builder()
 					//.addIncludeTypes(AType.withFullName("*Test"))
 					.addIncludeMethods(withMethodAnnotation(Test.class))
 				)

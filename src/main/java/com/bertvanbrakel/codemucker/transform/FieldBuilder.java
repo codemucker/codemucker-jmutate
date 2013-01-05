@@ -23,7 +23,7 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 	private JAccess access = JAccess.PRIVATE;
 	private Expression initializer;
 
-	public static FieldBuilder newBuilder(){
+	public static FieldBuilder builder(){
 		return new FieldBuilder();
 	}
 	

@@ -25,7 +25,7 @@ import com.google.common.io.Files;
 
 public final class SearchRoots  {
 		
-	public static Builder newBuilder(){
+	public static Builder builder(){
 		return new Builder();
 	}
 	

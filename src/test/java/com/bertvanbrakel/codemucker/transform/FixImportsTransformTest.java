@@ -68,12 +68,12 @@ public class FixImportsTransformTest {
 	}
 
 	private JType findTestType(Class<?> type) {
-		return JSourceFinder.newBuilder()
-			.setSearchRoots(SearchRoots.newBuilder()
+		return JSourceFinder.builder()
+			.setSearchRoots(SearchRoots.builder()
 				.setIncludeClassesDir(true)
 				.setIncludeTestDir(true)
 			)
-			.setFilter(Filter.newBuilder()
+			.setFilter(Filter.builder()
 				.addIncludeTypes(AType.withFullName(type))		
 			)
 			.build()

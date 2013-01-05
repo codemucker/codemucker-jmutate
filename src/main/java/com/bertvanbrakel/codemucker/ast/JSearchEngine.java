@@ -41,7 +41,8 @@ public class JSearchEngine implements Closeable {
 	}
 
 	public void index(List<Root> roots) {
-		JSearchScope searchScope = JSearchScope.newBuilder().setSearchRoots(roots).build();
+		//TODO:add search indexers here. Allow custom indexers fro source and non java files
+		JSearchScope searchScope = JSearchScope.builder().setSearchRoots(roots).build();
         JSearchScopeVisitor indexer = new JSearchIndexingVisitor(db,searchScope.getParser());
         
         searchScope.accept(indexer);

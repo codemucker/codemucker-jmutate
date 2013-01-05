@@ -27,7 +27,7 @@ public class NodeCollector extends BaseASTVisitor {
 	
 	private int depth = 0;
 			
-	public static Builder newBuilder(){
+	public static Builder builder(){
 		return new Builder();
 	}
 	

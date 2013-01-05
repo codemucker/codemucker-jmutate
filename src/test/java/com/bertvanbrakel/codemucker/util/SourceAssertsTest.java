@@ -18,7 +18,6 @@ package com.bertvanbrakel.codemucker.util;
 import static com.bertvanbrakel.codemucker.util.ResourceWriter.writeResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import junit.framework.AssertionFailedError;
 
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.junit.Test;

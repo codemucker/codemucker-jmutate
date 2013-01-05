@@ -8,7 +8,7 @@ public class JSearchEngineTest {
 
 	@Test
 	public void smokeTest(){
-		JSearchEngine engine = new JSearchEngine(SearchRoots.newBuilder()
+		JSearchEngine engine = new JSearchEngine(SearchRoots.builder()
 			.setIncludeClassesDir(true)
 			.setIncludeTestDir(true)
 			.setIncludeClasspath(true)

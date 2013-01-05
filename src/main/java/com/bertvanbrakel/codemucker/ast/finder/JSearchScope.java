@@ -24,7 +24,7 @@ public class JSearchScope {
 	@Inject
 	private final ASTParser parser;
 
-	public static Builder newBuilder(){
+	public static Builder builder(){
 		return new Builder();
 	}
 

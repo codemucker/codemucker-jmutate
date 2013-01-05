@@ -6,9 +6,6 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.finder.Filter;
-import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 
@@ -25,7 +22,7 @@ public class NodeCollectorTest {
 		
 		JType type = t.asJType();
 	
-		NodeCollector col = NodeCollector.newBuilder()
+		NodeCollector col = NodeCollector.builder()
 			.collectType(MethodDeclaration.class)
 			.ignoreChildTypes()
 			.build();
@@ -49,7 +46,7 @@ public class NodeCollectorTest {
 		
 		JType type = t.asJType();
 	
-		NodeCollector col = NodeCollector.newBuilder()
+		NodeCollector col = NodeCollector.builder()
 			.collectType(MethodDeclaration.class)
 			.ignoreChildTypes()
 			.build();

@@ -26,7 +26,7 @@ import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class BeanPropertyTransformTest {
 
-	private MutationContext ctxt = SimpleMutationContext.newBuilder()
+	private MutationContext ctxt = SimpleMutationContext.builder()
 			.setMarkGenerated(true)
 			.build();
 		

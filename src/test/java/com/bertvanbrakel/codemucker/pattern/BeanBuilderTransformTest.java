@@ -73,12 +73,12 @@ public class BeanBuilderTransformTest {
 	}
 
 	private FindResult<JType> findTypesToTransform() {
-	    FindResult<JType> found = JSourceFinder.newBuilder()
-			.setSearchRoots(SearchRoots.newBuilder()
+	    FindResult<JType> found = JSourceFinder.builder()
+			.setSearchRoots(SearchRoots.builder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)
-			.setFilter(Filter.newBuilder()
+			.setFilter(Filter.builder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				.addIncludeTypes(AType.withFullName(TestBuilderBean.class))
 			)	

@@ -16,12 +16,12 @@ public class JavaSourceFinderTest {
 
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
-		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchRoots(SearchRoots.newBuilder()
+		JSourceFinder finder = JSourceFinder.builder()
+			.setSearchRoots(SearchRoots.builder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)
-			.setFilter(Filter.newBuilder()
+			.setFilter(Filter.builder()
 				.addIncludeTypes(AType.withAnnotation(MyAnnotation.class))
 			)
 			.build();
@@ -41,8 +41,8 @@ public class JavaSourceFinderTest {
 	
 	@Test
 	public void testFindWithMethods(){
-		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchRoots(SearchRoots.newBuilder()
+		JSourceFinder finder = JSourceFinder.builder()
+			.setSearchRoots(SearchRoots.builder()
 				.setIncludeClassesDir(true)
 				.setIncludeTestDir(true)
 			)

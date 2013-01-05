@@ -26,7 +26,7 @@ public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuild
 	private String type;
 	private JType target;
 
-	public static SetterMethodBuilder newBuilder() {
+	public static SetterMethodBuilder builder() {
 		return new SetterMethodBuilder();
 	}
 

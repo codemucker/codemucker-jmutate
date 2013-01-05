@@ -19,12 +19,12 @@ public class JavaAnnotationTest {
 
 	@Test
 	public void test_resolveSimpleName(){
-		JSourceFinder finder = JSourceFinder.newBuilder()
-			.setSearchRoots(SearchRoots.newBuilder()
+		JSourceFinder finder = JSourceFinder.builder()
+			.setSearchRoots(SearchRoots.builder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)
-			.setFilter(Filter.newBuilder()
+			.setFilter(Filter.builder()
 				.setIncludeSource(ASourceFile.withName(JavaAnnotationTest.class))
 			)
 			.build();

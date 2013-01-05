@@ -73,7 +73,7 @@ public class Filter implements JFindMatcher {
 		return methodFilter;
 	}	
 	
-	public static Builder newBuilder(){
+	public static Builder builder(){
 		return new Builder();
 	}
 
@@ -93,13 +93,13 @@ public class Filter implements JFindMatcher {
 			public void onIgnored(Object result) {}
 	    };
 	    
-	    private IncludeExcludeMatcherBuilder<Root> roots = IncludeExcludeMatcherBuilder.newBuilder();
-		private IncludeExcludeMatcherBuilder<String> resourceNames = IncludeExcludeMatcherBuilder.newBuilder();
-		private IncludeExcludeMatcherBuilder<ClassPathResource> resources = IncludeExcludeMatcherBuilder.newBuilder();	
-		private IncludeExcludeMatcherBuilder<String> classNames = IncludeExcludeMatcherBuilder.newBuilder();
-		private IncludeExcludeMatcherBuilder<JSourceFile> sources = IncludeExcludeMatcherBuilder.newBuilder();
-		private IncludeExcludeMatcherBuilder<JMethod> methods = IncludeExcludeMatcherBuilder.newBuilder();
-		private IncludeExcludeMatcherBuilder<JType> types = IncludeExcludeMatcherBuilder.newBuilder();
+	    private IncludeExcludeMatcherBuilder<Root> roots = IncludeExcludeMatcherBuilder.builder();
+		private IncludeExcludeMatcherBuilder<String> resourceNames = IncludeExcludeMatcherBuilder.builder();
+		private IncludeExcludeMatcherBuilder<ClassPathResource> resources = IncludeExcludeMatcherBuilder.builder();	
+		private IncludeExcludeMatcherBuilder<String> classNames = IncludeExcludeMatcherBuilder.builder();
+		private IncludeExcludeMatcherBuilder<JSourceFile> sources = IncludeExcludeMatcherBuilder.builder();
+		private IncludeExcludeMatcherBuilder<JMethod> methods = IncludeExcludeMatcherBuilder.builder();
+		private IncludeExcludeMatcherBuilder<JType> types = IncludeExcludeMatcherBuilder.builder();
 
 		private Callable<Object> matchListener;
 		

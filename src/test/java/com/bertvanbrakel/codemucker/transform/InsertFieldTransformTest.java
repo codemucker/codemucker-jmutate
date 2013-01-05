@@ -36,7 +36,7 @@ public class InsertFieldTransformTest {
 		
 		JType after = srcBefore.asJType();
 		
-		JField field = FieldBuilder.newBuilder()
+		JField field = FieldBuilder.builder()
 			.setContext(ctxt)
 			.setMarkedGenerated(true)
 			.setPattern("mypattern")

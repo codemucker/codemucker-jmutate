@@ -10,9 +10,9 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.ASTParser;
 
 import com.bertvanbrakel.codemucker.ast.JAstParser;
+import com.bertvanbrakel.codemucker.ast.JFindVisitor;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
-import com.bertvanbrakel.codemucker.ast.JFindVisitor;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.lang.IsBuilder;
 import com.bertvanbrakel.test.finder.ClassPathResource;
@@ -69,7 +69,7 @@ public class JSourceFinder {
 	public static interface JFindListener extends FindResult.MatchListener<Object> {
 	}
 	
-	public static Builder newBuilder(){
+	public static Builder builder(){
 		return new Builder();
 	}
 

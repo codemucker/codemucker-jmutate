@@ -6,8 +6,8 @@ import java.io.StringReader;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.AstNodeFlattener;
+import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.google.inject.Inject;
 

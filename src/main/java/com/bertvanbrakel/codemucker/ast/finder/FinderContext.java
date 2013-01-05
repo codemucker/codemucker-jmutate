@@ -13,11 +13,11 @@ public class FinderContext {
 
 	private final Injector injector;
 	
-	public static Builder newBuilder(){
+	public static Builder builder(){
 		return new Builder();
 	}
 	
-	public FinderContext (){
+	public FinderContext(){
 		injector = Guice.createInjector(Stage.PRODUCTION, new FinderContextModule());
 	}
 	
@@ -40,7 +40,7 @@ public class FinderContext {
 		
 		@Provides
 		public JAstParser provideJAstParser(){
-			return JAstParser.newBuilder().build();
+			return JAstParser.builder().build();
 		}
 	}
 	

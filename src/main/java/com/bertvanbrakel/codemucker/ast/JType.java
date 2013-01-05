@@ -19,11 +19,9 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.FindResultImpl;
@@ -138,7 +136,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	
 	private void findChildTypesMatching(JType type, Matcher<JType> matcher, List<JType> found) {
 		//collect
-		NodeCollector collector = NodeCollector.newBuilder()
+		NodeCollector collector = NodeCollector.builder()
 			.collectType(AnonymousClassDeclaration.class)
 			//.collectType(AbstractTypeDeclaration.class)
 			.collectType(EnumDeclaration.class)
@@ -205,7 +203,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	}
 	
 	private void findMethodsMatching(final Matcher<JMethod> matcher, final Collection<JMethod> found) {
-		NodeCollector collector = NodeCollector.newBuilder()
+		NodeCollector collector = NodeCollector.builder()
 			.ignoreChildTypes()
 			.collectType(MethodDeclaration.class)
 			.build();

@@ -58,7 +58,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		checkNotNull("resource", resource);
 		checkNotNull("parser", parser);
 		
-		CompilationUnit cu = JAstParser.newBuilder().setParser(parser).build().parseCompilationUnit(sourceCode);
+		CompilationUnit cu = JAstParser.builder().setParser(parser).build().parseCompilationUnit(sourceCode);
 		return new JSourceFile(resource, cu, sourceCode);
 	}
 
