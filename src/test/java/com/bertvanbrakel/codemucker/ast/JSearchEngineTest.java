@@ -11,6 +11,7 @@ public class JSearchEngineTest {
 		JSearchEngine engine = new JSearchEngine(SearchRoots.newBuilder()
 			.setIncludeClassesDir(true)
 			.setIncludeTestDir(true)
+			.setIncludeClasspath(true)
 			.build());
 		
 		engine.find();

@@ -11,13 +11,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.lang.IsBuilder;
+import com.bertvanbrakel.test.finder.ArchiveRoot;
 import com.bertvanbrakel.test.finder.ClassFinderException;
 import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.Root.RootType;
 import com.bertvanbrakel.test.util.ProjectFinder;
 import com.bertvanbrakel.test.util.ProjectResolver;
+import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 
 public final class SearchRoots  {
 		
@@ -35,6 +39,8 @@ public final class SearchRoots  {
 		private boolean includeTestDir = false;
 		private boolean includeClasspath = false;
 		private boolean includeGeneratedDir = false;
+		
+		private Set<String> archiveTypes = Sets.newHashSet("jar","zip","ear","war");	
 		
 		private Builder(){
 			//prevent instantiation outside of builder method
@@ -76,12 +82,15 @@ public final class SearchRoots  {
 			copy.includeGeneratedDir = includeGeneratedDir;
 			copy.includeTestDir = includeTestDir;
 			copy.classPathsRoots.putAll(classPathsRoots);
+			copy.archiveTypes.addAll(archiveTypes);
+			
 			return copy;
 		}
 		
 		private Set<File> findClassPathDirs() {
 			Set<File> files = newLinkedHashSet();
 	
+			
 			String classpath = System.getProperty("java.class.path");
 			String sep = System.getProperty("path.separator");
 			String[] paths = classpath.split(sep);
@@ -109,6 +118,19 @@ public final class SearchRoots  {
 			return this;
 		}
 		
+		/**
+		 * Add additional file extension types to denote an archive resources (like a jar). E.g. 'jar'
+		 * 
+		 * Default contains jar,zip,war,ear
+		 * 
+		 * @param extension
+		 * @return
+		 */
+		public Builder addArchiveFileExtension(String extension) {
+			this.archiveTypes.add(extension);
+	    	return this;
+	    }
+		
 		public Builder addClassPathDir(String path) {
 	    	addClassPathDir(new File(path));
 	    	return this;
@@ -129,8 +151,17 @@ public final class SearchRoots  {
 	    }
 		
 		public Builder addClassPathDir(File path) {
-			addClassPath(new DirectoryRoot(path,RootType.UNKNOWN));
-	    	return this;
+			if( path.isFile()){
+				String extension = Files.getFileExtension(path.getName()).toLowerCase();
+				if( archiveTypes.contains(extension)){
+					addClassPath(new ArchiveRoot(path,RootType.UNKNOWN));	
+				} else {
+					throw new CodemuckerException("Don't currently know how to handle roots of type " + extension); 
+				}
+			} else {
+				addClassPath(new DirectoryRoot(path,RootType.UNKNOWN));
+			}
+			return this;
 	    }
 	
 		public Builder addClassPaths(Iterable<Root> roots) {

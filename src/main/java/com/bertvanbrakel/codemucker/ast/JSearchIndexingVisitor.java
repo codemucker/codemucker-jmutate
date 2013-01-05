@@ -70,14 +70,14 @@ public class JSearchIndexingVisitor extends JFindVisitor {
 		resourceDoc.reset();
 		resourceDoc.addOwner(rootDoc);
 		resourceDoc.setClassName("Resource");
-		resourceDoc.field("path", resource.getBaseFileNamePart());
+		resourceDoc.field("path", resource.getRelPath());
 		
 		return true;
 	}
 
 	@Override
 	public void endVisit(ClassPathResource resource) {
-		save(resourceDoc, resource.getBaseFileNamePart());
+		save(resourceDoc, resource.getRelPath());
 		currentResource = null;
 	}
 
@@ -98,7 +98,7 @@ public class JSearchIndexingVisitor extends JFindVisitor {
 		sourceDoc.addOwner(resourceDoc);
 		sourceDoc.setClassName("Source");
 		sourceDoc.field("root", currentRoot.getPathName());	
-		sourceDoc.field("resource", currentResource.getBaseFileNamePart());
+		sourceDoc.field("resource", currentResource.getRelPath());
 		sourceDoc.field("classname", source.getClassnameBasedOnPath());
 	
 		return true;

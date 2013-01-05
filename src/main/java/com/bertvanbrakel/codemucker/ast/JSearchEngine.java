@@ -3,8 +3,6 @@ package com.bertvanbrakel.codemucker.ast;
 import java.io.Closeable;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-
 import com.bertvanbrakel.codemucker.ast.finder.JFinder;
 import com.bertvanbrakel.test.finder.Root;
 import com.orientechnologies.orient.core.Orient;
