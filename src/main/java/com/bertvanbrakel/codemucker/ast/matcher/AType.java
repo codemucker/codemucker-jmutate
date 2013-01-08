@@ -70,15 +70,7 @@ public class AType extends LogicalMatchers {
     public static Matcher<JType> none() {
 		return LogicalMatchers.none();
 	}
-	
-	public static Matcher<JType> any(Matcher<JType>... matchers) {
-		return LogicalMatchers.any(matchers);
-	}
-	
-    public static Matcher<JType> all(Matcher<JType>... matchers) {
-		return LogicalMatchers.all(matchers);
-	}
-	
+
 	public static Matcher<JType> inPackage(final String pkgAntExpression){
 		return new Matcher<JType>() {
 			private final Pattern pattern = TestUtils.antExpToPattern(pkgAntExpression);

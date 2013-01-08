@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.MethodRef;
 
 import com.bertvanbrakel.codemucker.ast.BaseASTVisitor;
+import com.bertvanbrakel.codemucker.ast.JAstParser;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
@@ -81,23 +82,13 @@ public class BeanBuilderGenerator {
 		
 		CompilationUnit result;
 		try {
-			ASTParser parser = ASTParser.newParser(AST.JLS3);
-			
-			 // In order to parse 1.5 code, some compiler options need to be set to 1.5
-			 Map options = JavaCore.getOptions();
-			 JavaCore.setComplianceOptions(JavaCore.VERSION_1_5, options);
-			 parser.setCompilerOptions(options);
-			 
-			parser.setSource(src.toCharArray());
-
-			result = (CompilationUnit) parser.createAST(null);
+			result = JAstParser.newDefaultJParser().parseCompilationUnit(src);
 		} catch (Exception e) {
 			throw new BeanGenerationException("error parsing source", e);
 		}
 		assertNotNull(result);
 		//System.out.println(ToStringBuilder.reflectionToString(result));
 		assertNotNull(result.getRoot());
-		ASTNode rootNode = result.getRoot();
 		//System.out.println(rootNode.getClass().getName());
 		BaseASTVisitor vis = new BaseASTVisitor() {
 //			@Override

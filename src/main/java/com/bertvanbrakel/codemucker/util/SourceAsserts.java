@@ -17,14 +17,14 @@ import com.bertvanbrakel.codemucker.ast.JAstFlattener;
 import com.bertvanbrakel.codemucker.ast.JAstMatcher;
 import com.bertvanbrakel.codemucker.ast.JAstParser;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
-import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.RootResource;
 
 public class SourceAsserts {
 
 	/**
      * Assert the given resources look the same once parsed into Ast's. Formatting is ignored
      */
-    public static void assertAstsMatch(ClassPathResource expected, ClassPathResource actual) {
+    public static void assertAstsMatch(RootResource expected, RootResource actual) {
     	CompilationUnit expectCu = getAstFromFileWithNoErrors(expected);
     	CompilationUnit actualCu = getAstFromFileWithNoErrors(actual);
     	
@@ -78,8 +78,8 @@ public class SourceAsserts {
 		return new ComparisonFailure("Error comparing asts. Dont't match. Exception is " + sw, expectFromAst, actualFromAst);
 	}
 
-	private static CompilationUnit getAstFromFileWithNoErrors(ClassPathResource resource) {
-    	CompilationUnit cu = JSourceFile.fromResource(resource, JAstParser.newDefaultParser()).getCompilationUnit();
+	private static CompilationUnit getAstFromFileWithNoErrors(RootResource resource) {
+    	CompilationUnit cu = JSourceFile.fromResource(resource, JAstParser.newDefaultJParser()).getCompilationUnit();
     	return cu;
     }
 	

@@ -24,7 +24,9 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
-import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.Root.RootContentType;
+import com.bertvanbrakel.test.finder.Root.RootType;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.util.ProjectFinder;
@@ -125,11 +127,10 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 */
 	public AbstractTypeDeclaration asTypeNode() {
 		CompilationUnit cu = asCompilationUnit();
-		if( cu.types().size() == 1){
+		if(cu.types().size() == 1){
 			return (AbstractTypeDeclaration) cu.types().get(0);
 		}
-		
-		if( cu.types().size() == 0){
+		if(cu.types().size() == 0){
 			throw new CodemuckerException("Source template does not contain any types. Expected 1 but got 0. Parsed source %s",interpolate());
 		}
 		throw new CodemuckerException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolate());
@@ -149,7 +150,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		CharSequence src = interpolate();
 		CompilationUnit cu = parser.parseCompilationUnit(src);
 		String fqn = simpleNameToFullNameIn(simpleName, cu);
-		ClassPathResource resource = newTmpResourceWithPath(fqnToRelPath(fqn));
+		RootResource resource = newTmpResourceWithPath(fqnToRelPath(fqn));
 		
 		return new JSourceFile(resource, cu, src);
 	}
@@ -192,7 +193,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		}
 		
 		String fullName = mainType.getFullName();
-		ClassPathResource resource = newTmpResourceWithPath(fqnToRelPath(fullName));
+		RootResource resource = newTmpResourceWithPath(fqnToRelPath(fullName));
 		return new JSourceFile(resource, cu, src);
 	}
 	
@@ -223,13 +224,13 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		
 		CharSequence src = interpolate();
 		CompilationUnit cu = parser.parseCompilationUnit(src);
-		ClassPathResource resource = newTmpResourceWithPath(relPath);
+		RootResource resource = newTmpResourceWithPath(relPath);
 		return new JSourceFile(resource, cu, src);
 	}
 
-	private ClassPathResource newTmpResourceWithPath(String relPath) {
+	private RootResource newTmpResourceWithPath(String relPath) {
 	    Root root = newTmpRoot();
-		ClassPathResource resource = new ClassPathResource(root, relPath);
+		RootResource resource = new RootResource(root, relPath);
 	    return resource;
     }
 
@@ -265,7 +266,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		File tmpDir = new File(dir,UUID.randomUUID().toString() + "/");
 		tmpDir.mkdirs();
 		
-		return new DirectoryRoot(tmpDir,Root.RootType.GENERATED_SRC);
+		return new DirectoryRoot(tmpDir,Root.RootType.GENERATED, RootContentType.SRC);
 	}
 
 	private TypeDeclaration toTempWrappingType() {

@@ -11,7 +11,7 @@ import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder.JFindMatcher;
 import com.bertvanbrakel.codemucker.ast.matcher.ASourceFile;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.lang.IsBuilder;
-import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.matcher.IncludeExcludeMatcherBuilder;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
@@ -21,7 +21,7 @@ public class Filter implements JFindMatcher {
 
 	private final FindResult.Filter<Object> objectFilter;
 	private final FindResult.Filter<Root> rootFilter;
-	private final FindResult.Filter<ClassPathResource> resourceFilter;
+	private final FindResult.Filter<RootResource> resourceFilter;
 	private final FindResult.Filter<JSourceFile> sourceFilter;
 	private final FindResult.Filter<JType> typeMatcher;
 	private final FindResult.Filter<JMethod> methodFilter;
@@ -29,7 +29,7 @@ public class Filter implements JFindMatcher {
 	private Filter(
 			FindResult.Filter<Object> objectFilter
 			, FindResult.Filter<Root> rootFilter
-			, FindResult.Filter<ClassPathResource> resourceMatcher
+			, FindResult.Filter<RootResource> resourceMatcher
 			, FindResult.Filter<JSourceFile> sourceMatcher
 			, FindResult.Filter<JType> typeMatcher
 			, FindResult.Filter<JMethod> methodMatcher) {
@@ -54,7 +54,7 @@ public class Filter implements JFindMatcher {
 	}
 
 	@Override 
-	public FindResult.Filter<ClassPathResource> getResourceMatcher() {
+	public FindResult.Filter<RootResource> getResourceMatcher() {
 		return resourceFilter;
 	}
 
@@ -95,7 +95,7 @@ public class Filter implements JFindMatcher {
 	    
 	    private IncludeExcludeMatcherBuilder<Root> roots = IncludeExcludeMatcherBuilder.builder();
 		private IncludeExcludeMatcherBuilder<String> resourceNames = IncludeExcludeMatcherBuilder.builder();
-		private IncludeExcludeMatcherBuilder<ClassPathResource> resources = IncludeExcludeMatcherBuilder.builder();	
+		private IncludeExcludeMatcherBuilder<RootResource> resources = IncludeExcludeMatcherBuilder.builder();	
 		private IncludeExcludeMatcherBuilder<String> classNames = IncludeExcludeMatcherBuilder.builder();
 		private IncludeExcludeMatcherBuilder<JSourceFile> sources = IncludeExcludeMatcherBuilder.builder();
 		private IncludeExcludeMatcherBuilder<JMethod> methods = IncludeExcludeMatcherBuilder.builder();
@@ -122,10 +122,10 @@ public class Filter implements JFindMatcher {
 			return MatcherToFilterAdapter.from(matcher);
 		}
 		
-		private static Matcher<ClassPathResource> mergeResourceMatchers(final Matcher<ClassPathResource> matcher, final Matcher<String> resourceNameMatcher){
-			return new Matcher<ClassPathResource>(){
+		private static Matcher<RootResource> mergeResourceMatchers(final Matcher<RootResource> matcher, final Matcher<String> resourceNameMatcher){
+			return new Matcher<RootResource>(){
 				@Override
-				public boolean matches(ClassPathResource found) {
+				public boolean matches(RootResource found) {
 					return resourceNameMatcher.matches(found.getRelPath()) && matcher.matches(found);
 				}
 			};
@@ -155,7 +155,7 @@ public class Filter implements JFindMatcher {
 			return this;
 		}
 		
-		public Builder setIncludeResource(Matcher<ClassPathResource> matcher) {
+		public Builder setIncludeResource(Matcher<RootResource> matcher) {
 			resources.addInclude(matcher);
 			return this;
 		}
@@ -170,7 +170,7 @@ public class Filter implements JFindMatcher {
 			return this;
 		}
 	
-		public Builder setExcludeResource(Matcher<ClassPathResource> matcher) {
+		public Builder setExcludeResource(Matcher<RootResource> matcher) {
 			resources.addExclude(matcher);
 			return this;
 		}

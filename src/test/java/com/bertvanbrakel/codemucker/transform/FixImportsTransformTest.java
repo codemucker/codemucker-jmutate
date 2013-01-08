@@ -14,9 +14,9 @@ import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
+import com.bertvanbrakel.test.finder.Roots;
 
 public class FixImportsTransformTest {
 
@@ -69,7 +69,7 @@ public class FixImportsTransformTest {
 
 	private JType findTestType(Class<?> type) {
 		return JSourceFinder.builder()
-			.setSearchRoots(SearchRoots.builder()
+			.setSearchRoots(Roots.builder()
 				.setIncludeClassesDir(true)
 				.setIncludeTestDir(true)
 			)

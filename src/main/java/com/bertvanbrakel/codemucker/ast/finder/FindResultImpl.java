@@ -18,6 +18,14 @@ public class FindResultImpl<T> implements FindResult<T> {
 
 	private final Iterable<T> source;
 	private Boolean empty;
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private static final FindResultImpl EMPTY = new FindResultImpl(Collections.emptyList());
+	
+	@SuppressWarnings("unchecked")
+	public static <T> FindResultImpl<T> emptyResults(){
+		return EMPTY;
+	}
 
 	public static <T> FindResultImpl<T> from(Iterable<T> source){
 		return new FindResultImpl<T>(source);
@@ -36,18 +44,6 @@ public class FindResultImpl<T> implements FindResult<T> {
 		return list;
 	}
 	
-	@Override
-	public boolean isEmpty(){
-		if( empty == null){
-			if( source instanceof Collection){
-				empty = ((Collection<?>)source).isEmpty();
-			} else {
-				empty = source.iterator().hasNext();
-			}
-		}
-		return empty.booleanValue();
-	}
-
 	/**
 	 * @param results can be null in which case it is treated as an empty list
 	 */
@@ -62,6 +58,18 @@ public class FindResultImpl<T> implements FindResult<T> {
 	    return source.iterator();
     }
 
+	@Override
+	public boolean isEmpty(){
+		if( empty == null){
+			if( source instanceof Collection){
+				empty = ((Collection<?>)source).isEmpty();
+			} else {
+				empty = source.iterator().hasNext();
+			}
+		}
+		return empty.booleanValue();
+	}
+	
 	@Override
     public List<T> toList() {
 		if( source instanceof List){

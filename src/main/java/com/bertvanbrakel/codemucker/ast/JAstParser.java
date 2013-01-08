@@ -5,6 +5,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.junit.Assert.fail;
 
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -16,6 +17,8 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
+import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.Root.RootContentType;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
@@ -34,17 +37,34 @@ public class JAstParser {
 	private final boolean checkParse;
 	private final boolean recordModifications;
 	private final Map<?,?> options;
+	private final String[] binaryRoots;
+	private final String[] sourceRoots;
 	
 	public static Builder builder(){
 		return new Builder();
 	}
 	
-	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options) {
+	private static final String[] EMPTY = new String[]{};
+	
+	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Iterable<Root> roots) {
 	    super();
 	    this.parser = checkNotNull(parser,"expect parser");
 	    this.checkParse = checkParse;
 	    this.recordModifications = recordModifications;
 	    this.options = checkNotNull(options,"expect parser options");
+	    
+	    List<String> sources = newArrayList();
+	    List<String> binaries = newArrayList();
+		for (Root root : roots) {
+			if(root.getContentType() == RootContentType.SRC){
+				sources.add(root.getPathName());
+			}  else {
+				binaries.add(root.getPathName());
+			}
+		}
+		
+		this.binaryRoots = binaries.toArray(EMPTY);
+		this.sourceRoots = sources.toArray(EMPTY);
     }
 
 	/**
@@ -110,7 +130,12 @@ public class JAstParser {
 	}
 
 	public ASTNode parseNode(CharSequence src, int kind) {
+		
 		parser.setCompilerOptions(options);
+		
+		if( binaryRoots.length > 0 || sourceRoots.length > 0){
+	    	parser.setEnvironment(binaryRoots, sourceRoots, null, false);
+	    }
 		parser.setSource(src.toString().toCharArray());
 		parser.setKind(kind);
 		ASTNode node = parser.createAST(null);
@@ -140,14 +165,17 @@ public class JAstParser {
 		return builder().build().parser;
 	}
 	
+	public static class CompilerOptions {
+		
+	}
 	public static class Builder {
 		private ASTParser parser;
 		private boolean checkParse = true;
 		private boolean recordModifications = true;
 		private boolean resolveBindings = true;
-
 		@SuppressWarnings("unchecked")
         private Map<Object,Object> options = newHashMap(JavaCore.getOptions());
+		private List<Root> roots = newArrayList();
 		
 		public Builder(){
 			// In order to parse 1.5 code, some compiler options need to be set
@@ -171,7 +199,9 @@ public class JAstParser {
 				toParser()
 				, checkParse
 				, recordModifications
-				, newHashMap(options));
+				, newHashMap(options)
+				, roots
+			);
 		}
 		
 		private ASTParser toParser() {
@@ -179,9 +209,21 @@ public class JAstParser {
 		}
 		
 		private ASTParser newDefaultAstParser(){
-			ASTParser parser = ASTParser.newParser(AST.JLS3);
+			ASTParser parser = ASTParser.newParser(AST.JLS4);
 			parser.setResolveBindings(resolveBindings);
+		    parser.setCompilerOptions(options);
+
 			return parser;
+		}
+		
+		public Builder addRoot(Root root){
+			this.roots.add(root);
+			return this;
+		}
+		
+		public Builder setRoots(Iterable<Root> roots){
+			this.roots = newArrayList(roots);
+			return this;
 		}
 
 		public Builder setCheckParse(boolean checkParse) {
@@ -200,8 +242,18 @@ public class JAstParser {
 		}
 
 		public Builder setSourceLevel(String sourceLevel) {
-			JavaCore.setComplianceOptions(sourceLevel, options);
+			setCompilerOption(JavaCore.COMPILER_SOURCE, sourceLevel);
 			return this;
-		}	
+		}
+		
+		public Builder setCompilerOption(String name, String value) {
+			options.put(name, value);
+			return this;
+		}
+		
+		public Builder setCompilerOptions(Map<String,String> options) {
+			options.putAll(options);
+			return this;
+		}
 	}
 }

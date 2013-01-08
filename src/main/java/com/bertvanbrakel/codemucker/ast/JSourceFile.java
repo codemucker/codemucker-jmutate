@@ -12,7 +12,8 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jface.text.BadLocationException;
@@ -22,7 +23,7 @@ import org.eclipse.text.edits.TextEdit;
 
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
-import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
@@ -30,17 +31,17 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
 	//TODO:cache calculated fields, but clear on node modification
 	
-	private final ClassPathResource resource;
-	private final CompilationUnit compilationUnit;
+	private final RootResource resource;
+	private final CompilationUnit compilationUnitNode;
 	private final CharSequence sourceCode;
 
-	public JSourceFile(ClassPathResource resource, CompilationUnit cu, CharSequence sourceCode) {
+	public JSourceFile(RootResource resource, CompilationUnit cu, CharSequence sourceCode) {
 		this.resource = checkNotNull("resource", resource);
 		this.sourceCode = sourceCode;
-		this.compilationUnit = cu;
+		this.compilationUnitNode = cu;
 	}
 
-	public static JSourceFile fromResource(ClassPathResource resource, ASTParser parser){
+	public static JSourceFile fromResource(RootResource resource, JAstParser parser){
 		checkNotNull("resource", resource);
 		checkNotNull("parser", parser);
 		
@@ -54,11 +55,11 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		return fromSource(resource, src, parser);
 	}
 	
-	public static JSourceFile fromSource(ClassPathResource resource, CharSequence sourceCode, ASTParser parser){
+	public static JSourceFile fromSource(RootResource resource, CharSequence sourceCode, JAstParser parser){
 		checkNotNull("resource", resource);
 		checkNotNull("parser", parser);
 		
-		CompilationUnit cu = JAstParser.builder().setParser(parser).build().parseCompilationUnit(sourceCode);
+		CompilationUnit cu = parser.parseCompilationUnit(sourceCode);
 		return new JSourceFile(resource, cu, sourceCode);
 	}
 
@@ -118,7 +119,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
 	@Override
 	public CompilationUnit getAstNode(){
-		return compilationUnit;
+		return compilationUnitNode;
 	}
 	
 	public void visit(JFindVisitor visitor) {
@@ -141,7 +142,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	 * Return the resource location of this source file. This could be an auto generated resource location
 	 * @return
 	 */
-	public ClassPathResource getResource(){
+	public RootResource getResource(){
 		return resource;
 	}
 
@@ -172,12 +173,11 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	public JType getTopTypeWithName(String simpleName){
 		List<AbstractTypeDeclaration> types = getTopTypes();
 		for( AbstractTypeDeclaration type:types){
-			//fqn is actually just the shortname
-			if( simpleName.equals(type.getName().getFullyQualifiedName())){
+			if(simpleName.equals(type.getName().getFullyQualifiedName())){ //fqn is actually just the shortname
 				return JType.from(type);
 			}
 		}
-		Collection<String> names = extractNames(types);
+		Collection<String> names = extractTopTypeNames(types);
 		throw new CodemuckerException("Can't find top level type named '%s' in resource '%s'. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
 	}
 	
@@ -214,20 +214,27 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		return internalFindTypesMatching(matcher);
 	}
 	
-	private List<JType> internalFindTypesMatching(Matcher<JType> matcher){
-		List<JType> found = newArrayList();
-		for( JType type:getTopJTypes()){
-			if( matcher.matches(type)){
-				found.add(type);
+	private List<JType> internalFindTypesMatching(final Matcher<JType> matcher){
+		final List<JType> found = newArrayList();
+		ASTVisitor visitor = new BaseASTVisitor(){
+			@Override
+			protected boolean visitNode(ASTNode node) {
+				if(JType.isTypeNode(node)){
+					JType type = JType.from(node);
+					if( matcher.matches(type)) {
+						found.add(type);
+					}
+				}
+				return true;
 			}
-			type.findChildTypesMatching(matcher, found);
-		}
+		};
+		compilationUnitNode.accept(visitor);
 		return found;
 	}
 
-	private static List<String> extractNames(List<AbstractTypeDeclaration> types){
+	private static List<String> extractTopTypeNames(List<AbstractTypeDeclaration> types){
 		List<String> names = newArrayList();
-		for( AbstractTypeDeclaration type:types){
+		for(AbstractTypeDeclaration type:types){
 			names.add(type.getName().toString());
 		}
 		return names;
@@ -247,7 +254,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 	
 	public CompilationUnit getCompilationUnit() {
-		return compilationUnit;
+		return compilationUnitNode;
 	}
 
 	public String toString() {

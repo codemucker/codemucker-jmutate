@@ -1,6 +1,5 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
@@ -9,15 +8,15 @@ import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import com.bertvanbrakel.codemucker.ast.finder.JSearchScopeVisitor;
-import com.bertvanbrakel.test.finder.ClassPathResource;
 import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.RootResource;
+import com.bertvanbrakel.test.finder.RootVisitor;
 import com.google.common.base.Preconditions;
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 
 //TODO:remove existing entries if exists
-public class JSearchIndexingVisitor extends BaseASTVisitor implements JSearchScopeVisitor {
+public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisitor {
 	
 	static enum Mode {
 		CREATE,UPDATE;
@@ -34,20 +33,20 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements JSearchSco
 	private ODocument fieldDoc = new ODocument(); 
 	
 	private Root currentRoot;
-	private ClassPathResource currentResource;
+	private RootResource currentResource;
 	private JSourceFile currentSource;
 	
 	private int saveCount = 0;
 	
-	private final ASTParser parser;
+	private final JAstParser parser;
 	
 	private static final String JAVA_EXTENSION = "java";
 		
-	public JSearchIndexingVisitor(OGraphDatabase db, ASTParser parser){
+	public JSearchIndexingVisitor(OGraphDatabase db, JAstParser parser){
 		this(db,parser, Mode.CREATE);
 	}
 	
-	private JSearchIndexingVisitor(OGraphDatabase db, ASTParser parser, JSearchIndexingVisitor.Mode mode){
+	private JSearchIndexingVisitor(OGraphDatabase db, JAstParser parser, JSearchIndexingVisitor.Mode mode){
 		Preconditions.checkNotNull(db,"db");
 		Preconditions.checkNotNull(parser,"parser");
 		this.db = db;
@@ -72,7 +71,7 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements JSearchSco
 	}
 
 	@Override
-	public boolean visit(ClassPathResource resource) {
+	public boolean visit(RootResource resource) {
 		currentResource = resource;
 			
 		resourceDoc.reset();
@@ -91,7 +90,7 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements JSearchSco
 	}
 
 	@Override
-	public void endVisit(ClassPathResource resource) {
+	public void endVisit(RootResource resource) {
 		save(resourceDoc, resource.getRelPath());
 		currentResource = null;
 	}

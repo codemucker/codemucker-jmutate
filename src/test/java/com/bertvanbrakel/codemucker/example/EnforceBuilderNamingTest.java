@@ -19,8 +19,8 @@ import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
+import com.bertvanbrakel.test.finder.Roots;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
@@ -31,7 +31,7 @@ public class EnforceBuilderNamingTest
 	public void testEnsureBuildersAreCorrectlyNamed()
 	{
 		Iterable<JType> builders = JSourceFinder.builder()
-				.setSearchRoots(SearchRoots.builder()
+				.setSearchRoots(Roots.builder()
 					.setIncludeClassesDir(true)
 					.setIncludeTestDir(true)
 				)
@@ -42,7 +42,7 @@ public class EnforceBuilderNamingTest
 				.build()
 				.findTypes();
 		
-		List<String> ignoreMethodsNamed = Lists.newArrayList("build","newBuilder","copyOf");
+		List<String> ignoreMethodsNamed = Lists.newArrayList("build","builder","copyOf");
 		
 		for (JType builder : builders) {			
 			FindResult<JMethod> buildMethod = builder.findMethodsMatching(withMethodNamed("build"));
@@ -88,7 +88,7 @@ public class EnforceBuilderNamingTest
 	public void testEnsureAllTestMethodsStartWithTest()
 	{
 		Iterable<JMethod> methods = JSourceFinder.builder()
-				.setSearchRoots(SearchRoots.builder()
+				.setSearchRoots(Roots.builder()
 					.setIncludeClassesDir(false)
 					.setIncludeTestDir(true)
 				)
@@ -102,8 +102,8 @@ public class EnforceBuilderNamingTest
 		Collection<String> failures = Lists.newArrayList();
 		
 		for (JMethod method : methods) {
-			if( !method.getName().startsWith("test") ){
-				String msg = String.format("Expected test method %s.%s to start with 'test'", method.getJType().getFullName(), method.getName());
+			if( !method.getName().startsWith("test") && !method.getName().endsWith("Test") ){
+				String msg = String.format("Expected test method %s.%s to start with 'test' or end with 'Test'", method.getJType().getFullName(), method.getName());
 				failures.add(msg);
 			}
 		}

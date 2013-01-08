@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -20,13 +21,39 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeParameter;
 
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
+import com.google.common.base.Function;
 
 public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration> {
 
+	private static final Function<MethodDeclaration, JMethod> TRANSFORMER = new Function<MethodDeclaration, JMethod>() {
+		public JMethod apply(MethodDeclaration node){
+			return JMethod.from(node);
+		}
+	};
+	
+	public static boolean isMethodNode(ASTNode node){
+		return node instanceof MethodDeclaration;
+	}
+	
+	public static Function<MethodDeclaration, JMethod> transformer(){
+		return TRANSFORMER;
+	}
+	
 	private final MethodDeclaration methodNode;
 
-	public static JMethod from(MethodDeclaration methodNode){
-		return new JMethod(methodNode);
+	public static JMethod from(ASTNode node){
+		if(node instanceof MethodDeclaration){
+			return from((MethodDeclaration)node);
+		}
+		throw new IllegalArgumentException(String.format("Expect a {0} but was {1}",
+			MethodDeclaration.class.getName(),
+			node.getClass().getName()
+		));
+	}
+	
+	
+	public static JMethod from(MethodDeclaration node){
+		return new JMethod(node);
 	}
 	
 	private JMethod(MethodDeclaration methodNode) {

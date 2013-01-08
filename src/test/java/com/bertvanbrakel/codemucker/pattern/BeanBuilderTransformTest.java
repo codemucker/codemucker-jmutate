@@ -11,11 +11,11 @@ import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
+import com.bertvanbrakel.test.finder.Roots;
 
 public class BeanBuilderTransformTest {
 
@@ -74,7 +74,7 @@ public class BeanBuilderTransformTest {
 
 	private FindResult<JType> findTypesToTransform() {
 	    FindResult<JType> found = JSourceFinder.builder()
-			.setSearchRoots(SearchRoots.builder()
+			.setSearchRoots(Roots.builder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)

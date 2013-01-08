@@ -1,11 +1,14 @@
 package com.bertvanbrakel.codemucker.ast;
 
 import java.io.Closeable;
+import java.io.File;
 import java.util.List;
 
-import com.bertvanbrakel.codemucker.ast.finder.JSearchScope;
-import com.bertvanbrakel.codemucker.ast.finder.JSearchScopeVisitor;
+import com.bertvanbrakel.lang.IsBuilder;
 import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.RootVisitor;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
@@ -16,11 +19,21 @@ import com.orientechnologies.orient.core.record.impl.ODocument;
 public class JSearchEngine implements Closeable {
 
 	private final OGraphDatabase db;
+	private final JAstParser parser;
+
+	public static Builder builder(){
+		return new Builder();
+	}
 	
-	public JSearchEngine(List<Root> roots){
+	private JSearchEngine(File dbDirectoy, List<Root> roots, JAstParser parser){
+		Preconditions.checkNotNull(dbDirectoy,"expect indexing db directory");
+		Preconditions.checkNotNull(roots,"expect roots");
+		Preconditions.checkNotNull(parser, "expect parser");
+		
+		this.parser = parser;
         db = Orient.instance()
         	.getDatabaseFactory()
-        	.createGraphDatabase("local:c:/tmp/orientdb_codemucker_search_test" + System.currentTimeMillis());
+        	.createGraphDatabase("local:" + dbDirectoy.getAbsolutePath());
         
         //TODO:turn off locking while we index
         //TODO:put it in a reusable location so multiple calls find the already indexed code
@@ -41,11 +54,10 @@ public class JSearchEngine implements Closeable {
 	}
 
 	public void index(List<Root> roots) {
-		//TODO:add search indexers here. Allow custom indexers fro source and non java files
-		JSearchScope searchScope = JSearchScope.builder().setSearchRoots(roots).build();
-        JSearchScopeVisitor indexer = new JSearchIndexingVisitor(db,searchScope.getParser());
-        
-        searchScope.accept(indexer);
+		RootVisitor indexer = new JSearchIndexingVisitor(db,parser);
+		for(Root root:roots){
+			root.accept(indexer);
+		}
 	}
 	
 	//TODO:add search query
@@ -65,5 +77,65 @@ public class JSearchEngine implements Closeable {
 	@Override
 	public void close() {
         db.close();
+	}
+	
+	public static class Builder {
+		private File dbDirectory;
+		private JAstParser parser;
+		private List<Root> roots = Lists.newArrayList();
+		
+		public JSearchEngine build(){
+			Preconditions.checkNotNull(dbDirectory, "expect a database drectory to be set (or use defaults)");
+			Preconditions.checkNotNull(parser, "expect a parser to be set (or use defaults)");
+			
+			return new JSearchEngine(dbDirectory,roots,parser);
+		}
+		
+		public Builder setDefaults(){
+			setDefaultDBDirectory();
+			setDefaultParser();
+			return this;
+		}
+
+		public Builder setDefaultDBDirectory(){
+			setDbDirectory("c:/tmp/orientdb_codemucker_search_test" + System.currentTimeMillis());
+			return this;
+		}
+		
+		public Builder setDefaultParser(){
+			setParser(JAstParser.builder().setDefaults().build());
+			return this;
+		}
+
+		public Builder setRoots(IsBuilder<? extends Iterable<Root>> rootsBuilder){
+			setRoots(rootsBuilder.build());
+			return this;
+		}
+		
+		public Builder setRoots(Iterable<Root> roots){
+			this.roots = Lists.newArrayList(roots);
+			return this;
+		}
+		
+		public Builder addRoot(Root root){
+			this.roots.add(root);
+			return this;
+		}
+		
+		public Builder setParser(JAstParser parser){
+			this.parser = parser;
+			return this;
+		}
+		
+		
+		public Builder setDbDirectory(String dbDirectory){
+			setDbDirectory(new File(dbDirectory));
+			return this;
+		}
+		
+		public Builder setDbDirectory(File dbDirectory){
+			this.dbDirectory = dbDirectory;
+			return this;
+		}
 	}
 }

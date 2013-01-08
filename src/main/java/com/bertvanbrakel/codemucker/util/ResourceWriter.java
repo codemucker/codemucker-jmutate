@@ -10,7 +10,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.codemucker.transform.Template;
-import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.util.ProjectFinder;
@@ -19,11 +19,11 @@ public class ResourceWriter {
 
 	private static AtomicLong uniqueIdCounter = new AtomicLong();
 
-	public static ClassPathResource writeResource(Template template) {
+	public static RootResource writeResource(Template template) {
 		return writeResource(template,newResourceName());
 	}
 	
-	private static ClassPathResource writeResource(Template template, String relPath) {
+	private static RootResource writeResource(Template template, String relPath) {
 		return writeResource(template, findRootDir(), relPath);
 	}
 
@@ -35,14 +35,14 @@ public class ResourceWriter {
 	    return dir;
 	}
 	
-	private static ClassPathResource writeResource(Template template, File rootDir, String relPath) {
+	private static RootResource writeResource(Template template, File rootDir, String relPath) {
 		Root root = new DirectoryRoot(rootDir);
-		ClassPathResource resource = new ClassPathResource(root, relPath);
+		RootResource resource = new RootResource(root, relPath);
 		writeResource(template, resource);
 		return resource;
 	}
 
-	private static ClassPathResource writeResource(Template template, ClassPathResource resource) {
+	private static RootResource writeResource(Template template, RootResource resource) {
 		OutputStream os = null;
 		try {
 			os = resource.getOutputStream();

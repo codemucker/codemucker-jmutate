@@ -3,26 +3,34 @@ package com.bertvanbrakel.codemucker.ast;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
+import com.google.common.collect.Lists;
 
 public class JAnnotation {
 	
 	public static int ANY_DEPTH = -1;
-	public static int DIRECT_DEPTH = 0;
+	public static int DIRECT_DEPTH = 1;
 
 	private final Annotation annotation;
 
-	public JAnnotation(Annotation annotation) {
-		super();
+	public static boolean isAnnotationNode(ASTNode node){
+		return node instanceof Annotation;
+	}
+	
+	public static JAnnotation from(Annotation node){
+		return new JAnnotation(node);
+	}
+	
+	private JAnnotation(Annotation annotation) {
 		this.annotation = annotation;
 	}
 
@@ -39,8 +47,8 @@ public class JAnnotation {
 	public static <A extends java.lang.annotation.Annotation> boolean hasAnnotation(Class<A> annotationClass, List<IExtendedModifier> modifiers){
 		for( IExtendedModifier m:modifiers){
 			if( m instanceof Annotation){
-				JAnnotation anon = new JAnnotation((Annotation)m);
-				if( anon.isOfType(annotationClass)){
+				JAnnotation anon = JAnnotation.from((Annotation)m);
+				if(anon.isOfType(annotationClass)){
 					return true;
 				}
 			}
@@ -49,8 +57,8 @@ public class JAnnotation {
 	}
 
 	public static <A extends java.lang.annotation.Annotation> JAnnotation getAnnotationOfType(ASTNode node, int maxDepth, Class<A> annotationClass) {
-		for(org.eclipse.jdt.core.dom.Annotation a:JAnnotation.findAnnotations(node, maxDepth)){
-			JAnnotation found = new JAnnotation(a);
+		for(Annotation a:JAnnotation.findAnnotations(node, maxDepth)){
+			JAnnotation found = JAnnotation.from(a);
 			if( found.isOfType(annotationClass)){
 				return found;
 			}
@@ -58,7 +66,7 @@ public class JAnnotation {
 		return null;
 	}
 	
-	public static List<org.eclipse.jdt.core.dom.Annotation> findAnnotations(ASTNode node){
+	public static List<Annotation> findAnnotations(ASTNode node){
 		return JAnnotation.findAnnotations(node, ANY_DEPTH);
 	}
 
@@ -70,42 +78,35 @@ public class JAnnotation {
 	 * search. -1 = any depth, 0=directly on current node only 
 	 * @return
 	 */
-	public static List<org.eclipse.jdt.core.dom.Annotation> findAnnotations(ASTNode node, int maxDepth){
-		NodeCollector collector = new NodeCollector.Builder()
-			.ignoreChildTypes()
-			.ignoreType(ImportDeclaration.class)
-			.collectType(MarkerAnnotation.class)
-			.collectType(SingleMemberAnnotation.class)
-			.collectType(NormalAnnotation.class)
-			.build();
-//		
-//		final List<org.eclipse.jdt.core.dom.Annotation> annons = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
-//		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth){	
-//			@Override
-//            public boolean visit(ImportDeclaration node) {
-//	    		return false;
-//			}
-//			
-//			@Override
-//			public boolean visit(MarkerAnnotation node) {
-//				annons.add(node);
-//				return false;
-//			}
-//
-//			@Override
-//			public boolean visit(SingleMemberAnnotation node) {
-//				annons.add(node);
-//				return false;
-//			}
-//
-//			@Override
-//			public boolean visit(NormalAnnotation node) {
-//				annons.add(node);
-//				return false;
-//			}
-//		};
-		node.accept(collector);
-		return collector.getCollectedAs();
+	public static List<Annotation> findAnnotations(ASTNode node, final int maxDepth){
+		final List<Annotation> found = Lists.newArrayList();
+		ASTVisitor visitor = new BaseASTVisitor(){
+			int depth = -1;
+			@Override
+			public boolean visitNode(ASTNode node) {
+				depth++;
+				if( maxDepth >-1 && depth > maxDepth ){
+					return false;
+				}
+				//if( depth > 0){ //in children
+					if(node instanceof ImportDeclaration){
+						return false;
+					}
+					
+					if(node instanceof Annotation){
+						found.add((Annotation)node);
+					}
+				//}
+				return true;
+			}
+			
+			@Override
+			public void endVisitNode(ASTNode node) {
+				depth--;
+			}
+		};
+		node.accept(visitor);
+		return found;
 	}
 
 	public String getValueForAttribute(String name){

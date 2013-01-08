@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
@@ -19,7 +20,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
@@ -38,18 +39,39 @@ import com.google.common.collect.Lists;
  */
 public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 
-	private static final TypeDeclaration[] EmptyTypes = new TypeDeclaration[]{};
-	
 	private final ASTNode typeNode;
 	
-	public static JType from(AbstractTypeDeclaration type){
-		return new AbstractTypeJType(type);
+	public static boolean isTypeNode(ASTNode node){
+		return node instanceof AbstractTypeDeclaration || node instanceof AnonymousClassDeclaration;
 	}
 	
-	public static JType from(AnonymousClassDeclaration type){
-		return new AnonynousClassJType(type);
+	/**
+	 * If the node is a type node then return a new JType, else throw an exception
+	 * @param node
+	 * @return
+	 */
+	public static JType from(ASTNode node){
+		if(node instanceof AbstractTypeDeclaration){
+			return from((AbstractTypeDeclaration)node);
+		}
+		if(node instanceof AnonymousClassDeclaration){
+			return from((AnonymousClassDeclaration)node);
+		}
+		throw new IllegalArgumentException(String.format("Expect either a {0} or a {1} but was {2}",
+			AbstractTypeDeclaration.class.getName(),
+			AnonymousClassDeclaration.class.getName(), 
+			node.getClass().getName()
+		));
 	}
 	
+	public static JType from(AbstractTypeDeclaration node){
+		return new AbstractTypeJType(node);
+	}
+	
+	public static JType from(AnonymousClassDeclaration node){
+		return new AnonynousClassJType(node);
+	}
+
 	protected JType(ASTNode type) {
 		checkNotNull("type", type);
 		this.typeNode = type;
@@ -92,155 +114,172 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return names;
 	}
 
+	public FindResult<JField> findAllFields(){
+		return findFieldsMatching(AField.any());
+	}
+	
+	public FindResult<JField> findFieldsMatching(final Matcher<JField> matcher) {
+		final Collection<JField> found = Lists.newArrayList();
+		//use visitor as anonymous class does not contain a fields property 
+		ASTVisitor visitor = new BaseASTVisitor() {
+			@Override
+			protected boolean visitNode(ASTNode node) {
+				//skip child types
+				if(isTypeNode(node)){
+					return false;
+				} else if( node instanceof FieldDeclaration){
+					JField field = JField.from((FieldDeclaration)node);
+					if( matcher.matches(field)) {
+						found.add(field);
+					}
+					return false;
+				} 
+				return true;
+			}
+		};
+		visitChildren(visitor);
+		return FindResultImpl.from(found);
+	}
+			
+	/**
+	 * Find all top level methods declared on this type. Ignores methods 
+	 * defined in internal types or anonymous classes
+	 * 
+	 * @param matcher
+	 * @return
+	 */
+	public FindResult<JMethod> findAllJMethods() {
+		return findMethodsMatching(AMethod.any());		
+	}
+	
+	/**
+	 * Find all top level methods declared on this type which match the given matcher. Ignores methods 
+	 * defined in internal types or anonymous classes
+	 * 
+	 * @param matcher
+	 * @return
+	 */
+	public FindResult<JMethod> findMethodsMatching(final Matcher<JMethod> matcher) {
+		final List<JMethod> found = newArrayList();
+		//use a visitor as the anonymous type does not have a 'methods' field
+		ASTVisitor visitor = new BaseASTVisitor(){
+			@Override
+			protected boolean visitNode(ASTNode node) {
+				//ignore child types
+				if(isTypeNode(node)){
+					return false;
+				}
+				if(JMethod.isMethodNode(node)){
+					JMethod m = JMethod.from(node);
+					if(matcher.matches(m)){
+						found.add(m);
+					}
+					return false;//no need to go deeper
+				}
+				return true;
+			}
+		};
+		visitChildren(visitor);
+		return FindResultImpl.from(found);
+	}
+	
+	/**
+	 * Determine if there are any top level methods matching the given matcher
+	 * 
+	 * @param matcher
+	 * @return
+	 */
+	public boolean hasMethodsMatching(final Matcher<JMethod> matcher) {
+		final AtomicBoolean foundReturn = new AtomicBoolean();
+		ASTVisitor visitor = new BaseASTVisitor() {
+			boolean found = false;
+			@Override
+			public boolean visitNode(ASTNode node) {
+				if(found){//finished looking
+					return false;
+				}
+				if(JType.isTypeNode(node)){ //ignore child types
+					return false;
+				}
+				if(JMethod.isMethodNode(node)){
+					JMethod method = JMethod.from(node);
+					if (matcher.matches(method)) {
+						foundReturn.set(true);
+						found = true;
+						return false;//don't descend
+					}
+				}
+				return true;
+			}
+		};
+		visitChildren(visitor);
+		return foundReturn.get();
+	}
+	
 	public FindResult<JType> findDirectChildTypes(){
 		return findDirectChildTypesMatching(AType.any());
 	}
 	
 	/**
-	 * Find direct child types which match the given matcher. THis is not recursive.
+	 * Find direct child types which match the given matcher. This is not recursive.
 	 */
 	public FindResult<JType> findDirectChildTypesMatching(Matcher<JType> matcher){
-		List<JType> found = newArrayList();
-		if( isClass()){
-			for (TypeDeclaration child : asTypeDecl().getTypes()) {
-				JType childJavaType = JType.from(child);
-				if (matcher.matches(childJavaType)) {
-					found.add(childJavaType);
+		final List<JType> found = Lists.newArrayList();
+		ASTVisitor visitor = new BaseASTVisitor(){
+			@Override
+			public boolean visitNode(ASTNode node) {
+				if(JType.isTypeNode(node)){
+					found.add(JType.from(node));
+					return false;
 				}
-			}		
-		}
+				if(JMethod.isMethodNode(node)){
+					return false;
+				}
+				return true;
+			}
+		};
+		visitChildren(visitor);
 		return FindResultImpl.from(found);
+	}
+	/**
+	 * Recursively find all child types
+	 */
+	public FindResult<JType> findAllChildTypes() {
+		return findChildTypesMatching(AType.any());
 	}
 	
 	/**
 	 * Recursively find all child types matching the given matcher
 	 */
-	public FindResult<JType> findChildTypesMatching(Matcher<JType> matcher){
-		List<JType> found = newArrayList();
-		findChildTypesMatching(this, matcher, found);
-		return FindResultImpl.from(found);
-	}
-	
-	/* package */ void findChildTypesMatching(Matcher<JType> matcher, List<JType> found){
-		findChildTypesMatching(this, matcher, found);
-	}
-	
-	/**
-	 * Recursively find all child types
-	 */
-	public FindResult<JType> findAllChildTypes() {
-		List<JType> found = newArrayList();
-		findChildTypesMatching(this, AType.any(), found);
-		return new FindResultImpl<JType>(found);
-	}
-	
-	private void findChildTypesMatching(JType type, Matcher<JType> matcher, List<JType> found) {
-		//collect
-		NodeCollector collector = NodeCollector.builder()
-			.collectType(AnonymousClassDeclaration.class)
-			//.collectType(AbstractTypeDeclaration.class)
-			.collectType(EnumDeclaration.class)
-			.collectType(AnnotationTypeDeclaration.class)
-			.collectType(TypeDeclaration.class)
-			.build();
-		
-		type.getAstNode().accept(collector);
-
-		List<ASTNode> anons = collector.getCollectedAs();
-		//convert and match
-		for (ASTNode anon : anons) {
-			JType child = null;
-			if( anon instanceof AbstractTypeDeclaration){
-				child = JType.from((AbstractTypeDeclaration)anon);
-			} else if( anon instanceof AnonymousClassDeclaration){
-				child = JType.from((AnonymousClassDeclaration)anon);
-			}
-			if( matcher.matches(child)){
-				found.add(child);
-			}
-		}
-	}
-	
-	public JTypeMutator asMutator(MutationContext ctxt){
-		return new JTypeMutator(ctxt, this);
-	}
-
-	public FindResult<JField> findAllFields(){
-		return findFieldsMatching(AField.any());
-	}
-	
-	public FindResult<JField> findFieldsMatching(Matcher<JField> matcher) {
-		List<JField> found = newArrayList();
-		findFieldsMatching(matcher, found);
-		return FindResultImpl.from(found);
-	}
-	
-	private void findFieldsMatching(final Matcher<JField> matcher, final List<JField> found) {
-		int maxDepth = 0;
-		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
+	public FindResult<JType> findChildTypesMatching(final Matcher<JType> matcher){
+		final Collection<JType> found = Lists.newArrayList();
+		ASTVisitor visitor = new BaseASTVisitor() {
 			@Override
-			public boolean visit(FieldDeclaration node) {
-				JField field = JField.from(node);
-				if (matcher.matches(field)) {
-					found.add(field);
+			protected boolean visitNode(ASTNode node) {
+				if(JType.isTypeNode(node)){
+					JType type = JType.from(node);
+					if( matcher.matches(type)) {
+						found.add(type);
+					}
 				}
-				return super.visit(node);
+				return true;
 			}
 		};
-		this.typeNode.accept(visitor);
-	}
-	
-	public FindResult<JMethod> findMethodsMatching(Matcher<JMethod> matcher) {
-		List<JMethod> found = newArrayList();
-		findMethodsMatching(matcher, found);
-		return FindResultImpl.from(found);
-	}
-
-	public FindResult<JMethod> findAllJMethods() {
-		List<JMethod> found = newArrayList();
-		findMethodsMatching(AMethod.any(), found);
+		visitChildren(visitor);
 		return FindResultImpl.from(found);
 	}
 	
-	private void findMethodsMatching(final Matcher<JMethod> matcher, final Collection<JMethod> found) {
-		NodeCollector collector = NodeCollector.builder()
-			.ignoreChildTypes()
-			.collectType(MethodDeclaration.class)
-			.build();
-		this.typeNode.accept(collector);
-		
-		List<MethodDeclaration> nodes = collector.getCollectedAs();
-		for (MethodDeclaration node : nodes) {
-			JMethod javaMethod = JMethod.from(node);
-			if (matcher.matches(javaMethod)) {
-				found.add(javaMethod);
-			}
+	@SuppressWarnings("unchecked")
+	private void visitChildren(final ASTVisitor visitor){
+		List<ASTNode> bodyNodes;
+		if( typeNode instanceof AbstractTypeDeclaration){
+			bodyNodes = ((AbstractTypeDeclaration)typeNode).bodyDeclarations();
+		} else {
+			bodyNodes = ((AnonymousClassDeclaration)typeNode).bodyDeclarations();
 		}
-	}
-	
-	public boolean hasMethodsMatching(final Matcher<JMethod> matcher) {
-		int maxDepth = 0;
-		final AtomicBoolean foundMethod = new AtomicBoolean();
-		BaseASTVisitor visitor = new IgnoreableChildTypesVisitor(maxDepth) {
-			@Override
-			public boolean visit(MethodDeclaration node) {
-				JMethod javaMethod = JMethod.from(node);
-				if (matcher.matches(javaMethod)) {
-					foundMethod.set(true);
-					return false;
-				}
-				return super.visit(node);
-			}
-
-			@Override
-            protected boolean visitNode(ASTNode node) {
-				//exit as soon as we've found a matching method
-	            return !foundMethod.get();
-            }
-			
-		};
-		typeNode.accept(visitor);
-		return foundMethod.get();
+		for(ASTNode node:bodyNodes){
+			node.accept(visitor);
+		}
 	}
 
 	public AST getAst() {
@@ -294,6 +333,10 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return typeNode instanceof TypeDeclaration;
 	}
 
+	public JTypeMutator asMutator(MutationContext ctxt){
+		return new JTypeMutator(ctxt, this);
+	}
+	
 	public TypeDeclaration asTypeDecl() {
 		return (TypeDeclaration) typeNode;
 	}
@@ -349,15 +392,44 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	
 	public boolean isImplementing(Class<?> require) {
 		String requireFullName = require.getName();	
-		for (Type type : findExtends()) {
+		Collection<Type> extendTypes = findExtends();
+		for (Type type : extendTypes) {
 			String fn = JavaNameUtil.getQualifiedName(type);
 			if(fn.equals(requireFullName)){
+				return true;
+			}
+		}
+		//deeper search
+		for (Type type : extendTypes) {
+			if( typeExtends(type, requireFullName) ){
 				return true;
 			}
 		}
 		return false;
 	}
 	
+	private static boolean typeExtends(Type type, String fullName){
+		if( type.resolveBinding() != null ){
+			return typeExtends(type.resolveBinding(), fullName);
+		}
+		throw new IllegalStateException("can't resolve binding");
+	}
+	
+	private static boolean typeExtends(ITypeBinding type, String fullName){
+		if(fullName.equals(type.getQualifiedName())){
+			return true;
+		}
+		ITypeBinding superType = type.getSuperclass();
+		if( superType != null && typeExtends(superType, fullName)){
+			return true;
+		}
+		for(ITypeBinding interfaceType:type.getInterfaces()){
+			if( typeExtends(interfaceType, fullName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	protected abstract Collection<Type> findExtends();
 	
 	@Override
@@ -403,7 +475,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		public boolean isTopLevelClass() {
 			return typeNode.isPackageMemberTypeDeclaration();
 		}
-
+		
 		@SuppressWarnings("unchecked")
 		@Override
 		protected Collection<Type> findExtends() {

@@ -27,14 +27,6 @@ public class AMethod extends LogicalMatchers {
 			}
 		};
 	}
-
-	public static Matcher<JMethod> all(Matcher<JMethod>... matchers) {
-		return LogicalMatchers.all(matchers);
-	}
-	
-	public static Matcher<JMethod> any(Matcher<JMethod>... matchers) {
-		return LogicalMatchers.any(matchers);
-	}
 	
 	@SuppressWarnings("unchecked")
     public static Matcher<JMethod> any() {

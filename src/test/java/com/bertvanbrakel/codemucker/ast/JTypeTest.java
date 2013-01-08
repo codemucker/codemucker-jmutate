@@ -14,12 +14,17 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.SourceHelper;
+import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass1;
+import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass2;
+import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass3;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.matcher.AField;
 import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
-import com.bertvanbrakel.lang.matcher.IsCollectionOf;
+import com.bertvanbrakel.lang.matcher.AList;
+
 public class JTypeTest {
 
 	MutationContext ctxt = new SimpleMutationContext();
@@ -71,10 +76,15 @@ public class JTypeTest {
 		t.pl("}");
 	
 		FindResult<JMethod> foundMethods = t.asJType().findAllJMethods();
-	
-		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("methodA","methodB"));		
-		
-		MatcherAssert.assertThat(foundMethods.toList(), matcher);
+
+		MatcherAssert.assertThat(
+				foundMethods.toList(), 
+				AList.of(JMethod.class)
+					.inOrder()
+					.containingOnly()
+					.item(methodWithName("methodA"))
+					.item(methodWithName("methodB"))
+		);
 	}
 
 	@Test
@@ -89,9 +99,15 @@ public class JTypeTest {
 		t.pl("}");
 
 		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.withMethodNamed("get*"));
-		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("getA","getB"));		
-		
-		MatcherAssert.assertThat(foundMethods.toList(), matcher);
+	
+		MatcherAssert.assertThat(
+				foundMethods.toList(), 
+				AList.of(JMethod.class)
+					.inOrder()
+					.containingOnly()
+					.item(methodWithName("getA"))
+					.item(methodWithName("getB"))
+		);
 	}
 
 	@Test
@@ -106,41 +122,58 @@ public class JTypeTest {
 		t.pl("}");
 		
 		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.withMethodNamed("get*"));
-		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("getA"));		
-		
-		MatcherAssert.assertThat(foundMethods.toList(), matcher);
+
+		MatcherAssert.assertThat(
+				foundMethods.toList(), 
+				AList.ofOnly(methodWithName("getA"))
+		);
 	}
 
 	@Test
 	//For a bug where performing a method search on top level children also return nested methods
 	public void testFindJavaMethodsExcludingAnonymousTypeMethodsEmbeddedInMethods(){
-		SourceTemplate t = ctxt.newSourceTemplate();
+		JType type = SourceHelper.findSourceForTestClass(getClass()).getTypeWithName(MyTestClass.class);
+		FindResult<JMethod> foundMethods = type.findMethodsMatching(AMethod.withMethodNamed("get*"));
 
-		t.pl("class MyTestClass{");
-		t.pl("	public Foo foo = new Foo() { //should be ignored" );
-		t.pl("		public void getC(){ return 1; }" );
-		t.pl("	};" );
-		t.pl("	public void getA(){ return null; }" );
-		t.pl("	public Object getB(){" );
-		t.pl("		return new Foo(){" );
-		t.pl("			public int getC(){ //should be ignored" );
-		t.pl("				return new Foo(){" );
-		t.pl("					public int getC(){ return 2;}//should be ignored" );
-		t.pl("				};" );
-		t.pl("			};" );
-		t.pl("		};" );
-		t.pl("	}" );
-		t.pl("	private class Foo {" );
-		t.pl("		public int getC(){ return 0;}//should be ignored" );
-		t.pl("	}");
-		t.pl("}");
-		
-		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.withMethodNamed("get*"));
-		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("getA","getB"));		
-		
-		MatcherAssert.assertThat(foundMethods.toList(), matcher);
+		MatcherAssert.assertThat(
+			foundMethods.toList(), 
+			AList.of(JMethod.class)
+				.inOrder()
+				.containingOnly()
+				.item(methodWithName("getA"))
+				.item(methodWithName("getB"))
+		);
 	}
+	
+	static class MyTestClass {
+		public Foo foo = new Foo() { // should be ignored
+			public int getC() {
+				return 1;
+			}
+		};
 
+		public Object getA() {
+			return null;
+		}
+
+		public Object getB() {
+			return new Foo() {
+				public int getC() { // should be ignored
+					return new Foo() {
+						public int getC() {
+							return 2;
+						}// should be ignored
+					}.getC();
+				};
+			};
+		}
+
+		private class Foo {
+			public int getC() {
+				return 0;
+			}// should be ignored
+		}
+	}
 	@Test
 	public void testResolveFullNameAnonymousInnerClass(){
 		SourceTemplate t = ctxt.newSourceTemplate();
@@ -198,26 +231,43 @@ public class JTypeTest {
 	}
 
 	@Test
-	public void testImplementsClass(){
+	public void testHasNotAnnotationOfType(){
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.v("extends", MyExtendedClass.class.getName());
-		t.pl("class MyClass {");
-		t.pl("	class MyChildClass1 {}");
-		t.pl("	class MyChildClass2 extends ${extends} {}");
-		t.pl("	class MyChildClass3 extends MyChildClass2 {}");
-		t.pl("}");
+		t.pl("class MyClass  {}");
+	
+		Assert.assertFalse(t.asJType().hasAnnotationOfType(MyAnnotation.class));
+	}
+	
+	@Test
+	public void testHasAnnotationOfType(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		t.pl("@" + MyAnnotation.class.getName());
+		t.pl("class MyClass {}");
 		
-		JType type = t.asJType();
-
-		assertFalse(type.getChildTypeWithName("MyChildClass1").isImplementing(MyExtendedClass.class));
-		assertTrue(type.getChildTypeWithName("MyChildClass2").isImplementing(MyExtendedClass.class));
-		assertTrue(type.getChildTypeWithName("MyChildClass3").isImplementing(MyExtendedClass.class));
+		Assert.assertTrue(t.asJType().hasAnnotationOfType(MyAnnotation.class));
+	}
+	
+	@interface MyAnnotation {
+		
+	}
+	
+	@Test
+	public void testImplementsClass(){
+		JSourceFile source = SourceHelper.findSourceForTestClass(getClass());
+		assertFalse(source.getTypeWithName(MyChildClass1.class).isImplementing(MyExtendedClass.class));
+		assertTrue(source.getTypeWithName(MyChildClass2.class).isImplementing(MyExtendedClass.class));
+		assertTrue(source.getTypeWithName(MyChildClass3.class).isImplementing(MyExtendedClass.class));
 	}
 	
 	public static class MyExtendedClass {
-		
 	}
 	
+	class MyClass {
+		class MyChildClass1 {}
+		class MyChildClass2 extends MyExtendedClass {}
+		class MyChildClass3 extends MyChildClass2 {}
+	}
+
 	@Test
 	public void testFindJavaConstructors(){
 		SourceTemplate t = ctxt.newSourceTemplate();
@@ -229,21 +279,18 @@ public class JTypeTest {
 		t.pl("}");
 
 		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.isConstructor());
-		
-		Matcher<Iterable<JMethod>> matcher = IsCollectionOf.containsOnlyItemsInOrder(equalsMethodNames("MyTestClass","MyTestClass"));		
-		
-		MatcherAssert.assertThat(foundMethods.toList(), matcher);
+
+		MatcherAssert.assertThat(
+				foundMethods.toList(), 
+				AList.of(JMethod.class)
+					.inOrder()
+					.containingOnly()
+					.item(methodWithName("MyTestClass"))
+					.item(methodWithName("MyTestClass"))
+		);
 	}
 	
-	private List<Matcher<JMethod>> equalsMethodNames(String... methodNames){
-		List<Matcher<JMethod>> matchers = newArrayList();
-		for( String methodName:methodNames){
-			matchers.add(equalsMethodName(methodName));
-		}
-		return matchers;
-	}
-	
-	private Matcher<JMethod> equalsMethodName(final String methodName){
+	private Matcher<JMethod> methodWithName(final String methodName){
 		return new TypeSafeMatcher<JMethod>(JMethod.class) {
 			@Override
             public void describeTo(Description desc) {

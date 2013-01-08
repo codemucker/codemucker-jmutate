@@ -14,9 +14,16 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import com.bertvanbrakel.codemucker.util.TypeUtil;
+import com.google.common.base.Function;
 
 public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 
+	public static final Function<FieldDeclaration, JField> TRANSFORMER = new Function<FieldDeclaration, JField>() {
+		public JField apply(FieldDeclaration node){
+			return JField.from(node);
+		}
+	};
+	
 	private final FieldDeclaration fieldNode;
 
 	public static JField from(FieldDeclaration node){

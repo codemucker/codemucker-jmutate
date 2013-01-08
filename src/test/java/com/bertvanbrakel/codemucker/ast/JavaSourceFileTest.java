@@ -33,5 +33,4 @@ public class JavaSourceFileTest {
 		template.println("public class " + shortName + "  {}");
 		return template.asSourceFileWithFullName(fqn);
 	}
-
 }

@@ -5,19 +5,22 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
+import org.junit.Assert;
+
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
+import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.finder.SearchRoots;
 import com.bertvanbrakel.codemucker.ast.matcher.AType;
+import com.bertvanbrakel.test.finder.Roots;
 
 public class JavaSourceFinderTest {
 
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
 		JSourceFinder finder = JSourceFinder.builder()
-			.setSearchRoots(SearchRoots.builder()
+			.setSearchRoots(Roots.builder()
 				.setIncludeClassesDir(false)
 				.setIncludeTestDir(true)
 			)
@@ -42,12 +45,13 @@ public class JavaSourceFinderTest {
 	@Test
 	public void testFindWithMethods(){
 		JSourceFinder finder = JSourceFinder.builder()
-			.setSearchRoots(SearchRoots.builder()
+			.setSearchRoots(Roots.builder()
 				.setIncludeClassesDir(true)
 				.setIncludeTestDir(true)
 			)
 			.build();
-		finder.findMethods();
+		FindResult<JMethod> methods = finder.findMethods();
+		Assert.assertTrue(!methods.isEmpty());
 	}
 
 	public static @interface MyAnnotation {

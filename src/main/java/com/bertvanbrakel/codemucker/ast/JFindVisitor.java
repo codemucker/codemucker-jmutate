@@ -1,6 +1,6 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.Root;
 
 
@@ -13,11 +13,11 @@ public class JFindVisitor extends BaseASTVisitor {
 	public void endVisit(Root root) {
 	}
 
-	public boolean visit(ClassPathResource resource) {
+	public boolean visit(RootResource resource) {
 		return true;
 	}
 
-	public void endVisit(ClassPathResource resource) {
+	public void endVisit(RootResource resource) {
 	}
 
 	public boolean visit(JSourceFile f) {

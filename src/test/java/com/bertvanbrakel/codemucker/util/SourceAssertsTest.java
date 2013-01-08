@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
 import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
-import com.bertvanbrakel.test.finder.ClassPathResource;
+import com.bertvanbrakel.test.finder.RootResource;
 
 public class SourceAssertsTest {
 
@@ -41,8 +41,8 @@ public class SourceAssertsTest {
 		src.println("public void foo(){ this.myField = null; }");
 		src.println("}");
 
-		ClassPathResource srcFile = writeResource(src);
-		ClassPathResource srcFile2 = writeResource(src);
+		RootResource srcFile = writeResource(src);
+		RootResource srcFile2 = writeResource(src);
 
 		SourceAsserts.assertAstsMatch(srcFile, srcFile2);
 	}
@@ -70,8 +70,8 @@ public class SourceAssertsTest {
 		src2.println();
 		src2.println("}");
 
-		ClassPathResource srcFile = writeResource(src1);
-		ClassPathResource srcFile2 = writeResource(src2);
+		RootResource srcFile = writeResource(src1);
+		RootResource srcFile2 = writeResource(src2);
 
 		SourceAsserts.assertAstsMatch(srcFile, srcFile2);
 	}
@@ -92,8 +92,8 @@ public class SourceAssertsTest {
 		src2.println("public void foo(){ this.myField = \"\"; }");
 		src2.println("}");
 
-		ClassPathResource srcFile = writeResource(src1);
-		ClassPathResource srcFile2 = writeResource(src2);
+		RootResource srcFile = writeResource(src1);
+		RootResource srcFile2 = writeResource(src2);
 
 		Throwable expect = null;
 		try {
