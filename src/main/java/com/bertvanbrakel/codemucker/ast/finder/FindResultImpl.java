@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 
 import com.bertvanbrakel.lang.matcher.Matcher;
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 
 public class FindResultImpl<T> implements FindResult<T> {
 
@@ -118,6 +119,14 @@ public class FindResultImpl<T> implements FindResult<T> {
 	public <B> FindResult<B> transformToMany(
 			Function<T, Iterator<B>> transformFunc) {
 		return from(ExpandingTransformIterator.from(this.iterator(),transformFunc));
+	}
+	
+	@Override
+	public String toString() {
+		return Objects
+			.toStringHelper(getClass())
+			.add("results", this.source)
+			.toString();
 	}
 	
 	private static class FilteringIterator<T> implements Iterator<T> {

@@ -8,6 +8,7 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.lang.matcher.AString;
 import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.Description;
 import com.bertvanbrakel.lang.matcher.Logical;
 import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.util.TestUtils;
@@ -154,6 +155,11 @@ public class AJType extends Logical {
 			public boolean matchesSafely(JType found) {
 				return pattern.matcher(found.getFullName()).matches();
 			}
+			@Override
+			public void describeTo(Description desc) {
+				super.describeTo(desc);
+				desc.value("type with fullName matching ant pattern", antPattern);
+			}
 		};
 	}
 	
@@ -164,6 +170,11 @@ public class AJType extends Logical {
 			public boolean matchesSafely(JType found) {
 				return matcher.matches(found.getSimpleName());
 			}
+			@Override
+			public void describeTo(Description desc) {
+				super.describeTo(desc);
+				desc.value("type with simpleName matching ant pattern", antPattern);
+			}
 		};
 	}
 
@@ -173,6 +184,12 @@ public class AJType extends Logical {
 			public boolean matchesSafely(JType found) {
 				return found.findMethodsMatching(methodMatcher).toList().size() > 0;
 			}
+			
+			@Override
+			public void describeTo(Description desc) {
+				super.describeTo(desc);
+				desc.value("type with method", methodMatcher);
+			}
 		};
 	}
 	
@@ -181,6 +198,11 @@ public class AJType extends Logical {
 			@Override
 			public boolean matchesSafely(JType found) {
 				return found.hasAnnotationOfType(annotation, false);
+			}
+			@Override
+			public void describeTo(Description desc) {
+				super.describeTo(desc);
+				desc.value("type with annotation", annotation);
 			}
 		};
 	}

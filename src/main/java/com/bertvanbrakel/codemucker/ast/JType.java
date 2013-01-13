@@ -395,16 +395,20 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		
 		Collection<Type> extendTypes = findExtends();
 		for (Type type : extendTypes) {
-			String fn = JavaNameUtil.getQualifiedName(type);
-			if(fn.equals(requireFullName)){
-				return true;
+			if(!type.isParameterizedType()&&!type.isWildcardType()){
+				String fn = JavaNameUtil.getQualifiedName(type);
+				if(fn.equals(requireFullName)){
+					return true;
+				}
 			}
 		}
 		//deeper search
 		for (Type type : extendTypes) {
 			try {
-				if(typeExtends(type, requireFullName) ){
-					return true;
+				if( !type.isParameterizedType()&&!type.isWildcardType()){
+					if(typeExtends(type, requireFullName) ){
+						return true;
+					}
 				}
 			} catch(IllegalStateException e){
 				throw new IllegalStateException("error while resolving " + type, e);

@@ -41,10 +41,10 @@ public class JavaNameUtil {
 			sb.append(((PrimitiveType) t).getPrimitiveTypeCode().toString());
 		} else if (t.isSimpleType()) {
 			SimpleType st = (SimpleType) t;
-			sb.append(JavaNameUtil.getQualifiedName(st.getName()));
+			sb.append(getQualifiedName(st.getName()));
 		} else if (t.isQualifiedType()) {
 			QualifiedType qt = (QualifiedType) t;
-			sb.append(JavaNameUtil.getQualifiedName(qt.getName()));
+			sb.append(getQualifiedName(qt.getName()));
 		} else if (t.isArrayType()) {
 			ArrayType at = (ArrayType) t;
 			resolveQualifiedNameFor(at.getComponentType(), sb);

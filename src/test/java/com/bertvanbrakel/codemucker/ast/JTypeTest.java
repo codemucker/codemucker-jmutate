@@ -15,6 +15,7 @@ import com.bertvanbrakel.codemucker.SourceHelper;
 import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass1;
 import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass2;
 import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass3;
+import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyNonExtendingClass;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.matcher.AJField;
 import com.bertvanbrakel.codemucker.ast.matcher.AJMethod;
@@ -259,6 +260,7 @@ public class JTypeTest {
 		assertThat(source.getTypeWithName(MyChildClass1.class).isSubClassOf(MyExtendedClass.class),isFalse());
 		assertThat(source.getTypeWithName(MyChildClass2.class).isSubClassOf(MyExtendedClass.class),isTrue());
 		assertThat(source.getTypeWithName(MyChildClass3.class).isSubClassOf(MyExtendedClass.class),isTrue());
+		assertThat(source.getTypeWithName(MyNonExtendingClass.class).isSubClassOf(MyExtendedClass.class),isFalse());
 	}
 	
 	public static class MyExtendedClass {
@@ -268,6 +270,7 @@ public class JTypeTest {
 		class MyChildClass1 {}
 		class MyChildClass2 extends MyExtendedClass {}
 		class MyChildClass3 extends MyChildClass2 {}
+		class MyNonExtendingClass {}
 	}
 
 	@Test
