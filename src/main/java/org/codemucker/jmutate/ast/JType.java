@@ -1,7 +1,7 @@
 package org.codemucker.jmutate.ast;
 
-import static com.bertvanbrakel.lang.Check.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.codemucker.lang.Check.checkNotNull;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.finder.FindResult;
 import org.codemucker.jmutate.ast.finder.FindResultImpl;
 import org.codemucker.jmutate.ast.matcher.AJField;
@@ -31,7 +32,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import com.bertvanbrakel.lang.matcher.Matcher;
 import com.google.common.collect.Lists;
 
 /**

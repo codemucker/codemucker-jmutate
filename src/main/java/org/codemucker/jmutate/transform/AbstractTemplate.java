@@ -4,8 +4,9 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Map;
 
-import com.bertvanbrakel.lang.annotation.NotThreadSafe;
-import com.bertvanbrakel.lang.interpolator.Interpolator;
+import org.codemucker.lang.annotation.NotThreadSafe;
+import org.codemucker.lang.interpolator.Interpolator;
+
 import com.google.common.base.Objects;
 
 @NotThreadSafe

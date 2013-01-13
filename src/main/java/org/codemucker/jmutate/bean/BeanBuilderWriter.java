@@ -1,10 +1,11 @@
 package org.codemucker.jmutate.bean;
 
+import org.codemucker.lang.MapBuilder;
+import org.codemucker.lang.annotation.NotThreadSafe;
+
 import com.bertvanbrakel.codemucker.annotation.Generated;
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.annotation.PatternType;
-import com.bertvanbrakel.lang.MapBuilder;
-import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertyDefinition;
 

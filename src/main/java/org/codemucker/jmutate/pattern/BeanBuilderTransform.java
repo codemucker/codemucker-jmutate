@@ -1,10 +1,11 @@
 package org.codemucker.jmutate.pattern;
 
-import static com.bertvanbrakel.lang.Check.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.codemucker.lang.Check.checkNotNull;
 
 import java.util.List;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmutate.ast.CodemuckerException;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
@@ -24,7 +25,6 @@ import org.codemucker.jmutate.util.JavaNameUtil;
 import org.codemucker.jmutate.util.TypeUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
 import com.google.inject.Inject;
 
 /**

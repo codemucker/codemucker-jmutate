@@ -2,13 +2,13 @@ package org.codemucker.jmutate.ast.matcher;
 
 import junit.framework.AssertionFailedError;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Logical;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.AstNodeProvider;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.eclipse.jdt.core.dom.ASTNode;
 
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
-import com.bertvanbrakel.lang.matcher.Logical;
-import com.bertvanbrakel.lang.matcher.Matcher;
 
 public class AnAstNode extends Logical {
 

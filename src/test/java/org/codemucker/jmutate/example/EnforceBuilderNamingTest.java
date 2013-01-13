@@ -1,6 +1,6 @@
 package org.codemucker.jmutate.example;
 
-import static com.bertvanbrakel.lang.matcher.Logical.all;
+import static org.codemucker.jmatch.Logical.all;
 import static org.codemucker.jmutate.ast.matcher.AJMethod.isNotConstructor;
 import static org.codemucker.jmutate.ast.matcher.AJMethod.withAccess;
 import static org.codemucker.jmutate.ast.matcher.AJMethod.withMethodAnnotation;

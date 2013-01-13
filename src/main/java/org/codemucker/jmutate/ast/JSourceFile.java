@@ -1,7 +1,7 @@
 package org.codemucker.jmutate.ast;
 
-import static com.bertvanbrakel.lang.Check.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.codemucker.lang.Check.checkNotNull;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,6 +12,8 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.transform.CodeMuckContext;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -23,8 +25,6 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
-import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 

@@ -1,7 +1,7 @@
 package org.codemucker.jmutate.ast;
 
-import static com.bertvanbrakel.lang.Check.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static org.codemucker.lang.Check.checkNotNull;
 
 import java.util.List;
 

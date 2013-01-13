@@ -4,7 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.bertvanbrakel.lang.matcher.Matcher;
+import org.codemucker.jmatch.Matcher;
+
 import com.google.common.base.Function;
 
 public interface FindResult<T> extends Iterable<T> {

@@ -3,15 +3,15 @@ package org.codemucker.jmutate.ast.matcher;
 import java.lang.annotation.Annotation;
 import java.util.regex.Pattern;
 
+import org.codemucker.jmatch.AString;
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Description;
+import org.codemucker.jmatch.Logical;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 
-import com.bertvanbrakel.lang.matcher.AString;
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
-import com.bertvanbrakel.lang.matcher.Description;
-import com.bertvanbrakel.lang.matcher.Logical;
-import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.util.TestUtils;
 import com.google.common.base.Strings;
 /**

@@ -1,12 +1,12 @@
 package org.codemucker.jmutate.ast.matcher;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Description;
+import org.codemucker.jmatch.Logical;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.eclipse.jdt.core.dom.Annotation;
 
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
-import com.bertvanbrakel.lang.matcher.Description;
-import com.bertvanbrakel.lang.matcher.Logical;
-import com.bertvanbrakel.lang.matcher.Matcher;
 
 public class AnAnnotation extends Logical {
     

@@ -1,6 +1,6 @@
 package org.codemucker.jmutate.transform;
 
-import static com.bertvanbrakel.lang.Check.checkNotBlank;
+import static org.codemucker.lang.Check.checkNotBlank;
 
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;

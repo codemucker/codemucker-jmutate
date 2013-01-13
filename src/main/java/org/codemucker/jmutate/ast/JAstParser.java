@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.codemucker.lang.IBuilder;
+import org.codemucker.lang.annotation.NotThreadSafe;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.AST;
@@ -18,8 +20,6 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-import com.bertvanbrakel.lang.IBuilder;
-import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.Root.RootContentType;

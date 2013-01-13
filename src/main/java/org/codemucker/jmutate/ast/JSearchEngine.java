@@ -4,7 +4,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.util.List;
 
-import com.bertvanbrakel.lang.IBuilder;
+import org.codemucker.lang.IBuilder;
+
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.RootVisitor;
 import com.google.common.base.Preconditions;

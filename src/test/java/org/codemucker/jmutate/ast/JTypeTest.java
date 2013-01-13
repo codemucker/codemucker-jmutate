@@ -1,14 +1,15 @@
 package org.codemucker.jmutate.ast;
 
-import static com.bertvanbrakel.lang.matcher.Assert.assertThat;
-import static com.bertvanbrakel.lang.matcher.Assert.is;
-import static com.bertvanbrakel.lang.matcher.Assert.isEqualTo;
-import static com.bertvanbrakel.lang.matcher.Assert.isFalse;
-import static com.bertvanbrakel.lang.matcher.Assert.isTrue;
-import static com.bertvanbrakel.lang.matcher.Assert.not;
+import static org.codemucker.jmatch.Assert.assertThat;
+import static org.codemucker.jmatch.Assert.is;
+import static org.codemucker.jmatch.Assert.isEqualTo;
+import static org.codemucker.jmatch.Assert.isFalse;
+import static org.codemucker.jmatch.Assert.isTrue;
+import static org.codemucker.jmatch.Assert.not;
 
 import java.util.List;
 
+import org.codemucker.jmatch.AList;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
@@ -27,7 +28,6 @@ import org.codemucker.jmutate.transform.CodeMuckContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.junit.Test;
 
-import com.bertvanbrakel.lang.matcher.AList;
 
 public class JTypeTest {
 

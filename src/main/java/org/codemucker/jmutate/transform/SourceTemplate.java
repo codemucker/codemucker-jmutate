@@ -13,6 +13,7 @@ import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.lang.annotation.NotThreadSafe;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -21,7 +22,6 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.RootResource;
 

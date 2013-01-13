@@ -10,13 +10,13 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
 import org.codemucker.jmutate.ast.JAstParser;
+import org.codemucker.lang.annotation.NotThreadSafe;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.MethodRef;
 
-import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.bean.PropertiesExtractor;
 

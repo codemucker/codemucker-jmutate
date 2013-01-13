@@ -1,6 +1,6 @@
 package org.codemucker.jmutate.transform;
 
-import static com.bertvanbrakel.lang.Check.checkNotNull;
+import static org.codemucker.lang.Check.checkNotNull;
 
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;

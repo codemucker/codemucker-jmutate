@@ -7,16 +7,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Logical;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JFindVisitor;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.lang.IBuilder;
 
-import com.bertvanbrakel.lang.IBuilder;
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
-import com.bertvanbrakel.lang.matcher.Logical;
-import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.finder.BaseRootVisitor;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.RootResource;

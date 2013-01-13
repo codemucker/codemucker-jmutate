@@ -3,13 +3,13 @@ package org.codemucker.jmutate.ast.matcher;
 import java.lang.annotation.Annotation;
 import java.util.regex.Pattern;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Logical;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.eclipse.jdt.core.dom.Type;
 
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
-import com.bertvanbrakel.lang.matcher.Logical;
-import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.util.TestUtils;
 
 public class AJField extends Logical  {

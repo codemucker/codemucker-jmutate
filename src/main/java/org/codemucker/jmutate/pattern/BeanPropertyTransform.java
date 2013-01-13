@@ -1,7 +1,7 @@
 package org.codemucker.jmutate.pattern;
 
-import static com.bertvanbrakel.lang.Check.checkNotBlank;
-import static com.bertvanbrakel.lang.Check.checkNotNull;
+import static org.codemucker.lang.Check.checkNotBlank;
+import static org.codemucker.lang.Check.checkNotNull;
 
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;

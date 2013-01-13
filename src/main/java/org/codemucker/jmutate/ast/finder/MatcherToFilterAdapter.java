@@ -1,10 +1,11 @@
 package org.codemucker.jmutate.ast.finder;
 
-import com.bertvanbrakel.lang.matcher.AbstractMatcher;
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
-import com.bertvanbrakel.lang.matcher.Description;
-import com.bertvanbrakel.lang.matcher.MatchDiagnostics;
-import com.bertvanbrakel.lang.matcher.Matcher;
+import org.codemucker.jmatch.AbstractMatcher;
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Description;
+import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmatch.Matcher;
+
 import com.google.common.base.Preconditions;
 
 class MatcherToFilterAdapter<T> extends AbstractMatcher<T> implements FindResult.Filter<T> {

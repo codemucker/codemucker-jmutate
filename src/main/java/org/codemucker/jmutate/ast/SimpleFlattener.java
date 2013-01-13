@@ -1,6 +1,6 @@
 package org.codemucker.jmutate.ast;
 
-import static com.bertvanbrakel.lang.Check.checkNotNull;
+import static org.codemucker.lang.Check.checkNotNull;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;

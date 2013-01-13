@@ -1,9 +1,9 @@
 package org.codemucker.jmutate.bean;
 
 
-import com.bertvanbrakel.lang.MapBuilder;
-import com.bertvanbrakel.lang.annotation.NotThreadSafe;
-import com.bertvanbrakel.lang.interpolator.Interpolator;
+import org.codemucker.lang.MapBuilder;
+import org.codemucker.lang.annotation.NotThreadSafe;
+import org.codemucker.lang.interpolator.Interpolator;
 
 @NotThreadSafe
 @Deprecated

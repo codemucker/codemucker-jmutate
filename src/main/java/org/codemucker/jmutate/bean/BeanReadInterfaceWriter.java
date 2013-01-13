@@ -1,7 +1,8 @@
 package org.codemucker.jmutate.bean;
 
+import org.codemucker.lang.annotation.NotThreadSafe;
+
 import com.bertvanbrakel.codemucker.annotation.Generated;
-import com.bertvanbrakel.lang.annotation.NotThreadSafe;
 import com.bertvanbrakel.test.bean.BeanDefinition;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 

@@ -1,12 +1,15 @@
 package org.codemucker.jmutate.ast;
 
-import static com.bertvanbrakel.lang.matcher.Assert.assertThat;
-import static com.bertvanbrakel.lang.matcher.Assert.is;
-import static com.bertvanbrakel.lang.matcher.Assert.isFalse;
-import static com.bertvanbrakel.lang.matcher.Assert.isTrue;
+import static org.codemucker.jmatch.Assert.assertThat;
+import static org.codemucker.jmatch.Assert.is;
+import static org.codemucker.jmatch.Assert.isFalse;
+import static org.codemucker.jmatch.Assert.isTrue;
 
 import java.util.List;
 
+import org.codemucker.jmatch.AList;
+import org.codemucker.jmatch.AString;
+import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
@@ -17,9 +20,6 @@ import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.junit.Test;
 
-import com.bertvanbrakel.lang.matcher.AList;
-import com.bertvanbrakel.lang.matcher.AString;
-import com.bertvanbrakel.lang.matcher.AnInt;
 
 public class JavaSourceFinderTest {
 

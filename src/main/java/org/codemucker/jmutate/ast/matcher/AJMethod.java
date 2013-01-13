@@ -2,14 +2,14 @@ package org.codemucker.jmutate.ast.matcher;
 
 import java.lang.annotation.Annotation;
 
+import org.codemucker.jmatch.AString;
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.AnInt;
+import org.codemucker.jmatch.Logical;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
 
-import com.bertvanbrakel.lang.matcher.AString;
-import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
-import com.bertvanbrakel.lang.matcher.AnInt;
-import com.bertvanbrakel.lang.matcher.Logical;
-import com.bertvanbrakel.lang.matcher.Matcher;
 
 public class AJMethod extends Logical {
 

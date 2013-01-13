@@ -1,8 +1,8 @@
 package org.codemucker.jmutate.ast.finder;
 
-import static com.bertvanbrakel.lang.Check.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
+import static org.codemucker.lang.Check.checkNotNull;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import com.bertvanbrakel.lang.matcher.Matcher;
+import org.codemucker.jmatch.Matcher;
+
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 

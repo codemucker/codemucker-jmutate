@@ -1,11 +1,13 @@
 package org.codemucker.jmutate.ast;
 
-import static com.bertvanbrakel.lang.matcher.Assert.assertThat;
-import static com.bertvanbrakel.lang.matcher.Assert.isEqualTo;
+import static org.codemucker.jmatch.Assert.assertThat;
+import static org.codemucker.jmatch.Assert.isEqualTo;
 
 import java.util.Collection;
 import java.util.List;
 
+import org.codemucker.jmatch.AList;
+import org.codemucker.jmatch.Assert;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JType;
@@ -17,8 +19,6 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.annotation.Generated;
-import com.bertvanbrakel.lang.matcher.AList;
-import com.bertvanbrakel.lang.matcher.Assert;
 
 public class JAnnotationTest {
 
