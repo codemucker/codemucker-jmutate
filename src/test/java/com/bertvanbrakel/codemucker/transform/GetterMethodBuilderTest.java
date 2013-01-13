@@ -20,12 +20,12 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JMethod;
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class GetterMethodBuilderTest {
 
-	MutationContext ctxt = new SimpleMutationContext();
+	CodeMuckContext ctxt = new SimpleCodeMuckContext();
 	
 	@Test
 	public void test_default_create(){
@@ -36,7 +36,7 @@ public class GetterMethodBuilderTest {
 	
 		JMethod expect = ctxt.newSourceTemplate()
     		.pl("public my.org.Foo getMyField(){ return this.myField; }")
-    		.asJMethod();
+    		.asResolvedJMethod();
     	
     	SourceAsserts.assertAstsMatch(expect,actual);
 	}
@@ -51,9 +51,10 @@ public class GetterMethodBuilderTest {
 			.build();
 	
 		JMethod expect = ctxt.newSourceTemplate()
-			.p("@").p(Pattern.class.getName()).p("(name=\"").p("bean.getter").pl("\")")
+			.v("pattern", Pattern.class)
+			.p("@${pattern}(name=\"").p("bean.getter").pl("\")")
 			.pl("protected my.org.Foo getMyField(){return this.myField;}")
-    		.asJMethod();
+    		.asResolvedJMethod();
     	
     	SourceAsserts.assertAstsMatch(expect,actual);
 	}

@@ -5,6 +5,8 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -16,9 +18,13 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
+import com.bertvanbrakel.lang.IBuilder;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
+import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.Root.RootContentType;
+import com.bertvanbrakel.test.finder.Root.RootType;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
@@ -44,18 +50,23 @@ public class JAstParser {
 		return new Builder();
 	}
 	
+	private final Root snippetRoot;
+	
 	private static final String[] EMPTY = new String[]{};
 	
-	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Iterable<Root> roots) {
+	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Root snippetRoot, Iterable<Root> resolveRoots) {
 	    super();
 	    this.parser = checkNotNull(parser,"expect parser");
 	    this.checkParse = checkParse;
 	    this.recordModifications = recordModifications;
 	    this.options = checkNotNull(options,"expect parser options");
-	    
+		this.snippetRoot = snippetRoot;
+		
 	    List<String> sources = newArrayList();
+	    sources.add(snippetRoot.getPathName());
+	    
 	    List<String> binaries = newArrayList();
-		for (Root root : roots) {
+		for (Root root : resolveRoots) {
 			if(root.getContentType() == RootContentType.SRC){
 				sources.add(root.getPathName());
 			}  else {
@@ -73,13 +84,16 @@ public class JAstParser {
 	 * @param src
 	 * @return
 	 */
-	public CompilationUnit parseCompilationUnit(CharSequence src) {
-		CompilationUnit cu = (CompilationUnit) parseNode(src, ASTParser.K_COMPILATION_UNIT);
+	public CompilationUnit parseCompilationUnit(CharSequence src,RootResource resource) {
+		CompilationUnit cu = (CompilationUnit) parseNode(src, ASTParser.K_COMPILATION_UNIT, resource);
 		if (checkParse){
 			IProblem[] problems = cu.getProblems();
 			if (problems.length > 0) {
-				String problemString = Joiner.on("\n").join(Lists.transform(newArrayList(problems), problemToStringFunc()));
-				fail(String.format("Parsing error for source %s\n, problems are %s", prependLineNumbers(src), problemString));
+				List<IProblem> errors = extractErrors(problems);
+				if( !errors.isEmpty()){		
+					String problemString = Joiner.on("\n").join(Lists.transform(errors, problemToStringFunc()));
+					fail(String.format("Parsing error for resource %s,  source %s\n,  problems are %s", resource==null?null:resource.getRelPath(), prependLineNumbers(src), problemString));
+				}
 			}
 		}
 		if (recordModifications) {
@@ -89,6 +103,15 @@ public class JAstParser {
 		return cu;
 	}
 	
+	private List<IProblem> extractErrors(IProblem[] problems){
+		List<IProblem> errors = Lists.newArrayList();
+		for(IProblem problem:problems){
+			if( problem.isError()){
+				errors.add(problem);
+			}
+		}
+		return errors;
+	}
 	/**
 	 * Converts an {@link IProblem} into a human readable string
 	 */
@@ -97,6 +120,7 @@ public class JAstParser {
 			@Override
             public String apply(IProblem problem) {
 				return Objects.toStringHelper("Problem")
+					.add("severity", problem.isError()?"error":"warn")
 					.add("msg", problem.getMessage())
 					.add("line", problem.getSourceLineNumber())
 					.add("char", problem.getSourceStart() + LINE_NUM_PADDING)
@@ -129,12 +153,16 @@ public class JAstParser {
 		return sb.toString();
 	}
 
-	public ASTNode parseNode(CharSequence src, int kind) {
+	public ASTNode parseNode(CharSequence src, int kind, RootResource resource) {
 		
 		parser.setCompilerOptions(options);
 		
+		if( resource != null ){
+			parser.setUnitName(resource.getRelPath());
+		}
 		if( binaryRoots.length > 0 || sourceRoots.length > 0){
-	    	parser.setEnvironment(binaryRoots, sourceRoots, null, false);
+			boolean includeRunningVMBootclasspath = true;//if false can't find all the JDK classes?
+	    	parser.setEnvironment(binaryRoots, sourceRoots, null, includeRunningVMBootclasspath);
 	    }
 		parser.setSource(src.toString().toCharArray());
 		parser.setKind(kind);
@@ -168,7 +196,8 @@ public class JAstParser {
 	public static class CompilerOptions {
 		
 	}
-	public static class Builder {
+	
+	public static class Builder implements IBuilder<JAstParser> {
 		private ASTParser parser;
 		private boolean checkParse = true;
 		private boolean recordModifications = true;
@@ -176,6 +205,7 @@ public class JAstParser {
 		@SuppressWarnings("unchecked")
         private Map<Object,Object> options = newHashMap(JavaCore.getOptions());
 		private List<Root> roots = newArrayList();
+		private Root snippetRoot;
 		
 		public Builder(){
 			// In order to parse 1.5 code, some compiler options need to be set
@@ -186,26 +216,43 @@ public class JAstParser {
 		public Builder setDefaults() {
         	setParser(newDefaultAstParser());
         	setSourceLevel(JavaCore.VERSION_1_6);
+        	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_LOCAL, "ignore");
+        	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_PRIVATE_MEMBER, "ignore");
+        	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_PARAMETER, "ignore");
+        	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_TYPE_ARGUMENTS_FOR_METHOD_INVOCATION, "ignore");
+         	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_IMPORT, "ignore");
         	return this;
         }
-		
-		public Builder setParser(ASTParser parser) {
-        	this.parser = parser;
-        	return this;
-        }
-		
+
 		public JAstParser build(){
 			return new JAstParser(
 				toParser()
 				, checkParse
 				, recordModifications
 				, newHashMap(options)
+				, toSnippetRoot()
 				, roots
 			);
 		}
-		
+
 		private ASTParser toParser() {
 			return parser == null ? newDefaultAstParser() : parser;
+		}
+		
+		private Root toSnippetRoot(){
+			return snippetRoot==null?newTmpRoot():snippetRoot;
+		}
+		
+		private static Root newTmpRoot(){
+			try {
+				File f = File.createTempFile("JASTParserRoot","");
+				File tmpDir = new File(f.getAbsolutePath() + ".d/");
+				tmpDir.mkdirs();
+				
+				return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
+			} catch (IOException e) {
+				throw new CodemuckerException("Couldn't create a tmp root");
+			}
 		}
 		
 		private ASTParser newDefaultAstParser(){
@@ -216,12 +263,32 @@ public class JAstParser {
 			return parser;
 		}
 		
-		public Builder addRoot(Root root){
+		public Builder setParser(ASTParser parser) {
+        	this.parser = parser;
+        	return this;
+        }
+		
+		/**
+		 * Add a root to use to use in resolving bindings
+		 * @param root
+		 * @return
+		 */
+		public Builder addResolveRoot(Root root){
 			this.roots.add(root);
 			return this;
 		}
+
+		public Builder setResolveRoots(IBuilder<? extends Iterable<Root>> builder){
+			setResolveRoots(builder.build());
+			return this;
+		}
 		
-		public Builder setRoots(Iterable<Root> roots){
+		/**
+		 * Set the roots to use to resolve bindings
+		 * @param roots
+		 * @return
+		 */
+		public Builder setResolveRoots(Iterable<Root> roots){
 			this.roots = newArrayList(roots);
 			return this;
 		}

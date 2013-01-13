@@ -1,10 +1,10 @@
 package com.bertvanbrakel.codemucker.example;
 
-import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.all;
-import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.isNotConstructor;
-import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.withAccess;
-import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.withMethodAnnotation;
-import static com.bertvanbrakel.codemucker.ast.matcher.AMethod.withMethodNamed;
+import static com.bertvanbrakel.codemucker.ast.matcher.AJMethod.isNotConstructor;
+import static com.bertvanbrakel.codemucker.ast.matcher.AJMethod.withAccess;
+import static com.bertvanbrakel.codemucker.ast.matcher.AJMethod.withMethodAnnotation;
+import static com.bertvanbrakel.codemucker.ast.matcher.AJMethod.withNameMatchingAntPattern;
+import static com.bertvanbrakel.lang.matcher.Logical.all;
 
 import java.util.Collection;
 import java.util.List;
@@ -13,13 +13,14 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.SourceHelper;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.matcher.AType;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
 import com.bertvanbrakel.test.finder.Roots;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -32,12 +33,12 @@ public class EnforceBuilderNamingTest
 	{
 		Iterable<JType> builders = JSourceFinder.builder()
 				.setSearchRoots(Roots.builder()
-					.setIncludeClassesDir(true)
-					.setIncludeTestDir(true)
+					.setIncludeMainSrcDir(true)
+					.setIncludeTestSrcDir(true)
 				)
 				.setFilter(Filter.builder()
-					.addIncludeTypes(AType.withSimpleName("*Builder"))
-					.addExcludeTypes(AType.isAbstract())
+					.addIncludeTypes(AJType.withSimpleNameAntPattern("*Builder"))
+					.addExcludeTypes(AJType.isAbstract())
 				)
 				.build()
 				.findTypes();
@@ -45,7 +46,7 @@ public class EnforceBuilderNamingTest
 		List<String> ignoreMethodsNamed = Lists.newArrayList("build","builder","copyOf");
 		
 		for (JType builder : builders) {			
-			FindResult<JMethod> buildMethod = builder.findMethodsMatching(withMethodNamed("build"));
+			FindResult<JMethod> buildMethod = builder.findMethodsMatching(withNameMatchingAntPattern("build"));
 			Assert.assertFalse("expect to find a build method on " + builder.getFullName(), buildMethod.isEmpty());
 			//TODO:check return type of builder
 			//TODO:check no args
@@ -87,11 +88,7 @@ public class EnforceBuilderNamingTest
 	@Test
 	public void testEnsureAllTestMethodsStartWithTest()
 	{
-		Iterable<JMethod> methods = JSourceFinder.builder()
-				.setSearchRoots(Roots.builder()
-					.setIncludeClassesDir(false)
-					.setIncludeTestDir(true)
-				)
+		Iterable<JMethod> methods = SourceHelper.newTestSourcesResolvingFinder()
 				.setFilter(Filter.builder()
 					//.addIncludeTypes(AType.withFullName("*Test"))
 					.addIncludeMethods(withMethodAnnotation(Test.class))

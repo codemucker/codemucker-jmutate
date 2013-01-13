@@ -20,21 +20,21 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class InsertFieldTransformTest {
 
 	@Test
 	public void test_add_field() throws Exception {
-		MutationContext ctxt = new SimpleMutationContext();
+		CodeMuckContext ctxt = new SimpleCodeMuckContext();
 		
 		SourceTemplate srcBefore = ctxt.newSourceTemplate()
 			.pl("package com.bertvanbrakel.codegen.bean;")
 			.pl( "public class TestBeanModify {")
 			.pl("}");
 		
-		JType after = srcBefore.asJType();
+		JType after = srcBefore.asResolvedJTypeNamed("com.bertvanbrakel.codegen.bean.TestBeanModify");
 		
 		JField field = FieldBuilder.builder()
 			.setContext(ctxt)
@@ -54,9 +54,9 @@ public class InsertFieldTransformTest {
 		JType expectType = ctxt.newSourceTemplate()
 			.pl("package com.bertvanbrakel.codegen.bean;")
 			.pl( "public class TestBeanModify {")
-			.pl('@').p(Pattern.class.getName()).p("(name=\"mypattern\")").p( "private String myField;" ).nl()
+			.pl('@').p(Pattern.class.getName()).p("(name=\"mypattern\")").p( "private String myField;" ).pl()
 			.pl("}")
-			.asJType();
+			.asResolvedJTypeNamed("com.bertvanbrakel.codegen.bean.TestBeanModify");
 		
 		SourceAsserts.assertAstsMatch(expectType,after);
 	}

@@ -312,4 +312,8 @@ public class JavaNameUtil {
 		return null;
 	}
 
+	public static String compiledNameToSourceName(Class<?> klass){
+		return klass.getName().replace('$', '.');
+	}
+
 }

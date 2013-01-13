@@ -8,13 +8,16 @@ import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder.JFindMatcher;
-import com.bertvanbrakel.codemucker.ast.matcher.ASourceFile;
-import com.bertvanbrakel.codemucker.ast.matcher.AType;
-import com.bertvanbrakel.lang.IsBuilder;
-import com.bertvanbrakel.test.finder.RootResource;
+import com.bertvanbrakel.codemucker.ast.matcher.AJSourceFile;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
+import com.bertvanbrakel.lang.IBuilder;
+import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.Description;
+import com.bertvanbrakel.lang.matcher.MatchDiagnostics;
+import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.matcher.IncludeExcludeMatcherBuilder;
-import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.finder.matcher.ResourceMatchers;
 
 public class Filter implements JFindMatcher {
@@ -77,7 +80,7 @@ public class Filter implements JFindMatcher {
 		return new Builder();
 	}
 
-	public static class Builder implements IsBuilder<JFindMatcher> {
+	public static class Builder implements IBuilder<JFindMatcher> {
 		
 		private FindResult.Filter<Object> ANY = new FindResult.Filter<Object>(){
 
@@ -87,10 +90,20 @@ public class Filter implements JFindMatcher {
 			}
 
 			@Override
+			public boolean matches(Object actual, MatchDiagnostics ctxt) {
+				return true;
+			}
+			
+			@Override
 			public void onMatched(Object result) {}
 
 			@Override
 			public void onIgnored(Object result) {}
+
+			@Override
+			public void describeTo(Description desc) {
+				desc.text("anything");
+			}
 	    };
 	    
 	    private IncludeExcludeMatcherBuilder<Root> roots = IncludeExcludeMatcherBuilder.builder();
@@ -123,18 +136,18 @@ public class Filter implements JFindMatcher {
 		}
 		
 		private static Matcher<RootResource> mergeResourceMatchers(final Matcher<RootResource> matcher, final Matcher<String> resourceNameMatcher){
-			return new Matcher<RootResource>(){
+			return new AbstractNotNullMatcher<RootResource>(){
 				@Override
-				public boolean matches(RootResource found) {
+				public boolean matchesSafely(RootResource found) {
 					return resourceNameMatcher.matches(found.getRelPath()) && matcher.matches(found);
 				}
 			};
 		}
 		
 		private static Matcher<JSourceFile> mergeSourceMatchers(final Matcher<JSourceFile> matcher, final Matcher<String> classNameMatcher){
-			return new Matcher<JSourceFile>(){
+			return new AbstractNotNullMatcher<JSourceFile>(){
 				@Override
-				public boolean matches(JSourceFile found) {
+				public boolean matchesSafely(JSourceFile found) {
 					return classNameMatcher.matches(found.getClassnameBasedOnPath()) && matcher.matches(found);
 				}
 			};
@@ -176,12 +189,12 @@ public class Filter implements JFindMatcher {
 		}
 	
 		public Builder setAssignableTo(Class<?> superclass) {
-			setIncludeSource(ASourceFile.assignableTo(superclass));
+			setIncludeSource(AJSourceFile.assignableTo(superclass));
 			return this;
 		}
 		
 		public <T extends Annotation> Builder withAnnotation(Class<T> annotation){
-			setIncludeSource(ASourceFile.withAnnotation(annotation));
+			setIncludeSource(AJSourceFile.withAnnotation(annotation));
 			return this;
 		}
 		
@@ -191,17 +204,17 @@ public class Filter implements JFindMatcher {
 		}
 		
 		public Builder setExcludeEnum() {
-			setExcludeSource(ASourceFile.includeEnum());
+			setExcludeSource(AJSourceFile.includeEnum());
 			return this;
 		}
 	
 		public Builder setExcludeAnonymous() {
-			setExcludeSource(ASourceFile.includeAnonymous());
+			setExcludeSource(AJSourceFile.includeAnonymous());
 			return this;
 		}
 	
 		public Builder setExcludeInterfaces() {
-			setExcludeSource(ASourceFile.includeInterfaces());
+			setExcludeSource(AJSourceFile.includeInterfaces());
 			return this;
 		}
 	
@@ -211,12 +224,12 @@ public class Filter implements JFindMatcher {
 		}
 		
 		public Builder addIncludeTypesWithMethods(Matcher<JMethod> matcher){
-			addIncludeTypes(AType.withMethod(matcher));
+			addIncludeTypes(AJType.withMethod(matcher));
 			return this;
 		}
 		
 		public Builder addExcludeTypesWithMethods(Matcher<JMethod> matcher){
-			addExcludeTypes(AType.withMethod(matcher));
+			addExcludeTypes(AJType.withMethod(matcher));
 			return this;
 		}
 		

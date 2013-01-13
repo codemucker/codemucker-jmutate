@@ -24,12 +24,12 @@ public abstract class AbstractTemplate<S extends AbstractTemplate<S>> implements
 		return self();
 	}
 	
-	public S v(String name,Object val){
+	public S v(String name, Object val){
 		setVar(name,val);
 		return self();
 	}
 	
-	public S setVar(String name,Object val){
+	public S setVar(String name, Object val){
 		this.vars.put(name,val);
 		return self();
 	}
@@ -66,7 +66,7 @@ public abstract class AbstractTemplate<S extends AbstractTemplate<S>> implements
 		return self();
 	}	
 
-	public S nl(){
+	public S pl(){
 		println();
 		return self();
 	}
@@ -97,8 +97,12 @@ public abstract class AbstractTemplate<S extends AbstractTemplate<S>> implements
 	}	
 
 	@Override
-	public CharSequence interpolate(){
+	public CharSequence interpolateTemplate(){
 		return Interpolator.interpolate(buffer, vars);
+	}
+	
+	protected String interpolateSnippet(String snippetText){
+		return (String)Interpolator.interpolate(snippetText,vars);
 	}
 
 	@Override

@@ -1,57 +1,84 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static com.bertvanbrakel.lang.matcher.Assert.assertThat;
+import static com.bertvanbrakel.lang.matcher.Assert.is;
+import static com.bertvanbrakel.lang.matcher.Assert.isFalse;
+import static com.bertvanbrakel.lang.matcher.Assert.isTrue;
 
 import java.util.List;
 
-import org.junit.Assert;
-
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.SourceHelper;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.matcher.AType;
-import com.bertvanbrakel.test.finder.Roots;
+import com.bertvanbrakel.codemucker.ast.matcher.AJMethod;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
+import com.bertvanbrakel.lang.matcher.AList;
+import com.bertvanbrakel.lang.matcher.AString;
+import com.bertvanbrakel.lang.matcher.AnInt;
 
 public class JavaSourceFinderTest {
 
 	@Test
-	public void testFindClassesWithAnnotations() throws Exception {
-		JSourceFinder finder = JSourceFinder.builder()
-			.setSearchRoots(Roots.builder()
-				.setIncludeClassesDir(false)
-				.setIncludeTestDir(true)
-			)
+	public void testFindClassesWithMethodMatch() throws Exception {
+		JSourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
 			.setFilter(Filter.builder()
-				.addIncludeTypes(AType.withAnnotation(MyAnnotation.class))
+				.addIncludeTypes(AJType.withMethod(AJMethod.withNameMatchingAntPattern("testFindClassesWithMethodMatch")))
+			)
+			.build();
+		JType type = finder.findTypes().getFirst();
+		
+		assertThat(type, is(AJType.withName(JavaSourceFinderTest.class)));
+	}
+	
+	@Test
+	public void testFindClassesExtending() throws Exception {
+		JSourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
+			.setFilter(Filter.builder()
+				.addIncludeTypes(AJType.subclassOf(MyClass.class))
+			)
+			.build();
+
+		assertThat(
+			finder.findTypes(),
+			is(AList.of(JType.class)
+				.inAnyOrder()
+				.containingOnly()
+				.item(AJType.withName(MySubClass.class))
+				.item(AJType.withName(MySubSubClass.class)
+			))
+		);
+	}
+	
+	@Test
+	public void testFindClassesWithAnnotations() throws Exception {
+		JSourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
+			.setFilter(Filter.builder()
+				.addIncludeTypes(AJType.withAnnotation(MyAnnotation.class))
 			)
 			.build();
 		boolean found = false;
 		List<JType> foundTypes = finder.findTypes().toList();
 		
 		for( JType type:foundTypes){
-			assertEquals(ClassWithAnnotation.class.getSimpleName(), type.getSimpleName());
+			assertThat(type.getSimpleName(), is(AString.equalTo(ClassWithAnnotation.class.getSimpleName())));
 			boolean hasAnon = type.hasAnnotationOfType(MyAnnotation.class,true);
-			assertTrue("expected annotation", hasAnon);
+			
+			assertThat(hasAnon,isTrue());
 			found = true;
 		}
-		assertEquals(1, foundTypes.size());
-		
-		assertTrue("Expected type to be found", found);
+		assertThat(foundTypes.size(),is(AnInt.equalTo(1)));
+		assertThat(found,isTrue());
 	}
 	
 	@Test
 	public void testFindWithMethods(){
-		JSourceFinder finder = JSourceFinder.builder()
-			.setSearchRoots(Roots.builder()
-				.setIncludeClassesDir(true)
-				.setIncludeTestDir(true)
-			)
-			.build();
+		JSourceFinder finder = SourceHelper.newAllSourcesResolvingFinder().build();
+		
 		FindResult<JMethod> methods = finder.findMethods();
-		Assert.assertTrue(!methods.isEmpty());
+		assertThat(methods.isEmpty(),isFalse());
 	}
 
 	public static @interface MyAnnotation {
@@ -66,15 +93,13 @@ public class JavaSourceFinderTest {
 	private static class ClassWithNoAnnotation {
 
 	}
-	
-	private static class Foo {
-		public static @interface MyAnnotation2 {
 
-		}
-		
-		@MyAnnotation2
-		public void bar(){
-			
-		}
+	private static class MyClass {
+	}
+	
+	private static class MySubClass extends MyClass {
+	}
+	
+	private static class MySubSubClass extends MySubClass {
 	}
 }

@@ -19,7 +19,7 @@ import com.google.inject.Inject;
 public class NodeToSourceBuilder {
 
 	@Inject
-	private MutationContext ctxt;
+	private CodeMuckContext ctxt;
 
 	@Inject
 	private AstNodeFlattener flattener;
@@ -31,7 +31,7 @@ public class NodeToSourceBuilder {
 		String src = flattener.flatten(node);
 		SourceTemplate t = ctxt.newSourceTemplate();
 		
-		t.p("public void generateNode(").p(MutationContext.class.getName()).p(" ctxt").pl("){")
+		t.p("public void generateNode(").p(CodeMuckContext.class.getName()).p(" ctxt").pl("){")
 		 .p(SourceTemplate.class.getName()).p(" t = ctxt.newSourceTemplate();");
 	
 		BufferedReader reader = new BufferedReader(new StringReader(src));
@@ -46,7 +46,7 @@ public class NodeToSourceBuilder {
         }
 		t.pl("}");
 		
-		return t.asJMethod();
+		return t.asResolvedJMethod();
 	}
 	
 	private static String escapeSource(String line){
@@ -58,7 +58,7 @@ public class NodeToSourceBuilder {
 		return this;
 	}
 	
-	public NodeToSourceBuilder setCtxt(MutationContext ctxt) {
+	public NodeToSourceBuilder setCtxt(CodeMuckContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}

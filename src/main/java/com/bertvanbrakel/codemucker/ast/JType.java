@@ -26,12 +26,12 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.FindResultImpl;
-import com.bertvanbrakel.codemucker.ast.matcher.AField;
-import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
-import com.bertvanbrakel.codemucker.ast.matcher.AType;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.ast.matcher.AJField;
+import com.bertvanbrakel.codemucker.ast.matcher.AJMethod;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
-import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.bertvanbrakel.lang.matcher.Matcher;
 import com.google.common.collect.Lists;
 
 /**
@@ -115,7 +115,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	}
 
 	public FindResult<JField> findAllFields(){
-		return findFieldsMatching(AField.any());
+		return findFieldsMatching(AJField.any());
 	}
 	
 	public FindResult<JField> findFieldsMatching(final Matcher<JField> matcher) {
@@ -149,7 +149,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	 * @return
 	 */
 	public FindResult<JMethod> findAllJMethods() {
-		return findMethodsMatching(AMethod.any());		
+		return findMethodsMatching(AJMethod.any());		
 	}
 	
 	/**
@@ -217,7 +217,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	}
 	
 	public FindResult<JType> findDirectChildTypes(){
-		return findDirectChildTypesMatching(AType.any());
+		return findDirectChildTypesMatching(AJType.any());
 	}
 	
 	/**
@@ -245,7 +245,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	 * Recursively find all child types
 	 */
 	public FindResult<JType> findAllChildTypes() {
-		return findChildTypesMatching(AType.any());
+		return findChildTypesMatching(AJType.any());
 	}
 	
 	/**
@@ -333,7 +333,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return typeNode instanceof TypeDeclaration;
 	}
 
-	public JTypeMutator asMutator(MutationContext ctxt){
+	public JTypeMutator asMutator(CodeMuckContext ctxt){
 		return new JTypeMutator(ctxt, this);
 	}
 	
@@ -390,8 +390,9 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return JAnnotation.findAnnotations(typeNode, maxDepth);
 	}
 	
-	public boolean isImplementing(Class<?> require) {
-		String requireFullName = require.getName();	
+	public boolean isSubClassOf(Class<?> require) {
+		String requireFullName = require.getName().replace('$', '.');	
+		
 		Collection<Type> extendTypes = findExtends();
 		for (Type type : extendTypes) {
 			String fn = JavaNameUtil.getQualifiedName(type);
@@ -401,8 +402,12 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		}
 		//deeper search
 		for (Type type : extendTypes) {
-			if( typeExtends(type, requireFullName) ){
-				return true;
+			try {
+				if(typeExtends(type, requireFullName) ){
+					return true;
+				}
+			} catch(IllegalStateException e){
+				throw new IllegalStateException("error while resolving " + type, e);
 			}
 		}
 		return false;
@@ -412,19 +417,21 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		if( type.resolveBinding() != null ){
 			return typeExtends(type.resolveBinding(), fullName);
 		}
-		throw new IllegalStateException("can't resolve binding");
+		//throw new IllegalStateException("can't resolve binding on " + type + " while looking for extends " + fullName);
+		return false;
 	}
 	
 	private static boolean typeExtends(ITypeBinding type, String fullName){
+		//System.out.println(type.getQualifiedName() + "==?" + fullName);
 		if(fullName.equals(type.getQualifiedName())){
 			return true;
 		}
 		ITypeBinding superType = type.getSuperclass();
-		if( superType != null && typeExtends(superType, fullName)){
+		if(superType != null && typeExtends(superType, fullName)){
 			return true;
 		}
 		for(ITypeBinding interfaceType:type.getInterfaces()){
-			if( typeExtends(interfaceType, fullName)) {
+			if(typeExtends(interfaceType, fullName)) {
 				return true;
 			}
 		}

@@ -11,13 +11,13 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.SourceHelper;
 import com.bertvanbrakel.codemucker.ast.a.TestBean;
 import com.bertvanbrakel.codemucker.ast.a.TestBeanSimple;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 import com.bertvanbrakel.test.util.TestHelper;
 
 public class JTypeMutatorTest {
 
-	private MutationContext context = new SimpleMutationContext();
+	private CodeMuckContext context = new SimpleCodeMuckContext();
 	
 	@Test
 	public void testAddSimpleField() throws Exception {		
@@ -71,7 +71,7 @@ public class JTypeMutatorTest {
         }
         CompilationUnit expectCu = context.newSourceTemplate()
         	.setTemplate(expectSrc)
-        	.asCompilationUnit();
+        	.asResolvedCompilationUnitNamed(null);
         
         SourceAsserts.assertAstsMatch(expectCu, expectCu);
     }

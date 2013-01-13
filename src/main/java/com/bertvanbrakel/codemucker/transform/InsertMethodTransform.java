@@ -8,7 +8,7 @@ import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
+import com.bertvanbrakel.codemucker.ast.matcher.AJMethod;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -27,7 +27,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		FindResult<JMethod> found = getTarget().findMethodsMatching(AMethod.withNameAndArgSignature(method));
+		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.withNameAndArgSignature(method));
 		if(!found.isEmpty()){
 			insert = false;
 			JMethod existingMethod = found.getFirst();

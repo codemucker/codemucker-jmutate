@@ -34,7 +34,7 @@ import com.google.inject.Inject;
 public class FixImportsTransform {
 
 	@Inject
-	private MutationContext ctxt;
+	private CodeMuckContext ctxt;
 	
 	private ASTNode node;
 	
@@ -163,7 +163,7 @@ public class FixImportsTransform {
 		return this;
 	}
 
-	public FixImportsTransform setCtxt(MutationContext ctxt) {
+	public FixImportsTransform setCtxt(CodeMuckContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}

@@ -61,7 +61,7 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 			t.pl(";");
 		}
 	
-		return t.asFieldNode();
+		return t.asResolvedFieldNode();
 	}
 
 	public FieldBuilder setFieldAccess(JAccess access) {

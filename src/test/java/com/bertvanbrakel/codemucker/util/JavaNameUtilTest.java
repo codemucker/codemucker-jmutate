@@ -6,12 +6,12 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.JField;
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 
 public class JavaNameUtilTest {
 
-	SimpleMutationContext ctxt = new SimpleMutationContext();
+	SimpleCodeMuckContext ctxt = new SimpleCodeMuckContext();
 	
 	@Test
 	@Ignore("Currently don't support this. Have a tmp workaround for method clash dectection issue")
@@ -24,7 +24,7 @@ public class JavaNameUtilTest {
 		t.pl("public MyInterface myField;");
 		t.pl("}");
 		
-		JField field = t.asSourceFile().getMainType().findAllFields().getFirst();
+		JField field = t.asResolvedSourceFileNamed("${pkg}.MyType").getMainType().findAllFields().getFirst();
 		
 		assertEquals(MyInterface.class.getName(), JavaNameUtil.getQualifiedName(field.getType()));
 	}

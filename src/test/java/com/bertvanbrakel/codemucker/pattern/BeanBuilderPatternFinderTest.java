@@ -2,16 +2,15 @@ package com.bertvanbrakel.codemucker.pattern;
 
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.SourceHelper;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
-import com.bertvanbrakel.codemucker.ast.matcher.AType;
-import com.bertvanbrakel.codemucker.matcher.AInt;
-import com.bertvanbrakel.test.finder.Roots;
-import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.bertvanbrakel.codemucker.ast.matcher.AJMethod;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
+import com.bertvanbrakel.lang.matcher.AnInt;
+import com.bertvanbrakel.lang.matcher.Matcher;
 
 public class BeanBuilderPatternFinderTest {
 
@@ -21,18 +20,13 @@ public class BeanBuilderPatternFinderTest {
 		//classes which subclass anything called 'builder' - confidence 80%
 		//classes where most methods return itself - confidence 60%
 		//classes which contain a method starting with 'build' - confidence 70%
-		
-		FindResult<JType> foundBuilders = JSourceFinder.builder()
-				.setSearchRoots(Roots.builder()
-						.setIncludeClassesDir(true)
-						.setIncludeTestDir(true)
-					)
-					.setFilter(Filter.builder()
-						//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
-						//TODO:have matchers return confidences?? then finder can add that to results..
-						.addIncludeTypes(AType.withFullName("*Builder"))
-						//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
-					)	
+		FindResult<JType> foundBuilders = SourceHelper.newAllSourcesResolvingFinder()
+			.setFilter(Filter.builder()
+				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
+				//TODO:have matchers return confidences?? then finder can add that to results..
+				.addIncludeTypes(AJType.withFullName("*Builder"))
+				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
+			)
 			.build()
 			.findTypes();
 		
@@ -42,7 +36,7 @@ public class BeanBuilderPatternFinderTest {
 			System.out.println( type.getFullName());
 			
 			//builds what???
-			FindResult<JMethod> methods = type.findMethodsMatching(AMethod.withMethodNamed("build*"));
+			FindResult<JMethod> methods = type.findMethodsMatching(AJMethod.withNameMatchingAntPattern("build*"));
 			for (JMethod method : methods) {
 				//could do checks on the build method here. COntains args? maybe not good?
 				//return null? another warning
@@ -55,22 +49,18 @@ public class BeanBuilderPatternFinderTest {
 	@Test
 	public void testFindLongCtorClasses() {
 		Matcher<JMethod> methodMatcher =
-			AMethod.all(
-				AMethod.isConstructor(), 
-				AMethod.withNumArgs(AInt.greaterOrEqualTo(3))
+			AJMethod.all(
+				AJMethod.isConstructor(), 
+				AJMethod.withNumArgs(AnInt.greaterOrEqualTo(3))
 			);
-		Iterable<JMethod> found = JSourceFinder.builder()
-				.setSearchRoots(Roots.builder()
-						.setIncludeClassesDir(true)
-						.setIncludeTestDir(true)
-					)
-					.setFilter(Filter.builder()
-						//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
-						//TODO:have matchers return confidences?? then finder can add that to results..
-						.addIncludeTypesWithMethods(methodMatcher)
-						.addIncludeMethods(methodMatcher)
-						//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
-					)	
+		Iterable<JMethod> found = SourceHelper.newAllSourcesResolvingFinder()
+			.setFilter(Filter.builder()
+				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
+				//TODO:have matchers return confidences?? then finder can add that to results..
+				.addIncludeTypesWithMethods(methodMatcher)
+				.addIncludeMethods(methodMatcher)
+				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
+			)	
 			.build()
 			.findMethods();
 

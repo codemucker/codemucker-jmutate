@@ -4,13 +4,13 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
-import com.bertvanbrakel.codemucker.ast.matcher.AField;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
+import com.bertvanbrakel.codemucker.ast.matcher.AJField;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class FieldSplitterTransformTest {
 
-	MutationContext ctxt = new SimpleMutationContext();
+	CodeMuckContext ctxt = new SimpleCodeMuckContext();
 	
 	@Test
 	public void test_split_with_string_initializer(){
@@ -19,9 +19,9 @@ public class FieldSplitterTransformTest {
 			.pl("class Foo{")
 			.pl("	String a=\"val1\",b,c=\"val2\";")
 			.pl("}")
-			.asJType();
+			.asResolvedJTypeNamed("Foo");
 		
-		JField field = actual.findFieldsMatching(AField.withName("a")).getFirst();
+		JField field = actual.findFieldsMatching(AJField.withName("a")).getFirst();
 		
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
@@ -34,7 +34,7 @@ public class FieldSplitterTransformTest {
 			.pl("	String b;")
 			.pl("	String c=\"val2\";")
 			.pl("}")
-			.asJType();
+			.asResolvedJTypeNamed("Foo");
 		
 		SourceAsserts.assertAstsMatch(expected, actual);
 	}
@@ -46,9 +46,9 @@ public class FieldSplitterTransformTest {
 			.pl("class Foo{")
 			.pl("	int a=1*2,b,c=10+3;")
 			.pl("}")
-			.asJType();
+			.asResolvedJTypeNamed("Foo");
 		
-		JField field = actual.findFieldsMatching(AField.withName("a")).getFirst();
+		JField field = actual.findFieldsMatching(AJField.withName("a")).getFirst();
 		
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
@@ -61,7 +61,7 @@ public class FieldSplitterTransformTest {
 			.pl("	int b;")
 			.pl("	int c=10+3;")
 			.pl("}")
-			.asJType();
+			.asResolvedJTypeNamed("Foo");
 		
 		SourceAsserts.assertAstsMatch(expected, actual);
 	}

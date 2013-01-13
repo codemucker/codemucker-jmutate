@@ -6,38 +6,39 @@ import java.lang.annotation.Annotation;
 
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.matcher.AInt;
-import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
-import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.AnInt;
+import com.bertvanbrakel.lang.matcher.Logical;
+import com.bertvanbrakel.lang.matcher.Matcher;
 
-public class ASourceFile extends AInt {
+public class AJSourceFile extends AnInt {
 
-	public static final Matcher<JSourceFile> MATCHER_ANONYMOUS = containsType(AType.isAnonymous());
-	public static final Matcher<JSourceFile> MATCHER_ENUM = containsType(AType.isEnum());
-	public static final Matcher<JSourceFile> MATCHER_INTERFACE = containsType(AType.isInterface());
+	public static final Matcher<JSourceFile> MATCHER_ANONYMOUS = containsType(AJType.isAnonymous());
+	public static final Matcher<JSourceFile> MATCHER_ENUM = containsType(AJType.isEnum());
+	public static final Matcher<JSourceFile> MATCHER_INTERFACE = containsType(AJType.isInterface());
 	
     public static Matcher<JSourceFile> anyClass() {
-    	return LogicalMatchers.any();
+    	return Logical.any();
     }
 	
     public static Matcher<JSourceFile> noClass() {
-    	return LogicalMatchers.none();
+    	return Logical.none();
     }
 	
 	public static Matcher<JSourceFile> assignableTo(Class<?> superClassOrInterface) {
-		return containsType(AType.assignableFrom(superClassOrInterface));
+		return containsType(AJType.assignableFrom(superClassOrInterface));
 	}
 	
 	public static Matcher<JSourceFile> withAnnotation(Class<? extends Annotation> annotation){
-		return containsType(AType.withAnnotation(annotation));
+		return containsType(AJType.withAnnotation(annotation));
 	}
 	
 	public static Matcher<JSourceFile> withName(Class<?> className){
-		return containsType(AType.withFullName(className));
+		return containsType(AJType.withName(className));
 	}
 	
 	public static Matcher<JSourceFile> withName(String antPattern){
-		return containsType(AType.withFullName(antPattern));
+		return containsType(AJType.withFullName(antPattern));
 	}
 	
 	public static Matcher<JSourceFile> excludeEnum() {
@@ -65,14 +66,14 @@ public class ASourceFile extends AInt {
 	}
 	
 	public static Matcher<JSourceFile> notContainsType(Matcher<JType> typeMatcher){
-		return LogicalMatchers.not(containsType(typeMatcher));
+		return Logical.not(containsType(typeMatcher));
 	}
 	
 	public static Matcher<JSourceFile> containsType(Matcher<JType> typeMatcher){
 		return new JTypeToJSourceMatcherAdapter(typeMatcher);
 	}
 	
-	private static class JTypeToJSourceMatcherAdapter implements Matcher<JSourceFile>{
+	private static class JTypeToJSourceMatcherAdapter extends AbstractNotNullMatcher<JSourceFile>{
 		private final Matcher<JType> typeMatcher;
 		
 		JTypeToJSourceMatcherAdapter(Matcher<JType> typeMatcher){
@@ -80,7 +81,7 @@ public class ASourceFile extends AInt {
 		}
 		
 		@Override
-        public boolean matches(JSourceFile found) {
+        public boolean matchesSafely(JSourceFile found) {
 			for( JType type:found.getTopJTypes()){
 				if( typeMatcher.matches(type)){
 					return true;

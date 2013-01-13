@@ -21,10 +21,11 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
-import com.bertvanbrakel.codemucker.ast.matcher.AType;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
+import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.finder.RootResource;
-import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 
 public class JSourceFile implements AstNodeProvider<CompilationUnit> {
@@ -59,7 +60,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		checkNotNull("resource", resource);
 		checkNotNull("parser", parser);
 		
-		CompilationUnit cu = parser.parseCompilationUnit(sourceCode);
+		CompilationUnit cu = parser.parseCompilationUnit(sourceCode,resource);
 		return new JSourceFile(resource, cu, sourceCode);
 	}
 
@@ -134,7 +135,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 
 	//TODO:code smell here, should JSource really know about the mutator? should the mutator use a builder instead?
-	public JSourceFileMutator asMutator(MutationContext ctxt){
+	public JSourceFileMutator asMutator(CodeMuckContext ctxt){
 		return new JSourceFileMutator(ctxt, this);
 	}
 	
@@ -190,9 +191,9 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	 * Look through all top level types and all their children for any type with the given name. 
 	 */
 	public JType getTypeWithName(final String simpleName) {
-		Matcher<JType> matcher = new Matcher<JType>() {
+		Matcher<JType> matcher = new AbstractNotNullMatcher<JType>() {
 			@Override
-			public boolean matches(JType found) {
+			public boolean matchesSafely(JType found) {
 				return found.getSimpleName().equals(simpleName);
 			}
 		};
@@ -207,7 +208,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 
 	public List<JType> findAllTypes(){
-		return internalFindTypesMatching(AType.any());
+		return internalFindTypesMatching(AJType.any());
 	}
 	
 	public List<JType> findTypesMatching(Matcher<JType> matcher){

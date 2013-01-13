@@ -9,11 +9,11 @@ import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.FieldBuilder;
 import com.bertvanbrakel.codemucker.transform.GetterMethodBuilder;
 import com.bertvanbrakel.codemucker.transform.InsertFieldTransform;
 import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.SetterMethodBuilder;
 import com.bertvanbrakel.codemucker.transform.Transform;
 import com.bertvanbrakel.codemucker.util.JavaNameUtil;
@@ -25,7 +25,7 @@ import com.google.inject.Inject;
 public class BeanPropertyTransform implements Transform {
 
 	@Inject
-	private MutationContext ctxt;
+	private CodeMuckContext ctxt;
 
 	private JType target;
 	private String propertyName;
@@ -78,7 +78,7 @@ public class BeanPropertyTransform implements Transform {
 	}
 	 
 	@Inject
-	public BeanPropertyTransform setCtxt(MutationContext ctxt) {
+	public BeanPropertyTransform setCtxt(CodeMuckContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}

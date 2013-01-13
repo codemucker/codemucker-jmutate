@@ -8,7 +8,7 @@ import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
+import com.bertvanbrakel.codemucker.ast.matcher.AJMethod;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -34,7 +34,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 			throw new CodemuckerException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),ctor.getName());
 		}
 		
-		FindResult<JMethod> found = getTarget().findMethodsMatching(AMethod.withNameAndArgSignature(ctor));
+		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.withNameAndArgSignature(ctor));
     	if( !found.isEmpty()){
     		insert = false;
     		JMethod existingCtor = found.getFirst();

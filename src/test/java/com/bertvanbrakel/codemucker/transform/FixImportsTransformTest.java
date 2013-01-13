@@ -11,21 +11,21 @@ import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.matcher.AType;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 import com.bertvanbrakel.test.finder.Roots;
 
 public class FixImportsTransformTest {
 
-	MutationContext ctxt = new SimpleMutationContext();
+	CodeMuckContext ctxt = new SimpleCodeMuckContext();
 	
 	@Test
 	public void test_add_imports(){
-		CompilationUnit actual = readTemplate("add_imports.before").asCompilationUnit();
-		CompilationUnit expected = readTemplate("add_imports.after").asCompilationUnit();
+		CompilationUnit actual = readTemplate("add_imports.before").asResolvedCompilationUnitNamed(null);
+		CompilationUnit expected = readTemplate("add_imports.after").asResolvedCompilationUnitNamed(null);
 		
 		//do the actual import clean
 		ctxt.obtain(FixImportsTransform.class)
@@ -37,8 +37,8 @@ public class FixImportsTransformTest {
 
 	@Test
 	public void test_existing_imports_only(){
-		CompilationUnit actual = readTemplate("existing_imports_only.before").asCompilationUnit();
-		CompilationUnit expected = readTemplate("existing_imports_only.after").asCompilationUnit();
+		CompilationUnit actual = readTemplate("existing_imports_only.before").asResolvedCompilationUnitNamed(null);
+		CompilationUnit expected = readTemplate("existing_imports_only.after").asResolvedCompilationUnitNamed(null);
 		
 		//do the actual import clean
 		ctxt.obtain(FixImportsTransform.class)
@@ -70,11 +70,11 @@ public class FixImportsTransformTest {
 	private JType findTestType(Class<?> type) {
 		return JSourceFinder.builder()
 			.setSearchRoots(Roots.builder()
-				.setIncludeClassesDir(true)
-				.setIncludeTestDir(true)
+				.setIncludeMainSrcDir(true)
+				.setIncludeTestSrcDir(true)
 			)
 			.setFilter(Filter.builder()
-				.addIncludeTypes(AType.withFullName(type))		
+				.addIncludeTypes(AJType.withName(type))		
 			)
 			.build()
 			.findTypes()

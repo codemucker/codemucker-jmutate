@@ -6,27 +6,39 @@ import static org.junit.Assert.assertNotNull;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.test.util.TestHelper;
 
 public class JavaSourceFileMutatorTest {
 
 	TestHelper helper = new TestHelper();
-	MutationContext context = new SimpleMutationContext();
+	CodeMuckContext context = new SimpleCodeMuckContext();
 	
 	@Test
-	public void testGetMainType() throws Exception {
+	public void testGetMainTypeAsResolved() throws Exception {
 		SourceTemplate t = context.newSourceTemplate();
 		t.println("package foo.bar;");
-		t.println("public class Foo {");
-		t.println("}");
-		t.println("public class Alice {");
-		t.println("}");
-		t.println("public class Bob {");
-		t.println("}");
+		t.println("class Foo {}");
+		t.println("class Alice {}");
+		t.println("class Bob {}");
 
-		JSourceFile srcFile = t.asSourceFileWithFullName("foo.bar.Alice");
+		JSourceFile srcFile = t.asResolvedSourceFileNamed("foo.bar.Alice");
+		
+		JType type = srcFile.getMainType();
+		assertNotNull(type);
+		assertEquals(type.getSimpleName(), "Alice");
+	}
+	
+	@Test
+	public void testGetMainTypeAsSnippet() throws Exception {
+		SourceTemplate t = context.newSourceTemplate();
+		t.println("package foo.bar;");
+		t.println("class Foo {}");
+		t.println("public class Alice {}");
+		t.println("class Bob {}");
+
+		JSourceFile srcFile = t.asSourceFileSnippet();
 		
 		JType type = srcFile.getMainType();
 		assertNotNull(type);
@@ -39,18 +51,19 @@ public class JavaSourceFileMutatorTest {
 		t.println("package foo.bar;");
 		t.println("public class Foo {");
 		t.println("}");
-		t.println("public class Alice {");
+		t.println("class Alice {");
 		t.println("}");
-		t.println("public class Bob {");
+		t.println("class Bob {");
 		t.println("}");
 
 		//TODO:Hmm, what is going on here? looks like ti test that itself is itself...
-		JSourceFileMutator srcFile = t.asSourceFileWithFullName("foo.bar.Alice").asMutator(context);
+		JSourceFileMutator srcFile = t.asResolvedSourceFileNamed("foo.bar.Foo").asMutator(context);
 		
 		JTypeMutator mutable = srcFile.getMainTypeAsMutable();
 		AbstractTypeDeclaration type = srcFile.getJSource().getMainType().asAbstractTypeDecl();
 		
 		assertNotNull(mutable);
 		assertEquals(mutable.getJType().asTypeDecl(), type);
+		assertEquals("foo.bar.Foo", mutable.getJType().getFullName());
 	}
 }

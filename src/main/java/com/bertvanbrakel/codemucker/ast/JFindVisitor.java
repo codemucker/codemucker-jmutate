@@ -1,7 +1,7 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.RootResource;
 
 
 public class JFindVisitor extends BaseASTVisitor {

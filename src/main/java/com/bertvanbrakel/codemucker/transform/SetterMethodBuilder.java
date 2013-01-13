@@ -81,7 +81,7 @@ public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuild
 		}
 		template.println("}");
 
-		return template.asMethodNode();
+		return template.asResolvedMethodNode();
 	}
 
 	public SetterMethodBuilder setMethodAccess(JAccess access) {

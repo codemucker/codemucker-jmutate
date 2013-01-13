@@ -1,17 +1,14 @@
 package com.bertvanbrakel.codemucker.ast;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static com.bertvanbrakel.lang.matcher.Assert.assertThat;
+import static com.bertvanbrakel.lang.matcher.Assert.is;
+import static com.bertvanbrakel.lang.matcher.Assert.isEqualTo;
+import static com.bertvanbrakel.lang.matcher.Assert.isFalse;
+import static com.bertvanbrakel.lang.matcher.Assert.isTrue;
+import static com.bertvanbrakel.lang.matcher.Assert.not;
 
 import java.util.List;
 
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.TypeSafeMatcher;
-import org.junit.Assert;
 import org.junit.Test;
 
 import com.bertvanbrakel.codemucker.SourceHelper;
@@ -19,51 +16,52 @@ import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass1;
 import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass2;
 import com.bertvanbrakel.codemucker.ast.JTypeTest.MyClass.MyChildClass3;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.matcher.AField;
-import com.bertvanbrakel.codemucker.ast.matcher.AMethod;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.ast.matcher.AJField;
+import com.bertvanbrakel.codemucker.ast.matcher.AJMethod;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.lang.matcher.AList;
 
 public class JTypeTest {
 
-	MutationContext ctxt = new SimpleMutationContext();
+	CodeMuckContext ctxt = new SimpleCodeMuckContext();
 	
 	@Test
 	public void testIsAbstract() {
-		assertEquals(false, newJType("class MyClass{}").getModifiers().isAbstract());
-		assertEquals(false, newJType("interface MyInterface{}").getModifiers().isAbstract());
-		assertEquals(false, newJType("enum MyEnum{}").getModifiers().isAbstract());
+		assertThat(newJType("class MyClass{}").getModifiers().isAbstract(),isFalse());
+		assertThat(newJType("interface MyInterface{}").getModifiers().isAbstract(),isFalse());
+		assertThat(newJType("enum MyEnum{}").getModifiers().isAbstract(),isFalse());
 
-		assertEquals(true, newJType("abstract class MyAbstractClass{}").getModifiers().isAbstract());
+		assertThat(newJType("abstract class MyAbstractClass{}").getModifiers().isAbstract(),isTrue());
 	}
 	
 	@Test
 	public void testIsInterface() {
-		assertEquals(false, newJType("class MyClass{}").isInterface());
-		assertEquals(false, newJType("enum MyEnum{}").isInterface());	
+		assertThat(newJType("class MyClass{}").isInterface(),isFalse());
+		assertThat(newJType("enum MyEnum{}").isInterface(),isFalse());	
 	
-		assertEquals(true, newJType("interface MyInterface{}").isInterface());
+		assertThat(newJType("interface MyInterface{}").isInterface(),isTrue());
 	}
 	
 	@Test
 	public void testIsConcreteClass() {
-		assertEquals(true, newJType("class MyClass{}").isConcreteClass());
+		assertThat(newJType("class MyClass{}").isConcreteClass(),isTrue());
 		
-		assertEquals(false, newJType("interface MyInterface{}").isConcreteClass());
-		assertEquals(false, newJType("enum MyEnum{}").isConcreteClass());
+		assertThat(newJType("interface MyInterface{}").isConcreteClass(),isFalse());
+		assertThat(newJType("enum MyEnum{}").isConcreteClass(),isFalse());
 	}
 	
 	private JType newJType(String src){
-		return ctxt.newSourceTemplate().println(src).asJType();
+		return ctxt.newSourceTemplate().println(src).asResolvedJTypeNamed(null);
 	}
 
 	@Test
 	public void testIsTopLevelClass() {
-		assertEquals(true, newJType("class MyTopClass {}").isTopLevelClass());
-		assertEquals(true, newJType("class AnotherTopClass { class MyInnerClass{} }").isTopLevelClass());
+		assertThat(newJType("class MyTopClass {}").isTopLevelClass(),isTrue());
+		assertThat(newJType("class AnotherTopClass { class MyInnerClass{} }").isTopLevelClass(),isTrue());
 		
-		assertEquals(false, newJType("class AnotherTopClass { class MyInnerClass{} }").getChildTypeWithName("MyInnerClass").isTopLevelClass());
+		assertThat(newJType("class AnotherTopClass { class MyInnerClass{} }").getChildTypeWithName("MyInnerClass").isTopLevelClass(),isFalse());
 	}
 	
 	@Test
@@ -75,15 +73,15 @@ public class JTypeTest {
 		t.pl( "public void methodB(){}" );
 		t.pl("}");
 	
-		FindResult<JMethod> foundMethods = t.asJType().findAllJMethods();
+		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findAllJMethods();
 
-		MatcherAssert.assertThat(
+		assertThat(
 				foundMethods.toList(), 
 				AList.of(JMethod.class)
 					.inOrder()
 					.containingOnly()
-					.item(methodWithName("methodA"))
-					.item(methodWithName("methodB"))
+					.item(AJMethod.withName("methodA"))
+					.item(AJMethod.withName("methodB"))
 		);
 	}
 
@@ -98,15 +96,15 @@ public class JTypeTest {
 		t.pl( "public void setA(){}" );
 		t.pl("}");
 
-		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.withMethodNamed("get*"));
+		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.withNameMatchingAntPattern("get*"));
 	
-		MatcherAssert.assertThat(
+		assertThat(
 				foundMethods.toList(), 
 				AList.of(JMethod.class)
 					.inOrder()
 					.containingOnly()
-					.item(methodWithName("getA"))
-					.item(methodWithName("getB"))
+					.item(AJMethod.withName("getA"))
+					.item(AJMethod.withName("getB"))
 		);
 	}
 
@@ -115,17 +113,17 @@ public class JTypeTest {
 		SourceTemplate t = ctxt.newSourceTemplate();
 
 		t.pl("class MyTestClass{");
-		t.pl("	public void getA(){ return null; }" );
+		t.pl("	public void getA(){ return; }" );
 		t.pl("	private class Foo {" );
-		t.pl("		public void getB(){ return null;}//should be ignored" );
+		t.pl("		public Object getB(){ return null;}//should be ignored" );
 		t.pl("	}");
 		t.pl("}");
 		
-		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.withMethodNamed("get*"));
+		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.withNameMatchingAntPattern("get*"));
 
-		MatcherAssert.assertThat(
+		assertThat(
 				foundMethods.toList(), 
-				AList.ofOnly(methodWithName("getA"))
+				AList.ofOnly(AJMethod.withName("getA"))
 		);
 	}
 
@@ -133,15 +131,15 @@ public class JTypeTest {
 	//For a bug where performing a method search on top level children also return nested methods
 	public void testFindJavaMethodsExcludingAnonymousTypeMethodsEmbeddedInMethods(){
 		JType type = SourceHelper.findSourceForTestClass(getClass()).getTypeWithName(MyTestClass.class);
-		FindResult<JMethod> foundMethods = type.findMethodsMatching(AMethod.withMethodNamed("get*"));
+		FindResult<JMethod> foundMethods = type.findMethodsMatching(AJMethod.withNameMatchingAntPattern("get*"));
 
-		MatcherAssert.assertThat(
+		assertThat(
 			foundMethods.toList(), 
 			AList.of(JMethod.class)
 				.inOrder()
 				.containingOnly()
-				.item(methodWithName("getA"))
-				.item(methodWithName("getB"))
+				.item(AJMethod.withName("getA"))
+				.item(AJMethod.withName("getB"))
 		);
 	}
 	
@@ -179,16 +177,16 @@ public class JTypeTest {
 		SourceTemplate t = ctxt.newSourceTemplate();
 
 		t.pl("class MyTestClass  {");
-		t.pl( "public void getA(){ return null; }" );
+		t.pl( "public void getA(){ return; }" );
 		t.pl( "private Foo foo = new Foo(){};//should resolve to Foo" );
 		t.pl( "private class Foo {" );
-		t.pl( "		public void getB(){ return null;}" );
+		t.pl( "		public void getB(){ return;}" );
 		t.pl("	}");
 		t.pl("}");
 		
-		JField field = t.asJType().findFieldsMatching(AField.withName("foo")).getFirst();
+		JField field = t.asResolvedJTypeNamed("MyTestClass").findFieldsMatching(AJField.withName("foo")).getFirst();
 		
-		Assert.assertEquals("Foo",field.getTypeSignature());
+		assertThat(field.getTypeSignature(),isEqualTo("Foo"));
 	}
 	
 	@Test
@@ -201,11 +199,17 @@ public class JTypeTest {
 		t.pl("	}");
 		t.pl("}");
 		
-		List<JType> found = t.asJType().findAllChildTypes().toList();
+		List<JType> types = t.asResolvedJTypeNamed("MyTestClass").findAllChildTypes().toList();
 
-		Assert.assertEquals(2, found.size());
-		Assert.assertTrue(found.get(0).isAnonymousClass());
-		Assert.assertFalse(found.get(1).isAnonymousClass());
+		assertThat(
+			types,
+			is(AList.of(JType.class)
+				.inOrder()
+				.containingOnly()
+				.item(AJType.isAnonymous())
+				.item(not(AJType.isAnonymous()))
+			)
+		);
 	}
 	
 	@Test
@@ -214,20 +218,17 @@ public class JTypeTest {
 		
 		t.pl("package foo.bar;");
 		
-		t.pl("import SamePackage;");
-		t.pl("import one.OnePackage;");
-		t.pl("import one.two.TwoPackages;");
-		t.pl("import one.two.WithInnerClass;");
-		
+		t.pl("import java.util.Collection;");
+		t.pl("import java.io.File;");
+
 		t.pl("class MyTestClass  {");
-		t.pl( "public SamePackage getA(){return null;}" );
-		t.pl( "public TwoPackages getB(){return null;}" );
-		t.pl( "public WithInnerClass.Innerclass getC(){return null;}" );
+		t.pl( "public Collection getA(){return null;}" );
+		t.pl( "public Object getB(){return null;}" );
 		t.pl("}");
 	
-		JType type = t.asSourceFileWithFullName("MyTestClass").getMainType();
+		JType type = t.asResolvedSourceFileNamed("foo.bar.MyTestClass").getMainType();
 
-		assertEquals("foo.bar.MyTestClass", type.getFullName());
+		assertThat(type.getFullName(), isEqualTo("foo.bar.MyTestClass"));
 	}
 
 	@Test
@@ -235,28 +236,29 @@ public class JTypeTest {
 		SourceTemplate t = ctxt.newSourceTemplate();
 		t.pl("class MyClass  {}");
 	
-		Assert.assertFalse(t.asJType().hasAnnotationOfType(MyAnnotation.class));
+		assertThat(t.asResolvedJTypeNamed("MyClass").hasAnnotationOfType(MyAnnotation.class),isFalse());
 	}
 	
 	@Test
 	public void testHasAnnotationOfType(){
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.pl("@" + MyAnnotation.class.getName());
+		t.v("a1", MyAnnotation.class);
+		t.pl("@${a1}");
 		t.pl("class MyClass {}");
 		
-		Assert.assertTrue(t.asJType().hasAnnotationOfType(MyAnnotation.class));
+		assertThat(t.asResolvedJTypeNamed("MyClass").hasAnnotationOfType(MyAnnotation.class),isTrue());
 	}
 	
-	@interface MyAnnotation {
+	public @interface MyAnnotation {
 		
 	}
 	
 	@Test
 	public void testImplementsClass(){
 		JSourceFile source = SourceHelper.findSourceForTestClass(getClass());
-		assertFalse(source.getTypeWithName(MyChildClass1.class).isImplementing(MyExtendedClass.class));
-		assertTrue(source.getTypeWithName(MyChildClass2.class).isImplementing(MyExtendedClass.class));
-		assertTrue(source.getTypeWithName(MyChildClass3.class).isImplementing(MyExtendedClass.class));
+		assertThat(source.getTypeWithName(MyChildClass1.class).isSubClassOf(MyExtendedClass.class),isFalse());
+		assertThat(source.getTypeWithName(MyChildClass2.class).isSubClassOf(MyExtendedClass.class),isTrue());
+		assertThat(source.getTypeWithName(MyChildClass3.class).isSubClassOf(MyExtendedClass.class),isTrue());
 	}
 	
 	public static class MyExtendedClass {
@@ -278,29 +280,15 @@ public class JTypeTest {
 		t.pl( "public void someMethod(){}" );
 		t.pl("}");
 
-		FindResult<JMethod> foundMethods = t.asJType().findMethodsMatching(AMethod.isConstructor());
+		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.isConstructor());
 
-		MatcherAssert.assertThat(
+		assertThat(
 				foundMethods.toList(), 
-				AList.of(JMethod.class)
+				is(AList.of(JMethod.class)
 					.inOrder()
 					.containingOnly()
-					.item(methodWithName("MyTestClass"))
-					.item(methodWithName("MyTestClass"))
+					.item(AJMethod.withName("MyTestClass"))
+					.item(AJMethod.withName("MyTestClass")))
 		);
-	}
-	
-	private Matcher<JMethod> methodWithName(final String methodName){
-		return new TypeSafeMatcher<JMethod>(JMethod.class) {
-			@Override
-            public void describeTo(Description desc) {
-				desc.appendText("method name '" + methodName + "'");
-            }
-
-			@Override
-            public boolean matchesSafely(JMethod method) {
-				return method.getAstNode().getName().getIdentifier().equals(methodName);
-			}	
-		};		
 	}
 }

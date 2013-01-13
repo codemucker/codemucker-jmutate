@@ -33,22 +33,13 @@ public class JAnnotation {
 	private JAnnotation(Annotation annotation) {
 		this.annotation = annotation;
 	}
-
-	public <A extends java.lang.annotation.Annotation> boolean isOfType(Class<A> annotationClass) {
-		String fqn = getQualifiedName();
-		//TODO:we don't have an '$' in the name when anon is a member/static type of a class!
-		return annotationClass.getName().equals(fqn);
-	}
-
-	public String getQualifiedName() {
-		return JavaNameUtil.getQualifiedName(annotation.getTypeName());
-	}
 	
 	public static <A extends java.lang.annotation.Annotation> boolean hasAnnotation(Class<A> annotationClass, List<IExtendedModifier> modifiers){
+		String expectFqn = JavaNameUtil.compiledNameToSourceName(annotationClass);
 		for( IExtendedModifier m:modifiers){
 			if( m instanceof Annotation){
 				JAnnotation anon = JAnnotation.from((Annotation)m);
-				if(anon.isOfType(annotationClass)){
+				if(anon.isOfType(expectFqn)){
 					return true;
 				}
 			}
@@ -57,13 +48,27 @@ public class JAnnotation {
 	}
 
 	public static <A extends java.lang.annotation.Annotation> JAnnotation getAnnotationOfType(ASTNode node, int maxDepth, Class<A> annotationClass) {
+		String expectFqn = JavaNameUtil.compiledNameToSourceName(annotationClass);
 		for(Annotation a:JAnnotation.findAnnotations(node, maxDepth)){
 			JAnnotation found = JAnnotation.from(a);
-			if( found.isOfType(annotationClass)){
+			if(found.isOfType(expectFqn)){
 				return found;
 			}
 		}
 		return null;
+	}
+
+	public <A extends java.lang.annotation.Annotation> boolean isOfType(Class<A> annotationClass) {
+		String fqn = getQualifiedName();
+		return JavaNameUtil.compiledNameToSourceName(annotationClass).equals(fqn);
+	}
+	
+	private <A extends java.lang.annotation.Annotation> boolean isOfType(String expectFqn) {
+		return expectFqn.equals(getQualifiedName());
+	}
+
+	public String getQualifiedName() {
+		return JavaNameUtil.getQualifiedName(annotation.getTypeName());
 	}
 	
 	public static List<Annotation> findAnnotations(ASTNode node){

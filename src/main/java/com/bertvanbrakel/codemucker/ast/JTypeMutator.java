@@ -9,24 +9,24 @@ import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
 
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.InsertCtorTransform;
 import com.bertvanbrakel.codemucker.transform.InsertFieldTransform;
 import com.bertvanbrakel.codemucker.transform.InsertMethodTransform;
 import com.bertvanbrakel.codemucker.transform.InsertTypeTransform;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
 import com.bertvanbrakel.codemucker.transform.PlacementStrategies;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 
 public class JTypeMutator {
 	
 	private final JType jType;
-	private final MutationContext ctxt;
+	private final CodeMuckContext ctxt;
 	
-	public JTypeMutator(MutationContext context, AbstractTypeDeclaration type) {
+	public JTypeMutator(CodeMuckContext context, AbstractTypeDeclaration type) {
 		this(context, JType.from(type));
 	}
 	
-	public JTypeMutator(MutationContext context, JType javaType) {
+	public JTypeMutator(CodeMuckContext context, JType javaType) {
 		checkNotNull("javaType", javaType);
 		this.jType = checkNotNull("type",javaType);
 		this.ctxt = checkNotNull("context",context);
@@ -55,7 +55,7 @@ public class JTypeMutator {
 	public void addField(String src){
 		FieldDeclaration field = newSourceTemplate()
 			.setTemplate(src)
-			.asFieldNode();
+			.asResolvedFieldNode();
 		addField(field);
 	}
 	
@@ -70,7 +70,7 @@ public class JTypeMutator {
 	public void addMethod(String src){
 		MethodDeclaration method = newSourceTemplate()
 			.setTemplate(src)
-			.asMethodNode();
+			.asResolvedMethodNode();
 		addMethod(method);
 	}
 		
@@ -89,7 +89,7 @@ public class JTypeMutator {
 	public void addCtor(String src){
 		MethodDeclaration ctor = newSourceTemplate()
 			.setTemplate(src)
-			.asConstructorNode();
+			.asResolvedConstructorNode();
 		addCtor(ctor);
 	}
 	
@@ -104,7 +104,7 @@ public class JTypeMutator {
 	public void addType(String src){
 		AbstractTypeDeclaration type = newSourceTemplate()
 			.setTemplate(src)
-			.asTypeNode();
+			.asResolvedTypeNodeNamed(null);
 		addType(type);
 	}
 	

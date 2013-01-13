@@ -11,7 +11,7 @@ import com.google.inject.name.Named;
 public abstract class AbstractBuilder<S extends AbstractBuilder<S>> {
 
 	@Inject
-	private MutationContext context;
+	private CodeMuckContext context;
 	
 	@Inject
 	@Named(ContextNames.MARK_GENERATED)
@@ -30,7 +30,7 @@ public abstract class AbstractBuilder<S extends AbstractBuilder<S>> {
 		return self();
 	}
 
-	public S setContext(MutationContext context) {
+	public S setContext(CodeMuckContext context) {
 		this.context = context;
 		return self();
 	}
@@ -48,7 +48,7 @@ public abstract class AbstractBuilder<S extends AbstractBuilder<S>> {
     	return markedGenerated;
     }
 
-	public MutationContext getContext() {
+	public CodeMuckContext getContext() {
     	return context;
     }
 	

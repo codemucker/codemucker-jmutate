@@ -1,5 +1,8 @@
 package com.bertvanbrakel.codemucker.ast;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
 import org.eclipse.jdt.internal.formatter.DefaultCodeFormatter;
@@ -7,10 +10,15 @@ import org.eclipse.jdt.internal.formatter.DefaultCodeFormatterOptions;
 
 import com.bertvanbrakel.codemucker.NamedAnnotation;
 import com.bertvanbrakel.codemucker.transform.ClashStrategy;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.PlacementStrategies;
 import com.bertvanbrakel.codemucker.transform.PlacementStrategy;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
+import com.bertvanbrakel.test.finder.DirectoryRoot;
+import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.Root.RootContentType;
+import com.bertvanbrakel.test.finder.Root.RootType;
+import com.bertvanbrakel.test.finder.Roots;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -20,10 +28,19 @@ import com.google.inject.Stage;
 import com.google.inject.name.Named;
 
 @Singleton
-public class SimpleMutationContext implements MutationContext {
+public class SimpleCodeMuckContext implements CodeMuckContext {
 
 	private final PlacementStrategies strategyProvider  = PlacementStrategies.builder().setDefaults().build();
-	private final JAstParser parser = JAstParser.builder().setDefaults().build();
+	private final JAstParser parser = JAstParser.builder()
+		.setDefaults()
+		.setResolveRoots(Roots.builder()
+			.setIncludeClasspath(true)
+			.setIncludeTestSrcDir(true)
+			.setIncludeMainSrcDir(true)
+			.build()	
+		)
+		.build();
+	private final Root snippetRoot = newTmpSnippetRoot();
 	/**
 	 * If set, generated classes will be marked as such
 	 */
@@ -34,13 +51,25 @@ public class SimpleMutationContext implements MutationContext {
 		return new Builder();
 	}
 	
-	public SimpleMutationContext(){
+	public SimpleCodeMuckContext(){
 		this(false);
 	}
 	
-	public SimpleMutationContext(boolean markGenerated){
+	public SimpleCodeMuckContext(boolean markGenerated){
 		injector = Guice.createInjector(Stage.PRODUCTION, new MutationModule());
 		this.markGenerated = markGenerated;
+	}
+	
+	private static Root newTmpSnippetRoot(){
+		try {
+			File f = File.createTempFile("SimpleCodeMuckContextSnippetRoot","");
+			File tmpDir = new File(f.getAbsolutePath() + ".d/");
+			tmpDir.mkdirs();
+			
+			return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
+		} catch (IOException e) {
+			throw new CodemuckerException("Couldn't create a tmp root");
+		}
 	}
 	
 	private class MutationModule extends AbstractModule {
@@ -82,8 +111,8 @@ public class SimpleMutationContext implements MutationContext {
 		
 		@Provides
 		@Singleton
-		public MutationContext provideContext(){
-			return SimpleMutationContext.this;
+		public CodeMuckContext provideContext(){
+			return SimpleCodeMuckContext.this;
 		}
 		
 		@Provides
@@ -124,6 +153,11 @@ public class SimpleMutationContext implements MutationContext {
 		@Singleton
 		public JAstParser provideParser(){
 			return parser;
+		}
+		
+		@Provides
+		public SourceTemplate provideSourceTemplate(){
+			return new SourceTemplate(provideParser(),snippetRoot);
 		}	
 	}
 
@@ -148,8 +182,8 @@ public class SimpleMutationContext implements MutationContext {
         	return this;
 		}
 
-		public SimpleMutationContext build(){
-			return new SimpleMutationContext(markGenerated);
+		public SimpleCodeMuckContext build(){
+			return new SimpleCodeMuckContext(markGenerated);
 		}
 		
 		public Builder setMarkGenerated(boolean markGenerated) {

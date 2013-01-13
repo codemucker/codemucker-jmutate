@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.util.List;
 
-import com.bertvanbrakel.lang.IsBuilder;
+import com.bertvanbrakel.lang.IBuilder;
 import com.bertvanbrakel.test.finder.Root;
 import com.bertvanbrakel.test.finder.RootVisitor;
 import com.google.common.base.Preconditions;
@@ -107,7 +107,7 @@ public class JSearchEngine implements Closeable {
 			return this;
 		}
 
-		public Builder setRoots(IsBuilder<? extends Iterable<Root>> rootsBuilder){
+		public Builder setRoots(IBuilder<? extends Iterable<Root>> rootsBuilder){
 			setRoots(rootsBuilder.build());
 			return this;
 		}

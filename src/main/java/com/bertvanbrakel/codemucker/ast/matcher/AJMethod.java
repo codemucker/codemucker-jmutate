@@ -1,41 +1,48 @@
 package com.bertvanbrakel.codemucker.ast.matcher;
 
 import java.lang.annotation.Annotation;
-import java.util.regex.Pattern;
 
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JMethod;
-import com.bertvanbrakel.codemucker.matcher.AInt;
-import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
-import com.bertvanbrakel.test.finder.matcher.Matcher;
-import com.bertvanbrakel.test.util.TestUtils;
+import com.bertvanbrakel.lang.matcher.AString;
+import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.AnInt;
+import com.bertvanbrakel.lang.matcher.Logical;
+import com.bertvanbrakel.lang.matcher.Matcher;
 
-public class AMethod extends LogicalMatchers {
+public class AJMethod extends Logical {
+
 
 	/**
 	 * Return a matcher which matches using the given ant style method name expression
 	 * @param antPattern ant style pattern. E.g. *foo*bar??Ho
 	 * @return
 	 */
-	public static Matcher<JMethod> withMethodNamed(final String antPattern) {
-		return new Matcher<JMethod>() {
-			private final Pattern pattern = TestUtils.antExpToPattern(antPattern);
-
+	public static Matcher<JMethod> withNameMatchingAntPattern(final String antPattern) {
+		return withName(AString.withAntPattern(antPattern));
+	}
+	
+	public static Matcher<JMethod> withName(final String name) {
+		return withName(AString.equalTo(name));
+	}
+	
+	public static Matcher<JMethod> withName(final Matcher<String> matcher) {
+		return new AbstractNotNullMatcher<JMethod>() {
 			@Override
-			public boolean matches(JMethod found) {
-				return pattern.matcher(found.getName()).matches();
+			public boolean matchesSafely(JMethod found) {
+				return matcher.matches(found.getName());
 			}
 		};
 	}
 	
 	@SuppressWarnings("unchecked")
     public static Matcher<JMethod> any() {
-		return LogicalMatchers.any();
+		return Logical.any();
 	}
 	
 	@SuppressWarnings("unchecked")
     public static Matcher<JMethod> none() {
-		return LogicalMatchers.none();
+		return Logical.none();
 	}
 
 	public static Matcher<JMethod> isNotConstructor() {
@@ -43,49 +50,49 @@ public class AMethod extends LogicalMatchers {
 	}
 	
 	public static Matcher<JMethod> isConstructor() {
-		return new Matcher<JMethod>() {
+		return new AbstractNotNullMatcher<JMethod>() {
 			@Override
-			public boolean matches(JMethod found) {
+			public boolean matchesSafely(JMethod found) {
 				return found.isConstructor();
 			}
 		};
 	}
 	
 	public static Matcher<JMethod> withAccess(final JAccess access) {
-		return new Matcher<JMethod>() {
+		return new AbstractNotNullMatcher<JMethod>() {
 			@Override
-			public boolean matches(JMethod found) {
+			public boolean matchesSafely(JMethod found) {
 				return found.getJavaModifiers().isAccess(access);
 			}
 		};
 	}
 
 	public static <A extends Annotation> Matcher<JMethod> withMethodAnnotation(final Class<A> annotationClass) {
-		return new Matcher<JMethod>() {
+		return new AbstractNotNullMatcher<JMethod>() {
 			@Override
-			public boolean matches(JMethod found) {
+			public boolean matchesSafely(JMethod found) {
 				return found.hasAnnotationOfType(annotationClass);
 			}
 		};
 	}
 
 	public static <A extends Annotation> Matcher<JMethod> withParameterAnnotation(final Class<A> annotationClass) {
-		return new Matcher<JMethod>() {
+		return new AbstractNotNullMatcher<JMethod>() {
 			@Override
-			public boolean matches(JMethod found) {
+			public boolean matchesSafely(JMethod found) {
 				return found.hasParameterAnnotationOfType(annotationClass);
 			}
 		};
 	}
 
 	public static Matcher<JMethod> withNumArgs(final int numArgs) {
-		return withNumArgs(AInt.equalTo(numArgs));
+		return withNumArgs(AnInt.equalTo(numArgs));
 	}
 
 	public static Matcher<JMethod> withNumArgs(final Matcher<Integer> numArgMatcher) {
-		return new Matcher<JMethod>() {
+		return new AbstractNotNullMatcher<JMethod>() {
 			@Override
-			public boolean matches(JMethod found) {
+			public boolean matchesSafely(JMethod found) {
 				return numArgMatcher.matches(found.getAstNode().parameters().size());
 			}
 		};
@@ -96,9 +103,9 @@ public class AMethod extends LogicalMatchers {
 		final int numArgs = method.getAstNode().typeParameters().size();
 		final String sig = method.getClashDetectionSignature();
 
-		return new Matcher<JMethod>() {
+		return new AbstractNotNullMatcher<JMethod>() {
 			@Override
-			public boolean matches(JMethod found) {
+			public boolean matchesSafely(JMethod found) {
 				//test using the quickest and least resource intensive matches first
 				return numArgs == found.getAstNode().typeParameters().size() 
 					&& name.equals(found.getName()) 

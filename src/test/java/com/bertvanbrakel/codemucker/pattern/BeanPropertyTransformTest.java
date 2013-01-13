@@ -20,13 +20,13 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.annotation.BeanProperty;
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class BeanPropertyTransformTest {
 
-	private MutationContext ctxt = SimpleMutationContext.builder()
+	private CodeMuckContext ctxt = SimpleCodeMuckContext.builder()
 			.setMarkGenerated(true)
 			.build();
 		
@@ -42,7 +42,7 @@ public class BeanPropertyTransformTest {
     	SourceAsserts.assertRootAstsMatch(expectType,target);
 	}
 
-	private void whenAPropertyTransformIsApplied(MutationContext ctxt, JType target) {
+	private void whenAPropertyTransformIsApplied(CodeMuckContext ctxt, JType target) {
 		ctxt.obtain(BeanPropertyTransform.class)
 			.setTarget(target)
 			.setPropertyName("myField")
@@ -50,28 +50,28 @@ public class BeanPropertyTransformTest {
 			.transform();
 	}
 
-	private JType aBeanWithNoProperties(MutationContext ctxt) {
+	private JType aBeanWithNoProperties(CodeMuckContext ctxt) {
 		JType target = ctxt.newSourceTemplate()
 				.pl("package com.bertvanbrakel.codegen.bean;")
 				.pl("import " + BeanProperty.class.getName() + ";")
 				.pl( "public class TestBeanModify {")
 				.pl("}")
-				.asJType();
+				.asResolvedJTypeNamed("TestBeanModify");
 		return target;
 	}
 
-	private JType aBeanWithProperty(MutationContext ctxt) {
+	private JType aBeanWithProperty(CodeMuckContext ctxt) {
 		JType expectType = ctxt.newSourceTemplate()
     		.pl("package com.bertvanbrakel.codegen.bean;")
     		.pl("import " + BeanProperty.class.getName() + ";")
     		.pl( "public class TestBeanModify {")
-    		.pl('@').p(Pattern.class.getName()).p("(name=\"bean.property\")").p( "private String myField;" ).nl()
-    		.pl("@").p(Pattern.class.getName()).p("(name=\"bean.setter\") public void setMyField(String myField ){ this.myField = myField;}" ).nl()
-    		.pl("@").p(Pattern.class.getName()).p("(name=\"bean.getter\") public String getMyField(){ return this.myField;}" ).nl()
+    		.pl('@').p(Pattern.class.getName()).p("(name=\"bean.property\")").p( "private String myField;" ).pl()
+    		.pl("@").p(Pattern.class.getName()).p("(name=\"bean.setter\") public void setMyField(String myField ){ this.myField = myField;}" ).pl()
+    		.pl("@").p(Pattern.class.getName()).p("(name=\"bean.getter\") public String getMyField(){ return this.myField;}" ).pl()
     		
     		//.println( "public String getMyField(){ return this.myField;}" )
     		.pl("}")
-    		.asJType();
+    		.asResolvedJTypeNamed("TestBeanModify");
 		return expectType;
 	}
 

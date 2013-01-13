@@ -1,24 +1,29 @@
 package com.bertvanbrakel.codemucker.ast.matcher;
 
 import org.eclipse.jdt.core.dom.Annotation;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 
 import com.bertvanbrakel.codemucker.ast.JAnnotation;
-import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
+import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.Description;
+import com.bertvanbrakel.lang.matcher.Logical;
+import com.bertvanbrakel.lang.matcher.Matcher;
 
-public class AnAnnotation extends LogicalMatchers {
+public class AnAnnotation extends Logical {
     
 	public static Matcher<Annotation> withFqn(final Class<? extends java.lang.annotation.Annotation> klass){
-		return withFqn(klass.getName());
+		return withFqn(compiledNameToSourceName(klass));
+	}
+	
+	private static String compiledNameToSourceName(Class<?> klass){
+		return klass.getName().replace('$', '.');
 	}
 	
 	public static Matcher<Annotation> withFqn(final String name){
-		return new TypeSafeMatcher<Annotation>(Annotation.class){
+		return new AbstractNotNullMatcher<Annotation>(){
+			
 			@Override
             public void describeTo(Description desc) {
-				desc.appendText("fqn '" + name + "'");
+				desc.text("fqn '" + name + "'");
             }
 
 			@Override

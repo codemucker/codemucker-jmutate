@@ -20,12 +20,12 @@ import org.junit.Test;
 import com.bertvanbrakel.codemucker.annotation.Pattern;
 import com.bertvanbrakel.codemucker.ast.JAccess;
 import com.bertvanbrakel.codemucker.ast.JField;
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 
 public class SetterMethodBuilderTest {
 
-	MutationContext ctxt = new SimpleMutationContext();
+	CodeMuckContext ctxt = new SimpleCodeMuckContext();
 	
 	@Test
 	public void test_create_with_defaults() throws Exception {
@@ -37,7 +37,7 @@ public class SetterMethodBuilderTest {
 		
 		JField expect = ctxt.newSourceTemplate()
 			.pl( "private String myField;" )
-			.asJField();
+			.asResolvedJField();
 		
 		SourceAsserts.assertAstsMatch(expect,actual);
 	}
@@ -54,8 +54,8 @@ public class SetterMethodBuilderTest {
 			.build();
 		
 		JField expect = ctxt.newSourceTemplate()
-			.pl('@').p(Pattern.class.getName()).p("(name=\"my.pattern\")").p( "public java.lang.Object myField;" ).nl()
-			.asJField();
+			.pl('@').p(Pattern.class.getName()).p("(name=\"my.pattern\")").p( "public java.lang.Object myField;" ).pl()
+			.asResolvedJField();
 		
 		SourceAsserts.assertAstsMatch(expect,actual);
 	}

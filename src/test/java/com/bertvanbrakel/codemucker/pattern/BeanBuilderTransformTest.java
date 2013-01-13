@@ -5,21 +5,22 @@ import java.util.Collection;
 
 import org.junit.Test;
 
+import com.bertvanbrakel.codemucker.SourceHelper;
 import com.bertvanbrakel.codemucker.annotation.GenerateBuilder;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
 import com.bertvanbrakel.codemucker.ast.finder.Filter;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
 import com.bertvanbrakel.codemucker.ast.finder.JSourceFinder;
-import com.bertvanbrakel.codemucker.ast.matcher.AType;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.ast.matcher.AJType;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.codemucker.util.SourceAsserts;
 import com.bertvanbrakel.test.finder.Roots;
 
 public class BeanBuilderTransformTest {
 
-	MutationContext ctxt = new SimpleMutationContext();	
+	CodeMuckContext ctxt = new SimpleCodeMuckContext();	
 	
 	@Test
 	public void test_apply_pattern(){
@@ -38,7 +39,7 @@ public class BeanBuilderTransformTest {
 			.transform();
 	}
 	
-	public JType generateExpect(MutationContext ctxt){
+	public JType generateExpect(CodeMuckContext ctxt){
 		SourceTemplate t=ctxt.newSourceTemplate();
 		t.pl("@GenerateBuilder");
 		t.pl("public static class TestBuilderBean {");
@@ -69,18 +70,14 @@ public class BeanBuilderTransformTest {
 		t.pl("		}");
 		t.pl("	}");
 		t.pl("}");
-		return t.asJType();	
+		return t.asResolvedJTypeNamed("TestBuilderBean");	
 	}
 
 	private FindResult<JType> findTypesToTransform() {
-	    FindResult<JType> found = JSourceFinder.builder()
-			.setSearchRoots(Roots.builder()
-				.setIncludeClassesDir(false)
-				.setIncludeTestDir(true)
-			)
+	    FindResult<JType> found = SourceHelper.newTestSourcesResolvingFinder()
 			.setFilter(Filter.builder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
-				.addIncludeTypes(AType.withFullName(TestBuilderBean.class))
+				.addIncludeTypes(AJType.withName(TestBuilderBean.class))
 			)	
 			.build()
 			.findTypes();

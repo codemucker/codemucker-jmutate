@@ -45,12 +45,12 @@ public final class GetterMethodBuilder extends AbstractBuilder<GetterMethodBuild
 		if(isMarkedGenerated()){
 			template
 				.p('@')
-				.p(Pattern.class.getName())
+				.p(Pattern.class)
 				.p("(name=\"")
 				.p(getPattern())
 				.pl("\")");
 		}
-		template.p(access.toCode()).p(" ${fieldType} ${methodName}(){");
+		template.p(access.toCode()).p(" ${fieldType} ${methodName}(){").pl();
 		boolean clone = cloneOnReturn && !TypeUtil.isPrimitive(fieldType); 
 		if(clone){
     		template.pl("return this.${fieldName}==null?null:this.${fieldName}.clone();");
@@ -58,7 +58,7 @@ public final class GetterMethodBuilder extends AbstractBuilder<GetterMethodBuild
 			template.pl("return this.${fieldName};");
 		}
 		template.p("}");
-		return template.asMethodNode();
+		return template.asMethodNodeSnippet();
 	}
 	
 	public GetterMethodBuilder setFromField(JField f) {

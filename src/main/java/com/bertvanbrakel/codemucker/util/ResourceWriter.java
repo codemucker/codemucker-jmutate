@@ -10,9 +10,9 @@ import org.apache.commons.io.IOUtils;
 
 import com.bertvanbrakel.codemucker.bean.BeanGenerationException;
 import com.bertvanbrakel.codemucker.transform.Template;
-import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.util.ProjectFinder;
 
 public class ResourceWriter {
@@ -46,7 +46,7 @@ public class ResourceWriter {
 		OutputStream os = null;
 		try {
 			os = resource.getOutputStream();
-			IOUtils.write(template.interpolate(), os);
+			IOUtils.write(template.interpolateTemplate(), os);
 		} catch (FileNotFoundException e) {
 	        throw new BeanGenerationException("Can't find resource " + resource,e);
         } catch (IOException e) {

@@ -8,7 +8,7 @@ import com.bertvanbrakel.codemucker.ast.CodemuckerException;
 import com.bertvanbrakel.codemucker.ast.ContextNames;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.finder.FindResult;
-import com.bertvanbrakel.codemucker.ast.matcher.AField;
+import com.bertvanbrakel.codemucker.ast.matcher.AJField;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
@@ -28,7 +28,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	    boolean insert = true;
 		for( String fieldName:field.getNames()){
 			//TODO:unwrap single field decl with multiple field (all same type/assignment)
-			FindResult<JField> found = getTarget().findFieldsMatching(AField.withName(fieldName));
+			FindResult<JField> found = getTarget().findFieldsMatching(AJField.withName(fieldName));
 			if(!found.isEmpty()){
 				insert = false;
 				JField existingField = found.getFirst();

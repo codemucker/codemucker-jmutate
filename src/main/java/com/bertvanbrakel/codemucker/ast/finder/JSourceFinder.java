@@ -7,21 +7,20 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTParser;
-
 import com.bertvanbrakel.codemucker.ast.JAstParser;
 import com.bertvanbrakel.codemucker.ast.JFindVisitor;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
-import com.bertvanbrakel.lang.IsBuilder;
+import com.bertvanbrakel.lang.IBuilder;
+import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.Logical;
+import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.finder.BaseRootVisitor;
-import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.Root;
+import com.bertvanbrakel.test.finder.RootResource;
 import com.bertvanbrakel.test.finder.RootVisitor;
 import com.bertvanbrakel.test.finder.Roots;
-import com.bertvanbrakel.test.finder.matcher.LogicalMatchers;
-import com.bertvanbrakel.test.finder.matcher.Matcher;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -122,9 +121,9 @@ public class JSourceFinder {
 	}
 	
 	private static <T> Matcher<T> join(final Matcher<T> matcher,final Matcher<Object> objMatcher){
-		return new Matcher<T>(){
+		return new AbstractNotNullMatcher<T>(){
 			@Override
-			public boolean matches(T found) {
+			public boolean matchesSafely(T found) {
 				return objMatcher.matches(found) && matcher.matches(found);
 			}
 		};
@@ -241,7 +240,7 @@ public class JSourceFinder {
 		}
 
 		private static <T> Matcher<T> anyIfNull(Matcher<T> matcher){
-			return LogicalMatchers.anyIfNull(matcher);
+			return Logical.anyIfNull(matcher);
 		}
 		
 		private JAstParser toParser(){
@@ -253,7 +252,7 @@ public class JSourceFinder {
         	return this;
         }
 		
-	 	public Builder setSearchRoots(IsBuilder<? extends Iterable<Root>> rootsBuilder) {
+	 	public Builder setSearchRoots(IBuilder<? extends Iterable<Root>> rootsBuilder) {
         	setSearchRoots(rootsBuilder.build());
         	return this;
         }
@@ -280,7 +279,7 @@ public class JSourceFinder {
         	return this;
 		}
 	 	
-		public Builder setFilter(IsBuilder<JFindMatcher> builder) {
+		public Builder setFilter(IBuilder<JFindMatcher> builder) {
         	setFilter(builder.build());
         	return this;
 		}
@@ -296,6 +295,11 @@ public class JSourceFinder {
         	return this;
 		}
 
+		public Builder setParser(IBuilder<JAstParser> builder) {
+        	setParser(builder.build());
+        	return this;
+        }
+		
 		public Builder setParser(JAstParser parser) {
         	this.parser = parser;
         	return this;

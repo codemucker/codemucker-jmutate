@@ -8,13 +8,13 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 
 public class JSourceFileMutator {
 	private final JSourceFile source;
-	private final MutationContext context;
+	private final CodeMuckContext context;
 
-	public JSourceFileMutator(MutationContext context, JSourceFile source) {;
+	public JSourceFileMutator(CodeMuckContext context, JSourceFile source) {;
 		this.context = checkNotNull("context", context);
 		this.source = checkNotNull("source", source);
 	}

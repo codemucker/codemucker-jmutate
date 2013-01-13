@@ -3,9 +3,7 @@ package com.bertvanbrakel.codemucker.transform;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -14,7 +12,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.bertvanbrakel.codemucker.ast.CodemuckerException;
@@ -23,14 +20,10 @@ import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JMethod;
 import com.bertvanbrakel.codemucker.ast.JSourceFile;
 import com.bertvanbrakel.codemucker.ast.JType;
+import com.bertvanbrakel.codemucker.util.JavaNameUtil;
 import com.bertvanbrakel.lang.annotation.NotThreadSafe;
-import com.bertvanbrakel.test.finder.Root.RootContentType;
-import com.bertvanbrakel.test.finder.Root.RootType;
-import com.bertvanbrakel.test.finder.RootResource;
-import com.bertvanbrakel.test.finder.DirectoryRoot;
 import com.bertvanbrakel.test.finder.Root;
-import com.bertvanbrakel.test.util.ProjectFinder;
-import com.google.inject.Inject;
+import com.bertvanbrakel.test.finder.RootResource;
 
 /**
  * Template which exposes various parse methods to convert the template text into various Java ast nodes
@@ -38,16 +31,79 @@ import com.google.inject.Inject;
 @NotThreadSafe
 public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 {
-	@Inject
+	private static String NL = System.getProperty("line.separator");
+		
 	private final JAstParser parser;
+	
+	private final Root snippetRoot;
 	
 	/**
 	 * Used by the DI container to set the default
 	 * @param parser
 	 */
-	@Inject
-	public SourceTemplate(JAstParser parser){
+	public SourceTemplate(JAstParser parser, Root snippetRoot){
 		this.parser = checkNotNull(parser,"expect parser");
+		this.snippetRoot = checkNotNull(snippetRoot, "expect snippt root");
+	}
+	
+	/**
+	 * @see {@link #setVar(String, Class)}}
+	 * 
+	 * @param name
+	 * @param klass
+	 * @return
+	 */
+	public SourceTemplate v(String name,Class<?> klass){
+		setVar(name,JavaNameUtil.compiledNameToSourceName(klass));
+		return this;
+	}
+	
+	/**
+	 * Set the class name as a var. Replaces any $ in the class name with a '.' to handle the difference
+	 * between what the compiler outputs and what it expects as input
+	 * @param name
+	 * @param klass
+	 * @return
+	 */
+	public SourceTemplate setVar(String name,Class<?> klass){
+		setVar(name,JavaNameUtil.compiledNameToSourceName(klass));
+		return this;
+	}
+
+	
+	/**
+	 * Print the class name replacing any $ in the class name with a '.' to handle the difference
+	 * between what the compiler outputs and what it expects as input
+	 * @param klass
+	 * @return
+	 */
+	public SourceTemplate p(Class<?> klass){
+		p(JavaNameUtil.compiledNameToSourceName(klass));
+		return this;
+	}
+	
+	
+	/**
+	 * Print the class name replacing any $ in the class name with a '.' to handle the difference
+	 * between what the compiler outputs and what it expects as input
+	 * @param klass
+	 * @return
+	 */
+	public SourceTemplate pl(Class<?> klass){
+		pl(JavaNameUtil.compiledNameToSourceName(klass));
+		return this;
+	}
+	
+	
+	/**
+	 * Print the class name replacing any $ in the class name with a '.' to handle the difference
+	 * between what the compiler outputs and what it expects as input
+	 * @param klass
+	 * @return
+	 */
+	public SourceTemplate println(Class<?> klass){
+		println(JavaNameUtil.compiledNameToSourceName(klass));
+		return this;
 	}
 	
 	/**
@@ -55,35 +111,64 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public Expression asExpressionNode() {
-		return (Expression) parser.parseNode(interpolate(),ASTParser.K_EXPRESSION);
+		return (Expression) parser.parseNode(interpolateTemplate(),ASTParser.K_EXPRESSION, null);
 	}
 
 	/**
 	 * Try to parse the template text as a field and wrap as a JField
 	 * @return
 	 */
-	public JField asJField(){
-		return JField.from(asFieldNode());
+	public JField asResolvedJField(){
+		return JField.from(asResolvedFieldNode());
+	}
+	
+	/**
+	 * Try to parse the template text as a field and wrap as a JField
+	 * @return
+	 */
+	public JField asJFieldSnippet(){
+		return JField.from(asFieldNodeSnippet());
 	}
 	
 	/**
 	 * Try to parse the template text as a field
 	 * @return
 	 */
-	public FieldDeclaration asFieldNode(){
-		TypeDeclaration type = toTempWrappingType();
+	public FieldDeclaration asResolvedFieldNode(){
+		return asFieldNode(true);
+	}
+
+	/**
+	 * Try to parse the template text as a field
+	 * @return
+	 */
+	public FieldDeclaration asFieldNodeSnippet(){
+		return asFieldNode(false);
+	}
+	
+	
+	private FieldDeclaration asFieldNode(boolean resolve){
+		TypeDeclaration type = toTempWrappingType(false);
 		assertEquals("expected a single field", 1, type.getFields().length);
 		FieldDeclaration fieldNode = type.getFields()[0];
 		return fieldNode;
 	}
-
+	
 	/**
 	 * Parse the current template as a constructor checking to ensure this is a syntactically valid constructor.
 	 * @return
 	 */
-	public MethodDeclaration asConstructorNode(){
+	public MethodDeclaration asConstructorNodeSnippet(){
+		return asConstructorNode(false);
+	}
+	
+	public MethodDeclaration asResolvedConstructorNode(){
+		return asConstructorNode(true);
+	}
+	
+	private MethodDeclaration asConstructorNode(boolean resolve){
 		//TODO:decide and sort out exception types to throw. Assertions or custom bean assertions?
-		TypeDeclaration type = toTempWrappingType();
+		TypeDeclaration type = toTempWrappingType(resolve);
 		assertEquals("Expected a single constructor", 1, type.getMethods().length);
 		MethodDeclaration method = type.getMethods()[0];
 		if (method.getReturnType2() != null) {
@@ -98,105 +183,86 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * 
 	 * @return
 	 */
-	public JMethod asJMethod(){
-		return JMethod.from(asMethodNode());
+	public JMethod asJMethodSnippet(){
+		return JMethod.from(asMethodNodeSnippet());
+	}
+	
+	/**
+	 * Try to parse the template text as a method and wrap as a JMethod
+	 * 
+	 * @return
+	 */
+	public JMethod asResolvedJMethod(){
+		return JMethod.from(asResolvedMethodNode());
 	}
 	
 	/**
 	 * Try to parse the template text as a method
 	 * @return
 	 */
-	public MethodDeclaration asMethodNode(){
-		TypeDeclaration type = toTempWrappingType();
+	public MethodDeclaration asMethodNodeSnippet(){
+		return asMethodNode(false);
+	}
+	
+	public MethodDeclaration asResolvedMethodNode(){
+		return asMethodNode(true);
+	}
+	
+	private MethodDeclaration asMethodNode(boolean resolve){
+		TypeDeclaration type = toTempWrappingType(resolve);
 		assertEquals("Expected a single method", 1, type.getMethods().length);
 		MethodDeclaration method = type.getMethods()[0];
 		return method;
+	}
+	
+	private TypeDeclaration toTempWrappingType(boolean resolve) {
+		String tmpTypeName = SourceTemplate.class.getSimpleName() + "__TmpWrapperType" + System.currentTimeMillis() + "__";
+		String src = "class " + tmpTypeName + "{" + NL + interpolateTemplate()  + NL +  "}";
+		//Disable resolving as we are making snippets to merge...
+		RootResource resource = resolve?fqnToResource(tmpTypeName):null;
+		CompilationUnit cu = parser.parseCompilationUnit(src,resource);
+		List<?> types = cu.types();
+		assertEquals("expected only a single type", 1, types.size());
+		TypeDeclaration type = (TypeDeclaration) types.get(0);
+		return type;
+	}
+	
+	public JType asJTypeSnippet(){
+		return JType.from(asTypeNodeSnippet());
 	}
 	
 	/**
 	 * Parse the current template as a type and wrap as a JType
 	 * @return
 	 */
-	public JType asJType(){
-		return JType.from(asTypeNode());
+	public JType asResolvedJTypeNamed(String fqn){
+		return JType.from(asResolvedTypeNodeNamed(fqn));
 	}
 	
 	/**
 	 * Parse the current template as a type
 	 * @return
 	 */
-	public AbstractTypeDeclaration asTypeNode() {
-		CompilationUnit cu = asCompilationUnit();
+	public AbstractTypeDeclaration asResolvedTypeNodeNamed(String fqn) {
+		return asTypeNode(asResolvedCompilationUnitNamed(fqn));
+	}
+	
+	public AbstractTypeDeclaration asTypeNodeSnippet() {
+		return asTypeNode(asCompilationUnitSnippet());
+	}
+	
+	private AbstractTypeDeclaration asTypeNode(CompilationUnit cu) {
 		if(cu.types().size() == 1){
 			return (AbstractTypeDeclaration) cu.types().get(0);
 		}
 		if(cu.types().size() == 0){
-			throw new CodemuckerException("Source template does not contain any types. Expected 1 but got 0. Parsed source %s",interpolate());
+			throw new CodemuckerException("Source template does not contain any types. Expected 1 but got 0. Parsed source %s",interpolateTemplate());
 		}
-		throw new CodemuckerException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolate());
+		throw new CodemuckerException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolateTemplate());
 	}
 
-	/**
-	 * Parse the current template as a compilation unit and use the package declarations in the current template, or 
-	 * the default package if there is none, to generate the 
-	 * base part of the full class name. Use the given simple name to  determine the name of the file within the package.
-	 * 
-	 * @param simpleName the file name. E.g. MyClass
-	 * @return
-	 */
-	public JSourceFile asSourceFileWithSimpleName(String simpleName) {
-		checkLegalIdentifier(simpleName);
 
-		CharSequence src = interpolate();
-		CompilationUnit cu = parser.parseCompilationUnit(src);
-		String fqn = simpleNameToFullNameIn(simpleName, cu);
-		RootResource resource = newTmpResourceWithPath(fqnToRelPath(fqn));
-		
-		return new JSourceFile(resource, cu, src);
-	}
 
-	private static String simpleNameToFullNameIn(String simpleName, CompilationUnit cu) {
-	    PackageDeclaration pkg = cu.getPackage();
-		if( pkg != null){
-			return pkg.getName().getFullyQualifiedName() + "." + simpleName;
-		} else {
-			return simpleName;
-		}
-    }
-	
-	/**
-	 * Try to parse the template text as a source file trying to automatically detect the source path
-	 * based on the first top level type. A temporary
-	 * root will be used.
-	 * 
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public JSourceFile asSourceFile() {	
-		CharSequence src = interpolate();
-		CompilationUnit cu = parser.parseCompilationUnit(src);
-		List<AbstractTypeDeclaration> types = cu.types();
-		
-		JType mainType;
-		if(types.isEmpty()){
-			throw new CodemuckerException("no types found in compilation unit so couldn't determine source path to generate");
-		} else if(types.size() == 1){
-			mainType = JType.from(types.get(0));
-		} else {
-			for(AbstractTypeDeclaration node:types){
-				JType type = JType.from(node);
-				if( type.getModifiers().isPublic()){
-					mainType = type;
-				}
-			}
-			throw new CodemuckerException("Multiple top level types in compilation unit and could not determine one to use. Try setting one to public access");
-		}
-		
-		String fullName = mainType.getFullName();
-		RootResource resource = newTmpResourceWithPath(fqnToRelPath(fullName));
-		return new JSourceFile(resource, cu, src);
-	}
-	
 	/**
 	 * Try to parse the template text as a source file with the given relative source path. A temporary
 	 * root will be used.
@@ -204,37 +270,88 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @param fqn the fully qualified source name without the file extension. As in 'foo.bar.MyClass'.
 	 * @return
 	 */
-	public JSourceFile asSourceFileWithFullName(String fqn) {
-		return asSourceFileWithPath(fqnToRelPath(fqn));
+	public JSourceFile asResolvedSourceFileNamed(String fqn) {
+		checkNotNull(fqn);
+		
+		RootResource resource = fqnToResource(fqn);
+		CharSequence src = interpolateTemplate();
+		CompilationUnit cu = parser.parseCompilationUnit(src, resource);
+		return new JSourceFile(resource, cu, src);
 	}
 	
-	private static String fqnToRelPath(String fqn){
-		return  fqn.replace('.','/');
-	}
-
-	/**
-	 * Try to parse the template text as a compilation unit and save to the given relative path as a 
-	 * java source file. A temporary resource root directory is used.
-	 * 
-	 * @param relPath
-	 * @return
-	 */
-	public JSourceFile asSourceFileWithPath(String relPath) {
-		relPath = checkRelPath(relPath) + ".java";
-		
-		CharSequence src = interpolate();
-		CompilationUnit cu = parser.parseCompilationUnit(src);
-		RootResource resource = newTmpResourceWithPath(relPath);
+	public JSourceFile asSourceFileSnippet() {
+		CharSequence src = interpolateTemplate();
+		CompilationUnit cu = parser.parseCompilationUnit(src, null);//don't get compiler to resolve
+		JType mainType = tryToFindMainTypeIn(cu);
+		String fqn = mainType.getFullName();
+		RootResource resource = fqnToResource(fqn);
 		return new JSourceFile(resource, cu, src);
 	}
 
-	private RootResource newTmpResourceWithPath(String relPath) {
-	    Root root = newTmpRoot();
-		RootResource resource = new RootResource(root, relPath);
-	    return resource;
-    }
+	private static JType tryToFindMainTypeIn(CompilationUnit cu) {
+		@SuppressWarnings("unchecked")
+		List<AbstractTypeDeclaration> types = cu.types();
+		JType mainType = null;
+		if(types.isEmpty()){
+			throw new CodemuckerException("no types found in compilation unit so couldn't determine source path to generate");
+		} else if(types.size() == 1){
+			mainType = JType.from(types.get(0));
+		} else {
+			for(AbstractTypeDeclaration node:types){
+				JType type = JType.from(node);
+				if(type.getModifiers().isPublic()){
+					mainType = type;
+					break;
+				}
+			}
+			if( mainType == null){
+				throw new CodemuckerException("Multiple top level types in compilation unit and could not determine one to use. Try setting one to public access");
+			}
+		}
+		return mainType;
+	}
+	
+	/**
+	 * Try to parse the template text as a compilation unit
+	 * 
+	 * @return
+	 */
+	public CompilationUnit asResolvedCompilationUnitNamed(String fqn) {
+		return parser.parseCompilationUnit(interpolateTemplate(),fqnToResource(fqn));
+	}
 
-	private String checkRelPath(String relPath){
+	public CompilationUnit asCompilationUnitSnippet() {
+		return parser.parseCompilationUnit(interpolateTemplate(),null);
+	}
+	
+	private RootResource fqnToResource(String fqn){
+		RootResource resource = null;
+		if( fqn != null){
+			String path  = expandFqnToRelativePath(fqn);
+			resource = new RootResource(snippetRoot, path);
+		}
+		return resource;
+	}
+	
+	private String expandFqnToRelativePath(String fqn){
+		String expandedFqn = interpolateSnippet(fqn);
+		return fqnToRelPathAndClean(expandedFqn);
+	}
+
+	private static String fqnToRelPathAndClean(String fqn){
+		if( fqn.endsWith(".java")){
+			fqn = fqn.substring(0, fqn.length() - 5);
+		}
+		String relPath = fqn.replace('.','/');
+		checkValidRelPath(relPath);
+		if(relPath.startsWith("/")){
+			relPath = relPath.substring(1,relPath.length());
+		}
+		return relPath;
+	}
+	
+
+	private static String checkValidRelPath(String relPath){
 		checkNotNull(StringUtils.trimToNull(relPath), "expect non null or empty relative path");
 
 		char c;
@@ -246,45 +363,5 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 			}
 		}
 		return relPath;
-	}
-	
-	private void checkLegalIdentifier(String name){
-		checkNotNull(StringUtils.trimToNull(name), "expect non null or empty name");
-		
-		char c;
-		for (int i = 0; i < name.length(); i++) {
-			c = name.charAt(i);
-			if (!(Character.isJavaIdentifierPart(c))) {
-				throw new IllegalArgumentException(
-						String.format("Names can contain only valid java identifiers. Instead found '%s', for %s", c, name));
-			}
-		}
-	}
-	
-	private static Root newTmpRoot(){
-		File dir = ProjectFinder.getDefaultResolver().getTmpDir();
-		File tmpDir = new File(dir,UUID.randomUUID().toString() + "/");
-		tmpDir.mkdirs();
-		
-		return new DirectoryRoot(tmpDir,Root.RootType.GENERATED, RootContentType.SRC);
-	}
-
-	private TypeDeclaration toTempWrappingType() {
-		String tmpTypeName = SourceTemplate.class.getSimpleName() + "__TmpCodeMuckerWrapperKlass__";
-		String src = "class " + tmpTypeName + "{" + interpolate()  + "}";
-		CompilationUnit cu = parser.parseCompilationUnit(src);
-		List<?> types = cu.types();
-		assertEquals("expected only a single type", 1, types.size());
-		TypeDeclaration type = (TypeDeclaration) types.get(0);
-		return type;
-	}
-
-	/**
-	 * Try to parse the template text as a compilation unit
-	 * 
-	 * @return
-	 */
-	public CompilationUnit asCompilationUnit() {
-		return parser.parseCompilationUnit(interpolate());
 	}
 }

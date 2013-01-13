@@ -22,14 +22,14 @@ import static org.junit.Assert.assertNotNull;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.test.finder.RootResource;
 
 public class SourceAssertsTest {
 
-	private MutationContext ctxt = new SimpleMutationContext();
+	private CodeMuckContext ctxt = new SimpleCodeMuckContext();
 	
 	@Test
 	public void test_sameSrcFileMatches() throws Exception {
@@ -41,63 +41,54 @@ public class SourceAssertsTest {
 		src.println("public void foo(){ this.myField = null; }");
 		src.println("}");
 
-		RootResource srcFile = writeResource(src);
-		RootResource srcFile2 = writeResource(src);
-
-		SourceAsserts.assertAstsMatch(srcFile, srcFile2);
+		SourceAsserts.assertAstsMatch(src.asSourceFileSnippet(), src.asSourceFileSnippet());
 	}
 
 	@Test
 	public void test_sameSrcFileMatchesWithDifferentSpacing() throws Exception {
-		SourceTemplate src1 = ctxt.newSourceTemplate();
-		src1.print("package com.bertvanbrakel.test;");
-		src1.print("public class TestBeanModify {");
-		src1.print("private String myField;");
-		src1.print("private String myField2;");
-		src1.println("public void foo(){ this.myField = null; }");
-		src1.print("}");
+		SourceTemplate t1 = ctxt.newSourceTemplate();
+		t1.print("package com.bertvanbrakel.test;");
+		t1.print("public class TestBeanModify {");
+		t1.print("private String myField;");
+		t1.print("private String myField2;");
+		t1.println("public void foo(){ this.myField = null; }");
+		t1.print("}");
 
-		SourceTemplate src2 = ctxt.newSourceTemplate();
-		src2.println("package com.bertvanbrakel.test;");
-		src2.println();
-		src2.println("public class TestBeanModify {");
-		src2.println();
-		src2.println("private String\tmyField;");
-		src2.println();
-		src2.println("private String   myField2;");
-		src2.println();
-		src2.println("public\tvoid\t foo(\t){\tthis.myField = null; }");
-		src2.println();
-		src2.println("}");
+		SourceTemplate t2 = ctxt.newSourceTemplate();
+		t2.println("package com.bertvanbrakel.test;");
+		t2.println();
+		t2.println("public class \tTestBeanModify \t{");
+		t2.println();
+		t2.println("private String\tmyField;");
+		t2.println();
+		t2.println("private String   myField2;");
+		t2.println();
+		t2.println("public\tvoid\t foo(\t){\tthis.myField = null; }");
+		t2.println();
+		t2.println("}");
 
-		RootResource srcFile = writeResource(src1);
-		RootResource srcFile2 = writeResource(src2);
-
-		SourceAsserts.assertAstsMatch(srcFile, srcFile2);
+		SourceAsserts.assertAstsMatch(t1.asSourceFileSnippet(), t2.asSourceFileSnippet());
 	}
 	
 	@Test
-	public void test_srcFileDOesNotMatch_whenDifferent() throws Exception{	
-		SourceTemplate src1 = ctxt.newSourceTemplate();
-		src1.println("package com.bertvanbrakel.test;");
-		src1.println("public class TestBeanModify {");
-		src1.println("private String myField;");
-		src1.println("public void foo(){ this.myField = null; }");
-		src1.println("}");
+	public void test_srcFileDoesNotMatch_whenDifferent() throws Exception{	
+		SourceTemplate t1 = ctxt.newSourceTemplate();
+		t1.println("package com.bertvanbrakel.test;");
+		t1.println("public class TestBeanModify {");
+		t1.println("private String myField;");
+		t1.println("public void foo(){ this.myField = null; }");
+		t1.println("}");
 		
-		SourceTemplate src2 = ctxt.newSourceTemplate();
-		src2.println("package com.bertvanbrakel.test;");
-		src2.println("public class TestBeanModify {");
-		src2.println("private String myField;");
-		src2.println("public void foo(){ this.myField = \"\"; }");
-		src2.println("}");
-
-		RootResource srcFile = writeResource(src1);
-		RootResource srcFile2 = writeResource(src2);
+		SourceTemplate t2 = ctxt.newSourceTemplate();
+		t2.println("package com.bertvanbrakel.test;");
+		t2.println("public class TestBeanModify {");
+		t2.println("private String myField;");
+		t2.println("public void foo(){ this.myField = \"\"; }");
+		t2.println("}");
 
 		Throwable expect = null;
 		try {
-			SourceAsserts.assertAstsMatch(srcFile, srcFile2);
+			SourceAsserts.assertAstsMatch(t1.asSourceFileSnippet(), t2.asSourceFileSnippet());
 		} catch (AssertionError e){
 			expect = e;
 		}
@@ -110,7 +101,7 @@ public class SourceAssertsTest {
 		src1.println("private String myField;");
 		src1.println("public void foo(){}");
 
-		MethodDeclaration node = src1.asMethodNode();
+		MethodDeclaration node = src1.asResolvedMethodNode();
 		assertNotNull(node);
 		assertEquals("foo",node.getName().getFullyQualifiedName());
 	}

@@ -5,14 +5,10 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -82,7 +78,7 @@ public class BeanBuilderGenerator {
 		
 		CompilationUnit result;
 		try {
-			result = JAstParser.newDefaultJParser().parseCompilationUnit(src);
+			result = JAstParser.newDefaultJParser().parseCompilationUnit(src, null);
 		} catch (Exception e) {
 			throw new BeanGenerationException("error parsing source", e);
 		}

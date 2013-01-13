@@ -14,8 +14,9 @@ import com.bertvanbrakel.codemucker.ast.JAnnotatable;
 import com.bertvanbrakel.codemucker.ast.JAnnotation;
 import com.bertvanbrakel.codemucker.ast.JField;
 import com.bertvanbrakel.codemucker.ast.JMethod;
+import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.Matcher;
 import com.bertvanbrakel.test.bean.ClassUtils;
-import com.bertvanbrakel.test.finder.matcher.Matcher;
 
 public class RefactorTest {
 
@@ -120,19 +121,19 @@ public class RefactorTest {
 		
 	}
 	
-	private com.bertvanbrakel.test.finder.matcher.Matcher<JMethod> getterMatcher(){
-		return new Matcher<JMethod>(){
+	private Matcher<JMethod> getterMatcher(){
+		return new AbstractNotNullMatcher<JMethod>(){
 			@Override
-            public boolean matches(JMethod found) {
+            public boolean matchesSafely(JMethod found) {
 	            return ClassUtils.isReaderMethodFromName(found.getName());
             }
 		};
 	}
 	
-	private com.bertvanbrakel.test.finder.matcher.Matcher<JMethod> setterMatcher(){
-		return new Matcher<JMethod>(){
+	private Matcher<JMethod> setterMatcher(){
+		return new AbstractNotNullMatcher<JMethod>(){
 			@Override
-            public boolean matches(JMethod found) {
+            public boolean matchesSafely(JMethod found) {
 	            return ClassUtils.isWriterMethodFromName(found.getName());
             }
 		};

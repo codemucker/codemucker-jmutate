@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.bertvanbrakel.codemucker.transform.MutationContext;
+import com.bertvanbrakel.codemucker.transform.CodeMuckContext;
 import com.bertvanbrakel.codemucker.transform.SourceTemplate;
 import com.bertvanbrakel.test.util.ClassNameUtil;
 import com.bertvanbrakel.test.util.TestHelper;
@@ -12,7 +12,7 @@ import com.bertvanbrakel.test.util.TestHelper;
 public class JavaSourceFileTest {
 
 	TestHelper helper = new TestHelper();
-	MutationContext ctxt = new SimpleMutationContext();
+	CodeMuckContext ctxt = new SimpleCodeMuckContext();
 
 	@Test
 	public void testGetSimpleClassnameBasedOnPath() {
@@ -31,6 +31,6 @@ public class JavaSourceFileTest {
 		String shortName = ClassNameUtil.extractShortClassNamePart(fqn);
 		SourceTemplate template = ctxt.newSourceTemplate();
 		template.println("public class " + shortName + "  {}");
-		return template.asSourceFileWithFullName(fqn);
+		return template.asResolvedSourceFileNamed(fqn);
 	}
 }

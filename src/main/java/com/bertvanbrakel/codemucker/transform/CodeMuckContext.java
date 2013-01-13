@@ -1,10 +1,10 @@
 package com.bertvanbrakel.codemucker.transform;
 
-import com.bertvanbrakel.codemucker.ast.SimpleMutationContext;
+import com.bertvanbrakel.codemucker.ast.SimpleCodeMuckContext;
 import com.google.inject.ImplementedBy;
 
-@ImplementedBy(SimpleMutationContext.class)
-public interface MutationContext {
+@ImplementedBy(SimpleCodeMuckContext.class)
+public interface CodeMuckContext {
 
 	/**
 	 * Shortcut for {@link #obtain(SourceTemplate.class)}

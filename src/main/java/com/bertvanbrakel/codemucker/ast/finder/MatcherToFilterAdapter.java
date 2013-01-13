@@ -1,9 +1,13 @@
 package com.bertvanbrakel.codemucker.ast.finder;
 
-import com.bertvanbrakel.test.finder.matcher.Matcher;
+import com.bertvanbrakel.lang.matcher.AbstractMatcher;
+import com.bertvanbrakel.lang.matcher.AbstractNotNullMatcher;
+import com.bertvanbrakel.lang.matcher.Description;
+import com.bertvanbrakel.lang.matcher.MatchDiagnostics;
+import com.bertvanbrakel.lang.matcher.Matcher;
 import com.google.common.base.Preconditions;
 
-class MatcherToFilterAdapter<T> implements FindResult.Filter<T> {
+class MatcherToFilterAdapter<T> extends AbstractMatcher<T> implements FindResult.Filter<T> {
 	private final Matcher<T> matcher;
 
 	public static <T> FindResult.Filter<T> from(Matcher<T> matcher){
@@ -16,8 +20,8 @@ class MatcherToFilterAdapter<T> implements FindResult.Filter<T> {
 	}
 	
 	@Override
-	public boolean matches(T found) {
-		return matcher.matches(found);
+	public boolean matches(T found, MatchDiagnostics ctxt) {
+		return ctxt.TryMatch(found,matcher);
 	}
 
 	@Override
@@ -28,5 +32,11 @@ class MatcherToFilterAdapter<T> implements FindResult.Filter<T> {
 	@Override
 	public void onIgnored(T result) {
 		//do nothing
+	}
+
+	@Override
+	public void describeTo(Description desc) {
+		super.describeTo(desc);
+		matcher.describeTo(desc);
 	}
 }
