@@ -1,9 +1,0 @@
-package com.bertvanbrakel.codemucker.ast.a;
-
-public class TestBeanSimple {
-	private String fieldOne;
-	private String foo;
-	public void setFoo(String foo){ 
-		this.foo = foo; 
-	}
-}
