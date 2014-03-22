@@ -8,6 +8,10 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.matcher.IncludeExcludeMatcherBuilder;
 import org.codemucker.jfind.matcher.ResourceMatchers;
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Description;
+import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
@@ -15,10 +19,6 @@ import org.codemucker.jmutate.ast.finder.JSourceFinder.JFindMatcher;
 import org.codemucker.jmutate.ast.matcher.AJSourceFile;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.lang.IBuilder;
-import org.codemucker.match.AbstractNotNullMatcher;
-import org.codemucker.match.Description;
-import org.codemucker.match.MatchDiagnostics;
-import org.codemucker.match.Matcher;
 
 
 public class Filter implements JFindMatcher {

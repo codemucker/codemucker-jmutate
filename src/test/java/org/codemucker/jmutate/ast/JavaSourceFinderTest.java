@@ -1,11 +1,13 @@
 package org.codemucker.jmutate.ast;
 
-import static org.codemucker.match.Assert.assertThat;
-import static org.codemucker.match.Assert.is;
-import static org.codemucker.match.Assert.isFalse;
+import static org.codemucker.jmatch.Assert.assertThat;
+import static org.codemucker.jmatch.Assert.is;
+import static org.codemucker.jmatch.Assert.isFalse;
 
 import java.util.List;
 
+import org.codemucker.jmatch.AList;
+import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.finder.Filter;
 import org.codemucker.jmutate.ast.finder.FindResult;
@@ -13,8 +15,6 @@ import org.codemucker.jmutate.ast.finder.JSourceFinder;
 import org.codemucker.jmutate.ast.finder.JSourceFinder.JFindListener;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.match.AList;
-import org.codemucker.match.Expect;
 import org.junit.Test;
 
 

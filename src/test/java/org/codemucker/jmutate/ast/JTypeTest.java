@@ -1,15 +1,17 @@
 package org.codemucker.jmutate.ast;
 
-import static org.codemucker.match.Assert.assertThat;
-import static org.codemucker.match.Assert.is;
-import static org.codemucker.match.Assert.isEqualTo;
-import static org.codemucker.match.Assert.isFalse;
-import static org.codemucker.match.Assert.isTrue;
-import static org.codemucker.match.Assert.not;
+import static org.codemucker.jmatch.Assert.assertThat;
+import static org.codemucker.jmatch.Assert.is;
+import static org.codemucker.jmatch.Assert.isEqualTo;
+import static org.codemucker.jmatch.Assert.isFalse;
+import static org.codemucker.jmatch.Assert.isTrue;
+import static org.codemucker.jmatch.Assert.not;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.codemucker.jmatch.AList;
+import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass1;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass2;
@@ -21,8 +23,6 @@ import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.transform.CodeMuckContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
-import org.codemucker.match.AList;
-import org.codemucker.match.Expect;
 import org.junit.Test;
 
 public class JTypeTest {

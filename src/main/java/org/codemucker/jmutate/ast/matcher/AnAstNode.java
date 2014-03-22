@@ -2,11 +2,11 @@ package org.codemucker.jmutate.ast.matcher;
 
 import junit.framework.AssertionFailedError;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.AstNodeProvider;
 import org.codemucker.jmutate.util.SourceAsserts;
-import org.codemucker.match.AbstractNotNullMatcher;
-import org.codemucker.match.MatchDiagnostics;
-import org.codemucker.match.Matcher;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 

@@ -4,13 +4,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.annotation.Annotation;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.AnInt;
+import org.codemucker.jmatch.Logical;
+import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.match.AbstractNotNullMatcher;
-import org.codemucker.match.AnInt;
-import org.codemucker.match.Logical;
-import org.codemucker.match.MatchDiagnostics;
-import org.codemucker.match.Matcher;
 
 
 public class AJSourceFile extends AnInt {

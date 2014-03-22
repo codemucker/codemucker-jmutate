@@ -1,8 +1,8 @@
 package org.codemucker.jmutate.example;
 
+import static org.codemucker.jmatch.Logical.all;
 import static org.codemucker.jmutate.ast.matcher.AJMethod.isNotConstructor;
 import static org.codemucker.jmutate.ast.matcher.AJMethod.withAccess;
-import static org.codemucker.match.Logical.all;
 
 import java.util.List;
 

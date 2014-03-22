@@ -1,5 +1,7 @@
 package org.codemucker.jmutate.pattern;
 
+import org.codemucker.jmatch.AnInt;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
@@ -7,8 +9,6 @@ import org.codemucker.jmutate.ast.finder.Filter;
 import org.codemucker.jmutate.ast.finder.FindResult;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.match.AnInt;
-import org.codemucker.match.Matcher;
 import org.junit.Test;
 
 

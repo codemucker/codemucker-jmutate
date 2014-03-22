@@ -1,18 +1,18 @@
 package org.codemucker.jmutate.ast;
 
-import static org.codemucker.match.Assert.assertThat;
-import static org.codemucker.match.Assert.isEqualTo;
+import static org.codemucker.jmatch.Assert.assertThat;
+import static org.codemucker.jmatch.Assert.isEqualTo;
 
 import java.util.Collection;
 import java.util.List;
 
+import org.codemucker.jmatch.AList;
+import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.matcher.AnAnnotation;
 import org.codemucker.jmutate.transform.CodeMuckContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.codemucker.jpattern.Generated;
-import org.codemucker.match.AList;
-import org.codemucker.match.Expect;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.junit.Test;
 

@@ -1,10 +1,10 @@
 package org.codemucker.jmutate.ast.finder;
 
-import org.codemucker.match.AbstractMatcher;
-import org.codemucker.match.AbstractNotNullMatcher;
-import org.codemucker.match.Description;
-import org.codemucker.match.MatchDiagnostics;
-import org.codemucker.match.Matcher;
+import org.codemucker.jmatch.AbstractMatcher;
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Description;
+import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmatch.Matcher;
 
 import com.google.common.base.Preconditions;
 

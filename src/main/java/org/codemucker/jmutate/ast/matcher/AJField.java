@@ -2,15 +2,15 @@ package org.codemucker.jmutate.ast.matcher;
 
 import java.lang.annotation.Annotation;
 
+import org.codemucker.jmatch.AString;
+import org.codemucker.jmatch.AbstractMatcher;
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Description;
+import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmatch.AbstractMatcher.AllowNulls;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
-import org.codemucker.match.AString;
-import org.codemucker.match.AbstractMatcher;
-import org.codemucker.match.AbstractNotNullMatcher;
-import org.codemucker.match.Description;
-import org.codemucker.match.MatchDiagnostics;
-import org.codemucker.match.Matcher;
-import org.codemucker.match.AbstractMatcher.AllowNulls;
 import org.eclipse.jdt.core.dom.Type;
 
 public class AJField {// extends Logical  {

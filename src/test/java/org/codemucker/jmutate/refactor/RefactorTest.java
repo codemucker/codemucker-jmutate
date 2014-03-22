@@ -6,6 +6,9 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 
 import org.apache.commons.lang3.StringUtils;
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.AstNodeProvider;
 import org.codemucker.jmutate.ast.CodemuckerException;
 import org.codemucker.jmutate.ast.JAnnotatable;
@@ -14,9 +17,6 @@ import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jpattern.BeanProperty;
 import org.codemucker.jtest.bean.ClassUtils;
-import org.codemucker.match.AbstractNotNullMatcher;
-import org.codemucker.match.MatchDiagnostics;
-import org.codemucker.match.Matcher;
 
 
 public class RefactorTest {

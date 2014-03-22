@@ -5,6 +5,8 @@ import static org.codemucker.lang.Check.checkNotNull;
 
 import java.util.List;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmutate.ast.CodemuckerException;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JField.SingleJField;
@@ -22,8 +24,6 @@ import org.codemucker.jmutate.transform.SourceTemplate;
 import org.codemucker.jmutate.transform.Transform;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.codemucker.jmutate.util.TypeUtil;
-import org.codemucker.match.AbstractNotNullMatcher;
-import org.codemucker.match.MatchDiagnostics;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.inject.Inject;

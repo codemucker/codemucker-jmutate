@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.finder.FindResult;
 import org.codemucker.jmutate.ast.finder.FindResultImpl;
 import org.codemucker.jmutate.ast.matcher.AJField;
@@ -20,7 +21,6 @@ import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.transform.CodeMuckContext;
 import org.codemucker.jmutate.util.ClassUtil;
 import org.codemucker.jmutate.util.JavaNameUtil;
-import org.codemucker.match.Matcher;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
