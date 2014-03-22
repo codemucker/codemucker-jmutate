@@ -12,14 +12,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
-import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.iterator.ORecordIteratorClass;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 
 public class JSearchEngine implements Closeable {
 
-	private final OGraphDatabase db;
+	private final ODatabaseDocumentTx db;
 	private final JAstParser parser;
 
 	public static Builder builder(){
@@ -33,9 +33,8 @@ public class JSearchEngine implements Closeable {
 		
 		this.parser = parser;
         db = Orient.instance()
-        	.getDatabaseFactory()
-        	.createGraphDatabase("local:" + dbDirectoy.getAbsolutePath());
-        
+        	.getDatabaseFactory().createDatabase("graph","local:" + dbDirectoy.getAbsolutePath());
+
         //TODO:turn off locking while we index
         //TODO:put it in a reusable location so multiple calls find the already indexed code
         

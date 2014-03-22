@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.google.common.base.Preconditions;
-import com.orientechnologies.orient.core.db.graph.OGraphDatabase;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 
 //TODO:remove existing entries if exists
@@ -22,7 +22,7 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisito
 		CREATE,UPDATE;
 	}
 	
-	private final OGraphDatabase db;
+	private final ODatabaseDocumentTx db;
 	
 	//Reuse docs for faster indexing
 	private ODocument rootDoc = new ODocument(); 
@@ -42,11 +42,11 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisito
 	
 	private static final String JAVA_EXTENSION = "java";
 		
-	public JSearchIndexingVisitor(OGraphDatabase db, JAstParser parser){
+	public JSearchIndexingVisitor(ODatabaseDocumentTx db, JAstParser parser){
 		this(db,parser, Mode.CREATE);
 	}
 	
-	private JSearchIndexingVisitor(OGraphDatabase db, JAstParser parser, JSearchIndexingVisitor.Mode mode){
+	private JSearchIndexingVisitor(ODatabaseDocumentTx db, JAstParser parser, JSearchIndexingVisitor.Mode mode){
 		Preconditions.checkNotNull(db,"db");
 		Preconditions.checkNotNull(parser,"parser");
 		this.db = db;
