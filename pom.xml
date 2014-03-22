@@ -6,7 +6,7 @@
 		<groupId>org.codemucker</groupId>
 		<artifactId>codemucker-parent</artifactId>
 		<version>1.0-SNAPSHOT</version>
-		<relativePath>../bertvanbrakel-parent/pom.xml</relativePath>
+		<relativePath>../codemucker-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>codemucker-jmutate</artifactId>
 	<packaging>jar</packaging>
