@@ -10,7 +10,7 @@
 	</parent>
 	<artifactId>codemucker-jmutate</artifactId>
 	<packaging>jar</packaging>
-	<name>org.codemucker - Mutate (Source Mutator)</name>
+	<name>org.codemucker - JMutate (Source Mutator)</name>
 	<description>Source code modification and assertion</description>
 	<properties>
 	</properties>
@@ -33,7 +33,7 @@
 		</dependency>
         <dependency>
             <groupId>org.codemucker</groupId>
-            <artifactId>codemucker-annotations</artifactId>
+            <artifactId>codemucker-jpattern</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
