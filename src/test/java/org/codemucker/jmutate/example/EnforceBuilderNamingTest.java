@@ -6,13 +6,13 @@ import static org.codemucker.jmutate.ast.matcher.AJMethod.withAccess;
 
 import java.util.List;
 
-import org.codemucker.jfind.Roots;
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.ClassRoots;
+import org.codemucker.jmutate.SourceFilter;
+import org.codemucker.jmutate.SourceFinder;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.finder.Filter;
-import org.codemucker.jmutate.ast.finder.FindResult;
-import org.codemucker.jmutate.ast.finder.JSourceFinder;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.junit.Assert;
@@ -27,12 +27,12 @@ public class EnforceBuilderNamingTest
 	@Ignore
 	public void testEnsureBuildersAreCorrectlyNamed()
 	{
-		Iterable<JType> builders = JSourceFinder.builder()
-				.setSearchRoots(Roots.builder()
+		Iterable<JType> builders = SourceFinder.builder()
+				.setSearchRoots(ClassRoots.builder()
 					.setIncludeMainSrcDir(true)
 					.setIncludeTestSrcDir(true)
 				)
-				.setFilter(Filter.builder()
+				.setFilter(SourceFilter.builder()
 					.addIncludeTypes(AJType.withSimpleNameAntPattern("*Builder"))
 					.addExcludeTypes(AJType.isAbstract())
 				)

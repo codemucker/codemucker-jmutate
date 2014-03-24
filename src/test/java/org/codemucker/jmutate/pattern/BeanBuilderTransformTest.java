@@ -3,11 +3,11 @@ package org.codemucker.jmutate.pattern;
 
 import java.util.Collection;
 
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.SimpleMutateContext;
-import org.codemucker.jmutate.ast.finder.Filter;
-import org.codemucker.jmutate.ast.finder.FindResult;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
@@ -39,7 +39,7 @@ public class BeanBuilderTransformTest {
 	
 	public JType generateExpect(MutateContext ctxt){
 		SourceTemplate t=ctxt.newSourceTemplate();
-		t.pl("@GenerateBuilder");
+		t.pl("@" + GenerateBuilder.class.getSimpleName());
 		t.pl("public static class TestBuilderBean {");
 		t.pl("	private String myString;");
 		t.pl("	private int myInt;");
@@ -73,7 +73,7 @@ public class BeanBuilderTransformTest {
 
 	private FindResult<JType> findTypesToTransform() {
 	    FindResult<JType> found = SourceHelper.newTestSourcesResolvingFinder()
-			.setFilter(Filter.builder()
+			.setFilter(SourceFilter.builder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				.addIncludeTypes(AJType.withName(TestBuilderBean.class))
 			)	

@@ -2,20 +2,25 @@ package org.codemucker.jmutate;
 
 import static org.junit.Assert.assertEquals;
 
-import org.codemucker.jfind.Roots;
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.ClassRoots;
+import org.codemucker.jmutate.SourceFilter;
+import org.codemucker.jmutate.SourceFinder;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
-import org.codemucker.jmutate.ast.finder.Filter;
-import org.codemucker.jmutate.ast.finder.FindResult;
-import org.codemucker.jmutate.ast.finder.JSourceFinder;
 
 
 public class SourceHelper {
 
+	/**
+	 * Find the source file for the given compiled class
+	 * @param classToFindSourceFor the class to find the source for
+	 * @return the found source file, or throw an exception if no source found
+	 */
 	public static JSourceFile findSourceForTestClass(Class<?> classToFindSourceFor){
 		
-		JSourceFinder finder = newTestSourcesResolvingFinder()
-			.setFilter(Filter.builder()
+		SourceFinder finder = newTestSourcesResolvingFinder()
+			.setFilter(SourceFilter.builder()
 				.setIncludeFileName(classToFindSourceFor.getName().replace('.', '/') + ".java"))
 			.build();
 		FindResult<JSourceFile> sources = finder.findSources();
@@ -26,17 +31,17 @@ public class SourceHelper {
 	 * Look in all source locations including tests
 	 * @return
 	 */
-	public static JSourceFinder.Builder newAllSourcesResolvingFinder(){
-		return JSourceFinder.builder()
-			.setSearchRoots(Roots.builder()
+	public static SourceFinder.Builder newAllSourcesResolvingFinder(){
+		return SourceFinder.builder()
+			.setSearchRoots(ClassRoots.builder()
 					.setIncludeMainSrcDir(true)
 					.setIncludeTestSrcDir(true))
 			.setParser(newResolvingParser());
 	}
 	
-	public static JSourceFinder.Builder newTestSourcesResolvingFinder(){
-		return JSourceFinder.builder()
-			.setSearchRoots(Roots.builder()
+	public static SourceFinder.Builder newTestSourcesResolvingFinder(){
+		return SourceFinder.builder()
+			.setSearchRoots(ClassRoots.builder()
 				.setIncludeMainSrcDir(false)
 				.setIncludeTestSrcDir(true))
 			.setParser(
@@ -47,7 +52,7 @@ public class SourceHelper {
 		return JAstParser.builder()
 			.setCheckParse(true)
 			.setResolveBindings(true)
-			.setResolveRoots(Roots.builder().setIncludeAll())
+			.setResolveRoots(ClassRoots.builder().setIncludeAll())
 			.build();
 	}
 }

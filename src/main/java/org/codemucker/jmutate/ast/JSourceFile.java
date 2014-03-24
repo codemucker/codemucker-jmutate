@@ -16,6 +16,7 @@ import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jtest.ClassNameUtil;

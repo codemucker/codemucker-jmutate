@@ -1,6 +1,6 @@
 package org.codemucker.jmutate.ast;
 
-import org.codemucker.jfind.Roots;
+import org.codemucker.jfind.ClassRoots;
 import org.junit.Test;
 
 
@@ -10,7 +10,7 @@ public class JSearchEngineTest {
 	public void smokeTest(){
 		JSearchEngine engine = JSearchEngine.builder()
 			.setDefaults()
-			.setRoots(Roots.builder()
+			.setRoots(ClassRoots.builder()
 				.setIncludeMainSrcDir(true)
 				.setIncludeTestSrcDir(true)
 				//.setIncludeClasspath(true)
@@ -18,7 +18,7 @@ public class JSearchEngineTest {
 			.setParser(JAstParser.builder()
 				.setResolveBindings(true)
 				.setCheckParse(true)
-				.setResolveRoots(Roots.builder()
+				.setResolveRoots(ClassRoots.builder()
 					.setIncludeAll()))
 			.build();
 		

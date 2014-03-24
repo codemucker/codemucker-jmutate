@@ -5,7 +5,7 @@ import static com.google.common.collect.Lists.newArrayListWithCapacity;
 import java.util.Collections;
 import java.util.List;
 
-import org.codemucker.jmutate.ast.MutateException;
+import org.codemucker.jmutate.MutateException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;

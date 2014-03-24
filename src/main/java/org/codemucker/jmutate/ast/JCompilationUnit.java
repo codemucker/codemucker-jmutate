@@ -5,9 +5,10 @@ import static org.codemucker.lang.Check.checkNotNull;
 import java.util.Collection;
 import java.util.List;
 
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.FindResultImpl;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.ast.finder.FindResult;
-import org.codemucker.jmutate.ast.finder.FindResultImpl;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;

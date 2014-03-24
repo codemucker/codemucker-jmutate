@@ -27,18 +27,18 @@ import org.junit.Test;
 public class BeanPropertyTransformTest {
 
 	private MutateContext ctxt = SimpleMutateContext.builder()
-			.setMarkGenerated(true)
+			.markGenerated(true)
 			.build();
 		
 	@Test
 	public void testTransformNoPreExisting() throws Exception {
 		
 		//given
-		JType target = aBeanWithNoProperties(ctxt);
+		JType target = beanWithNoProperties(ctxt);
 		//when
 		whenAPropertyTransformIsApplied(ctxt, target);
 		//then
-		JType expectType = aBeanWithProperty(ctxt);
+		JType expectType = expectBeanWithProperty(ctxt);
     	SourceAsserts.assertRootAstsMatch(expectType,target);
 	}
 
@@ -50,9 +50,9 @@ public class BeanPropertyTransformTest {
 			.transform();
 	}
 
-	private JType aBeanWithNoProperties(MutateContext ctxt) {
+	private JType beanWithNoProperties(MutateContext ctxt) {
 		JType target = ctxt.newSourceTemplate()
-				.pl("package com.bertvanbrakel.codegen.bean;")
+				.pl("package com.mypkg.codegen.bean;")
 				.pl("import " + Property.class.getName() + ";")
 				.pl( "public class TestBeanModify {")
 				.pl("}")
@@ -60,9 +60,9 @@ public class BeanPropertyTransformTest {
 		return target;
 	}
 
-	private JType aBeanWithProperty(MutateContext ctxt) {
+	private JType expectBeanWithProperty(MutateContext ctxt) {
 		JType expectType = ctxt.newSourceTemplate()
-    		.pl("package com.bertvanbrakel.codegen.bean;")
+    		.pl("package com.mypkg.codegen.bean;")
     		.pl("import " + Property.class.getName() + ";")
     		.pl( "public class TestBeanModify {")
     		.pl('@').p(Pattern.class.getName()).p("(name=\"bean.property\")").p( "private String myField;" ).pl()

@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 
-import org.codemucker.jmutate.ast.MutateException;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;

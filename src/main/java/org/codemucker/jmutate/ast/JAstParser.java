@@ -16,6 +16,7 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.RootResource;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.lang.IBuilder;
 import org.codemucker.lang.annotation.NotThreadSafe;
 import org.eclipse.jdt.core.JavaCore;

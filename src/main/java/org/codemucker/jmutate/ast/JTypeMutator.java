@@ -2,6 +2,7 @@ package org.codemucker.jmutate.ast;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;

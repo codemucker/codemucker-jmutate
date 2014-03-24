@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.ast.finder;
+package org.codemucker.jmutate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -8,10 +8,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.codemucker.jfind.BaseRootVisitor;
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.FindResultImpl;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.RootVisitor;
-import org.codemucker.jfind.Roots;
+import org.codemucker.jfind.ClassRoots;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
@@ -35,7 +37,7 @@ import com.google.inject.Inject;
  * 
  * 
  */
-public class JSourceFinder {
+public class SourceFinder {
 
 	private static final String JAVA_EXTENSION = "java";
 	private static final JFindListener NULL_LISTENER = new JFindListener() {
@@ -61,7 +63,7 @@ public class JSourceFinder {
 	@Inject
 	private final JAstParser parser;
 
-	public static interface JFindMatcher {
+	public static interface SourceMatcher {
 		public Matcher<Object> getObjectMatcher();
 		public Matcher<Root> getRootMatcher();
 		public Matcher<RootResource> getResourceMatcher();
@@ -78,10 +80,10 @@ public class JSourceFinder {
 	}
 
 	@Inject
-	public JSourceFinder(
+	public SourceFinder(
 			JAstParser parser
 			, Iterable<Root> classPathRoots
-			, JFindMatcher matchers
+			, SourceMatcher matchers
 			, JFindListener listener
 			) {
 		this(parser,
@@ -96,7 +98,7 @@ public class JSourceFinder {
 		);
 	}
 
-	public JSourceFinder(
+	public SourceFinder(
 			JAstParser parser
 			, Iterable<Root> roots
 			, Matcher<Object> objectFilter
@@ -227,8 +229,8 @@ public class JSourceFinder {
 		
 		private JFindListener listener;
 		
-		public JSourceFinder build(){			
-			return new JSourceFinder(
+		public SourceFinder build(){			
+			return new SourceFinder(
 				toParser()
 				, roots
 				, anyIfNull(objectMatcher)
@@ -249,7 +251,7 @@ public class JSourceFinder {
 			return parser != null ? parser : JAstParser.newDefaultJParser();
 		}
 
-		public Builder setSearchRoots(Roots.Builder searchRoots) {
+		public Builder setSearchRoots(ClassRoots.Builder searchRoots) {
         	setSearchRoots(searchRoots.build());
         	return this;
         }
@@ -276,17 +278,17 @@ public class JSourceFinder {
         	return this;
 		}
 	 	
-	 	public Builder setFilter(Filter.Builder filter) {
+	 	public Builder setFilter(SourceFilter.Builder filter) {
         	setFilter(filter.build());
         	return this;
 		}
 	 	
-		public Builder setFilter(IBuilder<JFindMatcher> builder) {
+		public Builder setFilter(IBuilder<SourceMatcher> builder) {
         	setFilter(builder.build());
         	return this;
 		}
 		
-		public Builder setFilter(JFindMatcher filters) {
+		public Builder setFilter(SourceMatcher filters) {
 			objectMatcher = filters.getObjectMatcher();
 			rootMatcher = filters.getRootMatcher();
 			resourceMatcher = filters.getResourceMatcher();			

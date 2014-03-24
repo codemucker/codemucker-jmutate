@@ -7,8 +7,9 @@ import org.codemucker.jfind.DirectoryRoot;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
-import org.codemucker.jfind.Roots;
-import org.codemucker.jmutate.NamedAnnotation;
+import org.codemucker.jfind.ClassRoots;
+import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.internal.NamedAnnotation;
 import org.codemucker.jmutate.transform.ClashStrategy;
 import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.PlacementStrategies;
@@ -33,7 +34,7 @@ public class SimpleMutateContext implements MutateContext {
 	private final PlacementStrategies strategyProvider  = PlacementStrategies.builder().setDefaults().build();
 	private final JAstParser parser = JAstParser.builder()
 		.setDefaults()
-		.setResolveRoots(Roots.builder()
+		.setResolveRoots(ClassRoots.builder()
 			.setIncludeClasspath(true)
 			.setIncludeTestSrcDir(true)
 			.setIncludeMainSrcDir(true)
@@ -178,7 +179,7 @@ public class SimpleMutateContext implements MutateContext {
 		private Builder(){
 		}
 
-		public Builder setDefaults() {
+		public Builder defaults() {
         	return this;
 		}
 
@@ -186,7 +187,7 @@ public class SimpleMutateContext implements MutateContext {
 			return new SimpleMutateContext(markGenerated);
 		}
 		
-		public Builder setMarkGenerated(boolean markGenerated) {
+		public Builder markGenerated(boolean markGenerated) {
         	this.markGenerated = markGenerated;
         	return this;
 		}

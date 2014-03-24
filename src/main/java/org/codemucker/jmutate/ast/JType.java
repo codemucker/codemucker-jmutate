@@ -12,9 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.FindResultImpl;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.ast.finder.FindResult;
-import org.codemucker.jmutate.ast.finder.FindResultImpl;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;

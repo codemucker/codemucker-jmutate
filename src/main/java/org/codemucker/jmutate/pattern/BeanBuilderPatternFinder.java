@@ -1,6 +1,6 @@
 package org.codemucker.jmutate.pattern;
 
-import org.codemucker.jmutate.ast.finder.Filter;
+import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.Transform;
@@ -12,8 +12,8 @@ public class BeanBuilderPatternFinder {
 	@Inject
 	private MutateContext ctxt;
 	
-	public Filter.Builder GetFilter(){
-		return Filter.builder()
+	public SourceFilter.Builder GetFilter(){
+		return SourceFilter.builder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
 				.addIncludeTypes(AJType.withFullName("*Builder"));

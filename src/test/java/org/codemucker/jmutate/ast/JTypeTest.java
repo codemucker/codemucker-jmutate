@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.SourceHelper;
@@ -17,7 +18,6 @@ import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass1;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass2;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass3;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyNonExtendingClass;
-import org.codemucker.jmutate.ast.finder.FindResult;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;

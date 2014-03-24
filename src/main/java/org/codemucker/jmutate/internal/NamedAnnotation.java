@@ -1,4 +1,4 @@
-package org.codemucker.jmutate;
+package org.codemucker.jmutate.internal;
 
 import java.lang.annotation.Annotation;
 

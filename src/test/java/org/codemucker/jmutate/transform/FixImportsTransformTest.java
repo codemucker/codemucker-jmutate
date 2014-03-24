@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.codemucker.jmutate.ast.MutateException;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.SimpleMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.eclipse.jdt.core.dom.CompilationUnit;

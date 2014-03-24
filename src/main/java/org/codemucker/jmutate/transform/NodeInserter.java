@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
-import org.codemucker.jmutate.ast.MutateException;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;

@@ -13,9 +13,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.AstNodeProvider;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
-import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;

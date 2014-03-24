@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
-import org.codemucker.jmutate.ast.MutateException;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JField.SingleJField;
 import org.codemucker.jmutate.ast.JMethod;

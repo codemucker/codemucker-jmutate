@@ -2,10 +2,10 @@ package org.codemucker.jmutate.transform;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import org.codemucker.jmutate.ast.MutateException;
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.ast.finder.FindResult;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 

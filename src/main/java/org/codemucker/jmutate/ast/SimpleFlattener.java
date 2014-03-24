@@ -2,6 +2,7 @@ package org.codemucker.jmutate.ast;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
+import org.codemucker.jmutate.MutateException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.formatter.CodeFormatter;

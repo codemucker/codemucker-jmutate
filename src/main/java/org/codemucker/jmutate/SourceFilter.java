@@ -1,9 +1,11 @@
-package org.codemucker.jmutate.ast.finder;
+package org.codemucker.jmutate;
 
 import java.lang.annotation.Annotation;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.MatcherToFindFilterAdapter;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.matcher.IncludeExcludeMatcherBuilder;
@@ -12,16 +14,16 @@ import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmutate.SourceFinder.SourceMatcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.finder.JSourceFinder.JFindMatcher;
 import org.codemucker.jmutate.ast.matcher.AJSourceFile;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.lang.IBuilder;
 
 
-public class Filter implements JFindMatcher {
+public class SourceFilter implements SourceMatcher {
 
 	private final FindResult.Filter<Object> objectFilter;
 	private final FindResult.Filter<Root> rootFilter;
@@ -30,7 +32,7 @@ public class Filter implements JFindMatcher {
 	private final FindResult.Filter<JType> typeMatcher;
 	private final FindResult.Filter<JMethod> methodFilter;
 	
-	private Filter(
+	private SourceFilter(
 			FindResult.Filter<Object> objectFilter
 			, FindResult.Filter<Root> rootFilter
 			, FindResult.Filter<RootResource> resourceMatcher
@@ -81,7 +83,7 @@ public class Filter implements JFindMatcher {
 		return new Builder();
 	}
 
-	public static class Builder implements IBuilder<JFindMatcher> {
+	public static class Builder implements IBuilder<SourceMatcher> {
 		
 		private FindResult.Filter<Object> ANY = new FindResult.Filter<Object>(){
 
@@ -121,8 +123,8 @@ public class Filter implements JFindMatcher {
 			//prevent instantiation outside of builder method
 		}
 		
-		public JFindMatcher build(){
-			return new Filter(
+		public SourceMatcher build(){
+			return new SourceFilter(
 				 ANY	
 				, toFilter(roots.build())
 				, toFilter(mergeResourceMatchers(resources.build(),resourceNames.build()))
@@ -133,7 +135,7 @@ public class Filter implements JFindMatcher {
 		}
 			
 		private <T> FindResult.Filter<T> toFilter(Matcher<T> matcher){
-			return MatcherToFilterAdapter.from(matcher);
+			return MatcherToFindFilterAdapter.from(matcher);
 		}
 		
 		private static Matcher<RootResource> mergeResourceMatchers(final Matcher<RootResource> matcher, final Matcher<String> resourceNameMatcher){

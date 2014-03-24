@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.ast;
+package org.codemucker.jmutate;
 
 public class MutateException extends RuntimeException {
 
