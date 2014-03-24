@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.FindResultImpl;
+import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.matcher.AJField;
@@ -142,7 +142,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			}
 		};
 		visitChildren(visitor);
-		return FindResultImpl.from(found);
+		return DefaultFindResult.from(found);
 	}
 			
 	/**
@@ -184,7 +184,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			}
 		};
 		visitChildren(visitor);
-		return FindResultImpl.from(found);
+		return DefaultFindResult.from(found);
 	}
 	
 	/**
@@ -246,7 +246,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			}
 		};
 		visitChildren(visitor);
-		return FindResultImpl.from(found);
+		return DefaultFindResult.from(found);
 	}
 	/**
 	 * Recursively find all child types
@@ -274,7 +274,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			}
 		};
 		visitChildren(visitor);
-		return FindResultImpl.from(found);
+		return DefaultFindResult.from(found);
 	}
 	
 	@SuppressWarnings("unchecked")

@@ -9,7 +9,7 @@ import org.codemucker.jfind.MatcherToFindFilterAdapter;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.matcher.IncludeExcludeMatcherBuilder;
-import org.codemucker.jfind.matcher.ResourceMatchers;
+import org.codemucker.jfind.matcher.AResource;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
@@ -162,12 +162,12 @@ public class SourceFilter implements SourceMatcher {
 		}
 		
 		public Builder setIncludeFileName(String pattern) {
-			setIncludeResource(ResourceMatchers.withAntPath(pattern));
+			setIncludeResource(AResource.with().antPath(pattern));
 			return this;
 		}
 		
 		public Builder setIncludeFileName(Pattern pattern) {
-			setIncludeResource(ResourceMatchers.withPath(pattern));
+			setIncludeResource(AResource.with().path(pattern));
 			return this;
 		}
 		
@@ -177,12 +177,12 @@ public class SourceFilter implements SourceMatcher {
 		}
 	
 		public Builder setExcludeFileName(String path) {
-			setExcludeResource(ResourceMatchers.withAntPath(path));
+			setExcludeResource(AResource.with().antPath(path));
 			return this;
 		}
 		
 		public Builder setExcludeFileName(Pattern pattern) {
-			setExcludeResource(ResourceMatchers.withPath(pattern));
+			setExcludeResource(AResource.with().path(pattern));
 			return this;
 		}
 	

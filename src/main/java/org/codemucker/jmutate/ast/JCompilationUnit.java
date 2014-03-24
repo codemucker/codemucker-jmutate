@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.FindResultImpl;
+import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.matcher.AJType;
@@ -74,7 +74,7 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 			}
 		};
 		visitChildren(visitor);
-		return FindResultImpl.from(found);
+		return DefaultFindResult.from(found);
 	}
 	
 	private void visitChildren(final ASTVisitor visitor){

@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.codemucker.jfind.BaseRootVisitor;
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.FindResultImpl;
+import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.RootVisitor;
@@ -209,11 +209,11 @@ public class SourceFinder {
 			root.accept(visitor);
 		}
 
-		return FindResultImpl.from(resources);
+		return DefaultFindResult.from(resources);
 	}
 	
 	public FindResult<Root> findRoots() {
-		return FindResultImpl.from(roots).filter(rootMatcher);
+		return DefaultFindResult.from(roots).filter(rootMatcher);
 	}
 	
 	public static class Builder {
