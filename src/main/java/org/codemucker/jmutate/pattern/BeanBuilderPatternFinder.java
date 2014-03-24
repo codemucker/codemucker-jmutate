@@ -2,7 +2,7 @@ package org.codemucker.jmutate.pattern;
 
 import org.codemucker.jmutate.ast.finder.Filter;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.Transform;
 
 import com.google.inject.Inject;
@@ -10,7 +10,7 @@ import com.google.inject.Inject;
 public class BeanBuilderPatternFinder {
 
 	@Inject
-	private CodeMuckContext ctxt;
+	private MutateContext ctxt;
 	
 	public Filter.Builder GetFilter(){
 		return Filter.builder()

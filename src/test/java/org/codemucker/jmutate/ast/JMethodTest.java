@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class JMethodTest {
 
-	SimpleCodeMuckContext ctxt = new SimpleCodeMuckContext();
+	SimpleMutateContext ctxt = new SimpleMutateContext();
 	
 	@Test
 	public void test_clash_signature_generations_resolved(){

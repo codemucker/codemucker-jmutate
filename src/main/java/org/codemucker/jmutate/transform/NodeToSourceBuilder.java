@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.codemucker.jmutate.ast.AstNodeFlattener;
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jmutate.ast.JMethod;
 import org.eclipse.jdt.core.dom.ASTNode;
 
@@ -19,7 +19,7 @@ import com.google.inject.Inject;
 public class NodeToSourceBuilder {
 
 	@Inject
-	private CodeMuckContext ctxt;
+	private MutateContext ctxt;
 
 	@Inject
 	private AstNodeFlattener flattener;
@@ -31,7 +31,7 @@ public class NodeToSourceBuilder {
 		String src = flattener.flatten(node);
 		SourceTemplate t = ctxt.newSourceTemplate();
 		
-		t.p("public void generateNode(").p(CodeMuckContext.class.getName()).p(" ctxt").pl("){")
+		t.p("public void generateNode(").p(MutateContext.class.getName()).p(" ctxt").pl("){")
 		 .p(SourceTemplate.class.getName()).p(" t = ctxt.newSourceTemplate();");
 	
 		BufferedReader reader = new BufferedReader(new StringReader(src));
@@ -42,7 +42,7 @@ public class NodeToSourceBuilder {
 			}
         } catch (IOException e) {
 	        //never thrown
-        	throw new CodemuckerException("error reading source:" + src, e);
+        	throw new MutateException("error reading source:" + src, e);
         }
 		t.pl("}");
 		
@@ -58,7 +58,7 @@ public class NodeToSourceBuilder {
 		return this;
 	}
 	
-	public NodeToSourceBuilder setCtxt(CodeMuckContext ctxt) {
+	public NodeToSourceBuilder setCtxt(MutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}

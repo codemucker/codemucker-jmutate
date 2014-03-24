@@ -15,7 +15,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.codemucker.jmutate.ast.AstNodeProvider;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -34,7 +34,7 @@ import com.google.inject.Inject;
 public class FixImportsTransform {
 
 	@Inject
-	private CodeMuckContext ctxt;
+	private MutateContext ctxt;
 	
 	private ASTNode node;
 	
@@ -163,7 +163,7 @@ public class FixImportsTransform {
 		return this;
 	}
 
-	public FixImportsTransform setCtxt(CodeMuckContext ctxt) {
+	public FixImportsTransform setCtxt(MutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}
@@ -262,6 +262,6 @@ public class FixImportsTransform {
 			}
 			parent = parent.getParent();
 		}
-		throw new CodemuckerException("Couldn't find compilation unit");
+		throw new MutateException("Couldn't find compilation unit");
 	}
 }

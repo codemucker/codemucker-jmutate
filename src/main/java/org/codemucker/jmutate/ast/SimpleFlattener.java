@@ -48,9 +48,9 @@ public class SimpleFlattener implements AstNodeFlattener {
     	try {
     		edits.apply(doc);
     	} catch (MalformedTreeException e) {
-    		throw new CodemuckerException("can't apply changes", e);
+    		throw new MutateException("can't apply changes", e);
     	} catch (BadLocationException e) {
-    		throw new CodemuckerException("can't apply changes", e);
+    		throw new MutateException("can't apply changes", e);
     	}
     
     	String updatedSrc = doc.get();

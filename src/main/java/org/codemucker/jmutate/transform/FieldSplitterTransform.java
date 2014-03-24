@@ -21,7 +21,7 @@ import com.google.inject.Inject;
 public class FieldSplitterTransform {
 
 	@Inject
-	private CodeMuckContext ctxt;
+	private MutateContext ctxt;
 
 	private JType target;
 	private JField field;
@@ -30,7 +30,7 @@ public class FieldSplitterTransform {
 		return new FieldSplitterTransform();
 	}
 
-	public FieldSplitterTransform setContext(CodeMuckContext ctxt) {
+	public FieldSplitterTransform setContext(MutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}

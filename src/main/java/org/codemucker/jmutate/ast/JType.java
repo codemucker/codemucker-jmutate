@@ -18,7 +18,7 @@ import org.codemucker.jmutate.ast.finder.FindResultImpl;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.util.ClassUtil;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.AST;
@@ -97,7 +97,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	 */
 	public JType getDirectChildTypeWithName(String simpleName){
 		if (!isClass()) {
-			throw new CodemuckerException("Type '%s' is not a class so can't search for type named '%s'",getSimpleName(), simpleName);
+			throw new MutateException("Type '%s' is not a class so can't search for type named '%s'",getSimpleName(), simpleName);
 		}
 		TypeDeclaration[] types = asTypeDecl().getTypes();
 		for (AbstractTypeDeclaration type : types) {
@@ -106,7 +106,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			}
 		}
 		Collection<String> names = extractTypeNames(types);
-		throw new CodemuckerException("Can't find type named %s in %s. Found %s", simpleName, this, Arrays.toString(names.toArray()));
+		throw new MutateException("Can't find type named %s in %s. Found %s", simpleName, this, Arrays.toString(names.toArray()));
 	}
 
 	private static Collection<String> extractTypeNames(TypeDeclaration[] types){
@@ -305,7 +305,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			}
 			parent = parent.getParent();			
 		}
-		throw new CodemuckerException("Couldn't find compilation unit. Unexpected");
+		throw new MutateException("Couldn't find compilation unit. Unexpected");
 	}
 
 	public String getPackageName(){
@@ -344,7 +344,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return typeNode instanceof TypeDeclaration;
 	}
 
-	public JTypeMutator asMutator(CodeMuckContext ctxt){
+	public JTypeMutator asMutator(MutateContext ctxt){
 		return new JTypeMutator(ctxt, this);
 	}
 	
@@ -603,7 +603,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 				}
 				parent = parent.getParent();
 			}
-			throw new CodemuckerException("couldn't find parent type");
+			throw new MutateException("couldn't find parent type");
 		}
 		
 		private int extractAnonymousClassNumber(){

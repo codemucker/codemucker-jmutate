@@ -34,7 +34,7 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 		List<AbstractTypeDeclaration> topTypes = compilationUnit.types();
 		JType mainType = null;
 		if(topTypes.isEmpty()){
-			throw new CodemuckerException("no types found in compilation unit so couldn't determine source path to generate");
+			throw new MutateException("no types found in compilation unit so couldn't determine source path to generate");
 		} else if(topTypes.size() == 1){
 			mainType = JType.from(topTypes.get(0));
 		} else { //find the public class
@@ -42,13 +42,13 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 				JType type = JType.from(node);
 				if(type.getModifiers().isPublic()){
 					if( mainType != null){
-						throw new CodemuckerException("Multiple top level types in compilation unit and more than one is public. Can't determine main type");
+						throw new MutateException("Multiple top level types in compilation unit and more than one is public. Can't determine main type");
 					}
 					mainType = type;
 				}
 			}
 			if(mainType == null){
-				throw new CodemuckerException("Multiple top level types in compilation unit and could not determine one to use. Try setting one to public access");
+				throw new MutateException("Multiple top level types in compilation unit and could not determine one to use. Try setting one to public access");
 			}
 		}
 		return mainType;

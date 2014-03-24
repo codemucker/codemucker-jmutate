@@ -251,7 +251,7 @@ public class JAstParser {
 				
 				return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
 			} catch (IOException e) {
-				throw new CodemuckerException("Couldn't create a tmp root");
+				throw new MutateException("Couldn't create a tmp root");
 			}
 		}
 		

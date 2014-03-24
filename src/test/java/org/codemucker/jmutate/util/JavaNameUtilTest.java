@@ -4,13 +4,13 @@ import static org.junit.Assert.assertEquals;
 
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleCodeMuckContext;
+import org.codemucker.jmutate.ast.SimpleMutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.junit.Test;
 
 public class JavaNameUtilTest {
 
-	SimpleCodeMuckContext ctxt = new SimpleCodeMuckContext();
+	SimpleMutateContext ctxt = new SimpleMutateContext();
 	
 	/**
 	 * bug where interfaces declared on types are not being resolved correctly

@@ -2,7 +2,7 @@ package org.codemucker.jmutate.ast;
 
 import static org.junit.Assert.assertEquals;
 
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.codemucker.jtest.ClassNameUtil;
 import org.codemucker.jtest.TestHelper;
@@ -12,7 +12,7 @@ import org.junit.Test;
 public class JavaSourceFileTest {
 
 	TestHelper helper = new TestHelper();
-	CodeMuckContext ctxt = new SimpleCodeMuckContext();
+	MutateContext ctxt = new SimpleMutateContext();
 
 	@Test
 	public void testGetSimpleClassnameBasedOnPath() {

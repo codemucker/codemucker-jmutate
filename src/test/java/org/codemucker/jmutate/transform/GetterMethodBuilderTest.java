@@ -17,7 +17,7 @@ package org.codemucker.jmutate.transform;
 
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.ast.SimpleCodeMuckContext;
+import org.codemucker.jmutate.ast.SimpleMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.Pattern;
 import org.junit.Test;
@@ -25,7 +25,7 @@ import org.junit.Test;
 
 public class GetterMethodBuilderTest {
 
-	CodeMuckContext ctxt = new SimpleCodeMuckContext();
+	MutateContext ctxt = new SimpleMutateContext();
 	
 	@Test
 	public void test_default_create(){

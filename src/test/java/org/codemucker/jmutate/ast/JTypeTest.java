@@ -21,13 +21,13 @@ import org.codemucker.jmutate.ast.finder.FindResult;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.junit.Test;
 
 public class JTypeTest {
 
-	CodeMuckContext ctxt = new SimpleCodeMuckContext();
+	MutateContext ctxt = new SimpleMutateContext();
 	
 	@Test
 	public void testIsAbstract() {

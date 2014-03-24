@@ -17,7 +17,7 @@ package org.codemucker.jmutate.transform;
 
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleCodeMuckContext;
+import org.codemucker.jmutate.ast.SimpleMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.Pattern;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class InsertFieldTransformTest {
 
 	@Test
 	public void test_add_field() throws Exception {
-		CodeMuckContext ctxt = new SimpleCodeMuckContext();
+		MutateContext ctxt = new SimpleMutateContext();
 		
 		SourceTemplate srcBefore = ctxt.newSourceTemplate()
 			.pl("package com.bertvanbrakel.codegen.bean;")

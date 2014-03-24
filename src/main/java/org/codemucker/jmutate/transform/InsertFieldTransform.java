@@ -2,7 +2,7 @@ package org.codemucker.jmutate.transform;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.finder.FindResult;
@@ -40,9 +40,9 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 				case IGNORE:
 					break;
 				case ERROR:
-					throw new CodemuckerException("Existing field %s, not replacing with %s", existingField.getAstNode(), field);
+					throw new MutateException("Existing field %s, not replacing with %s", existingField.getAstNode(), field);
 				default:
-					throw new CodemuckerException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), getClashStrategy());
+					throw new MutateException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), getClashStrategy());
 				}
 			}
 		}

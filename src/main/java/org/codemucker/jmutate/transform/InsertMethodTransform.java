@@ -2,7 +2,7 @@ package org.codemucker.jmutate.transform;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.finder.FindResult;
@@ -39,9 +39,9 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new CodemuckerException("Existing method %s, not replacing with %s", existingMethod.getAstNode(), method);
+				throw new MutateException("Existing method %s, not replacing with %s", existingMethod.getAstNode(), method);
 			default:
-				throw new CodemuckerException("Existing method %s, unsupported clash strategy %s", existingMethod.getAstNode(), getClashStrategy());
+				throw new MutateException("Existing method %s, unsupported clash strategy %s", existingMethod.getAstNode(), getClashStrategy());
 			}
 		}
 		if(insert){

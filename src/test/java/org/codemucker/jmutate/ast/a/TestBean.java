@@ -15,14 +15,14 @@
  */
 package org.codemucker.jmutate.ast.a;
 
-import org.codemucker.jpattern.BeanProperty;
+import org.codemucker.jpattern.Property;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jpattern.PatternType;
 
 @Pattern(type=PatternType.Builder)
 public class TestBean {
 
-	@BeanProperty(name = "one")
+	@Property(name = "one")
 	private String fieldOne;
 	private String fieldTwo;
 

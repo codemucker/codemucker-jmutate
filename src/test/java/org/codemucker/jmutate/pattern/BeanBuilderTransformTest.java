@@ -5,11 +5,11 @@ import java.util.Collection;
 
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleCodeMuckContext;
+import org.codemucker.jmutate.ast.SimpleMutateContext;
 import org.codemucker.jmutate.ast.finder.Filter;
 import org.codemucker.jmutate.ast.finder.FindResult;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.GenerateBuilder;
@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class BeanBuilderTransformTest {
 
-	CodeMuckContext ctxt = new SimpleCodeMuckContext();	
+	MutateContext ctxt = new SimpleMutateContext();	
 	
 	@Test
 	public void test_apply_pattern(){
@@ -37,7 +37,7 @@ public class BeanBuilderTransformTest {
 			.transform();
 	}
 	
-	public JType generateExpect(CodeMuckContext ctxt){
+	public JType generateExpect(MutateContext ctxt){
 		SourceTemplate t=ctxt.newSourceTemplate();
 		t.pl("@GenerateBuilder");
 		t.pl("public static class TestBuilderBean {");

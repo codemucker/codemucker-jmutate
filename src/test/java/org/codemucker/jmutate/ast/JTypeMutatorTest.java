@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.a.TestBean;
 import org.codemucker.jmutate.ast.a.TestBeanSimple;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jtest.TestHelper;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class JTypeMutatorTest {
 
-	private CodeMuckContext context = new SimpleCodeMuckContext();
+	private MutateContext context = new SimpleMutateContext();
 	
 	@Test
 	public void testAddSimpleField() throws Exception {		

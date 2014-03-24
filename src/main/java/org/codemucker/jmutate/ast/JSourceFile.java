@@ -17,7 +17,7 @@ import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -51,7 +51,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		try {
 			src = resource.readAsString();
 		} catch(IOException e){
-			throw new CodemuckerException("Error reading resource contents " + resource,e);
+			throw new MutateException("Error reading resource contents " + resource,e);
 		}
 		
 		return fromSource(resource, src, parser);
@@ -87,9 +87,9 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 			os = resource.getOutputStream();
 			IOUtils.write(src, os);
 		} catch (FileNotFoundException e) {
-			throw new CodemuckerException("Couldn't write source to file" + resource, e);
+			throw new MutateException("Couldn't write source to file" + resource, e);
 		} catch (IOException e) {
-			throw new CodemuckerException("Couldn't write source to file" + resource, e);
+			throw new MutateException("Couldn't write source to file" + resource, e);
 		} finally {
 			IOUtils.closeQuietly(os);
 		}
@@ -104,9 +104,9 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
     	try {
     		edits.apply(doc);
     	} catch (MalformedTreeException e) {
-    		throw new CodemuckerException("can't apply changes", e);
+    		throw new MutateException("can't apply changes", e);
     	} catch (BadLocationException e) {
-    		throw new CodemuckerException("can't apply changes", e);
+    		throw new MutateException("can't apply changes", e);
     	}
     	String updatedSrc = doc.get();
     	return updatedSrc;
@@ -136,7 +136,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 
 	//TODO:code smell here, should JSource really know about the mutator? should the mutator use a builder instead?
-	public JSourceFileMutator asMutator(CodeMuckContext ctxt){
+	public JSourceFileMutator asMutator(MutateContext ctxt){
 		return new JSourceFileMutator(ctxt, this);
 	}
 	
@@ -180,7 +180,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 			}
 		}
 		Collection<String> names = extractTopTypeNames(types);
-		throw new CodemuckerException("Can't find top level type named '%s' in resource '%s'. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
+		throw new MutateException("Can't find top level type named '%s' in resource '%s'. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
 	}
 	
 
@@ -200,12 +200,12 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		};
 		List<JType> found = internalFindTypesMatching(matcher);
 		if (found.size() > 1) {
-			throw new CodemuckerException("Invalid source file, found more than one type with name '%s'", simpleName);
+			throw new MutateException("Invalid source file, found more than one type with name '%s'", simpleName);
 		}
 		if (found.size() == 1) {
 			return found.get(0);
 		}
-		throw new CodemuckerException("Could not find type with name '%s' in %s", simpleName, this);
+		throw new MutateException("Could not find type with name '%s' in %s", simpleName, this);
 	}
 
 	public List<JType> findAllTypes(){

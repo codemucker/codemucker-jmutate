@@ -7,14 +7,14 @@ import java.util.List;
 
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JField.SingleJField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifiers;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.FixImportsTransform;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
@@ -34,7 +34,7 @@ import com.google.inject.Inject;
 public class BeanBuilderTransform implements Transform {
 
 	@Inject
-	private CodeMuckContext ctxt;
+	private MutateContext ctxt;
 
 	private JType target;
 
@@ -129,12 +129,12 @@ public class BeanBuilderTransform implements Transform {
 	    	//builder
 	    	builder = type.findDirectChildTypesMatching(AJType.withSimpleNameAntPattern(builderClassName)).toList().get(0);
 	    } else {
-	    	throw new CodemuckerException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
+	    	throw new MutateException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
 	    }
 	    return builder;
     }
 
-	public BeanBuilderTransform setCtxt(final CodeMuckContext ctxt) {
+	public BeanBuilderTransform setCtxt(final MutateContext ctxt) {
     	this.ctxt = ctxt;
     	return this;
     }
@@ -151,7 +151,7 @@ public class BeanBuilderTransform implements Transform {
 	
 	public static class BeanBuilderBuildMethodPattern {
 		@Inject
-		private CodeMuckContext ctxt;
+		private MutateContext ctxt;
 		//rename, possibly not a bean ..?
 		private JType bean;
 		//rename to builder?
@@ -193,7 +193,7 @@ public class BeanBuilderTransform implements Transform {
 			return buildMethod;
 		}
 		
-		public BeanBuilderBuildMethodPattern setCtxt(CodeMuckContext ctxt) {
+		public BeanBuilderBuildMethodPattern setCtxt(MutateContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}
@@ -225,7 +225,7 @@ public class BeanBuilderTransform implements Transform {
 
 	public static class BeanBuilderFieldCtorPattern {
 		@Inject
-		private CodeMuckContext ctxt;
+		private MutateContext ctxt;
 		private JType target;
 		private List<SingleJField> fields;
 		private Boolean useQualifiedName = true;
@@ -277,7 +277,7 @@ public class BeanBuilderTransform implements Transform {
 	        return ctor;
 	    }
 
-		public BeanBuilderFieldCtorPattern setCtxt(CodeMuckContext ctxt) {
+		public BeanBuilderFieldCtorPattern setCtxt(MutateContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}
@@ -311,7 +311,7 @@ public class BeanBuilderTransform implements Transform {
     public static class BeanBuilderPropertiesPattern {
     	
     	@Inject
-    	private CodeMuckContext ctxt;
+    	private MutateContext ctxt;
     	private JType target;
     	private List<SingleJField> fields;
 		
@@ -333,7 +333,7 @@ public class BeanBuilderTransform implements Transform {
 		    }
 	    }
 		
-		public BeanBuilderPropertiesPattern setCtxt(CodeMuckContext ctxt) {
+		public BeanBuilderPropertiesPattern setCtxt(MutateContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}

@@ -2,7 +2,7 @@ package org.codemucker.jmutate.transform;
 
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleCodeMuckContext;
+import org.codemucker.jmutate.ast.SimpleMutateContext;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.junit.Test;
@@ -10,7 +10,7 @@ import org.junit.Test;
 
 public class FieldSplitterTransformTest {
 
-	CodeMuckContext ctxt = new SimpleCodeMuckContext();
+	MutateContext ctxt = new SimpleMutateContext();
 	
 	@Test
 	public void test_split_with_string_initializer(){

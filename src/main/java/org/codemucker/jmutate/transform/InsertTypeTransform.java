@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
@@ -42,9 +42,9 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new CodemuckerException("Existing type %s, not replacing with %s", existingType.getAstNode(), type);
+				throw new MutateException("Existing type %s, not replacing with %s", existingType.getAstNode(), type);
 			default:
-				throw new CodemuckerException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), getClashStrategy());
+				throw new MutateException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), getClashStrategy());
 			}
 		}
 		if(insert){

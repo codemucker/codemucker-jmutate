@@ -2,7 +2,7 @@ package org.codemucker.jmutate.ast;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
@@ -20,13 +20,13 @@ import org.eclipse.jdt.core.dom.Name;
 public class JTypeMutator {
 	
 	private final JType jType;
-	private final CodeMuckContext ctxt;
+	private final MutateContext ctxt;
 	
-	public JTypeMutator(CodeMuckContext context, AbstractTypeDeclaration type) {
+	public JTypeMutator(MutateContext context, AbstractTypeDeclaration type) {
 		this(context, JType.from(type));
 	}
 	
-	public JTypeMutator(CodeMuckContext context, JType javaType) {
+	public JTypeMutator(MutateContext context, JType javaType) {
 		checkNotNull("javaType", javaType);
 		this.jType = checkNotNull("type",javaType);
 		this.ctxt = checkNotNull("context",context);
@@ -78,7 +78,7 @@ public class JTypeMutator {
 		if( method.isConstructor()){
 			//TODO:do we really want to check and change this? Should we throw an exception instead?
 			//addCtor(method);
-			throw new CodemuckerException("Trying to add a constructor as a method. Try adding it as a constructor instead. Ctor is " + method);
+			throw new MutateException("Trying to add a constructor as a method. Try adding it as a constructor instead. Ctor is " + method);
 		}
 		ctxt.obtain(InsertMethodTransform.class)
     		.setTarget(jType)

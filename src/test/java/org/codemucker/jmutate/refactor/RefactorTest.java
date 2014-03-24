@@ -10,12 +10,12 @@ import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.AstNodeProvider;
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jmutate.ast.JAnnotatable;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jpattern.BeanProperty;
+import org.codemucker.jpattern.Property;
 import org.codemucker.jtest.bean.ClassUtils;
 
 
@@ -160,7 +160,7 @@ public class RefactorTest {
 	
 	private Collection<String> extractPropertyNames(JField field){
 		Collection<String> names= newArrayList();
-		String name = getAnonationValue(field, BeanProperty.class, "name");
+		String name = getAnonationValue(field, Property.class, "name");
 		if (name !=null) {
 			names.add(name);
 		} else {
@@ -175,7 +175,7 @@ public class RefactorTest {
 	}
 	
 	private String extractPropertyName(JMethod method) {
-		String name = getAnonationValue(method, BeanProperty.class, "name");
+		String name = getAnonationValue(method, Property.class, "name");
 		if (name == null) {
 			name = ClassUtils.extractPropertyNameFromMethod(method.getName());
 		}
@@ -192,11 +192,11 @@ public class RefactorTest {
 	}
 
 	private <A extends Annotation> String getAnonationValue(JAnnotatable annotatable, Class<A> anon, String attributeName){
-		JAnnotation janon = annotatable.getAnnotationOfType(BeanProperty.class);
+		JAnnotation janon = annotatable.getAnnotationOfType(Property.class);
 		if( anon != null ){
 			String value = janon.getValueForAttribute("name", null);
 			if( StringUtils.isBlank(value)){
-				throw new CodemuckerException("Expected a value for 'name' for annotation 'BeanProperty'");
+				throw new MutateException("Expected a value for 'name' for annotation 'BeanProperty'");
 			}
 			return value;
 		} 

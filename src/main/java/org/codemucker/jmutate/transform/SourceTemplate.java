@@ -8,7 +8,7 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JCompilationUnit;
 import org.codemucker.jmutate.ast.JField;
@@ -190,7 +190,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		assertEquals("Expected a single constructor", 1, type.getMethods().length);
 		MethodDeclaration method = type.getMethods()[0];
 		if (method.getReturnType2() != null) {
-			throw new CodemuckerException("Constructors should not have any return type. Constructor was %s",method);
+			throw new MutateException("Constructors should not have any return type. Constructor was %s",method);
 		}
 		method.setConstructor(true);
 		return method;
@@ -274,9 +274,9 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 			return (AbstractTypeDeclaration) cu.types().get(0);
 		}
 		if(cu.types().size() == 0){
-			throw new CodemuckerException("Source template does not contain any types. Expected 1 but got 0. Parsed source %s",interpolateTemplate());
+			throw new MutateException("Source template does not contain any types. Expected 1 but got 0. Parsed source %s",interpolateTemplate());
 		}
-		throw new CodemuckerException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolateTemplate());
+		throw new MutateException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolateTemplate());
 	}
 
 

@@ -2,7 +2,7 @@ package org.codemucker.jmutate.transform;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import org.codemucker.jmutate.ast.CodemuckerException;
+import org.codemucker.jmutate.ast.MutateException;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.finder.FindResult;
@@ -27,11 +27,11 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 		
 		boolean insert = true;
 		if( !ctor.isConstructor()){
-			throw new CodemuckerException("Constructor method is not a constructor. Method is %s",ctor);
+			throw new MutateException("Constructor method is not a constructor. Method is %s",ctor);
 			
 		}
 		if( !getTarget().getSimpleName().equals(ctor.getName())){
-			throw new CodemuckerException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),ctor.getName());
+			throw new MutateException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),ctor.getName());
 		}
 		
 		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.withNameAndArgSignature(ctor));
@@ -47,9 +47,9 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new CodemuckerException("Existing ctor %s, not replacing with %s", existingCtor.getAstNode(), ctor);
+				throw new MutateException("Existing ctor %s, not replacing with %s", existingCtor.getAstNode(), ctor);
 			default:
-				throw new CodemuckerException("Existing ctor method %s, unsupported clash strategy %s", existingCtor.getAstNode(), getClashStrategy());
+				throw new MutateException("Existing ctor method %s, unsupported clash strategy %s", existingCtor.getAstNode(), getClashStrategy());
 			}
     	}
     	if(insert){

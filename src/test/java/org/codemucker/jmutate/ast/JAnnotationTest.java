@@ -10,7 +10,7 @@ import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.matcher.AnAnnotation;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.codemucker.jpattern.Generated;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class JAnnotationTest {
 
-	private CodeMuckContext context = new SimpleCodeMuckContext();
+	private MutateContext context = new SimpleMutateContext();
 	
 	@Test
 	public void test_findAnnotations(){

@@ -73,7 +73,7 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 			}
 			node = node.getParent();
 		}
-		throw new CodemuckerException("Couldn't find parent type. Unexpected");
+		throw new MutateException("Couldn't find parent type. Unexpected");
 	}
 	
 	public CompilationUnit getCompilationUnit(){
@@ -84,7 +84,7 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 			}
 			node = node.getParent();
 		}
-		throw new CodemuckerException("Couldn't find compilation unit. Unexpected");
+		throw new MutateException("Couldn't find compilation unit. Unexpected");
 	}
 	
 	@Override
@@ -202,7 +202,7 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 			ParameterizedType pt = (ParameterizedType)t;
 			toNonGenericFullName(pt.getType(),sb);
 		} else {
-			throw new CodemuckerException("Currently don't know how to handle type:" + t);
+			throw new MutateException("Currently don't know how to handle type:" + t);
 		}
 	}
 	

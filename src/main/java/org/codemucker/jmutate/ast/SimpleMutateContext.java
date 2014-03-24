@@ -10,7 +10,7 @@ import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jmutate.NamedAnnotation;
 import org.codemucker.jmutate.transform.ClashStrategy;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.PlacementStrategies;
 import org.codemucker.jmutate.transform.PlacementStrategy;
 import org.codemucker.jmutate.transform.SourceTemplate;
@@ -28,7 +28,7 @@ import com.google.inject.Stage;
 import com.google.inject.name.Named;
 
 @Singleton
-public class SimpleCodeMuckContext implements CodeMuckContext {
+public class SimpleMutateContext implements MutateContext {
 
 	private final PlacementStrategies strategyProvider  = PlacementStrategies.builder().setDefaults().build();
 	private final JAstParser parser = JAstParser.builder()
@@ -51,11 +51,11 @@ public class SimpleCodeMuckContext implements CodeMuckContext {
 		return new Builder();
 	}
 	
-	public SimpleCodeMuckContext(){
+	public SimpleMutateContext(){
 		this(false);
 	}
 	
-	public SimpleCodeMuckContext(boolean markGenerated){
+	public SimpleMutateContext(boolean markGenerated){
 		injector = Guice.createInjector(Stage.PRODUCTION, new MutationModule());
 		this.markGenerated = markGenerated;
 	}
@@ -68,7 +68,7 @@ public class SimpleCodeMuckContext implements CodeMuckContext {
 			
 			return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
 		} catch (IOException e) {
-			throw new CodemuckerException("Couldn't create a tmp root");
+			throw new MutateException("Couldn't create a tmp root");
 		}
 	}
 	
@@ -111,8 +111,8 @@ public class SimpleCodeMuckContext implements CodeMuckContext {
 		
 		@Provides
 		@Singleton
-		public CodeMuckContext provideContext(){
-			return SimpleCodeMuckContext.this;
+		public MutateContext provideContext(){
+			return SimpleMutateContext.this;
 		}
 		
 		@Provides
@@ -182,8 +182,8 @@ public class SimpleCodeMuckContext implements CodeMuckContext {
         	return this;
 		}
 
-		public SimpleCodeMuckContext build(){
-			return new SimpleCodeMuckContext(markGenerated);
+		public SimpleMutateContext build(){
+			return new SimpleMutateContext(markGenerated);
 		}
 		
 		public Builder setMarkGenerated(boolean markGenerated) {

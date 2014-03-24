@@ -16,17 +16,17 @@
 package org.codemucker.jmutate.pattern;
 
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleCodeMuckContext;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.ast.SimpleMutateContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
-import org.codemucker.jpattern.BeanProperty;
+import org.codemucker.jpattern.Property;
 import org.codemucker.jpattern.Pattern;
 import org.junit.Test;
 
 
 public class BeanPropertyTransformTest {
 
-	private CodeMuckContext ctxt = SimpleCodeMuckContext.builder()
+	private MutateContext ctxt = SimpleMutateContext.builder()
 			.setMarkGenerated(true)
 			.build();
 		
@@ -42,7 +42,7 @@ public class BeanPropertyTransformTest {
     	SourceAsserts.assertRootAstsMatch(expectType,target);
 	}
 
-	private void whenAPropertyTransformIsApplied(CodeMuckContext ctxt, JType target) {
+	private void whenAPropertyTransformIsApplied(MutateContext ctxt, JType target) {
 		ctxt.obtain(BeanPropertyTransform.class)
 			.setTarget(target)
 			.setPropertyName("myField")
@@ -50,20 +50,20 @@ public class BeanPropertyTransformTest {
 			.transform();
 	}
 
-	private JType aBeanWithNoProperties(CodeMuckContext ctxt) {
+	private JType aBeanWithNoProperties(MutateContext ctxt) {
 		JType target = ctxt.newSourceTemplate()
 				.pl("package com.bertvanbrakel.codegen.bean;")
-				.pl("import " + BeanProperty.class.getName() + ";")
+				.pl("import " + Property.class.getName() + ";")
 				.pl( "public class TestBeanModify {")
 				.pl("}")
 				.asResolvedJTypeNamed("TestBeanModify");
 		return target;
 	}
 
-	private JType aBeanWithProperty(CodeMuckContext ctxt) {
+	private JType aBeanWithProperty(MutateContext ctxt) {
 		JType expectType = ctxt.newSourceTemplate()
     		.pl("package com.bertvanbrakel.codegen.bean;")
-    		.pl("import " + BeanProperty.class.getName() + ";")
+    		.pl("import " + Property.class.getName() + ";")
     		.pl( "public class TestBeanModify {")
     		.pl('@').p(Pattern.class.getName()).p("(name=\"bean.property\")").p( "private String myField;" ).pl()
     		.pl("@").p(Pattern.class.getName()).p("(name=\"bean.setter\") public void setMyField(String myField ){ this.myField = myField;}" ).pl()

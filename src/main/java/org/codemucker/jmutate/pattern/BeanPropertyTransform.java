@@ -7,7 +7,7 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.transform.CodeMuckContext;
+import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.FieldBuilder;
 import org.codemucker.jmutate.transform.GetterMethodBuilder;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
@@ -25,7 +25,7 @@ import com.google.inject.Inject;
 public class BeanPropertyTransform implements Transform {
 
 	@Inject
-	private CodeMuckContext ctxt;
+	private MutateContext ctxt;
 
 	private JType target;
 	private String propertyName;
@@ -78,7 +78,7 @@ public class BeanPropertyTransform implements Transform {
 	}
 	 
 	@Inject
-	public BeanPropertyTransform setCtxt(CodeMuckContext ctxt) {
+	public BeanPropertyTransform setCtxt(MutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}
