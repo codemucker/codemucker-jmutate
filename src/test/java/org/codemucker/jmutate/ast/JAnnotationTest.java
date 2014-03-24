@@ -12,7 +12,7 @@ import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.matcher.AnAnnotation;
 import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
-import org.codemucker.jpattern.Generated;
+import org.codemucker.jpattern.IsGenerated;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.junit.Test;
 
@@ -88,13 +88,13 @@ public class JAnnotationTest {
 		Annotation anon = annons.iterator().next();
 		JAnnotation ja = JAnnotation.from(anon);
 		
-		assertThat(ja.getQualifiedName(),isEqualTo(Generated.class.getName()));
-		assertThat(ja.isOfType(Generated.class));	
+		assertThat(ja.getQualifiedName(),isEqualTo(IsGenerated.class.getName()));
+		assertThat(ja.isOfType(IsGenerated.class));	
 	}
 	
 	public static class TestBean {
 		
-		@Generated
+		@IsGenerated
 		public void myMethod(){
 			
 		}

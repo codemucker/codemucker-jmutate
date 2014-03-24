@@ -2,11 +2,11 @@ package org.codemucker.jmutate.refactor.a;
 
 import java.util.Collection;
 
-import org.codemucker.jpattern.GenerateBean;
+import org.codemucker.jpattern.TransferBean;
 import org.codemucker.jpattern.GenerateBuilder;
 
 
-@GenerateBean
+@TransferBean
 @GenerateBuilder(ctor=true)
 public class TstBean {
 

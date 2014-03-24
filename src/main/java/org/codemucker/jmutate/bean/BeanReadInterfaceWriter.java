@@ -1,6 +1,6 @@
 package org.codemucker.jmutate.bean;
 
-import org.codemucker.jpattern.Generated;
+import org.codemucker.jpattern.IsGenerated;
 import org.codemucker.jtest.ClassNameUtil;
 import org.codemucker.jtest.bean.BeanDefinition;
 import org.codemucker.lang.annotation.NotThreadSafe;
@@ -33,7 +33,7 @@ public class BeanReadInterfaceWriter extends AbstractBeanWriter {
 	
 	protected void generateInterfaceOpen() {
         if (options.isMarkPatternOnClass()) {
-			annotate(Generated.class);
+			annotate(IsGenerated.class);
 		}
 		println("public interface ${this.shortClassName}{");
     }

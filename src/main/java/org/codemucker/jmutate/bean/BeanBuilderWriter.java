@@ -1,6 +1,6 @@
 package org.codemucker.jmutate.bean;
 
-import org.codemucker.jpattern.Generated;
+import org.codemucker.jpattern.IsGenerated;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jpattern.PatternType;
 import org.codemucker.jtest.bean.BeanDefinition;
@@ -54,7 +54,7 @@ public class BeanBuilderWriter extends AbstractBeanWriter {
 
 	private void generateBeanFieldDeclaration(BeanDefinition def){
 		if (options.isMarkeGeneratedFields()) {
-			annotate(Generated.class);
+			annotate(IsGenerated.class);
 		}
 		println("private ${this.beanType} bean = new ${this.beanType}();");
 	}
@@ -64,7 +64,7 @@ public class BeanBuilderWriter extends AbstractBeanWriter {
 		for (PropertyDefinition p : def.getProperties()) {
 			if (!p.isIgnore()) {
 				if (options.isMarkeGeneratedFields()) {
-					annotate(Generated.class);
+					annotate(IsGenerated.class);
 				}
 				println("private ${property.type} ${property.field};", p);
 			}
@@ -76,7 +76,7 @@ public class BeanBuilderWriter extends AbstractBeanWriter {
 		for (PropertyDefinition p : def.getProperties()) {
 			if (!p.isIgnore()) {
 				if (options.isMarkeGeneratedMethods()) {
-					annotate(Generated.class);
+					annotate(IsGenerated.class);
 				}
 				println("public ${this.shortClassName} ${property.safeName}(${property.type} ${property.field}){ this.bean.${property.setter}(${property.field}); return this;}",
 				        p);
@@ -89,7 +89,7 @@ public class BeanBuilderWriter extends AbstractBeanWriter {
 		for (PropertyDefinition p : def.getProperties()) {
 			if (!p.isIgnore()) {
 				if (options.isMarkeGeneratedMethods()) {
-					annotate(Generated.class);
+					annotate(IsGenerated.class);
 				}
 				println("public ${this.shortClassName} ${property.safeName}(${property.type} ${property.field}){ this.${property.field} = ${property.field}; return this;}",
 				        p);
@@ -100,7 +100,7 @@ public class BeanBuilderWriter extends AbstractBeanWriter {
 	private void generateBuilderCreateMethod(BeanDefinition def) {
         //bean create method
 		if( options.isMarkeGeneratedMethods() ){
-			annotate(Generated.class);
+			annotate(IsGenerated.class);
 		}
 		if( options.isMarkPatternOnMethod() ){
 			annotate(Pattern.class, emptyMap().put("type", PatternType.BuilderCreate));
@@ -120,7 +120,7 @@ public class BeanBuilderWriter extends AbstractBeanWriter {
 	private void generateBuilderDirectCreateMethod(BeanDefinition def) {
         //bean create method
 		if( options.isMarkeGeneratedMethods() ){
-			annotate(Generated.class);
+			annotate(IsGenerated.class);
 		}
 		if( options.isMarkPatternOnMethod() ){
 			annotate(Pattern.class, emptyMap().put("type", PatternType.BuilderCreate));
@@ -133,7 +133,7 @@ public class BeanBuilderWriter extends AbstractBeanWriter {
 	private void generateAccessorEquals(BeanDefinition def) {
 		println("/** Test if two beans are equal */");		
 		if (options.isMarkeGeneratedMethods()) {
-			annotate(Generated.class);
+			annotate(IsGenerated.class);
 		}
         println("public boolean equals(${this.beanType} left, ${this.beanType} right){");
 		println("if( left == right ) return true;");
