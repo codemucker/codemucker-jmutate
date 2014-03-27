@@ -28,7 +28,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	    boolean insert = true;
 		for( String fieldName:field.getNames()){
 			//TODO:unwrap single field decl with multiple field (all same type/assignment)
-			FindResult<JField> found = getTarget().findFieldsMatching(AJField.withName(fieldName));
+			FindResult<JField> found = getTarget().findFieldsMatching(AJField.with().name(fieldName));
 			if(!found.isEmpty()){
 				insert = false;
 				JField existingField = found.getFirst();

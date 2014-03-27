@@ -75,7 +75,7 @@ public class BeanBuilderTransformTest {
 	    FindResult<JType> found = SourceHelper.newTestSourcesResolvingFinder()
 			.setFilter(SourceFilter.builder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
-				.addIncludeTypes(AJType.withName(TestBuilderBean.class))
+				.addInclude(AJType.with().name(TestBuilderBean.class))
 			)	
 			.build()
 			.findTypes();

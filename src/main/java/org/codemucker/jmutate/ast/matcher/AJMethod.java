@@ -8,32 +8,59 @@ import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JAccess;
+import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
+import org.codemucker.jmutate.ast.JModifiers;
+import org.codemucker.jmutate.ast.JType;
+
+import com.google.common.base.Predicate;
 
 
-public class AJMethod {
+public class AJMethod extends ObjectMatcher<JMethod> {
+	
+	/**
+	 * synonym for with()
+	 * 
+	 * @return
+	 */
+	public static AJMethod that(){
+		return with();
+	}
+	
+	public static AJMethod with(){
+		return new AJMethod();
+	}
+
+	public AJMethod method(Predicate<JMethod> predicate){
+		predicate(predicate);
+		return this;
+	}
 
 	/**
 	 * Return a matcher which matches using the given ant style method name expression
 	 * @param antPattern ant style pattern. E.g. *foo*bar??Ho
 	 * @return
 	 */
-	public static Matcher<JMethod> withNameMatchingAntPattern(final String antPattern) {
-		return withName(AString.withAntPattern(antPattern));
+	public AJMethod nameMatchingAntPattern(final String antPattern) {
+		name(AString.withAntPattern(antPattern));
+		return this;
 	}
 	
-	public static Matcher<JMethod> withName(final String name) {
-		return withName(AString.equalTo(name));
+	public AJMethod name(final String name) {
+		name(AString.equalTo(name));
+		return this;
 	}
 	
-	public static Matcher<JMethod> withName(final Matcher<String> matcher) {
-		return new AbstractNotNullMatcher<JMethod>() {
+	public AJMethod name(final Matcher<String> matcher) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return matcher.matches(found.getName());
 			}
-		};
+		});
+		return this;
 	}
 	
 	public static Matcher<JMethod> all(final Matcher<JMethod>... matchers) {
@@ -48,65 +75,101 @@ public class AJMethod {
 		return Logical.none();
 	}
 
-	public static Matcher<JMethod> isNotConstructor() {
-		return Logical.not(isConstructor());
+	public AJMethod isNotConstructor() {
+		isConstructor(false);
+		return this;
+	}
+
+	public AJMethod isConstructor() {
+		isConstructor(true);
+		return this;
 	}
 	
-	public static Matcher<JMethod> isConstructor() {
-		return new AbstractNotNullMatcher<JMethod>() {
+	public AJMethod isConstructor(boolean val) {
+		Matcher<JMethod> matcher = new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return found.isConstructor();
 			}
 		};
+		if( !val ){
+			matcher = Logical.not(matcher);
+		}
+		addMatcher(matcher);
+		return this;
 	}
 	
-	public static Matcher<JMethod> withAccess(final JAccess access) {
-		return new AbstractNotNullMatcher<JMethod>() {
+	public AJMethod access(final JAccess access) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-				return found.getJavaModifiers().isAccess(access);
+				return found.getModifiers().isAccess(access);
 			}
-		};
+		});
+		return this;
 	}
 
-	public static <A extends Annotation> Matcher<JMethod> withMethodAnnotation(final Class<A> annotationClass) {
-		return new AbstractNotNullMatcher<JMethod>() {
+	public AJMethod isStatic(final boolean b) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
+			@Override
+			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+				return found.getModifiers().isStatic(b);
+			}
+		});
+		return this;
+	}
+	
+	public AJMethod modifier(final Matcher<JModifiers> matcher) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
+			@Override
+			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+				return diag.TryMatch(found.getModifiers(), matcher);
+			}
+		});
+		return this;
+	}
+	
+	public <A extends Annotation> AJMethod methodAnnotation(final Class<A> annotationClass) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return found.hasAnnotationOfType(annotationClass);
 			}
-		};
+		});
+		return this;
 	}
 
-	public static <A extends Annotation> Matcher<JMethod> withParameterAnnotation(final Class<A> annotationClass) {
-		return new AbstractNotNullMatcher<JMethod>() {
+	public <A extends Annotation> AJMethod parameterAnnotation(final Class<A> annotationClass) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return found.hasParameterAnnotationOfType(annotationClass);
 			}
-		};
+		});
+		return this;
 	}
 
-	public static Matcher<JMethod> withNumArgs(final int numArgs) {
-		return withNumArgs(AnInt.equalTo(numArgs));
+	public AJMethod numArgs(final int numArgs) {
+		numArgs(AnInt.equalTo(numArgs));
+		return this;
 	}
 
-	public static Matcher<JMethod> withNumArgs(final Matcher<Integer> numArgMatcher) {
-		return new AbstractNotNullMatcher<JMethod>() {
+	public AJMethod numArgs(final Matcher<Integer> numArgMatcher) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return numArgMatcher.matches(found.getAstNode().parameters().size());
 			}
-		};
+		});
+		return this;
 	}
 
-	public static Matcher<JMethod> withNameAndArgSignature(JMethod method) {
+	public AJMethod nameAndArgSignature(JMethod method) {
 		final String name = method.getName();
 		final int numArgs = method.getAstNode().typeParameters().size();
 		final String sig = method.getClashDetectionSignature();
 
-		return new AbstractNotNullMatcher<JMethod>() {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				//test using the quickest and least resource intensive matches first
@@ -114,6 +177,7 @@ public class AJMethod {
 					&& name.equals(found.getName()) 
 					&& sig.equals(found.getClashDetectionSignature());
 			}
-		};
+		});
+		return this;
 	}
 }

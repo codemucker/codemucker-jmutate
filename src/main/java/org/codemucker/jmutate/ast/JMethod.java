@@ -111,7 +111,7 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 	}
 	
 	@SuppressWarnings("unchecked")
-    public JModifiers getJavaModifiers(){
+    public JModifiers getModifiers(){
 		return new JModifiers(methodNode.getAST(),methodNode.modifiers());
 	}
 
@@ -142,6 +142,24 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		return JAnnotation.findAnnotations(methodNode, JAnnotation.DIRECT_DEPTH);
 	}
 
+	public String getFullSignature() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getName());
+		sb.append("(");
+		@SuppressWarnings("unchecked")
+        List<SingleVariableDeclaration> args = methodNode.parameters();
+		boolean comma = false;
+		for( SingleVariableDeclaration arg:args){
+			if( comma){
+				sb.append(',');
+			}
+			comma = true;
+			JavaNameUtil.resolveQualifiedName(arg.getType(), sb);
+		}
+		sb.append(")");
+	    return sb.toString();
+    }
+	
 	/**
 	 * Return the method signature including just the name and arguments, stripping out any 
 	 * information which is not needed to detect a clash. Intended use is to generate a signature 

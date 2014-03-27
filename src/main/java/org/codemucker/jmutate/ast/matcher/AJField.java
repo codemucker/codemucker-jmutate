@@ -8,12 +8,17 @@ import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmatch.PredicateToMatcher;
 import org.codemucker.jmatch.AbstractMatcher.AllowNulls;
+import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.internal.corext.template.java.JavaContextType;
 
-public class AJField {// extends Logical  {
+import com.google.common.base.Predicate;
+
+public class AJField extends ObjectMatcher<JField>{
 
 	private static final Matcher<JField> MATCH_ANY  = new AbstractNotNullMatcher<JField>() {
 		@Override
@@ -22,31 +27,39 @@ public class AJField {// extends Logical  {
 		}
 	};
 	
-	@SuppressWarnings("unchecked")
-    public static Matcher<JField> any(){
-		return MATCH_ANY;
+	/**
+	 * synonym for with()
+	 * @return
+	 */
+	public static AJField that(){
+		return with();
 	}
 	
-//	public static Matcher<JField> withFQN(final Matcher<String> fqnMatcher){
-//		return new Matcher<JField>() {
-//			@Override
-//			public boolean matchesSafely(JField found) {
-//				return fqnMatcher.matches(found.getAstNode().getType());
-//			}
-//		};
-//	}
-//	
-	public static Matcher<JField> ofType(final Matcher<Type> typeMatcher){
-		return new AbstractNotNullMatcher<JField>() {
+	public static AJField with(){
+		return new AJField();
+	}
+
+	public AJField field(Predicate<JField> predicate){
+		predicate(predicate);
+		return this;
+	}
+
+	public static Matcher<JField> any(){
+		return MATCH_ANY;
+	}
+
+	public AJField ofType(final Matcher<Type> typeMatcher){
+		addMatcher(new AbstractNotNullMatcher<JField>() {
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
 				return typeMatcher.matches(found.getAstNode().getType());
 			}
-		};
+		});
+		return this;
 	}
 	
-	public static Matcher<JField> withName(final String antPattern){
-		return new AbstractMatcher<JField>(AllowNulls.NO) {
+	public AJField name(final String antPattern){
+		addMatcher(new AbstractMatcher<JField>(AllowNulls.NO) {
 			private final Matcher<String> nameMatcher = AString.withAntPattern(antPattern);		
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
@@ -64,25 +77,28 @@ public class AJField {// extends Logical  {
 				desc.text("a JField");
 				desc.value("name", nameMatcher);
 			}
-		};
+		});
+		return this;
 	}
 	
-	public static <A extends Annotation> Matcher<JField> withAnnotation(final Class<A> annotationClass){
-		return new AbstractNotNullMatcher<JField>() {
+	public <A extends Annotation> AJField annotation(final Class<A> annotationClass){
+		addMatcher(new AbstractNotNullMatcher<JField>() {
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
 				return found.hasAnnotationOfType(annotationClass);
 			}
-		};
+		});
+		return this;
 	}
 
-	public static  Matcher<JField> hasAccess(final JAccess access){
-		return new AbstractNotNullMatcher<JField>() {
+	public AJField access(final JAccess access){
+		addMatcher(new AbstractNotNullMatcher<JField>() {
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
 				return found.isAccess(access);
 			}
-		};
+		});
+		return this;
 	}
 	
 }

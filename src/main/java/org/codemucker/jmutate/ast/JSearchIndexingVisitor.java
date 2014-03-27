@@ -186,7 +186,7 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisito
 		//Simple patterns:
 		//	isGetter
 		//	isSetter			
-		setModifiersFlags(methodDoc, method.getJavaModifiers());
+		setModifiersFlags(methodDoc, method.getModifiers());
 
 		return true;
 	}

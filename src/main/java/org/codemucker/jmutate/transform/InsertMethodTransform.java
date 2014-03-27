@@ -27,7 +27,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.withNameAndArgSignature(method));
+		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.with().nameAndArgSignature(method));
 		if(!found.isEmpty()){
 			insert = false;
 			JMethod existingMethod = found.getFirst();

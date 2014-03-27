@@ -94,7 +94,9 @@ import org.junit.Assert;
 
 /**
  * A Matcher which throws {@link AssertionFailedError} when nodes don't match. This is so useful error messages are generated
- * on non matching Ast's. Copied and modified from IBM's ASTMatcher. 
+ * on non matching Ast's. 
+ * 
+ * Copied and modified from IBM's org.eclipse.jdt.core.dom.ASTMatcher. 
  */
 public class JAstMatcher extends ASTMatcher {
 

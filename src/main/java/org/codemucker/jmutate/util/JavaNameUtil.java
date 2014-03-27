@@ -46,7 +46,7 @@ public class JavaNameUtil {
 		return sb.toString();
 	}
 	
-	private static void resolveQualifiedName(Type t, StringBuilder sb){
+	public static void resolveQualifiedName(Type t, StringBuilder sb){
 		if(!tryResolveQualifiedName(t,sb)){
 			throw new MutateException("Currently don't know how to handle type:" + t);
 		}

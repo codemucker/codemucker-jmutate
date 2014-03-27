@@ -24,19 +24,19 @@ public class SourceFinderTest {
 	public void testFindClassesWithMethodMatch() throws Exception {
 		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
 			.setFilter(SourceFilter.builder()
-				.addIncludeTypes(AJType.withMethod(AJMethod.withNameMatchingAntPattern("testFindClassesWithMethodMatch")))
+				.addInclude(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
 			)
 			.build();
 		JType type = finder.findTypes().getFirst();
 		
-		assertThat(type, is(AJType.withName(SourceFinderTest.class)));
+		assertThat(type, is(AJType.with().name(SourceFinderTest.class)));
 	}
 	
 	@Test
 	public void testFindClassesExtending() throws Exception {
 		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
 			.setFilter(SourceFilter.builder()
-				.addIncludeTypes(AJType.subclassOf(MyClass.class)))
+				.addInclude(AJType.with().isASubclassOf(MyClass.class)))
 			.build();
 
 		Expect
@@ -44,16 +44,16 @@ public class SourceFinderTest {
 			.is(AList.of(JType.class)
 				.inAnyOrder()
 				.withOnly()
-				.item(AJType.withName(MySubClass.class))
-				.item(AJType.withName(MySubSubClass.class))
-				.item(AJType.withName(org.codemucker.jmutate.ast.SourceFinderTest.SomeClass.SomeEmbeddedSubClass.class)));
+				.item(AJType.with().name(MySubClass.class))
+				.item(AJType.with().name(MySubSubClass.class))
+				.item(AJType.with().name(org.codemucker.jmutate.ast.SourceFinderTest.SomeClass.SomeEmbeddedSubClass.class)));
 	}
 	
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
 		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
 			.setFilter(SourceFilter.builder()
-				.addIncludeTypes(AJType.withAnnotation(MyAnnotation.class))
+				.addInclude(AJType.with().annotation(MyAnnotation.class))
 			)
 			.setListener(new JFindListener(){
 
@@ -90,7 +90,7 @@ public class SourceFinderTest {
 			.is(AList.of(JType.class)
 				.inAnyOrder()
 				.withOnly()
-				.item(AJType.withName(ClassWithAnnotation.class)));
+				.item(AJType.with().name(ClassWithAnnotation.class)));
 			
 		/*for( JType type:foundTypes){
 			assertThat(type.getSimpleName(), is(AString.equalTo(ClassWithAnnotation.class.getSimpleName())));

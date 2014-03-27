@@ -21,7 +21,7 @@ public class FieldSplitterTransformTest {
 			.pl("}")
 			.asResolvedJTypeNamed("Foo");
 		
-		JField field = actual.findFieldsMatching(AJField.withName("a")).getFirst();
+		JField field = actual.findFieldsMatching(AJField.with().name("a")).getFirst();
 		
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
@@ -48,7 +48,7 @@ public class FieldSplitterTransformTest {
 			.pl("}")
 			.asResolvedJTypeNamed("Foo");
 		
-		JField field = actual.findFieldsMatching(AJField.withName("a")).getFirst();
+		JField field = actual.findFieldsMatching(AJField.with().name("a")).getFirst();
 		
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)

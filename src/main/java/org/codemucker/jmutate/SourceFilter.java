@@ -4,12 +4,12 @@ import java.lang.annotation.Annotation;
 import java.util.concurrent.Callable;
 import java.util.regex.Pattern;
 
+import org.codemucker.jfind.AResource;
 import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.IncludeExcludeMatcherBuilder;
 import org.codemucker.jfind.MatcherToFindFilterAdapter;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jfind.matcher.IncludeExcludeMatcherBuilder;
-import org.codemucker.jfind.matcher.AResource;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
@@ -162,12 +162,12 @@ public class SourceFilter implements SourceMatcher {
 		}
 		
 		public Builder setIncludeFileName(String pattern) {
-			setIncludeResource(AResource.with().antPath(pattern));
+			setIncludeResource(AResource.with().pathAntPatternMatch(pattern));
 			return this;
 		}
 		
 		public Builder setIncludeFileName(Pattern pattern) {
-			setIncludeResource(AResource.with().path(pattern));
+			setIncludeResource(AResource.with().pathRegexMatch(pattern));
 			return this;
 		}
 		
@@ -177,12 +177,12 @@ public class SourceFilter implements SourceMatcher {
 		}
 	
 		public Builder setExcludeFileName(String path) {
-			setExcludeResource(AResource.with().antPath(path));
+			setExcludeResource(AResource.with().pathAntPatternMatch(path));
 			return this;
 		}
 		
 		public Builder setExcludeFileName(Pattern pattern) {
-			setExcludeResource(AResource.with().path(pattern));
+			setExcludeResource(AResource.with().pathRegexMatch(pattern));
 			return this;
 		}
 	
@@ -192,12 +192,12 @@ public class SourceFilter implements SourceMatcher {
 		}
 	
 		public Builder setAssignableTo(Class<?> superclass) {
-			setIncludeSource(AJSourceFile.assignableTo(superclass));
+			setIncludeSource(AJSourceFile.that().isSubclassOf(superclass));
 			return this;
 		}
 		
 		public <T extends Annotation> Builder withAnnotation(Class<T> annotation){
-			setIncludeSource(AJSourceFile.withAnnotation(annotation));
+			setIncludeSource(AJSourceFile.with().annotation(annotation));
 			return this;
 		}
 		
@@ -207,17 +207,17 @@ public class SourceFilter implements SourceMatcher {
 		}
 		
 		public Builder setExcludeEnum() {
-			setExcludeSource(AJSourceFile.includeEnum());
+			setExcludeSource(AJSourceFile.that().isEnum());
 			return this;
 		}
 	
 		public Builder setExcludeAnonymous() {
-			setExcludeSource(AJSourceFile.includeAnonymous());
+			setExcludeSource(AJSourceFile.that().isAnonymous());
 			return this;
 		}
 	
 		public Builder setExcludeInterfaces() {
-			setExcludeSource(AJSourceFile.includeInterfaces());
+			setExcludeSource(AJSourceFile.that().isInterface());
 			return this;
 		}
 	
@@ -227,16 +227,16 @@ public class SourceFilter implements SourceMatcher {
 		}
 		
 		public Builder addIncludeTypesWithMethods(Matcher<JMethod> matcher){
-			addIncludeTypes(AJType.withMethod(matcher));
+			addInclude(AJType.with().method(matcher));
 			return this;
 		}
 		
 		public Builder addExcludeTypesWithMethods(Matcher<JMethod> matcher){
-			addExcludeTypes(AJType.withMethod(matcher));
+			addExcludeTypes(AJType.with().method(matcher));
 			return this;
 		}
 		
-		public Builder addIncludeTypes(Matcher<JType> matcher){
+		public Builder addInclude(Matcher<JType> matcher){
 			types.addInclude(matcher);
 			return this;
 		}

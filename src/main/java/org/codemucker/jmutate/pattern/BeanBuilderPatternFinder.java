@@ -16,7 +16,7 @@ public class BeanBuilderPatternFinder {
 		return SourceFilter.builder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.addIncludeTypes(AJType.withFullName("*Builder"));
+				.addInclude(AJType.with().fullName("*Builder"));
 			
 	}
 	

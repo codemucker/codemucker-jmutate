@@ -13,7 +13,7 @@ import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.RootVisitor;
-import org.codemucker.jfind.ClassRoots;
+import org.codemucker.jfind.Roots;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
@@ -251,7 +251,7 @@ public class SourceFinder {
 			return parser != null ? parser : JAstParser.newDefaultJParser();
 		}
 
-		public Builder setSearchRoots(ClassRoots.Builder searchRoots) {
+		public Builder setSearchRoots(Roots.Builder searchRoots) {
         	setSearchRoots(searchRoots.build());
         	return this;
         }

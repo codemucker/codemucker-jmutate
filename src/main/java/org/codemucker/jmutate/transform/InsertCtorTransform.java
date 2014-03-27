@@ -34,7 +34,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 			throw new MutateException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),ctor.getName());
 		}
 		
-		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.withNameAndArgSignature(ctor));
+		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.with().nameAndArgSignature(ctor));
     	if( !found.isEmpty()){
     		insert = false;
     		JMethod existingCtor = found.getFirst();

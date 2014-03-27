@@ -209,14 +209,12 @@ public class JAstParser {
 		private Root snippetRoot;
 		
 		public Builder(){
-			// In order to parse 1.5 code, some compiler options need to be set
-			// to atleast 1.5
-			setSourceLevel(JavaCore.VERSION_1_6);
+			setSourceLevel(JavaCore.VERSION_1_7);
 		}
 		
 		public Builder setDefaults() {
         	setParser(newDefaultAstParser());
-        	setSourceLevel(JavaCore.VERSION_1_6);
+        	setSourceLevel(JavaCore.VERSION_1_7);
         	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_LOCAL, "ignore");
         	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_PRIVATE_MEMBER, "ignore");
         	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_PARAMETER, "ignore");

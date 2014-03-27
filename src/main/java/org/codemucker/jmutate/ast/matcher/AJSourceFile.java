@@ -9,70 +9,90 @@ import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmatch.ObjectMatcher;
+import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 
+import com.google.common.base.Predicate;
 
-public class AJSourceFile extends AnInt {
 
-	public static final Matcher<JSourceFile> MATCHER_ANONYMOUS = containsType(AJType.isAnonymous());
-	public static final Matcher<JSourceFile> MATCHER_ENUM = containsType(AJType.isEnum());
-	public static final Matcher<JSourceFile> MATCHER_INTERFACE = containsType(AJType.isInterface());
+public class AJSourceFile extends ObjectMatcher<JSourceFile> {
+
+	public static AJSourceFile that(){
+		return with();
+	}
 	
-    public static Matcher<JSourceFile> anyClass() {
+	public static AJSourceFile with(){
+		return new AJSourceFile();
+	}
+	
+	public AJSourceFile source(Predicate<JSourceFile> predicate){
+		predicate(predicate);
+		return this;
+	}
+
+    public static Matcher<JSourceFile> any() {
     	return Logical.any();
     }
 	
-    public static Matcher<JSourceFile> noClass() {
+    public static Matcher<JSourceFile> none() {
     	return Logical.none();
     }
 	
-	public static Matcher<JSourceFile> assignableTo(Class<?> superClassOrInterface) {
-		return containsType(AJType.assignableFrom(superClassOrInterface));
+	public AJSourceFile isSubclassOf(Class<?> superClassOrInterface) {
+		return contains(AJType.with().isASubclassOf(superClassOrInterface));
 	}
 	
-	public static Matcher<JSourceFile> withAnnotation(Class<? extends Annotation> annotation){
-		return containsType(AJType.withAnnotation(annotation));
+	public AJSourceFile annotation(Class<? extends Annotation> annotation){
+		return contains(AJType.with().annotation(annotation));
 	}
 	
-	public static Matcher<JSourceFile> withName(Class<?> className){
-		return containsType(AJType.withName(className));
+	public AJSourceFile name(Class<?> className){
+		return contains(AJType.with().name(className));
 	}
 	
-	public static Matcher<JSourceFile> withName(String antPattern){
-		return containsType(AJType.withFullName(antPattern));
+	public AJSourceFile name(String antPattern){
+		return contains(AJType.with().fullName(antPattern));
 	}
 	
-	public static Matcher<JSourceFile> excludeEnum() {
-		return Logical.not(MATCHER_ENUM);
+	public AJSourceFile isEnum() {
+		return isEnum(true);
 	}
 
-	public static Matcher<JSourceFile> excludeAnonymous() {
-		return Logical.not(MATCHER_ANONYMOUS);
-	}
-
-	public static Matcher<JSourceFile> excludeInterfaces() {
-		return Logical.not(MATCHER_INTERFACE);
-	}
-
-	public static Matcher<JSourceFile> includeEnum() {
-		return MATCHER_ENUM;
-	}
-
-	public static Matcher<JSourceFile> includeAnonymous() {
-		return MATCHER_ANONYMOUS;
-	}
-
-	public static Matcher<JSourceFile> includeInterfaces() {
-		return MATCHER_INTERFACE;
+	public AJSourceFile isEnum(boolean b) {
+		contains(AJType.with().isEnum(b));
+		return this;
 	}
 	
-	public static Matcher<JSourceFile> notContainsType(Matcher<JType> typeMatcher){
-		return Logical.not(containsType(typeMatcher));
+	public AJSourceFile isAnonymous(){
+		isAnonymous(true);
+		return this;
 	}
 	
-	public static Matcher<JSourceFile> containsType(Matcher<JType> typeMatcher){
-		return new JTypeToJSourceMatcherAdapter(typeMatcher);
+	public AJSourceFile isAnonymous(boolean b) {
+		contains(AJType.with().isAnonymous(b));
+		return this;
+	}
+	
+	public AJSourceFile isInterface(){
+		isInterface(true);
+		return this;
+	}
+	
+	public AJSourceFile isInterface(boolean b) {
+		contains(AJType.with().isInterface(b));
+		return this;
+	}
+	
+	public AJSourceFile notContains(Matcher<JType> typeMatcher){
+		addMatcher(Logical.not(contains(typeMatcher)));
+		return this;
+	}
+	
+	public AJSourceFile contains(Matcher<JType> typeMatcher){
+		addMatcher(new JTypeToJSourceMatcherAdapter(typeMatcher));
+		return this;
 	}
 	
 	private static class JTypeToJSourceMatcherAdapter extends AbstractNotNullMatcher<JSourceFile>{

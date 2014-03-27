@@ -24,7 +24,7 @@ public class BeanBuilderPatternFinderTest {
 			.setFilter(SourceFilter.builder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.addIncludeTypes(AJType.withFullName("*Builder"))
+				.addInclude(AJType.with().fullName("*Builder"))
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)
 			.build()
@@ -36,7 +36,7 @@ public class BeanBuilderPatternFinderTest {
 			System.out.println( type.getFullName());
 			
 			//builds what???
-			FindResult<JMethod> methods = type.findMethodsMatching(AJMethod.withNameMatchingAntPattern("build*"));
+			FindResult<JMethod> methods = type.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build*"));
 			for (JMethod method : methods) {
 				//could do checks on the build method here. COntains args? maybe not good?
 				//return null? another warning
@@ -48,11 +48,10 @@ public class BeanBuilderPatternFinderTest {
 	
 	@Test
 	public void testFindLongCtorClasses() {
-		Matcher<JMethod> methodMatcher =
-			AJMethod.all(
-				AJMethod.isConstructor(), 
-				AJMethod.withNumArgs(AnInt.greaterOrEqualTo(3))
-			);
+		Matcher<JMethod> methodMatcher = AJMethod.that()
+				.isConstructor()
+				.numArgs(AnInt.greaterOrEqualTo(3));
+		
 		Iterable<JMethod> found = SourceHelper.newAllSourcesResolvingFinder()
 			.setFilter(SourceFilter.builder()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))

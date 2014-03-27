@@ -107,7 +107,7 @@ public class JTypeTest {
 		t.pl("	}");
 		t.pl("}");
 		
-		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.withSimpleName("SubSubClass")).getFirst();
+		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.with().simpleName("SubSubClass")).getFirst();
 		
 		Expect.that(type.isSubClassOf(MyParentClass.class)).is(true);
 	}
@@ -127,7 +127,7 @@ public class JTypeTest {
 		t.pl("	}");
 		t.pl("}");
 		
-		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.withSimpleName("SubSubClass")).getFirst();
+		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.with().simpleName("SubSubClass")).getFirst();
 		
 		Expect.that(type.isSubClassOf(MyParentClass.class)).is(true);
 	}
@@ -142,7 +142,7 @@ public class JTypeTest {
 		t.pl("	class SubClass extends java.util.ArrayList {}");
 		t.pl("}");
 		
-		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.withSimpleName("SubClass")).getFirst();
+		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.with().simpleName("SubClass")).getFirst();
 		
 		Expect.that(type.isSubClassOf(List.class)).is(true);
 	}
@@ -241,8 +241,8 @@ public class JTypeTest {
 				AList.of(JMethod.class)
 					.inOrder()
 					.withOnly()
-					.item(AJMethod.withName("methodA"))
-					.item(AJMethod.withName("methodB"))
+					.item(AJMethod.with().name("methodA"))
+					.item(AJMethod.with().name("methodB"))
 		);
 	}
 
@@ -257,15 +257,15 @@ public class JTypeTest {
 		t.pl( "public void setA(){}" );
 		t.pl("}");
 
-		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.withNameMatchingAntPattern("get*"));
+		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.with().nameMatchingAntPattern("get*"));
 	
 		assertThat(
 				foundMethods.toList(), 
 				AList.of(JMethod.class)
 					.inOrder()
 					.withOnly()
-					.item(AJMethod.withName("getA"))
-					.item(AJMethod.withName("getB"))
+					.item(AJMethod.with().name("getA"))
+					.item(AJMethod.with().name("getB"))
 		);
 	}
 
@@ -280,11 +280,11 @@ public class JTypeTest {
 		t.pl("	}");
 		t.pl("}");
 		
-		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.withNameMatchingAntPattern("get*"));
+		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.with().nameMatchingAntPattern("get*"));
 
 		assertThat(
 				foundMethods.toList(), 
-				AList.withOnly(AJMethod.withName("getA"))
+				AList.withOnly(AJMethod.with().name("getA"))
 		);
 	}
 
@@ -292,14 +292,14 @@ public class JTypeTest {
 	//For a bug where performing a method search on top level children also return nested methods
 	public void testFindJavaMethodsExcludingAnonymousTypeMethodsEmbeddedInMethods(){
 		JType type = SourceHelper.findSourceForTestClass(getClass()).getTypeWithName(MyTestClass.class);
-		FindResult<JMethod> foundMethods = type.findMethodsMatching(AJMethod.withNameMatchingAntPattern("get*"));
+		FindResult<JMethod> foundMethods = type.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("get*"));
 
 		assertThat(
 			foundMethods.toList(), 
 			AList.inOrder()
 				.withOnly()
-				.item(AJMethod.withName("getA"))
-				.item(AJMethod.withName("getB"))
+				.item(AJMethod.with().name("getA"))
+				.item(AJMethod.with().name("getB"))
 		);
 	}
 	
@@ -345,7 +345,7 @@ public class JTypeTest {
 		t.pl("	}");
 		t.pl("}");
 		
-		JField field = t.asResolvedJTypeNamed("MyTestClass").findFieldsMatching(AJField.withName("foo")).getFirst();
+		JField field = t.asResolvedJTypeNamed("MyTestClass").findFieldsMatching(AJField.with().name("foo")).getFirst();
 		
 		assertThat(field.getTypeSignature(),isEqualTo("Foo"));
 	}
@@ -367,8 +367,8 @@ public class JTypeTest {
 			is(AList.of(JType.class)
 				.inOrder()
 				.withOnly()
-				.item(AJType.isAnonymous())
-				.item(not(AJType.isAnonymous()))
+				.item(AJType.with().isAnonymous())
+				.item(not(AJType.with().isAnonymous()))
 			)
 		);
 	}
@@ -445,15 +445,15 @@ public class JTypeTest {
 		t.pl( "public void someMethod(){}" );
 		t.pl("}");
 
-		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.isConstructor());
+		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethodsMatching(AJMethod.that().isConstructor());
 
 		assertThat(
 				foundMethods.toList(), 
 				is(AList.of(JMethod.class)
 					.inOrder()
 					.withOnly()
-					.item(AJMethod.withName("MyTestClass"))
-					.item(AJMethod.withName("MyTestClass")))
+					.item(AJMethod.with().name("MyTestClass"))
+					.item(AJMethod.with().name("MyTestClass")))
 		);
 	}
 }

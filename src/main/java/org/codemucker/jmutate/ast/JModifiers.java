@@ -87,37 +87,70 @@ public class JModifiers {
 	}
 
 	public boolean isStatic() {
-		return containsKeyword(ModifierKeyword.STATIC_KEYWORD);
+		return isStatic(true);
+	}
+	
+	public boolean isStatic(boolean isStatic) {
+		return isStatic==containsKeyword(ModifierKeyword.STATIC_KEYWORD);
 	}
 
 	public boolean isFinal() {
-		return containsKeyword(ModifierKeyword.FINAL_KEYWORD);
+		return isFinal(true);
+	}
+
+	public boolean isFinal(boolean isFinal) {
+		return isFinal == containsKeyword(ModifierKeyword.FINAL_KEYWORD);
 	}
 
 	public boolean isAbstract() {
-		return containsKeyword(ModifierKeyword.ABSTRACT_KEYWORD);
+		return isAbstract(true);
 	}
 
+	public boolean isAbstract(boolean isAbstract) {
+		return isAbstract == containsKeyword(ModifierKeyword.ABSTRACT_KEYWORD);
+	}
+	
 	public boolean isTransient() {
 		return containsKeyword(ModifierKeyword.TRANSIENT_KEYWORD);
 	}
 
+	public boolean isTransient(boolean b) {
+		return b == containsKeyword(ModifierKeyword.TRANSIENT_KEYWORD);
+	}
+	
 	public boolean isVolatile() {
-		return containsKeyword(ModifierKeyword.VOLATILE_KEYWORD);
+		return isVolatile(true);
 	}
 
+	public boolean isVolatile(boolean b) {
+		return b == containsKeyword(ModifierKeyword.VOLATILE_KEYWORD);
+	}
+	
 	public boolean isNative() {
-		return containsKeyword(ModifierKeyword.NATIVE_KEYWORD);
-	}
-	
-	public boolean isSynchronized() {
-		return containsKeyword(ModifierKeyword.SYNCHRONIZED_KEYWORD);
-	}
-	
-	public boolean isStrictFp() {
-		return containsKeyword(ModifierKeyword.STRICTFP_KEYWORD);
+		return isNative(true);
 	}
 
+	public boolean isNative(boolean b) {
+		return b == containsKeyword(ModifierKeyword.NATIVE_KEYWORD);
+	}
+
+	public boolean isSynchronized() {
+		return isSynchronized(true);
+	}
+
+	public boolean isSynchronized(boolean b) {
+		return b == containsKeyword(ModifierKeyword.SYNCHRONIZED_KEYWORD);
+	}
+
+	public boolean isStrictFp() {
+		return isStrictFp(true);
+	}
+
+	public boolean isStrictFp(boolean b) {
+		return b == containsKeyword(ModifierKeyword.STRICTFP_KEYWORD);
+	}
+
+	
 	private boolean containsKeyword(ModifierKeyword keyword) {
 		for (Modifier m : getModifiers()) {
 			if (keyword.equals(m.getKeyword())) {
