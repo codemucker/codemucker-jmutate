@@ -1,43 +1,43 @@
 package com.bertvanbrakel.codegen.bean;
-import org.codemucker.jpattern.Generated;
+import org.codemucker.jpattern.IsGenerated;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jpattern.PatternType;
-@Generated
+@IsGenerated
 public interface IAutoBean{
-@Generated
+@IsGenerated
 public double getPrimitiveDouble();
-@Generated
+@IsGenerated
 public java.lang.Integer getInteger();
-@Generated
+@IsGenerated
 public boolean getPrimitiveBoolean();
-@Generated
+@IsGenerated
 public java.util.Date getDate();
-@Generated
+@IsGenerated
 public java.lang.Double getDouble();
-@Generated
+@IsGenerated
 public java.lang.Long getLong();
-@Generated
+@IsGenerated
 public java.lang.Float getFloat();
-@Generated
+@IsGenerated
 public long getPrimitiveLong();
-@Generated
+@IsGenerated
 public java.lang.Character getCharacter();
-@Generated
+@IsGenerated
 public java.lang.Short getShort();
-@Generated
+@IsGenerated
 public int getPrimitiveInt();
-@Generated
+@IsGenerated
 public byte getPrimitiveByte();
-@Generated
+@IsGenerated
 public java.lang.Byte getByte();
-@Generated
+@IsGenerated
 public java.lang.String getString();
-@Generated
+@IsGenerated
 public short getPrimitiveShort();
-@Generated
+@IsGenerated
 public java.lang.Boolean getBoolean();
-@Generated
+@IsGenerated
 public char getPrimitiveChar();
-@Generated
+@IsGenerated
 public float getPrimitiveFloat();
 }

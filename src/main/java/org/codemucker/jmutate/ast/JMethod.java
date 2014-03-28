@@ -62,11 +62,11 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		this.methodNode = methodNode;
 	}
 
-	public JType getJType(){
-		return JType.from(getType());
+	public JType getEnclosingJType(){
+		return JType.from(getEnclosingType());
 	}
 	
-	public AbstractTypeDeclaration getType(){
+	public AbstractTypeDeclaration getEnclosingType(){
 		ASTNode node = getAstNode();
 		while( node != null ){
 			if(node instanceof AbstractTypeDeclaration){

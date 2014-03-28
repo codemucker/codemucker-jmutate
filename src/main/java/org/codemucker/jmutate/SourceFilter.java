@@ -79,7 +79,7 @@ public class SourceFilter implements SourceMatcher {
 		return methodFilter;
 	}	
 	
-	public static Builder builder(){
+	public static Builder with(){
 		return new Builder();
 	}
 
@@ -156,102 +156,47 @@ public class SourceFilter implements SourceMatcher {
 			};
 		}
 	
-		public Builder setMatchListener(Callable<Object> matchListener) {
+		public Builder matchListener(Callable<Object> matchListener) {
 			this.matchListener = matchListener;
 			return this;
 		}
 		
-		public Builder setIncludeFileName(String pattern) {
-			setIncludeResource(AResource.with().pathAntPatternMatch(pattern));
-			return this;
-		}
-		
-		public Builder setIncludeFileName(Pattern pattern) {
-			setIncludeResource(AResource.with().pathRegexMatch(pattern));
-			return this;
-		}
-		
-		public Builder setIncludeResource(Matcher<RootResource> matcher) {
+		public Builder includeResource(Matcher<RootResource> matcher) {
 			resources.addInclude(matcher);
 			return this;
 		}
 	
-		public Builder setExcludeFileName(String path) {
-			setExcludeResource(AResource.with().pathAntPatternMatch(path));
-			return this;
-		}
-		
-		public Builder setExcludeFileName(Pattern pattern) {
-			setExcludeResource(AResource.with().pathRegexMatch(pattern));
-			return this;
-		}
-	
-		public Builder setExcludeResource(Matcher<RootResource> matcher) {
+		public Builder excludeResource(Matcher<RootResource> matcher) {
 			resources.addExclude(matcher);
 			return this;
 		}
 	
-		public Builder setAssignableTo(Class<?> superclass) {
-			setIncludeSource(AJSourceFile.that().isSubclassOf(superclass));
-			return this;
-		}
-		
-		public <T extends Annotation> Builder withAnnotation(Class<T> annotation){
-			setIncludeSource(AJSourceFile.with().annotation(annotation));
-			return this;
-		}
-		
-		public Builder setIncludeSource(Matcher<JSourceFile> matcher) {
+		public Builder includeSource(Matcher<JSourceFile> matcher) {
 			sources.addInclude(matcher);
 			return this;
 		}
-		
-		public Builder setExcludeEnum() {
-			setExcludeSource(AJSourceFile.that().isEnum());
-			return this;
-		}
 	
-		public Builder setExcludeAnonymous() {
-			setExcludeSource(AJSourceFile.that().isAnonymous());
-			return this;
-		}
-	
-		public Builder setExcludeInterfaces() {
-			setExcludeSource(AJSourceFile.that().isInterface());
-			return this;
-		}
-	
-		public Builder setExcludeSource(Matcher<JSourceFile> matcher) {
+		public Builder excludeSource(Matcher<JSourceFile> matcher) {
 			sources.addExclude(matcher);
 			return this;
 		}
 		
-		public Builder addIncludeTypesWithMethods(Matcher<JMethod> matcher){
-			addInclude(AJType.with().method(matcher));
-			return this;
-		}
-		
-		public Builder addExcludeTypesWithMethods(Matcher<JMethod> matcher){
-			addExcludeTypes(AJType.with().method(matcher));
-			return this;
-		}
-		
-		public Builder addInclude(Matcher<JType> matcher){
+		public Builder includeType(Matcher<JType> matcher){
 			types.addInclude(matcher);
 			return this;
 		}
 		
-		public Builder addExcludeTypes(Matcher<JType> matcher){
+		public Builder excludeType(Matcher<JType> matcher){
 			types.addExclude(matcher);
 			return this;
 		}
 		
-		public Builder addIncludeMethods(Matcher<JMethod> matcher){
+		public Builder includeMethods(Matcher<JMethod> matcher){
 			methods.addInclude(matcher);
 			return this;
 		}
 		
-		public Builder addExcludeMethods(Matcher<JMethod> matcher){
+		public Builder excludeMethods(Matcher<JMethod> matcher){
 			methods.addExclude(matcher);
 			return this;
 		}

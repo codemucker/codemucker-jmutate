@@ -21,10 +21,10 @@ public class BeanBuilderPatternFinderTest {
 		//classes where most methods return itself - confidence 60%
 		//classes which contain a method starting with 'build' - confidence 70%
 		FindResult<JType> foundBuilders = SourceHelper.newAllSourcesResolvingFinder()
-			.setFilter(SourceFilter.builder()
+			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.addInclude(AJType.with().fullName("*Builder"))
+				.includeType(AJType.with().fullName("*Builder"))
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)
 			.build()
@@ -53,11 +53,11 @@ public class BeanBuilderPatternFinderTest {
 				.numArgs(AnInt.greaterOrEqualTo(3));
 		
 		Iterable<JMethod> found = SourceHelper.newAllSourcesResolvingFinder()
-			.setFilter(SourceFilter.builder()
+			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.addIncludeTypesWithMethods(methodMatcher)
-				.addIncludeMethods(methodMatcher)
+				.includeType(AJType.with().method(methodMatcher))
+				.includeMethods(methodMatcher)
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)	
 			.build()

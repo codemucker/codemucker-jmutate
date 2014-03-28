@@ -55,17 +55,26 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	 * @return
 	 */
 	public static JType from(ASTNode node){
+		JType t = fromOrNull(node);
+		if(t == null)
+		{
+			throw new IllegalArgumentException(String.format("Expect either a %s or a %s but was %s",
+				AbstractTypeDeclaration.class.getName(),
+				AnonymousClassDeclaration.class.getName(), 
+				node.getClass().getName()
+			));
+		}
+		return t;
+	}
+	
+	private static JType fromOrNull(ASTNode node){
 		if(node instanceof AbstractTypeDeclaration){
 			return from((AbstractTypeDeclaration)node);
 		}
 		if(node instanceof AnonymousClassDeclaration){
 			return from((AnonymousClassDeclaration)node);
 		}
-		throw new IllegalArgumentException(String.format("Expect either a %s or a %s but was %s",
-			AbstractTypeDeclaration.class.getName(),
-			AnonymousClassDeclaration.class.getName(), 
-			node.getClass().getName()
-		));
+		return null;
 	}
 	
 	public static JType from(AbstractTypeDeclaration node){
@@ -309,6 +318,22 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		throw new MutateException("Couldn't find compilation unit. Unexpected");
 	}
 
+	/**
+	 * Find the immediate parent type, or null if none
+	 * @return
+	 */
+	public JType getParentJType() {
+		ASTNode parent = typeNode.getParent();
+		while( parent != null){
+			JType t = fromOrNull(parent);
+			if(t != null){
+				return t;
+			}
+			parent = parent.getParent();
+		}
+		return null;
+	}
+	
 	public String getPackageName(){
 		return JavaNameUtil.getPackageFor(typeNode);
 	}
@@ -657,4 +682,5 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			return types;
 		}
 	}
+
 }

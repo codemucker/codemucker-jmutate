@@ -93,54 +93,55 @@ public class JSearchEngine implements Closeable {
 			return new JSearchEngine(dbDirectory,roots,parser);
 		}
 		
-		public Builder setDefaults(){
-			setDefaultDBDirectory();
-			setDefaultParser();
+		public Builder defaults(){
+			useDefaultDBDirectory();
+			useDefaultParser();
 			return this;
 		}
 
-		public Builder setDefaultDBDirectory(){
-			setDbDirectory("c:/tmp/orientdb_codemucker_search_test" + System.currentTimeMillis());
+		public Builder useDefaultDBDirectory(){
+			dbDirectory("c:/tmp/orientdb_codemucker_search_test" + System.currentTimeMillis());
 			return this;
 		}
 		
-		public Builder setDefaultParser(){
-			setParser(JAstParser.builder().setDefaults().build());
+		public Builder useDefaultParser(){
+			parser(JAstParser.with().defaults().build());
 			return this;
 		}
 
-		public Builder setRoots(IBuilder<? extends Iterable<Root>> rootsBuilder){
-			setRoots(rootsBuilder.build());
+		public Builder searchRoots(IBuilder<? extends Iterable<Root>> rootsBuilder){
+			searchRoots(rootsBuilder.build());
 			return this;
 		}
 		
-		public Builder setRoots(Iterable<Root> roots){
-			this.roots = Lists.newArrayList(roots);
+		public Builder searchRoots(Iterable<Root> roots){
+			for(Root r:roots){
+				searchRoot(r);
+			}
 			return this;
 		}
 		
-		public Builder addRoot(Root root){
+		public Builder searchRoot(Root root){
 			this.roots.add(root);
 			return this;
 		}
 		
-		public Builder setParser(IBuilder<JAstParser> builder){
-			setParser(builder.build());
+		public Builder parser(IBuilder<JAstParser> builder){
+			parser(builder.build());
 			return this;
 		}
 		
-		public Builder setParser(JAstParser parser){
+		public Builder parser(JAstParser parser){
 			this.parser = parser;
 			return this;
 		}
 		
-		
-		public Builder setDbDirectory(String dbDirectory){
-			setDbDirectory(new File(dbDirectory));
+		public Builder dbDirectory(String dbDirectory){
+			dbDirectory(new File(dbDirectory));
 			return this;
 		}
 		
-		public Builder setDbDirectory(File dbDirectory){
+		public Builder dbDirectory(File dbDirectory){
 			this.dbDirectory = dbDirectory;
 			return this;
 		}

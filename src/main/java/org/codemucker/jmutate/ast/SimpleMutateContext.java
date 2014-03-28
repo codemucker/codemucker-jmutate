@@ -32,12 +32,12 @@ import com.google.inject.name.Named;
 public class SimpleMutateContext implements MutateContext {
 
 	private final PlacementStrategies strategyProvider  = PlacementStrategies.builder().setDefaults().build();
-	private final JAstParser parser = JAstParser.builder()
-		.setDefaults()
-		.setResolveRoots(Roots.builder()
-			.setIncludeClasspath(true)
-			.setIncludeTestSrcDir(true)
-			.setIncludeMainSrcDir(true)
+	private final JAstParser parser = JAstParser.with()
+		.defaults()
+		.roots(Roots.with()
+			.classpath(true)
+			.testSrcDir(true)
+			.mainSrcDir(true)
 			.build()	
 		)
 		.build();
