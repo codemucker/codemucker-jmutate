@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.junit.Test;
 
 
-public class JavaSourceFileMutatorTest {
+public class JSourceFileMutatorTest {
 
 	TestHelper helper = new TestHelper();
 	MutateContext context = new SimpleMutateContext();

@@ -10,10 +10,12 @@ import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
 
 import com.google.common.collect.Lists;
 
@@ -28,6 +30,14 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 	
 	public static JCompilationUnit from(CompilationUnit cu){
 		return new JCompilationUnit(cu);
+	}
+	
+	public String getFullPackageName(){
+		PackageDeclaration pkg = compilationUnit.getPackage();
+		if( pkg == null){
+			return null;
+		}
+		return pkg.getName().getFullyQualifiedName();
 	}
 	
 	public JType findMainType() {

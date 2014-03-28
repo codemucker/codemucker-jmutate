@@ -23,7 +23,7 @@ public class JMethodTest {
 		t.pl("public void myMethod(String[][] bar,Collection<String> col, int foo){}");
 		t.pl("}");
 		
-		List<JMethod> methods = t.asResolvedSourceFileNamed("mypackage.path.MyType").getMainType().findAllJMethods().toList();
+		List<JMethod> methods = t.asResolvedSourceFileNamed("mypackage.path.MyType").getMainType().findMethods().toList();
 		
 		JMethod method1 = methods.get(0);
 		JMethod method2 = methods.get(1);
@@ -42,7 +42,7 @@ public class JMethodTest {
 		t.pl("public void myMethod(String[][] bar,Collection<String> col, int foo){}");
 		t.pl("}");
 		
-		List<JMethod> methods = t.asSourceFileSnippet().getMainType().findAllJMethods().toList();
+		List<JMethod> methods = t.asSourceFileSnippet().getMainType().findMethods().toList();
 		
 		JMethod method1 = methods.get(0);
 		JMethod method2 = methods.get(1);
@@ -75,7 +75,7 @@ public class JMethodTest {
 		t.pl("public void myMethod(MyInterface myArg){}");
 		t.pl("}");
 		
-		JMethod method = t.asResolvedSourceFileNamed("${pkg}.MyType").getMainType().findAllJMethods().getFirst();
+		JMethod method = t.asResolvedSourceFileNamed("${pkg}.MyType").getMainType().findMethods().getFirst();
 		
 		assertEquals("myMethod(" + pkg + ".MyType.MyInterface)", method.getClashDetectionSignature());
 	}
@@ -102,7 +102,7 @@ public class JMethodTest {
 	public void testIsConstructor(){
 		SourceTemplate t = ctxt.newSourceTemplate();
 		t.pl("class MyType { MyType(){}}");
-		JMethod method = t.asResolvedJTypeNamed("MyType").findAllJMethods().getFirst();
+		JMethod method = t.asResolvedJTypeNamed("MyType").findMethods().getFirst();
 		Assert.assertTrue(method.isConstructor());
 	}
 	
@@ -113,7 +113,7 @@ public class JMethodTest {
 		t.pl("void MyMethod(){}");
 		t.pl("}");
 		
-		JMethod method = t.asResolvedJTypeNamed("MyType").findAllJMethods().getFirst();
+		JMethod method = t.asResolvedJTypeNamed("MyType").findMethods().getFirst();
 		Assert.assertFalse(method.isConstructor());
 	}
 	

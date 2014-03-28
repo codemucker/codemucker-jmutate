@@ -76,7 +76,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 
 	public boolean hasModifications(){
-		return getCompilationUnit().getAST().modificationCount() > 0;
+		return getCompilationUnitNode().getAST().modificationCount() > 0;
 	}
 
 	private void internalWriteChangesToFile() {
@@ -101,7 +101,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	 */
 	public String getCurrentSource(){
     	Document doc = new Document(getOriginalSource());
-    	TextEdit edits = getCompilationUnit().rewrite(doc, null);
+    	TextEdit edits = getCompilationUnitNode().rewrite(doc, null);
     	try {
     		edits.apply(doc);
     	} catch (MalformedTreeException e) {
@@ -127,7 +127,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
 	public void visit(JFindVisitor visitor) {
 		if (visitor.visit(this)) {
-			CompilationUnit cu = getCompilationUnit();
+			CompilationUnit cu = getCompilationUnitNode();
 			if (visitor.visit(cu)) {
 				cu.accept(visitor);
 			}
@@ -253,10 +253,14 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
 	@SuppressWarnings("unchecked")
 	public List<AbstractTypeDeclaration> getTopTypes() {
-		return getCompilationUnit().types();
+		return getCompilationUnitNode().types();
 	}
-	
-	public CompilationUnit getCompilationUnit() {
+
+	public JCompilationUnit getCompilationUnit() {
+		return JCompilationUnit.from(getCompilationUnitNode());
+	}
+
+	public CompilationUnit getCompilationUnitNode() {
 		return compilationUnitNode;
 	}
 

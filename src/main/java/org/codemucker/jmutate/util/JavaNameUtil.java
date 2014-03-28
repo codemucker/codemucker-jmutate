@@ -6,15 +6,18 @@ import java.util.Collections;
 import java.util.List;
 
 import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
+import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.QualifiedType;
@@ -350,13 +353,17 @@ public class JavaNameUtil {
 		return pkg == null ? "" : pkg + ".";
 	}
 	
-	public static String getPackageFor(ASTNode node){
+	private static String getPackageFor(ASTNode node){
 		CompilationUnit cu = getCompilationUnit(node);
-		String pkg = null;
-		if (cu.getPackage() != null) {
-			pkg = cu.getPackage().getName().getFullyQualifiedName();
-		}
-		return pkg;
+		PackageDeclaration pkg = cu.getPackage();
+		if (pkg != null) {
+			Name name = pkg.getName();
+			if(name.isQualifiedName()){
+				return name.getFullyQualifiedName();
+			}
+			return name.toString();
+		} 
+		return null;
 	}
 	
 	/**

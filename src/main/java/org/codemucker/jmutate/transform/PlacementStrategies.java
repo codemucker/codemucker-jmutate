@@ -16,7 +16,7 @@ public class PlacementStrategies {
 	private final PlacementStrategy ctorStrategy;
 	private final PlacementStrategy typeStrategy;
 	
-	public static Builder builder(){
+	public static Builder with(){
 		return new Builder();
 	}
 	
@@ -50,19 +50,19 @@ public class PlacementStrategies {
 
 	public static class Builder {
 
-		private static final PlacementStrategy DEFAULT_STRATEGY_FIELD = StrategyBeforeAfterNodes.builder()
+		private static final PlacementStrategy DEFAULT_STRATEGY_FIELD = StrategyBeforeAfterNodes.with()
 			.afterNodes(FieldDeclaration.class)
 			.beforeNodes(MethodDeclaration.class, TypeDeclaration.class, EnumDeclaration.class)
 			.build();	
-		private static final PlacementStrategy DEFAULT_STRATEGY_METHOD = StrategyBeforeAfterNodes.builder()
+		private static final PlacementStrategy DEFAULT_STRATEGY_METHOD = StrategyBeforeAfterNodes.with()
 			.afterNodes(MethodDeclaration.class, FieldDeclaration.class, EnumDeclaration.class)
 		    .beforeNodes(TypeDeclaration.class)
 		    .build();
-		private static final PlacementStrategy DEFAULT_STRATEGY_CTOR = StrategyBeforeAfterNodes.builder()
+		private static final PlacementStrategy DEFAULT_STRATEGY_CTOR = StrategyBeforeAfterNodes.with()
 			.afterNodes(FieldDeclaration.class, EnumDeclaration.class)
 			.beforeNodes(TypeDeclaration.class)
 			.build();
-		private static final PlacementStrategy DEFAULT_STRATEGY_CLASS = StrategyBeforeAfterNodes.builder()
+		private static final PlacementStrategy DEFAULT_STRATEGY_CLASS = StrategyBeforeAfterNodes.with()
 			.afterNodes(FieldDeclaration.class, MethodDeclaration.class, EnumDeclaration.class, TypeDeclaration.class)
 			.build();
 
@@ -78,16 +78,16 @@ public class PlacementStrategies {
 			return new PlacementStrategies(fieldStrategy,ctorStrategy,methodStrategy,typeStrategy);
 		}
 
-		public Builder setDefaults(){
-			useDefaultClassStrategy();
-			useDefaultCtorStrategy();
-			useDefaultFieldStrategy();
-			useDefaultMethodStrategy();	
+		public Builder defaults(){
+			defaultClassStrategy();
+			defaultCtorStrategy();
+			defaultFieldStrategy();
+			defaultMethodStrategy();	
 
 			return this;
 		}
 
-		public Builder useDefaultFieldStrategy() {
+		public Builder defaultFieldStrategy() {
 			fieldStrategy(DEFAULT_STRATEGY_FIELD);
 			return this;
 		}
@@ -97,7 +97,7 @@ public class PlacementStrategies {
 			return this;
 		}
 
-		public Builder useDefaultMethodStrategy() {
+		public Builder defaultMethodStrategy() {
 			methodStrategy(DEFAULT_STRATEGY_METHOD);
 			return this;
 		}
@@ -107,7 +107,7 @@ public class PlacementStrategies {
 			return this;
 		}
 
-		public Builder useDefaultCtorStrategy() {
+		public Builder defaultCtorStrategy() {
 			ctorStrategy(DEFAULT_STRATEGY_CTOR);
 			return this;
 		}
@@ -117,7 +117,7 @@ public class PlacementStrategies {
 			return this;
 		}
 
-		public Builder useDefaultClassStrategy() {
+		public Builder defaultClassStrategy() {
 			typeStrategy(DEFAULT_STRATEGY_CLASS);
 			return this;
 		}

@@ -21,7 +21,7 @@ public class StrategyBeforeAfterNodes implements PlacementStrategy {
 	    this.beforeNodesOfType = newArrayList(beforeNodesOfType);
     }
 
-	public static Builder builder(){
+	public static Builder with(){
 		return new Builder();
 	}
 	

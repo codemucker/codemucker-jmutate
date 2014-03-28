@@ -27,7 +27,7 @@ public class JavaNameUtilTest {
 		t.pl("public MyInterface myField;");
 		t.pl("}");
 		
-		JField field = t.asResolvedSourceFileNamed("${pkg}.MyClass").getMainType().findAllFields().getFirst();
+		JField field = t.asResolvedSourceFileNamed("${pkg}.MyClass").getMainType().findFields().getFirst();
 		String expect = JavaNameUtil.compiledNameToSourceName(MyInterface.class);
 		assertEquals(expect, JavaNameUtil.resolveQualifiedName(field.getType()));
 	}
@@ -46,7 +46,7 @@ public class JavaNameUtilTest {
 		t.pl("public MyInterface myField;");
 		t.pl("}");
 		
-		JField field = t.asResolvedSourceFileNamed("${pkg}.MyClass").getMainType().findAllFields().getFirst();
+		JField field = t.asResolvedSourceFileNamed("${pkg}.MyClass").getMainType().findFields().getFirst();
 		String expect = JavaNameUtil.compiledNameToSourceName(MyInterface.class);
 		assertEquals(expect, JavaNameUtil.resolveQualifiedName(field.getType()));
 	}

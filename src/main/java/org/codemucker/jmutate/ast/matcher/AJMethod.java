@@ -14,6 +14,7 @@ import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifiers;
 import org.codemucker.jmutate.ast.JType;
+import org.eclipse.jdt.core.dom.Type;
 
 import com.google.common.base.Predicate;
 
@@ -63,6 +64,17 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
+	public AJMethod returning(final Matcher<Type> matcher) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
+			@Override
+			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+				Type t = found.getAstNode().getReturnType2();
+				return diag.TryMatch(t, matcher);
+			}
+		});
+		return this;
+	}
+	
 	public static Matcher<JMethod> all(final Matcher<JMethod>... matchers) {
     	return Logical.and(matchers);
     }
@@ -92,7 +104,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 				return found.isConstructor();
 			}
 		};
-		if( !val ){
+		if(!val ){
 			matcher = Logical.not(matcher);
 		}
 		addMatcher(matcher);

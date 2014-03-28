@@ -47,7 +47,7 @@ public class JAstParser {
 	private final String[] binaryRoots;
 	private final String[] sourceRoots;
 	
-	public static Builder builder(){
+	public static Builder with(){
 		return new Builder();
 	}
 	
@@ -187,11 +187,11 @@ public class JAstParser {
 	}
 
 	public static JAstParser newDefaultJParser() {
-		return builder().build();
+		return with().build();
 	}
 
 	public static ASTParser newDefaultParser() {
-		return builder().build().parser;
+		return with().build().parser;
 	}
 	
 	public static class CompilerOptions {
@@ -209,17 +209,17 @@ public class JAstParser {
 		private Root snippetRoot;
 		
 		public Builder(){
-			setSourceLevel(JavaCore.VERSION_1_7);
+			sourceLevel(JavaCore.VERSION_1_7);
 		}
 		
-		public Builder setDefaults() {
-        	setParser(newDefaultAstParser());
-        	setSourceLevel(JavaCore.VERSION_1_7);
-        	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_LOCAL, "ignore");
-        	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_PRIVATE_MEMBER, "ignore");
-        	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_PARAMETER, "ignore");
-        	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_TYPE_ARGUMENTS_FOR_METHOD_INVOCATION, "ignore");
-         	setCompilerOption(JavaCore.COMPILER_PB_UNUSED_IMPORT, "ignore");
+		public Builder defaults() {
+        	parser(newDefaultAstParser());
+        	sourceLevel(JavaCore.VERSION_1_7);
+        	compilerOption(JavaCore.COMPILER_PB_UNUSED_LOCAL, "ignore");
+        	compilerOption(JavaCore.COMPILER_PB_UNUSED_PRIVATE_MEMBER, "ignore");
+        	compilerOption(JavaCore.COMPILER_PB_UNUSED_PARAMETER, "ignore");
+        	compilerOption(JavaCore.COMPILER_PB_UNUSED_TYPE_ARGUMENTS_FOR_METHOD_INVOCATION, "ignore");
+         	compilerOption(JavaCore.COMPILER_PB_UNUSED_IMPORT, "ignore");
         	return this;
         }
 
@@ -262,7 +262,7 @@ public class JAstParser {
 			return parser;
 		}
 		
-		public Builder setParser(ASTParser parser) {
+		public Builder parser(ASTParser parser) {
         	this.parser = parser;
         	return this;
         }
@@ -272,13 +272,13 @@ public class JAstParser {
 		 * @param root
 		 * @return
 		 */
-		public Builder addResolveRoot(Root root){
+		public Builder root(Root root){
 			this.roots.add(root);
 			return this;
 		}
 
-		public Builder setResolveRoots(IBuilder<? extends Iterable<Root>> builder){
-			setResolveRoots(builder.build());
+		public Builder roots(IBuilder<? extends Iterable<Root>> builder){
+			roots(builder.build());
 			return this;
 		}
 		
@@ -287,37 +287,37 @@ public class JAstParser {
 		 * @param roots
 		 * @return
 		 */
-		public Builder setResolveRoots(Iterable<Root> roots){
+		public Builder roots(Iterable<Root> roots){
 			this.roots = newArrayList(roots);
 			return this;
 		}
 
-		public Builder setCheckParse(boolean checkParse) {
+		public Builder checkParse(boolean checkParse) {
 			this.checkParse = checkParse;
 			return this;
 		}
 
-		public Builder setResolveBindings(boolean resolveBindings) {
+		public Builder resolveBindings(boolean resolveBindings) {
 			this.resolveBindings = resolveBindings;
 			return this;
 		}
 		
-		public Builder setRecordModifications(boolean recordModifications) {
+		public Builder recordModifications(boolean recordModifications) {
 			this.recordModifications = recordModifications;
 			return this;
 		}
 
-		public Builder setSourceLevel(String sourceLevel) {
-			setCompilerOption(JavaCore.COMPILER_SOURCE, sourceLevel);
+		public Builder sourceLevel(String sourceLevel) {
+			compilerOption(JavaCore.COMPILER_SOURCE, sourceLevel);
 			return this;
 		}
 		
-		public Builder setCompilerOption(String name, String value) {
+		public Builder compilerOption(String name, String value) {
 			options.put(name, value);
 			return this;
 		}
 		
-		public Builder setCompilerOptions(Map<String,String> options) {
+		public Builder compilerOptions(Map<String,String> options) {
 			options.putAll(options);
 			return this;
 		}

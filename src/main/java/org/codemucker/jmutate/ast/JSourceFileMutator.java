@@ -24,7 +24,7 @@ public class JSourceFileMutator {
 	}
 
 	public CompilationUnit getCompilationUnit() {
-		return source.getCompilationUnit();
+		return source.getCompilationUnitNode();
 	}
 
 	/**

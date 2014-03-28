@@ -79,7 +79,7 @@ public class SourceAsserts {
 	}
 
 	private static CompilationUnit getAstFromFileWithNoErrors(RootResource resource) {
-    	CompilationUnit cu = JSourceFile.fromResource(resource, JAstParser.newDefaultJParser()).getCompilationUnit();
+    	CompilationUnit cu = JSourceFile.fromResource(resource, JAstParser.newDefaultJParser()).getCompilationUnitNode();
     	return cu;
     }
 	

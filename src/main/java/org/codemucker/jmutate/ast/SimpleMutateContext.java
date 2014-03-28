@@ -31,13 +31,13 @@ import com.google.inject.name.Named;
 @Singleton
 public class SimpleMutateContext implements MutateContext {
 
-	private final PlacementStrategies strategyProvider  = PlacementStrategies.builder().setDefaults().build();
-	private final JAstParser parser = JAstParser.builder()
-		.setDefaults()
-		.setResolveRoots(Roots.builder()
-			.setIncludeClasspath(true)
-			.setIncludeTestSrcDir(true)
-			.setIncludeMainSrcDir(true)
+	private final PlacementStrategies strategyProvider  = PlacementStrategies.with().defaults().build();
+	private final JAstParser parser = JAstParser.with()
+		.defaults()
+		.roots(Roots.with()
+			.classpath(true)
+			.testSrcDir(true)
+			.mainSrcDir(true)
 			.build()	
 		)
 		.build();
@@ -48,7 +48,7 @@ public class SimpleMutateContext implements MutateContext {
 	private final boolean markGenerated;
 	private final Injector injector;
 	
-	public static Builder builder(){
+	public static Builder with(){
 		return new Builder();
 	}
 	

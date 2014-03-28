@@ -99,15 +99,41 @@ public class AJType extends ObjectMatcher<JType> {
 		return this;
 	}
     
+    public AJType packageName(final Class<?> classInPackage){
+    	String pkgName = JavaNameUtil.compiledNameToSourceName(classInPackage.getPackage().getName());
+    	packageName(pkgName);
+    	return this;
+    }
+    
+    public AJType packageName(final String pkgName){
+		addMatcher(new AbstractNotNullMatcher<JType>() {
+			private final Matcher<String> pkgNameMatcher = AString.equalTo(pkgName);
+			
+			@Override
+			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
+				String pkgName = Strings.emptyToNull(found.getPackageName());
+				if (pkgName != null) {
+					System.out.println("packageName:" + pkgName);
+					return diag.TryMatch(found.getPackageName(), pkgNameMatcher);
+				}
+				return false;
+			}
+
+			@Override
+			public void describeTo(Description desc) {
+				super.describeTo(desc);
+				desc.value("type with packageName matching", pkgNameMatcher);
+			}
+		});
+    	return this;
+    }
+    
 	public AJType packageMatchesAntPattern(final String pkgAntExpression){
-		addMatcher(new AbstractMatcher<JType>() {
+		addMatcher(new AbstractNotNullMatcher<JType>() {
 			private final Matcher<String> pkgNameMatcher = AString.withAntPattern(pkgAntExpression);
 			
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
-				if( found == null){
-					return false;
-				}
 				String pkgName = Strings.emptyToNull(found.getPackageName());
 				if (pkgName != null) {
 					return diag.TryMatch(found.getPackageName(), pkgNameMatcher);

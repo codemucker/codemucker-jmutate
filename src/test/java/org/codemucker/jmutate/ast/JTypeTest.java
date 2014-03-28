@@ -11,8 +11,10 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.Roots;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
+import org.codemucker.jmutate.SourceFinder;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass1;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass2;
@@ -21,8 +23,10 @@ import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyNonExtendingClass;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.transform.FieldBuilder;
 import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class JTypeTest {
@@ -107,7 +111,7 @@ public class JTypeTest {
 		t.pl("	}");
 		t.pl("}");
 		
-		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.with().simpleName("SubSubClass")).getFirst();
+		JType type = t.asJTypeSnippet().findNestedTypesMatching(AJType.with().simpleName("SubSubClass")).getFirst();
 		
 		Expect.that(type.isSubClassOf(MyParentClass.class)).is(true);
 	}
@@ -127,7 +131,7 @@ public class JTypeTest {
 		t.pl("	}");
 		t.pl("}");
 		
-		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.with().simpleName("SubSubClass")).getFirst();
+		JType type = t.asJTypeSnippet().findNestedTypesMatching(AJType.with().simpleName("SubSubClass")).getFirst();
 		
 		Expect.that(type.isSubClassOf(MyParentClass.class)).is(true);
 	}
@@ -142,7 +146,7 @@ public class JTypeTest {
 		t.pl("	class SubClass extends java.util.ArrayList {}");
 		t.pl("}");
 		
-		JType type = t.asJTypeSnippet().findChildTypesMatching(AJType.with().simpleName("SubClass")).getFirst();
+		JType type = t.asJTypeSnippet().findNestedTypesMatching(AJType.with().simpleName("SubClass")).getFirst();
 		
 		Expect.that(type.isSubClassOf(List.class)).is(true);
 	}
@@ -156,7 +160,7 @@ public class JTypeTest {
 		JType type = t.asJTypeSnippet();
 		
 		Expect
-			.that(type.findDirectChildTypes().getFirst().isSubClassOf(MyParentClass.class))
+			.that(type.findChildTypes().getFirst().isSubClassOf(MyParentClass.class))
 			.is(true);
 	}
 	
@@ -234,7 +238,7 @@ public class JTypeTest {
 		t.pl( "public void methodB(){}" );
 		t.pl("}");
 	
-		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findAllJMethods();
+		FindResult<JMethod> foundMethods = t.asResolvedJTypeNamed("MyTestClass").findMethods();
 
 		assertThat(
 				foundMethods.toList(), 
@@ -291,7 +295,7 @@ public class JTypeTest {
 	@Test
 	//For a bug where performing a method search on top level children also return nested methods
 	public void testFindJavaMethodsExcludingAnonymousTypeMethodsEmbeddedInMethods(){
-		JType type = SourceHelper.findSourceForTestClass(getClass()).getTypeWithName(MyTestClass.class);
+		JType type = SourceHelper.findSourceForClass(getClass()).getTypeWithName(MyTestClass.class);
 		FindResult<JMethod> foundMethods = type.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("get*"));
 
 		assertThat(
@@ -338,16 +342,20 @@ public class JTypeTest {
 		SourceTemplate t = ctxt.newSourceTemplate();
 
 		t.pl("class MyTestClass  {");
-		t.pl( "public void getA(){ return; }" );
-		t.pl( "private Foo foo = new Foo(){};//should resolve to Foo" );
-		t.pl( "private class Foo {" );
-		t.pl( "		public void getB(){ return;}" );
+		t.pl( "	 public void getA(){ return; }" );
+		t.pl( "	 private Foo foo = new Foo(){};//should resolve to Foo" );
+		t.pl( "  private class Foo {" );
+		t.pl( "		public Foo2 getB(){ return null;}" );
+		t.pl( "		class Foo2 {}" );
 		t.pl("	}");
 		t.pl("}");
 		
-		JField field = t.asResolvedJTypeNamed("MyTestClass").findFieldsMatching(AJField.with().name("foo")).getFirst();
+		JType mainType = t.asResolvedJTypeNamed("MyTestClass");
+		JField field = mainType.findFieldsMatching(AJField.with().name("foo")).getFirst();
+		assertThat(field.getTypeSignature(),isEqualTo("MyTestClass.Foo"));
 		
-		assertThat(field.getTypeSignature(),isEqualTo("Foo"));
+		JMethod nestedMethod = mainType.findNestedMethodsMatching(AJMethod.with().name("getB")).getFirst();
+		assertThat(nestedMethod.getReturnTypeFullName(),isEqualTo("MyTestClass.Foo.Foo2"));
 	}
 	
 	@Test
@@ -360,7 +368,7 @@ public class JTypeTest {
 		t.pl("	}");
 		t.pl("}");
 		
-		List<JType> types = t.asResolvedJTypeNamed("MyTestClass").findAllChildTypes().toList();
+		List<JType> types = t.asResolvedJTypeNamed("MyTestClass").findNestedTypes().toList();
 
 		assertThat(
 			types,
@@ -374,17 +382,13 @@ public class JTypeTest {
 	}
 	
 	@Test
-	public void testGetFullName(){
+	public void getFullNameMainClass(){
 		SourceTemplate t = ctxt.newSourceTemplate();
 		
 		t.pl("package foo.bar;");
-		
 		t.pl("import java.util.Collection;");
-		t.pl("import java.io.File;");
-
 		t.pl("class MyTestClass  {");
-		t.pl( "public Collection getA(){return null;}" );
-		t.pl( "public Object getB(){return null;}" );
+		t.pl( "public Collection getA(){return null;}" );//noise
 		t.pl("}");
 	
 		JType type = t.asResolvedSourceFileNamed("foo.bar.MyTestClass").getMainType();
@@ -392,6 +396,23 @@ public class JTypeTest {
 		assertThat(type.getFullName(), isEqualTo("foo.bar.MyTestClass"));
 	}
 
+	@Test
+	public void getFullNameChildClass(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		
+		t.pl("package foo.bar;");		
+		t.pl("import java.util.Collection;");
+		t.pl("class MyTestClass  {");
+		t.pl( "public Collection getA(){return null;}" );//noise
+		t.pl( "public class MyChildClass {}" );
+		t.pl("}");
+	
+		JType type = t.asResolvedSourceFileNamed("foo.bar.MyTestClass").getMainType().findNestedTypes().getFirst();
+
+		assertThat(type.getFullName(), isEqualTo("foo.bar.MyTestClass.MyChildClass"));
+	}
+
+	
 	@Test
 	public void testHasNotAnnotationOfType(){
 		SourceTemplate t = ctxt.newSourceTemplate();
@@ -418,7 +439,7 @@ public class JTypeTest {
 	
 	@Test
 	public void testImplementsClass(){
-		JSourceFile source = SourceHelper.findSourceForTestClass(getClass());
+		JSourceFile source = SourceHelper.findSourceForClass(getClass());
 		assertThat(source.getTypeWithName(MyChildClass1.class).isSubClassOf(MyExtendedClass.class),isFalse());
 		assertThat(source.getTypeWithName(MyChildClass2.class).isSubClassOf(MyExtendedClass.class),isTrue());
 		assertThat(source.getTypeWithName(MyChildClass3.class).isSubClassOf(MyExtendedClass.class),isTrue());
@@ -449,11 +470,21 @@ public class JTypeTest {
 
 		assertThat(
 				foundMethods.toList(), 
-				is(AList.of(JMethod.class)
-					.inOrder()
+				is(AList.inOrder()
 					.withOnly()
 					.item(AJMethod.with().name("MyTestClass"))
 					.item(AJMethod.with().name("MyTestClass")))
 		);
+	}
+	
+	@Test
+	public void getPackageNameOnFoundType(){
+		String pkgName = SourceHelper.findSourceForClass(JTypeTest.class).getMainType().getPackageName();
+		Assert.assertEquals("org.codemucker.jmutate.ast", pkgName);	
+		
+		pkgName = SourceHelper.findSourceForClass(FieldBuilder.class).getMainType().getPackageName();
+		Assert.assertEquals("org.codemucker.jmutate.transform", pkgName);	
+		
+		
 	}
 }

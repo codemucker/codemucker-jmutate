@@ -8,6 +8,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.List;
 
+import org.codemucker.jmutate.util.JavaNameUtil;
 import org.codemucker.jmutate.util.TypeUtil;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -102,7 +103,7 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 	 * @return
 	 */
 	public String getTypeSignature(){
-		return TypeUtil.toTypeSignature(fieldNode.getType());
+		return JavaNameUtil.resolveQualifiedName(fieldNode.getType());
 	}
 
 	/**

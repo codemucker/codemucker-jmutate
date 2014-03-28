@@ -8,18 +8,18 @@ public class JSearchEngineTest {
 
 	@Test
 	public void smokeTest(){
-		JSearchEngine engine = JSearchEngine.builder()
-			.setDefaults()
-			.setRoots(Roots.builder()
-				.setIncludeMainSrcDir(true)
-				.setIncludeTestSrcDir(true)
+		JSearchEngine engine = JSearchEngine.with()
+			.defaults()
+			.searchRoots(Roots.with()
+				.mainSrcDir(true)
+				.testSrcDir(true)
 				//.setIncludeClasspath(true)
 				)
-			.setParser(JAstParser.builder()
-				.setResolveBindings(true)
-				.setCheckParse(true)
-				.setResolveRoots(Roots.builder()
-					.setIncludeAll()))
+			.parser(JAstParser.with()
+				.resolveBindings(true)
+				.checkParse(true)
+				.roots(Roots.with()
+					.allDirs()))
 			.build();
 		
 		engine.find();

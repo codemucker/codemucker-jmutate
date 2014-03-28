@@ -354,7 +354,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 			c = relPath.charAt(i);
 			if (!(Character.isJavaIdentifierPart(c) || c == '/')) {
 				throw new IllegalArgumentException(
-						String.format("Relative paths can only contain valid java identifiers and forward slashes. Instead found '%s', for %s", c, relPath));
+						String.format("Relative paths can only contain valid java identifiers and forward slashes. Instead found '%s', for relative path '%s'", c, relPath));
 			}
 		}
 		return relPath;

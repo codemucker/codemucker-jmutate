@@ -75,7 +75,7 @@ public class SourceFinder {
 	public static interface JFindListener extends FindResult.MatchListener<Object> {
 	}
 	
-	public static Builder builder(){
+	public static Builder with(){
 		return new Builder();
 	}
 
@@ -145,7 +145,7 @@ public class SourceFinder {
 	private Function<JType, Iterator<JMethod>> typeToMethods(){
 		return new Function<JType,Iterator<JMethod>>(){
 			public Iterator<JMethod> apply(JType type){
-				return type.findAllJMethods().iterator();
+				return type.findMethods().iterator();
 			}
 		};
 	}
@@ -251,44 +251,44 @@ public class SourceFinder {
 			return parser != null ? parser : JAstParser.newDefaultJParser();
 		}
 
-		public Builder setSearchRoots(Roots.Builder searchRoots) {
-        	setSearchRoots(searchRoots.build());
+		public Builder searchRoots(Roots.Builder searchRoots) {
+        	searchRoots(searchRoots.build());
         	return this;
         }
 		
-	 	public Builder setSearchRoots(IBuilder<? extends Iterable<Root>> rootsBuilder) {
-        	setSearchRoots(rootsBuilder.build());
+	 	public Builder searchRoots(IBuilder<? extends Iterable<Root>> rootsBuilder) {
+        	searchRoots(rootsBuilder.build());
         	return this;
         }
 	 	
-	 	public Builder setSearchRoots(Iterable<Root> roots) {
-        	this.roots = nullSafeList(roots);
-        	return this;
-        }
-	 	
-	 	private static <T> List<T> nullSafeList(Iterable<T> iter){
-	 		if( iter == null){
-	 			return newArrayList();
+	 	public Builder searchRoots(Iterable<Root> roots) {
+	 		for(Root r:roots){
+	 			searchRoot(r);
 	 		}
-	 		return newArrayList(iter);
-	 	}
+        	return this;
+        }
+	 	
+	 	public Builder searchRoot(Root root) {
+        	this.roots.add(root);
+        	return this;
+        }
 
-	 	public Builder setListener(JFindListener listener) {
+	 	public Builder listener(JFindListener listener) {
         	this.listener = listener;
         	return this;
 		}
 	 	
-	 	public Builder setFilter(SourceFilter.Builder filter) {
-        	setFilter(filter.build());
+	 	public Builder filter(SourceFilter.Builder filter) {
+        	filter(filter.build());
         	return this;
 		}
 	 	
-		public Builder setFilter(IBuilder<SourceMatcher> builder) {
-        	setFilter(builder.build());
+		public Builder filter(IBuilder<SourceMatcher> builder) {
+        	filter(builder.build());
         	return this;
 		}
 		
-		public Builder setFilter(SourceMatcher filters) {
+		public Builder filter(SourceMatcher filters) {
 			objectMatcher = filters.getObjectMatcher();
 			rootMatcher = filters.getRootMatcher();
 			resourceMatcher = filters.getResourceMatcher();			
@@ -299,12 +299,12 @@ public class SourceFinder {
         	return this;
 		}
 
-		public Builder setParser(IBuilder<JAstParser> builder) {
-        	setParser(builder.build());
+		public Builder parser(IBuilder<JAstParser> builder) {
+        	parser(builder.build());
         	return this;
         }
 		
-		public Builder setParser(JAstParser parser) {
+		public Builder parser(JAstParser parser) {
         	this.parser = parser;
         	return this;
         }

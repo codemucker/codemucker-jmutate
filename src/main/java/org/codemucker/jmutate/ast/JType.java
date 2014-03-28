@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javassist.compiler.JvstTypeChecker;
+
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jmatch.Matcher;
@@ -33,6 +35,7 @@ import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
@@ -55,17 +58,26 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	 * @return
 	 */
 	public static JType from(ASTNode node){
+		JType t = fromOrNull(node);
+		if(t == null)
+		{
+			throw new IllegalArgumentException(String.format("Expect either a %s or a %s but was %s",
+				AbstractTypeDeclaration.class.getName(),
+				AnonymousClassDeclaration.class.getName(), 
+				node.getClass().getName()
+			));
+		}
+		return t;
+	}
+	
+	private static JType fromOrNull(ASTNode node){
 		if(node instanceof AbstractTypeDeclaration){
 			return from((AbstractTypeDeclaration)node);
 		}
 		if(node instanceof AnonymousClassDeclaration){
 			return from((AnonymousClassDeclaration)node);
 		}
-		throw new IllegalArgumentException(String.format("Expect either a %s or a %s but was %s",
-			AbstractTypeDeclaration.class.getName(),
-			AnonymousClassDeclaration.class.getName(), 
-			node.getClass().getName()
-		));
+		return null;
 	}
 	
 	public static JType from(AbstractTypeDeclaration node){
@@ -118,18 +130,30 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return names;
 	}
 
-	public FindResult<JField> findAllFields(){
-		return findFieldsMatching(AJField.any());
+	public FindResult<JField> findFields(){
+		return findDirectMatching(AJField.any(),Include.DIRECT_ONLY);
+	}
+	
+	public FindResult<JField> findNestedFields(){
+		return findDirectMatching(AJField.any(),Include.CHILDREN_ALSO);
 	}
 	
 	public FindResult<JField> findFieldsMatching(final Matcher<JField> matcher) {
+		return findDirectMatching(matcher, Include.DIRECT_ONLY);
+	}
+	
+	public FindResult<JField> findNestedFieldsMatching(final Matcher<JField> matcher) {
+		return findDirectMatching(matcher, Include.CHILDREN_ALSO);
+	}
+	
+	private FindResult<JField> findDirectMatching(final Matcher<JField> matcher,final Include include) {
 		final Collection<JField> found = Lists.newArrayList();
 		//use visitor as anonymous class does not contain a fields property 
 		ASTVisitor visitor = new BaseASTVisitor() {
 			@Override
 			protected boolean visitNode(ASTNode node) {
 				//skip child types
-				if(isTypeNode(node)){
+				if(include == Include.DIRECT_ONLY && isTypeNode(node)){
 					return false;
 				} else if( node instanceof FieldDeclaration){
 					JField field = JField.from((FieldDeclaration)node);
@@ -144,7 +168,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		visitChildren(visitor);
 		return DefaultFindResult.from(found);
 	}
-			
+	
 	/**
 	 * Find all top level methods declared on this type. Ignores methods 
 	 * defined in internal types or anonymous classes
@@ -152,8 +176,12 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	 * @param matcher
 	 * @return
 	 */
-	public FindResult<JMethod> findAllJMethods() {
-		return findMethodsMatching(AJMethod.any());		
+	public FindResult<JMethod> findMethods() {
+		return findMethodsMatching(AJMethod.any(),Include.DIRECT_ONLY);		
+	}
+	
+	public FindResult<JMethod> findNestedMethods() {
+		return findMethodsMatching(AJMethod.any(),Include.CHILDREN_ALSO);		
 	}
 	
 	/**
@@ -164,13 +192,21 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	 * @return
 	 */
 	public FindResult<JMethod> findMethodsMatching(final Matcher<JMethod> matcher) {
+		return findMethodsMatching(matcher,Include.DIRECT_ONLY);
+	}
+	
+	public FindResult<JMethod> findNestedMethodsMatching(final Matcher<JMethod> matcher) {
+		return findMethodsMatching(matcher,Include.CHILDREN_ALSO);
+	}
+	
+	private FindResult<JMethod> findMethodsMatching(final Matcher<JMethod> matcher, final Include include) {
 		final List<JMethod> found = newArrayList();
 		//use a visitor as the anonymous type does not have a 'methods' field
 		ASTVisitor visitor = new BaseASTVisitor(){
 			@Override
 			protected boolean visitNode(ASTNode node) {
 				//ignore child types
-				if(isTypeNode(node)){
+				if(include == Include.DIRECT_ONLY && isTypeNode(node)){
 					return false;
 				}
 				if(JMethod.isMethodNode(node)){
@@ -187,6 +223,10 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return DefaultFindResult.from(found);
 	}
 	
+	private enum Include {
+		DIRECT_ONLY,CHILDREN_ALSO
+	}
+
 	/**
 	 * Determine if there are any top level methods matching the given matcher
 	 * 
@@ -220,15 +260,35 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return foundReturn.get();
 	}
 	
-	public FindResult<JType> findDirectChildTypes(){
-		return findDirectChildTypesMatching(AJType.any());
+	public FindResult<JType> findChildTypes(){
+		return findTypesMatching(AJType.any(),Include.DIRECT_ONLY);
 	}
 	
 	/**
 	 * Find direct child types which match the given matcher. This is not recursive.
 	 */
-	public FindResult<JType> findDirectChildTypesMatching(final Matcher<JType> matcher){
+	public FindResult<JType> findTypesMatching(final Matcher<JType> matcher){
+		return findTypesMatching(matcher, Include.DIRECT_ONLY);
+	}
+	
+	/**
+	 * Recursively find all child types
+	 */
+	public FindResult<JType> findNestedTypes() {
+		return findTypesMatching(AJType.any(),Include.CHILDREN_ALSO);
+	}
+	
+	/**
+	 * Recursively find all child types matching the given matcher. This includes internal anonymous
+	 * types, and types within types
+	 */
+	public FindResult<JType> findNestedTypesMatching(final Matcher<JType> matcher){
+		return findTypesMatching(matcher,Include.CHILDREN_ALSO);
+	}
+	
+	private FindResult<JType> findTypesMatching(final Matcher<JType> matcher, Include include){
 		final List<JType> found = Lists.newArrayList();
+		final boolean walkChildren = include == Include.CHILDREN_ALSO;
 		ASTVisitor visitor = new BaseASTVisitor(){
 			@Override
 			public boolean visitNode(ASTNode node) {
@@ -237,40 +297,12 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 					if(matcher.matches(t)){
 						found.add(t);	
 					}
-					return false;//don't walk child types
+					return walkChildren;
 				}
 				if(JMethod.isMethodNode(node)){
-					return false;//don't walk methods
+					return walkChildren;
 				}
 				return true;//walk everything else
-			}
-		};
-		visitChildren(visitor);
-		return DefaultFindResult.from(found);
-	}
-	/**
-	 * Recursively find all child types
-	 */
-	public FindResult<JType> findAllChildTypes() {
-		return findChildTypesMatching(AJType.any());
-	}
-	
-	/**
-	 * Recursively find all child types matching the given matcher. This includes internal anonymous
-	 * types, and types within types
-	 */
-	public FindResult<JType> findChildTypesMatching(final Matcher<JType> matcher){
-		final Collection<JType> found = Lists.newArrayList();
-		ASTVisitor visitor = new BaseASTVisitor() {
-			@Override
-			protected boolean visitNode(ASTNode node) {
-				if(JType.isTypeNode(node)){
-					JType type = JType.from(node);
-					if(matcher.matches(type)) {
-						found.add(type);
-					}
-				}
-				return true;
 			}
 		};
 		visitChildren(visitor);
@@ -309,8 +341,28 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		throw new MutateException("Couldn't find compilation unit. Unexpected");
 	}
 
+	/**
+	 * Find the immediate parent type, or null if none
+	 * @return
+	 */
+	public JType getParentJType() {
+		ASTNode parent = typeNode.getParent();
+		while( parent != null){
+			JType t = fromOrNull(parent);
+			if(t != null){
+				return t;
+			}
+			parent = parent.getParent();
+		}
+		return null;
+	}
+	
 	public String getPackageName(){
-		return JavaNameUtil.getPackageFor(typeNode);
+		PackageDeclaration pkg = getCompilationUnit().getPackage();
+		if( pkg == null){
+			return null;
+		}
+		return pkg.getName().getFullyQualifiedName();
 	}
 
 	public boolean isAccess(JAccess access) {
@@ -577,7 +629,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		}
 	}
 	
-	//TODO:count occurrances in the source file
+	//TODO:count occurrances in the source file to calculate anonymuous class number
 	public static class AnonynousClassJType extends JType {
 		private static final List<IExtendedModifier> modifiers = Collections.emptyList();
 		
@@ -657,4 +709,5 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			return types;
 		}
 	}
+
 }

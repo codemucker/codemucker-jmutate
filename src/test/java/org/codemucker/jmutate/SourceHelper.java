@@ -2,12 +2,16 @@ package org.codemucker.jmutate;
 
 import static org.junit.Assert.assertEquals;
 
+import org.codemucker.jfind.AResource;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.Roots;
+import org.codemucker.jmatch.AList;
+import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceFinder;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
+import org.codemucker.jmutate.ast.matcher.AJSourceFile;
 
 
 public class SourceHelper {
@@ -17,13 +21,17 @@ public class SourceHelper {
 	 * @param classToFindSourceFor the class to find the source for
 	 * @return the found source file, or throw an exception if no source found
 	 */
-	public static JSourceFile findSourceForTestClass(Class<?> classToFindSourceFor){
+	public static JSourceFile findSourceForClass(Class<?> classToFindSourceFor){
 		
-		SourceFinder finder = newTestSourcesResolvingFinder()
-			.setFilter(SourceFilter.builder()
-				.setIncludeFileName(classToFindSourceFor.getName().replace('.', '/') + ".java"))
+		String filePath = classToFindSourceFor.getName().replace('.', '/') + ".java";
+		SourceFinder finder = newAllSourcesResolvingFinder()
+			.filter(SourceFilter.with()
+				.includeResource(AResource.with().path(filePath)))
 			.build();
 		FindResult<JSourceFile> sources = finder.findSources();
+		
+		//Expect.that(sources).is(AList.withOnly(AJSourceFile.any()));
+		
 		assertEquals("expected a single match",1,sources.toList().size());
 		return sources.getFirst();
 	}
@@ -32,27 +40,27 @@ public class SourceHelper {
 	 * @return
 	 */
 	public static SourceFinder.Builder newAllSourcesResolvingFinder(){
-		return SourceFinder.builder()
-			.setSearchRoots(Roots.builder()
-					.setIncludeMainSrcDir(true)
-					.setIncludeTestSrcDir(true))
-			.setParser(newResolvingParser());
+		return SourceFinder.with()
+			.searchRoots(Roots.with()
+					.mainSrcDir(true)
+					.testSrcDir(true))
+			.parser(newResolvingParser());
 	}
 	
 	public static SourceFinder.Builder newTestSourcesResolvingFinder(){
-		return SourceFinder.builder()
-			.setSearchRoots(Roots.builder()
-				.setIncludeMainSrcDir(false)
-				.setIncludeTestSrcDir(true))
-			.setParser(
+		return SourceFinder.with()
+			.searchRoots(Roots.with()
+				.mainSrcDir(false)
+				.testSrcDir(true))
+			.parser(
 				newResolvingParser());
 	}
 	
 	public static JAstParser newResolvingParser(){
-		return JAstParser.builder()
-			.setCheckParse(true)
-			.setResolveBindings(true)
-			.setResolveRoots(Roots.builder().setIncludeAll())
+		return JAstParser.with()
+			.checkParse(true)
+			.resolveBindings(true)
+			.roots(Roots.with().allDirs())
 			.build();
 	}
 }

@@ -9,7 +9,7 @@ import org.codemucker.jtest.TestHelper;
 import org.junit.Test;
 
 
-public class JavaSourceFileTest {
+public class JSourceFileTest {
 
 	TestHelper helper = new TestHelper();
 	MutateContext ctxt = new SimpleMutateContext();

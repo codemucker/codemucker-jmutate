@@ -13,10 +13,10 @@ public class BeanBuilderPatternFinder {
 	private MutateContext ctxt;
 	
 	public SourceFilter.Builder GetFilter(){
-		return SourceFilter.builder()
+		return SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.addInclude(AJType.with().fullName("*Builder"));
+				.includeType(AJType.with().fullName("*Builder"));
 			
 	}
 	

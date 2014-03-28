@@ -56,7 +56,7 @@ public class JTypeMutatorTest {
 	}
 	
 	private JTypeMutator getMutatorFor(Class<?> klass){
-		return SourceHelper.findSourceForTestClass(klass).asMutator(context).getMainTypeAsMutable();
+		return SourceHelper.findSourceForClass(klass).asMutator(context).getMainTypeAsMutable();
 	}
 	
 	private void assertAstEquals(String expectPath, JTypeMutator actual){

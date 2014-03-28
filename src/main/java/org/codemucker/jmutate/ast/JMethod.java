@@ -51,7 +51,6 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		));
 	}
 	
-	
 	public static JMethod from(MethodDeclaration node){
 		return new JMethod(node);
 	}
@@ -62,11 +61,11 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		this.methodNode = methodNode;
 	}
 
-	public JType getJType(){
-		return JType.from(getType());
+	public JType getEnclosingJType(){
+		return JType.from(getEnclosingType());
 	}
 	
-	public AbstractTypeDeclaration getType(){
+	public AbstractTypeDeclaration getEnclosingType(){
 		ASTNode node = getAstNode();
 		while( node != null ){
 			if(node instanceof AbstractTypeDeclaration){
@@ -106,9 +105,17 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 	    return methodNode.isConstructor();
     }
 	
+	public String getReturnTypeFullName(){
+		if( isVoid()){
+			return "void";
+		}
+		return JavaNameUtil.resolveQualifiedName(methodNode.getReturnType2());
+	}
+
 	public boolean isVoid(){
 		return methodNode.getReturnType2() == null || "void".equals(methodNode.getReturnType2().toString());
 	}
+	
 	
 	@SuppressWarnings("unchecked")
     public JModifiers getModifiers(){
@@ -172,7 +179,7 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 	 * <p><pre>
 	 *  Object foo(String bar,int[] args) -- %gt; foo(java.lang.String,int[])
 	 *  Object foo(String bar,int[][] args) -- %gt; foo(java.lang.String,int[][])
-	 *  Object foo(String bar,Collection<String> col) -- %gt; foo(java.lang.String,java.util.Collection)
+	 *  Object foo(String bar,Collection&lt;String%gt; col) -- %gt; foo(java.lang.String,java.util.Collection)
 	 * </pre></p>
 	 * @return the signature
 	 */

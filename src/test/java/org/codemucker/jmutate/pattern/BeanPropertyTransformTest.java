@@ -26,7 +26,7 @@ import org.junit.Test;
 
 public class BeanPropertyTransformTest {
 
-	private MutateContext ctxt = SimpleMutateContext.builder()
+	private MutateContext ctxt = SimpleMutateContext.with()
 			.markGenerated(true)
 			.build();
 		

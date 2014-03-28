@@ -80,7 +80,7 @@ public class JAnnotationTest {
 	
 	@Test
 	public void test_resolveSimpleName(){
-		JType type = SourceHelper.findSourceForTestClass(JAnnotationTest.class).getTypeWithName(TestBean.class);
+		JType type = SourceHelper.findSourceForClass(JAnnotationTest.class).getTypeWithName(TestBean.class);
 		Collection<Annotation> annons = type.getAnnotations();
 		
 		assertThat(annons.size(),isEqualTo(1));

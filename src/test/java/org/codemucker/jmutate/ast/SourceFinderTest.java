@@ -23,8 +23,8 @@ public class SourceFinderTest {
 	@Test
 	public void testFindClassesWithMethodMatch() throws Exception {
 		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
-			.setFilter(SourceFilter.builder()
-				.addInclude(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
+			.filter(SourceFilter.with()
+				.includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
 			)
 			.build();
 		JType type = finder.findTypes().getFirst();
@@ -35,8 +35,8 @@ public class SourceFinderTest {
 	@Test
 	public void testFindClassesExtending() throws Exception {
 		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
-			.setFilter(SourceFilter.builder()
-				.addInclude(AJType.with().isASubclassOf(MyClass.class)))
+			.filter(SourceFilter.with()
+				.includeType(AJType.with().isASubclassOf(MyClass.class)))
 			.build();
 
 		Expect
@@ -52,10 +52,10 @@ public class SourceFinderTest {
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
 		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
-			.setFilter(SourceFilter.builder()
-				.addInclude(AJType.with().annotation(MyAnnotation.class))
+			.filter(SourceFilter.with()
+				.includeType(AJType.with().annotation(MyAnnotation.class))
 			)
-			.setListener(new JFindListener(){
+			.listener(new JFindListener(){
 
 				@Override
 				public void onMatched(Object result) {
