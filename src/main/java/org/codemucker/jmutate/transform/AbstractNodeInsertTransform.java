@@ -25,11 +25,11 @@ public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTr
 	public abstract void transform();
 	
 	public S setTarget(AbstractTypeDeclaration target) {
-    	setTarget(JType.from(target));
+    	target(JType.from(target));
     	return self();
     }
 
-	public S setTarget(JType javaType) {
+	public S target(JType javaType) {
     	this.target = javaType;
     	return self();
     }

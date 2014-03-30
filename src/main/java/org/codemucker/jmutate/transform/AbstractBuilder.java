@@ -25,7 +25,7 @@ public abstract class AbstractBuilder<S extends AbstractBuilder<S>> {
 		}
 	}
 	
-	public S setMarkedGenerated(boolean markedGenerated) {
+	public S markedGenerated(boolean markedGenerated) {
 		this.markedGenerated = markedGenerated;
 		return self();
 	}

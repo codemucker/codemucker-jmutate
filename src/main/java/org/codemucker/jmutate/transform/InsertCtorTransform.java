@@ -54,9 +54,9 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
     	}
     	if(insert){
     		new NodeInserter()
-                .setTargetToInsertInto(getTarget())
-                .setNodeToInsert(ctor.getAstNode())
-                .setStrategy(getPlacementStrategy())
+                .target(getTarget())
+                .nodeToInsert(ctor.getAstNode())
+                .placementStrategy(getPlacementStrategy())
                 .insert();
     	}
     }

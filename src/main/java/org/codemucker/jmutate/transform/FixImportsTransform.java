@@ -67,7 +67,7 @@ public class FixImportsTransform {
 			AST ast = cu.getAST();
 			for(Map.Entry<String, String> entry:importsToAdd.entrySet()){
 				String className = entry.getValue();
-				if( !IsIgnoreImport(className)){
+				if( !isIgnoreImport(className)){
 					ImportDeclaration importDec = createImport(ast,className);
 					cu.imports().add(importDec);
 				}
@@ -77,23 +77,23 @@ public class FixImportsTransform {
 			Map<String,String> classNames = toFqnsKeyedByShortName(findAllClassNamesIn(node));
 			for(Map.Entry<String, String> entry:classNames.entrySet()){
 				String className = entry.getValue();
-				if( IsBuiltInType(className)){
+				if( isBuiltInType(className)){
 					classNamesByShortNameToConvert.put(entry.getKey(), entry.getValue());
 				}
 			}
 		}
 		
 		//shorten all fqn's in imports list
-		FqnShortenerVisitor shortenerVisitor = new FqnShortenerVisitor(swapKeysAndValues(classNamesByShortNameToConvert));
+		FullNameShortenerVisitor shortenerVisitor = new FullNameShortenerVisitor(swapKeysAndValues(classNamesByShortNameToConvert));
 		node.accept(shortenerVisitor);
 	}
 	
 	//TODO:list of exclusions, configurable...
-	private boolean IsIgnoreImport(String fqdn){
-		return IsBuiltInType(fqdn);
+	private boolean isIgnoreImport(String fullName){
+		return isBuiltInType(fullName);
 	}
 	
-	private boolean IsBuiltInType(String fqdn){
+	private boolean isBuiltInType(String fqdn){
 		return fqdn.startsWith("java.lang.");
 	}
 	
@@ -153,7 +153,7 @@ public class FixImportsTransform {
 		return map;
 	}
 
-	public FixImportsTransform setNodeToClean(AstNodeProvider<?> provider) {
+	public FixImportsTransform nodeToClean(AstNodeProvider<?> provider) {
 		setNodeToClean(provider.getAstNode());
 		return this;
 	}
@@ -163,24 +163,24 @@ public class FixImportsTransform {
 		return this;
 	}
 
-	public FixImportsTransform setCtxt(MutateContext ctxt) {
+	public FixImportsTransform ctxt(MutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}
 	
-	public FixImportsTransform setAddMissingImports(boolean b) {
+	public FixImportsTransform addMissingImports(boolean b) {
 		this.addMissingImports = b;
 		return this;
 	}
 	
-	private static class FqnShortenerVisitor extends BaseASTVisitor {
-		private static Logger log = Logger.getLogger(FqnShortenerVisitor.class);
+	private static class FullNameShortenerVisitor extends BaseASTVisitor {
+		private static Logger log = Logger.getLogger(FullNameShortenerVisitor.class);
 			
 		private Map<String,String> shortNamesByFqnsToConvert = newHashMap();
 		
 		private int depth = 0;
 		
-		FqnShortenerVisitor(Map<String,String> shortNamesByFqnsToConvert){
+		FullNameShortenerVisitor(Map<String,String> shortNamesByFqnsToConvert){
 			this.shortNamesByFqnsToConvert = newHashMap(shortNamesByFqnsToConvert);
 		}
 

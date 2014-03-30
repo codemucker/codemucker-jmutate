@@ -8,29 +8,30 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jmutate.util.TypeUtil;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 
-public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuilder> {
+public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBuilder> {
 
-	public static enum RETURN {
+	public static enum RETURNS {
 		VOID, TARGET, ARG;
 	}
 
-	private RETURN returnType = RETURN.VOID;
+	private RETURNS returnType = RETURNS.VOID;
 	private JAccess access = JAccess.PUBLIC;
 
 	private String name;
-	private String type;
+	private String fieldType;
 	private JType target;
 
-	public static SetterMethodBuilder builder() {
-		return new SetterMethodBuilder();
+	public static JMethodSetterBuilder builder() {
+		return new JMethodSetterBuilder();
 	}
 
-	public SetterMethodBuilder(){
+	public JMethodSetterBuilder(){
 		setPattern("bean.setter");
 	}
 	
@@ -39,7 +40,7 @@ public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuild
 		
 		checkNotNull("target", target);
 		checkNotBlank("name", name);
-		checkNotBlank("type", type);
+		checkNotBlank("type", fieldType);
 
 		return JMethod.from(toMethod());
 	}
@@ -50,7 +51,7 @@ public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuild
 		String upperName = ClassNameUtil.upperFirstChar(name);
 		template
 			.setVar("methodName", "set" + upperName)
-			.setVar("argType", type)
+			.setVar("argType", fieldType)
 			.setVar("argName", name)
 		    .setVar("fieldName", name);
 
@@ -66,7 +67,7 @@ public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuild
 		template.println("this.${fieldName} = ${argName};");
 		switch (returnType) {
 		case ARG:
-			template.setVar("returnType", type);
+			template.setVar("returnType", fieldType);
 			template.println("return ${argName};");
 			break;
 		case TARGET:
@@ -84,33 +85,33 @@ public final class SetterMethodBuilder extends AbstractBuilder<SetterMethodBuild
 		return template.asResolvedMethodNode();
 	}
 
-	public SetterMethodBuilder setMethodAccess(JAccess access) {
+	public JMethodSetterBuilder methodAccess(JAccess access) {
 		this.access = access;
 		return this;
 	}
 
-	public SetterMethodBuilder setFromField(JField f) {
-		setFieldName(f.getName());
-		setFieldType(f.getTypeSignature());
+	public JMethodSetterBuilder field(JField f) {
+		fieldName(f.getName());
+		fieldType(f.getTypeSignature());
 		return this;
 	}
 
-	public SetterMethodBuilder setFieldName(String name) {
+	public JMethodSetterBuilder fieldName(String name) {
 		this.name = name;
 		return this;
 	}
 
-	public SetterMethodBuilder setFieldType(String type) {
-		this.type = type;
+	public JMethodSetterBuilder fieldType(String type) {
+		this.fieldType = TypeUtil.toShortNameIfDefaultImport(type);
 		return this;
 	}
 
-	public SetterMethodBuilder setReturnType(RETURN returnType) {
+	public JMethodSetterBuilder returns(RETURNS returnType) {
 		this.returnType = returnType;
 		return this;
 	}
 
-	public SetterMethodBuilder setTarget(JType target) {
+	public JMethodSetterBuilder target(JType target) {
 		this.target = target;
 		return this;
 	}

@@ -111,9 +111,8 @@ public class AJType extends ObjectMatcher<JType> {
 			
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
-				String pkgName = Strings.emptyToNull(found.getPackageName());
+				String pkgName = found.getPackageName();
 				if (pkgName != null) {
-					System.out.println("packageName:" + pkgName);
 					return diag.TryMatch(found.getPackageName(), pkgNameMatcher);
 				}
 				return false;

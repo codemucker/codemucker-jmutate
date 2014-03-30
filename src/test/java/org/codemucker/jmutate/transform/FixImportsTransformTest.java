@@ -38,7 +38,7 @@ public class FixImportsTransformTest {
 		//do the actual import clean
 		ctxt.obtain(FixImportsTransform.class)
 			.setNodeToClean(actual)
-			.setAddMissingImports(false)
+			.addMissingImports(false)
 			.apply();
 		
 		SourceAsserts.assertAstsMatch(expected, actual);

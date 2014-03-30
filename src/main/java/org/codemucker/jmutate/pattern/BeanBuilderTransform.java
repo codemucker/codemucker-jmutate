@@ -19,7 +19,7 @@ import org.codemucker.jmutate.transform.FixImportsTransform;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.transform.InsertTypeTransform;
-import org.codemucker.jmutate.transform.SetterMethodBuilder;
+import org.codemucker.jmutate.transform.JMethodSetterBuilder;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.codemucker.jmutate.transform.Transform;
 import org.codemucker.jmutate.util.JavaNameUtil;
@@ -82,8 +82,8 @@ public class BeanBuilderTransform implements Transform {
 	    	.apply();
 	    
 	    ctxt.obtain(FixImportsTransform.class)
-	    	.setAddMissingImports(true)
-	    	.setNodeToClean(target)
+	    	.addMissingImports(true)
+	    	.nodeToClean(target)
 	    	.apply();
 	}
 
@@ -121,7 +121,7 @@ public class BeanBuilderTransform implements Transform {
 	    		.asJTypeSnippet();
 
 	    	ctxt.obtain(InsertTypeTransform.class)
-	    		.setTarget(type)
+	    		.target(type)
 	    		.setType(builder)
 	    		.transform();
 	    	//we want a handle to the inserted nodes. These are copied on insert so adding anything to the
@@ -167,8 +167,8 @@ public class BeanBuilderTransform implements Transform {
 
 			JMethod buildMethod = createBuildMethod();
 			ctxt.obtain(InsertMethodTransform.class)
-				.setTarget(target)
-				.setMethod(buildMethod)
+				.target(target)
+				.method(buildMethod)
 				.transform();
 		}
 
@@ -238,7 +238,7 @@ public class BeanBuilderTransform implements Transform {
 			final MethodDeclaration ctor = createCtorFromFields();
 	
 		    ctxt.obtain(InsertCtorTransform.class)
-		        .setTarget(target)
+		        .target(target)
 		        .setCtor(ctor)
 		        .transform();
 		}
@@ -323,8 +323,8 @@ public class BeanBuilderTransform implements Transform {
 			//add the builder fields and setters
 		    final BeanPropertyTransform pattern = ctxt.obtain(BeanPropertyTransform.class)
 		    	.setTarget(target)
-		    	.setCreateAccessor(false)
-		    	.setSetterReturn(SetterMethodBuilder.RETURN.TARGET);
+		    	.setCreateGetter(false)
+		    	.setSetterReturns(JMethodSetterBuilder.RETURNS.TARGET);
 	
 		    for(final SingleJField field:fields){
 		    	pattern.setPropertyType(field.getType());

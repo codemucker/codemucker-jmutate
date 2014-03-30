@@ -16,9 +16,10 @@ import org.codemucker.jmutate.ast.JAstMatcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
+import org.codemucker.jmutate.ast.matcher.AJSourceFile;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.ast.matcher.AType;
-import org.codemucker.jmutate.transform.FieldBuilder;
+import org.codemucker.jmutate.transform.JFieldBuilder;
 import org.codemucker.lang.IBuilder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -70,10 +71,8 @@ public class EnforcerExampleTest
 					.mainSrcDir(true)
 					.testSrcDir(true))
 				.filter(SourceFilter.with()
-					.excludeType(AJType.with()
-						.name(JAstMatcher.class))
-					.excludeType(AJType.with()
-						.packageName(FieldBuilder.class))
+					.excludeSource(AJSourceFile.with().name(JAstMatcher.class))
+					.excludeType(AJType.with().packageName(JFieldBuilder.class))
 					.includeType(AJType.that()
 						.isAbstract(false)
 						.simpleNameMatchesAntPattern("*Builder"))
@@ -114,13 +113,13 @@ public class EnforcerExampleTest
 				
 				//ensure method name down's start with bad prefix
 				if( method.getName().startsWith("get") || method.getName().startsWith("set") || method.getName().startsWith("with") ) {
-					String msg = String.format("FAIL: expected builder method at %s.%s to _not_ start with any of 'get,set,with'", method.getEnclosingJType().getFullName(), method.getFullSignature());
+					String msg = String.format("FAIL: expected builder method %s.%s to _not_ start with any of 'get,set,with'", method.getEnclosingJType().getFullName(), method.getFullSignature());
 					failMsgs.add(msg);
 				}
 				
 				//ensure return type is builder
 				if( !method.getAstNode().getReturnType2().toString().equals(builderTypeName)){
-					String msg = String.format("FAIL : expected builder method at %s.%s to return the enclosing builder '%s' but got '%s' for \n\n method \n%s\n in parent \n%s ", 
+					String msg = String.format("FAIL : expected builder method %s.%s to return the enclosing builder '%s' but got '%s' for \n\n method \n%s\n in parent \n%s ", 
 						method.getEnclosingJType().getFullName(),
 						method.getFullSignature(),
 						builderTypeName,

@@ -58,6 +58,8 @@ public class SourceAsserts {
     		throw generateComparisonFailure(expected, actual, e);		
     	} catch( AssertionFailedError e){
     		throw generateComparisonFailure(expected, actual, e);	
+    	} catch( AssertionError e){
+    		throw generateComparisonFailure(expected, actual, e);	
     	}
     	if (!equals) {
     		String expectFromAst = nodeToString(expected);
@@ -68,7 +70,7 @@ public class SourceAsserts {
     	//assertEquals(expectAst, actualAst);
     }
 
-	private static ComparisonFailure generateComparisonFailure(ASTNode expected, ASTNode actual, AssertionFailedError e) {
+	private static ComparisonFailure generateComparisonFailure(ASTNode expected, ASTNode actual, Error e) {
 		String expectFromAst = nodeToString(expected);
 		String actualFromAst = nodeToString(actual);
 		StringWriter sw = new StringWriter();

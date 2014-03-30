@@ -23,7 +23,7 @@ import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyNonExtendingClass;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.FieldBuilder;
+import org.codemucker.jmutate.transform.JFieldBuilder;
 import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.SourceTemplate;
 import org.junit.Assert;
@@ -482,7 +482,7 @@ public class JTypeTest {
 		String pkgName = SourceHelper.findSourceForClass(JTypeTest.class).getMainType().getPackageName();
 		Assert.assertEquals("org.codemucker.jmutate.ast", pkgName);	
 		
-		pkgName = SourceHelper.findSourceForClass(FieldBuilder.class).getMainType().getPackageName();
+		pkgName = SourceHelper.findSourceForClass(JFieldBuilder.class).getMainType().getPackageName();
 		Assert.assertEquals("org.codemucker.jmutate.transform", pkgName);	
 		
 		

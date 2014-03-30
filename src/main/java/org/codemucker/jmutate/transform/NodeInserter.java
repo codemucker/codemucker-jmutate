@@ -41,24 +41,24 @@ public class NodeInserter {
 		return clonedNode;
 	}
 
-	public NodeInserter setTargetToInsertInto(JType javaType) {
+	public NodeInserter target(JType javaType) {
     	this.nodesToInsertInto = javaType.getBodyDeclarations();
     	this.ast = javaType.getAst();
     	return this;
 	}
 
-	public NodeInserter setNodesToInsertInto(AST ast, List<ASTNode> nodesToInsertInto) {
+	public NodeInserter nodesToInsertInto(AST ast, List<ASTNode> nodesToInsertInto) {
     	this.nodesToInsertInto = Preconditions.checkNotNull(nodesToInsertInto, "expect non null list of nodes to insert into");
     	this.ast = Preconditions.checkNotNull(ast,"expect non null ast");
     	return this;
 	}
 
-	public NodeInserter setNodeToInsert(ASTNode childNode) {
+	public NodeInserter nodeToInsert(ASTNode childNode) {
     	this.nodeToInsert = Preconditions.checkNotNull(childNode,"expect non null node to insert");
     	return this;
 	}
 
-	public NodeInserter setStrategy(PlacementStrategy strategy) {
+	public NodeInserter placementStrategy(PlacementStrategy strategy) {
     	this.strategy = Preconditions.checkNotNull(strategy, "expect non null strategy");
     	return this;
     }	

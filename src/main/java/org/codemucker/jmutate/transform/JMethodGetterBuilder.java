@@ -10,18 +10,18 @@ import org.codemucker.jpattern.Pattern;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
-public final class GetterMethodBuilder extends AbstractBuilder<GetterMethodBuilder> {
+public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBuilder> {
 
 	private String fieldName;
 	private String fieldType;
 	private boolean cloneOnReturn;
 	private JAccess access = JAccess.PUBLIC;
 	
-	public static GetterMethodBuilder builder(){
-		return new GetterMethodBuilder();
+	public static JMethodGetterBuilder builder(){
+		return new JMethodGetterBuilder();
 	}
 	
-	public GetterMethodBuilder(){
+	public JMethodGetterBuilder(){
 		setPattern("bean.getter");
 	}
 	
@@ -59,25 +59,25 @@ public final class GetterMethodBuilder extends AbstractBuilder<GetterMethodBuild
 		template.p("}");
 		return template.asMethodNodeSnippet();
 	}
-	
-	public GetterMethodBuilder setFromField(JField f) {
-		setFieldName(f.getName());
-		setFieldType(f.getTypeSignature());
-		return this;
-	}
 
-	public GetterMethodBuilder setMethodAccess(JAccess access) {
+	public JMethodGetterBuilder methodAccess(JAccess access) {
     	this.access  = access;
     	return this;
     }
 
-	public GetterMethodBuilder setFieldName(String name) {
+	public JMethodGetterBuilder field(JField f) {
+		fieldName(f.getName());
+		fieldType(f.getTypeSignature());
+		return this;
+	}
+	
+	public JMethodGetterBuilder fieldName(String name) {
 		this.fieldName = name;
 		return this;
 	}
 
-	public GetterMethodBuilder setFieldType(String type) {
-		this.fieldType = type;
+	public JMethodGetterBuilder fieldType(String type) {
+		this.fieldType = TypeUtil.toShortNameIfDefaultImport(type);
 		return this;
 	}
 }

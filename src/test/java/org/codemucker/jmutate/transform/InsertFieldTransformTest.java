@@ -36,18 +36,18 @@ public class InsertFieldTransformTest {
 		
 		JType after = srcBefore.asResolvedJTypeNamed("com.bertvanbrakel.codegen.bean.TestBeanModify");
 		
-		JField field = FieldBuilder.builder()
+		JField field = JFieldBuilder.builder()
 			.setContext(ctxt)
-			.setMarkedGenerated(true)
+			.markedGenerated(true)
 			.setPattern("mypattern")
-			.setFieldType("String")
-			.setFieldName("myField")
+			.fieldType("String")
+			.fieldName("myField")
 			.build();
 		
 		//this is what we are testing
 		InsertFieldTransform.newTransform()
-			.setTarget(after)
-			.setField(field)
+			.target(after)
+			.field(field)
 			.setPlacementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
 			.transform();
 	

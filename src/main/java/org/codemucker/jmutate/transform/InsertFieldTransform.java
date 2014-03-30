@@ -33,25 +33,25 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 				insert = false;
 				JField existingField = found.getFirst();
 				switch(getClashStrategy()){
-				case REPLACE:
-					existingField.getAstNode().delete();
-					insert = true;
-					break;
-				case IGNORE:
-					break;
-				case ERROR:
-					throw new MutateException("Existing field %s, not replacing with %s", existingField.getAstNode(), field);
-				default:
-					throw new MutateException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), getClashStrategy());
+					case REPLACE:
+						existingField.getAstNode().delete();
+						insert = true;
+						break;
+					case IGNORE:
+						break;
+					case ERROR:
+						throw new MutateException("Existing field %s, not replacing with %s", existingField.getAstNode(), field);
+					default:
+						throw new MutateException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), getClashStrategy());
 				}
 			}
 		}
 		if( insert){
 			new NodeInserter()
-                .setTargetToInsertInto(getTarget())
-                .setNodeToInsert(field.getAstNode())
+                .target(getTarget())
+                .nodeToInsert(field.getAstNode())
                 //TODO:allow to override this? want to make this a non greedy class!
-                .setStrategy(getPlacementStrategy())
+                .placementStrategy(getPlacementStrategy())
                 .insert();
 		}
 	}
@@ -71,7 +71,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	 * @return
 	 */
 	public InsertFieldTransform setField(FieldDeclaration field) {
-    	setField(JField.from(field));
+    	field(JField.from(field));
     	return this;
 	}
 	
@@ -80,7 +80,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	 * @param field
 	 * @return
 	 */
-	public InsertFieldTransform setField(JField field) {
+	public InsertFieldTransform field(JField field) {
     	this.field = field;
     	return this;
 	}

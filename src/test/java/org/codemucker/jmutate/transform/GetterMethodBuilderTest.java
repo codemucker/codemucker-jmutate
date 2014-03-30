@@ -29,9 +29,9 @@ public class GetterMethodBuilderTest {
 	
 	@Test
 	public void test_default_create(){
-		JMethod actual = ctxt.obtain(GetterMethodBuilder.class)
-			.setFieldName("myField")
-			.setFieldType("my.org.Foo")
+		JMethod actual = ctxt.obtain(JMethodGetterBuilder.class)
+			.fieldName("myField")
+			.fieldType("my.org.Foo")
 			.build();
 	
 		JMethod expect = ctxt.newSourceTemplate()
@@ -43,11 +43,11 @@ public class GetterMethodBuilderTest {
 	
 	@Test
 	public void test_non_default() throws Exception {
-		JMethod actual = ctxt.obtain(GetterMethodBuilder.class)
-			.setMethodAccess(JAccess.PROTECTED)
-			.setMarkedGenerated(true)
-			.setFieldName("myField")
-			.setFieldType("my.org.Foo")
+		JMethod actual = ctxt.obtain(JMethodGetterBuilder.class)
+			.methodAccess(JAccess.PROTECTED)
+			.markedGenerated(true)
+			.fieldName("myField")
+			.fieldType("my.org.Foo")
 			.build();
 	
 		JMethod expect = ctxt.newSourceTemplate()

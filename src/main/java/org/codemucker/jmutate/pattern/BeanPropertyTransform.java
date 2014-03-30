@@ -8,11 +8,11 @@ import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.transform.MutateContext;
-import org.codemucker.jmutate.transform.FieldBuilder;
-import org.codemucker.jmutate.transform.GetterMethodBuilder;
+import org.codemucker.jmutate.transform.JFieldBuilder;
+import org.codemucker.jmutate.transform.JMethodGetterBuilder;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
-import org.codemucker.jmutate.transform.SetterMethodBuilder;
+import org.codemucker.jmutate.transform.JMethodSetterBuilder;
 import org.codemucker.jmutate.transform.Transform;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.Type;
@@ -30,9 +30,9 @@ public class BeanPropertyTransform implements Transform {
 	private JType target;
 	private String propertyName;
 	private String propertyType;	
-	private boolean createAccessor = true;
-	private boolean createMutator = true;
-	private SetterMethodBuilder.RETURN setterReturn = SetterMethodBuilder.RETURN.VOID;
+	private boolean createGetter = true;
+	private boolean createSetter = true;
+	private JMethodSetterBuilder.RETURNS setterReturns = JMethodSetterBuilder.RETURNS.VOID;
 	
 	@Override
 	public void transform(){
@@ -41,38 +41,40 @@ public class BeanPropertyTransform implements Transform {
 		checkNotBlank("propertyName", propertyName);
 		checkNotBlank("propertyType", propertyType);
 
-		JField field = ctxt.obtain(FieldBuilder.class)
-			.setFieldType(propertyType)
-			.setFieldName(propertyName)
+		//insert field
+		JField insertField = ctxt.obtain(JFieldBuilder.class)
+			.fieldType(propertyType)
+			.fieldName(propertyName)
 			.build();
 		
 		ctxt.obtain(InsertFieldTransform.class)
-			.setTarget(target)
-			.setField(field)
+			.target(target)
+			.field(insertField)
 			.transform();
 	
-		InsertMethodTransform inserter = ctxt.obtain(InsertMethodTransform.class)
-			.setTarget(target)
-		;
-		
-		if (createMutator) {
-			JMethod setter = ctxt.obtain(SetterMethodBuilder.class)
-				.setTarget(target)
-				.setFromField(field)
-				.setMethodAccess(JAccess.PUBLIC)
-				.setReturnType(setterReturn)
+		//create getters/setters	
+		if (createSetter) {
+			JMethod setter = ctxt.obtain(JMethodSetterBuilder.class)
+				.target(target)
+				.field(insertField)
+				.methodAccess(JAccess.PUBLIC)
+				.returns(setterReturns)
 				.build();
-			inserter
-				.setMethod(setter)
+			
+			ctxt.obtain(InsertMethodTransform.class)
+				.target(target)
+				.method(setter)
 				.transform();
 		}
-		if (createAccessor) {
-			JMethod getter = ctxt.obtain(GetterMethodBuilder.class)
-				.setFromField(field)
-				.setMethodAccess(JAccess.PUBLIC)
+		if (createGetter) {
+			JMethod getter = ctxt.obtain(JMethodGetterBuilder.class)
+				.field(insertField)
+				.methodAccess(JAccess.PUBLIC)
 				.build();
-			inserter
-				.setMethod(getter)
+			
+			ctxt.obtain(InsertMethodTransform.class)
+				.target(target)
+				.method(getter)
 				.transform();
 		}
 	}
@@ -104,18 +106,18 @@ public class BeanPropertyTransform implements Transform {
 		return this;
 	}
 
-	public BeanPropertyTransform setCreateAccessor(boolean createAccessor) {
-    	this.createAccessor = createAccessor;
+	public BeanPropertyTransform setCreateGetter(boolean createAccessor) {
+    	this.createGetter = createAccessor;
 		return this;
 	}
 
-	public BeanPropertyTransform setCreateMutator(boolean createMutator) {
-    	this.createMutator = createMutator;
+	public BeanPropertyTransform setCreateSetter(boolean createMutator) {
+    	this.createSetter = createMutator;
 		return this;
 	}
 
-	public BeanPropertyTransform setSetterReturn(SetterMethodBuilder.RETURN setterReturn) {
-    	this.setterReturn = setterReturn;
+	public BeanPropertyTransform setSetterReturns(JMethodSetterBuilder.RETURNS setterReturns) {
+    	this.setterReturns = setterReturns;
 		return this;
 	}
 }

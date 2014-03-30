@@ -62,7 +62,7 @@ public class JTypeMutator {
 	
 	public void addField(FieldDeclaration field){
 		ctxt.obtain(InsertFieldTransform.class)
-			.setTarget(jType)
+			.target(jType)
 			.setField(field)
 			.setPlacementStrategy(getStrategies().getFieldStrategy())
 			.transform();
@@ -82,7 +82,7 @@ public class JTypeMutator {
 			throw new MutateException("Trying to add a constructor as a method. Try adding it as a constructor instead. Ctor is " + method);
 		}
 		ctxt.obtain(InsertMethodTransform.class)
-    		.setTarget(jType)
+    		.target(jType)
     		.setMethod(method)
     		.transform();
 	}
@@ -96,7 +96,7 @@ public class JTypeMutator {
 	
 	public void addCtor(MethodDeclaration ctor){
 		ctxt.obtain(InsertCtorTransform.class)
-    		.setTarget(jType)
+    		.target(jType)
     		.setCtor(ctor)
     		.setPlacementStrategy(getStrategies().getCtorStrategy())
     		.transform();
@@ -111,7 +111,7 @@ public class JTypeMutator {
 	
 	public void addType(AbstractTypeDeclaration type){
 		InsertTypeTransform.newTransform()
-			.setTarget(jType)
+			.target(jType)
 			.setType(type)
 			.setPlacementStrategy(getStrategies().getTypeStrategy())
 			.transform();

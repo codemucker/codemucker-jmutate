@@ -51,21 +51,21 @@ public class FieldSplitterTransform {
 		checkNotNull("context", ctxt);
 		
 		InsertFieldTransform inserter = ctxt.obtain(InsertFieldTransform.class)
-			.setTarget(target)
+			.target(target)
 			.setPlacementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
 			.setClashStrategy(ClashStrategy.REPLACE);
 		
 		//copy the shared field info
-		FieldBuilder fieldBuilder = ctxt.obtain(FieldBuilder.class)
+		JFieldBuilder fieldBuilder = ctxt.obtain(JFieldBuilder.class)
 			.setFieldAccess(field.getAccess())
 			.setFieldType(field.getType());
 			
 		for( SingleJField single:field.asSingleFields()){
 			JField newField = fieldBuilder
-				.setFieldName(single.getName())
+				.fieldName(single.getName())
 				.setFieldInitializer(single.getInitilizer())
 				.build();	
-			inserter.setField(newField).transform();
+			inserter.field(newField).transform();
 		}
 		//remove the old fields
 		field.getAstNode().delete();

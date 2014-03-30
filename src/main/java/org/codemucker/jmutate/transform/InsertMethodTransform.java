@@ -46,9 +46,9 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 		}
 		if(insert){
 			new NodeInserter()
-				.setNodeToInsert(method.getAstNode())
-				.setTargetToInsertInto(getTarget())
-				.setStrategy(getPlacementStrategy())
+				.nodeToInsert(method.getAstNode())
+				.target(getTarget())
+				.placementStrategy(getPlacementStrategy())
 				.insert();
 		}
 	}
@@ -68,7 +68,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 	 * @return
 	 */
 	public InsertMethodTransform setMethod(MethodDeclaration method) {
-    	setMethod(JMethod.from(method));
+    	method(JMethod.from(method));
     	return this;
 	}
 	
@@ -77,7 +77,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 	 * @param newMethod
 	 * @return
 	 */
-	public InsertMethodTransform setMethod(JMethod newMethod) {
+	public InsertMethodTransform method(JMethod newMethod) {
     	this.method = newMethod;
     	return this;
 	}

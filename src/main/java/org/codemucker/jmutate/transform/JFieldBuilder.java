@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 
 
-public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
+public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
 
 	public static enum RETURN {
 		VOID, TARGET, ARG;
@@ -23,11 +23,11 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 	private JAccess access = JAccess.PRIVATE;
 	private Expression initializer;
 
-	public static FieldBuilder builder(){
-		return new FieldBuilder();
+	public static JFieldBuilder builder(){
+		return new JFieldBuilder();
 	}
 	
-	public FieldBuilder(){
+	public JFieldBuilder(){
 		setPattern("bean.property");
 	}
 	
@@ -64,27 +64,27 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 		return t.asResolvedFieldNode();
 	}
 
-	public FieldBuilder setFieldAccess(JAccess access) {
+	public JFieldBuilder setFieldAccess(JAccess access) {
     	this.access  = access;
     	return this;
     }
 
-	public FieldBuilder setFieldName(String name) {
+	public JFieldBuilder fieldName(String name) {
 		this.name = name;
 		return this;
 	}
 
-	public FieldBuilder setFieldType(String type) {
+	public JFieldBuilder fieldType(String type) {
 		this.type = type;
 		return this;
 	}
 	
-	public FieldBuilder setFieldType(Type type) {
+	public JFieldBuilder setFieldType(Type type) {
 		this.type = JAstFlattener.asString(type);
 		return this;
 	}
 	
-	public FieldBuilder setFieldInitializer(String value) {
+	public JFieldBuilder setFieldInitializer(String value) {
 		this.initializer = getContext()
 			.newSourceTemplate()
 			.p(value)
@@ -92,7 +92,7 @@ public class FieldBuilder extends AbstractBuilder<FieldBuilder> {
 		return this;
 	}
 	
-	public FieldBuilder setFieldInitializer(Expression expression) {
+	public JFieldBuilder setFieldInitializer(Expression expression) {
 		this.initializer = expression;
 		return this;
 	}
