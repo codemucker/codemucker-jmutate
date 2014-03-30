@@ -26,8 +26,6 @@ import org.junit.Test;
 
 import com.google.common.base.Joiner;
 
-import static org.codemucker.jmatch.Logical.*;
-
 public class EnforcerExampleTest 
 {
 	@Test
@@ -120,6 +118,7 @@ public class EnforcerExampleTest
 				//ensure return type is builder
 				if( !method.getAstNode().getReturnType2().toString().equals(builderTypeName)){
 					String msg = String.format("FAIL : expected builder method %s.%s to return the enclosing builder '%s' but got '%s' for \n\n method \n%s\n in parent \n%s ", 
+
 						method.getEnclosingJType().getFullName(),
 						method.getFullSignature(),
 						builderTypeName,

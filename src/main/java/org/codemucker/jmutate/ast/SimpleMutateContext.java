@@ -31,7 +31,8 @@ import com.google.inject.name.Named;
 @Singleton
 public class SimpleMutateContext implements MutateContext {
 
-	private final PlacementStrategies strategyProvider  = PlacementStrategies.with().defaults().build();
+	private final PlacementStrategies strategyProvider = PlacementStrategies.with().defaults().build();
+
 	private final JAstParser parser = JAstParser.with()
 		.defaults()
 		.roots(Roots.with()

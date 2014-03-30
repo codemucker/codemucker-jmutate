@@ -22,7 +22,6 @@ public class SourceHelper {
 	 * @return the found source file, or throw an exception if no source found
 	 */
 	public static JSourceFile findSourceForClass(Class<?> classToFindSourceFor){
-		
 		String filePath = classToFindSourceFor.getName().replace('.', '/') + ".java";
 		SourceFinder finder = newAllSourcesResolvingFinder()
 			.filter(SourceFilter.with()
