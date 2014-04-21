@@ -7,11 +7,11 @@ import static org.codemucker.jmatch.Assert.isFalse;
 import java.util.List;
 
 import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.MatchListener;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceFinder;
-import org.codemucker.jmutate.SourceFinder.JFindListener;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
@@ -55,11 +55,13 @@ public class SourceFinderTest {
 			.filter(SourceFilter.with()
 				.includeType(AJType.with().annotation(MyAnnotation.class))
 			)
-			.listener(new JFindListener(){
-
+			.listener(new MatchListener<Object>() {
 				@Override
 				public void onMatched(Object result) {
-	
+				}
+				
+				@Override
+				public void onError(Object record, Exception e) throws Exception {					
 				}
 
 				@Override
@@ -79,7 +81,6 @@ public class SourceFinderTest {
 						}
 					}
 				}
-				
 			})
 			.build();
 		/*boolean found = false;

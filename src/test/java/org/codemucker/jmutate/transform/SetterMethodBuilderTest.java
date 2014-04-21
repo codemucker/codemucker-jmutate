@@ -46,15 +46,15 @@ public class SetterMethodBuilderTest {
 	public void test_create_non_defaults() throws Exception {
 		
 		JField actual = ctxt.obtain(JFieldBuilder.class)
-			.setFieldAccess(JAccess.PUBLIC)
-			.setPattern("my.pattern")
+			.fieldAccess(JAccess.PUBLIC)
+			.pattern("my.pattern")
 			.markedGenerated(true)
 			.fieldType("java.lang.Object")
 			.fieldName("myField")
 			.build();
 		
 		JField expect = ctxt.newSourceTemplate()
-			.pl('@').p(Pattern.class.getName()).p("(name=\"my.pattern\")").p( "public java.lang.Object myField;" ).pl()
+			.pl('@').p(Pattern.class.getName()).p("(name=\"my.pattern\")").p( "public Object myField;" ).pl()
 			.asResolvedJField();
 		
 		SourceAsserts.assertAstsMatch(expect,actual);

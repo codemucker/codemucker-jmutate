@@ -111,7 +111,7 @@ public class BeanBuilderTransform implements Transform {
 	
     private JType getOrCreateBuilderClass(final JType type) {
 	    JType builder;
-	    final List<JType> builders = type.findTypesMatching(AJType.with().simpleNameMatchesAntPattern(builderClassName)).toList();
+	    final List<JType> builders = type.findTypesMatching(AJType.with().simpleNameMatchingAntPattern(builderClassName)).toList();
 		if (builders.size() == 1) {
 	    	builder = builders.get(0);
 		} else if (builders.size() == 0) {
@@ -127,7 +127,7 @@ public class BeanBuilderTransform implements Transform {
 	    	//we want a handle to the inserted nodes. These are copied on insert so adding anything to the
 	    	//original node doesn't make it in. Hence we need to lookup the newly created
 	    	//builder
-	    	builder = type.findTypesMatching(AJType.with().simpleNameMatchesAntPattern(builderClassName)).toList().get(0);
+	    	builder = type.findTypesMatching(AJType.with().simpleNameMatchingAntPattern(builderClassName)).toList().get(0);
 	    } else {
 	    	throw new MutateException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
 	    }

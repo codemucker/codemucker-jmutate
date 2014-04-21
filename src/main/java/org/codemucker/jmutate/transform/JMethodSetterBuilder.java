@@ -8,10 +8,12 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jmutate.util.JavaNameUtil;
 import org.codemucker.jmutate.util.TypeUtil;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Type;
 
 
 public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBuilder> {
@@ -32,7 +34,7 @@ public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBui
 	}
 
 	public JMethodSetterBuilder(){
-		setPattern("bean.setter");
+		pattern("bean.setter");
 	}
 	
 	public JMethod build() {
@@ -101,6 +103,11 @@ public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBui
 		return this;
 	}
 
+	public JMethodSetterBuilder fieldType(Type type) {
+		fieldType(JavaNameUtil.resolveQualifiedName(type));
+		return this;
+	}
+	
 	public JMethodSetterBuilder fieldType(String type) {
 		this.fieldType = TypeUtil.toShortNameIfDefaultImport(type);
 		return this;

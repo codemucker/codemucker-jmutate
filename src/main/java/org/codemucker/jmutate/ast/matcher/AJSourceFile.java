@@ -13,6 +13,7 @@ import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jmutate.util.JavaNameUtil;
 
 import com.google.common.base.Predicate;
 
@@ -48,12 +49,12 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
 		return contains(AJType.with().annotation(annotation));
 	}
 	
-	public AJSourceFile name(Class<?> className){
+	public AJSourceFile typeFullName(Class<?> className){
 		return contains(AJType.with().name(className));
 	}
 	
-	public AJSourceFile name(String antPattern){
-		return contains(AJType.with().fullName(antPattern));
+	public AJSourceFile typeFullName(String classNameAntPattern){
+		return contains(AJType.with().fullName(classNameAntPattern));
 	}
 	
 	public AJSourceFile isEnum() {

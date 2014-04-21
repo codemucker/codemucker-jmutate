@@ -22,7 +22,7 @@ public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBui
 	}
 	
 	public JMethodGetterBuilder(){
-		setPattern("bean.getter");
+		pattern("bean.getter");
 	}
 	
 	public JMethod build(){

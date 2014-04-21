@@ -1,10 +1,5 @@
 package org.codemucker.jmutate;
 
-import java.lang.annotation.Annotation;
-import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
-
-import org.codemucker.jfind.AResource;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.IncludeExcludeMatcherBuilder;
 import org.codemucker.jfind.MatcherToFindFilterAdapter;
@@ -18,10 +13,7 @@ import org.codemucker.jmutate.SourceFinder.SourceMatcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJSourceFile;
-import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.lang.IBuilder;
-
 
 public class SourceFilter implements SourceMatcher {
 
@@ -107,6 +99,10 @@ public class SourceFilter implements SourceMatcher {
 			public void describeTo(Description desc) {
 				desc.text("anything");
 			}
+
+			@Override
+			public void onError(Object record, Exception e) throws Exception {
+			}
 	    };
 	    
 	    private IncludeExcludeMatcherBuilder<Root> roots = IncludeExcludeMatcherBuilder.builder();
@@ -117,8 +113,6 @@ public class SourceFilter implements SourceMatcher {
 		private IncludeExcludeMatcherBuilder<JMethod> methods = IncludeExcludeMatcherBuilder.builder();
 		private IncludeExcludeMatcherBuilder<JType> types = IncludeExcludeMatcherBuilder.builder();
 
-		private Callable<Object> matchListener;
-		
 		private Builder(){
 			//prevent instantiation outside of builder method
 		}
@@ -154,11 +148,6 @@ public class SourceFilter implements SourceMatcher {
 					return classNameMatcher.matches(found.getClassnameBasedOnPath()) && matcher.matches(found);
 				}
 			};
-		}
-	
-		public Builder matchListener(Callable<Object> matchListener) {
-			this.matchListener = matchListener;
-			return this;
 		}
 		
 		public Builder includeResource(Matcher<RootResource> matcher) {

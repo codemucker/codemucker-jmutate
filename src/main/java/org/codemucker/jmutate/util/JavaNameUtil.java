@@ -49,6 +49,22 @@ public class JavaNameUtil {
 		return sb.toString();
 	}
 	
+	public static String resolveQualifiedNameOrNull(Type t){
+		StringBuilder sb = new StringBuilder();
+		if(!tryResolveQualifiedName(t, sb)){
+			return null;
+		}
+		return sb.toString();
+	}
+	
+	public static String resolveQualifiedNameElseShort(Type t){
+		StringBuilder sb = new StringBuilder();
+		if(!tryResolveQualifiedName(t, sb)){
+			return t.toString();
+		}
+		return sb.toString();
+	}
+	
 	public static void resolveQualifiedName(Type t, StringBuilder sb){
 		if(!tryResolveQualifiedName(t,sb)){
 			throw new MutateException("Currently don't know how to handle type:" + t);
@@ -99,6 +115,8 @@ public class JavaNameUtil {
 			}
 			sb.append(">");
 			return true;
+		} else if( t.isUnionType()){
+			
 		}
 		return false;
 	}

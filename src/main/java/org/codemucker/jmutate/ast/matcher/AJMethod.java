@@ -45,7 +45,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 	 * @return
 	 */
 	public AJMethod nameMatchingAntPattern(final String antPattern) {
-		name(AString.withAntPattern(antPattern));
+		name(AString.matchingAntPattern(antPattern));
 		return this;
 	}
 	

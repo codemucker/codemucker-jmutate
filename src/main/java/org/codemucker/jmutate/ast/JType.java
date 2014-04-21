@@ -2,6 +2,7 @@ package org.codemucker.jmutate.ast;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.codemucker.lang.Check.checkNotNull;
+import groovy.inspect.swingui.AstNodeToScriptVisitor;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -16,6 +17,9 @@ import javassist.compiler.JvstTypeChecker;
 
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.DefaultFindResult;
+import org.codemucker.jfind.PredicateToFindFilterAdapter;
+import org.codemucker.jmatch.AnInstance;
+import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.matcher.AJField;
@@ -30,15 +34,21 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
+import org.eclipse.jdt.core.dom.ArrayCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
+import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.TypeParameter;
+import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
 /**
@@ -105,10 +115,62 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return typeNode;
 	}
 	
+	public FindResult<TypeParameter> findGenericTypes(){
+		return findGenericTypes(Logical.<TypeParameter>any());
+	}
+	
+	public FindResult<TypeParameter> findGenericTypes(final Predicate<TypeParameter> predicate){
+		return findGenericTypes(PredicateToFindFilterAdapter.from(predicate));
+	}
+	
+	public FindResult<TypeParameter> findGenericTypes(final Matcher<TypeParameter> matcher){
+		final List<TypeParameter> found = Lists.newArrayList();
+		
+		ASTVisitor visitor = new BaseASTVisitor(){
+			
+			private boolean visit = true;
+			@Override
+			protected boolean visitNode(ASTNode node) {
+				if(!visit){
+					return false;
+				}
+				if( node instanceof MethodDeclaration || node instanceof FieldDeclaration){
+					visit = false;
+					return false;
+				}
+				if( node instanceof TypeParameter){
+					TypeParameter typeParam = (TypeParameter)node;
+					if(matcher.matches(typeParam)){
+						found.add(typeParam);
+					}
+				}
+				//System.out.println("visit" + node.getClass() + "  " + trim(node.toString()));
+				
+				return true;
+			}
+			
+			@Override
+			public void endVisitNode(ASTNode node) {
+			//	System.out.println("end visit" + node.getClass() + "  " + trim(node.toString()));
+			}
+			
+			
+		};
+		getAstNode().accept(visitor);
+		return DefaultFindResult.from(found);
+	}
+	
+	private static String trim(String s){
+		if( s.length() > 40){
+			return s.substring(0,40);
+		}
+		return s;
+	}
+	
 	/**
 	 * Find a child type with the given simple name, or throw an exception if no child type with that name
 	 */
-	public JType getDirectChildTypeWithName(String simpleName){
+	public JType getChildTypeWithName(String simpleName){
 		if (!isClass()) {
 			throw new MutateException("Type '%s' is not a class so can't search for type named '%s'",getSimpleName(), simpleName);
 		}

@@ -49,7 +49,7 @@ public class SourceAsserts {
      * Assert the given Nodes look the same. Formatting is ignored
      */
     public static void assertAstsMatch(ASTNode expected, ASTNode actual) {
-    	ASTMatcher matcher = JAstMatcher.builder().setMatchDocTags(false).build();
+    	ASTMatcher matcher = JAstMatcher.with().matchDocTags(false).build();
     		
     	boolean equals = false;
     	try {

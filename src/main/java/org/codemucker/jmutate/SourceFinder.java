@@ -10,6 +10,7 @@ import java.util.List;
 import org.codemucker.jfind.BaseRootVisitor;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.DefaultFindResult;
+import org.codemucker.jfind.MatchListener;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.RootVisitor;
@@ -40,13 +41,19 @@ import com.google.inject.Inject;
 public class SourceFinder {
 
 	private static final String JAVA_EXTENSION = "java";
-	private static final JFindListener NULL_LISTENER = new JFindListener() {
+	private static final MatchListener<Object> NULL_LISTENER = new MatchListener<Object>() {
 		@Override
 		public void onMatched(Object obj) {
 		}
 		
 		@Override
 		public void onIgnored(Object obj) {
+		}
+
+		@Override
+		public void onError(Object record, Exception e) throws Exception {
+			// TODO Auto-generated method stub
+			
 		}
 	};
 	
@@ -58,7 +65,7 @@ public class SourceFinder {
 	private final Matcher<JType> typeMatcher;
 	private final Matcher<JMethod> methodMatcher;
 	
-	private final JFindListener listener;
+	private final MatchListener<Object> listener;
 	
 	@Inject
 	private final JAstParser parser;
@@ -72,9 +79,6 @@ public class SourceFinder {
 		public Matcher<JMethod> getMethodMatcher();
 	}
 	
-	public static interface JFindListener extends FindResult.MatchListener<Object> {
-	}
-	
 	public static Builder with(){
 		return new Builder();
 	}
@@ -84,7 +88,7 @@ public class SourceFinder {
 			JAstParser parser
 			, Iterable<Root> classPathRoots
 			, SourceMatcher matchers
-			, JFindListener listener
+			, MatchListener<Object> listener
 			) {
 		this(parser,
 			classPathRoots,
@@ -107,7 +111,7 @@ public class SourceFinder {
 			, Matcher<JSourceFile> sourceFilter
 			, Matcher<JType> typeFilter
 			, Matcher<JMethod> methodFilter
-			, JFindListener listener
+			, MatchListener<Object> listener
 			) {
 		
 		checkNotNull(roots, "expect class path roots");
@@ -185,7 +189,7 @@ public class SourceFinder {
 			@Override
 			public boolean visit(Root root) {
 				boolean visit = rootMatcher.matches(root);
-				if( visit){
+				if(visit){
 					listener.onMatched(root);
 				} else {
 					listener.onIgnored(root);	
@@ -195,7 +199,7 @@ public class SourceFinder {
 			@Override
 			public boolean visit(RootResource resource) {
 				boolean visit = resourceMatcher.matches(resource);
-				if( visit){
+				if(visit){
 					resources.add(resource);
 					listener.onMatched(resource);
 				} else {
@@ -227,7 +231,7 @@ public class SourceFinder {
 		private Matcher<JType> typeMatcher;
 		private Matcher<JMethod> methodMatcher;
 		
-		private JFindListener listener;
+		private MatchListener<Object> listener;
 		
 		public SourceFinder build(){			
 			return new SourceFinder(
@@ -273,7 +277,7 @@ public class SourceFinder {
         	return this;
         }
 
-	 	public Builder listener(JFindListener listener) {
+	 	public Builder listener(MatchListener<Object> listener) {
         	this.listener = listener;
         	return this;
 		}

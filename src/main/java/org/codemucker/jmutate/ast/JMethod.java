@@ -109,13 +109,32 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		if( isVoid()){
 			return "void";
 		}
-		return JavaNameUtil.resolveQualifiedName(methodNode.getReturnType2());
+		return JavaNameUtil.resolveQualifiedNameElseShort(methodNode.getReturnType2());
 	}
 
 	public boolean isVoid(){
 		return methodNode.getReturnType2() == null || "void".equals(methodNode.getReturnType2().toString());
 	}
 	
+	public boolean isStatic(){
+		return getModifiers().isStatic();
+	}
+	
+	public boolean isPublic(){
+		return getModifiers().isPublic();
+	}
+	
+	public boolean isPrivate(){
+		return getModifiers().isPrivate();
+	}
+	
+	public boolean isPackage(){
+		return getModifiers().isPackagePrivate();
+	}
+	
+	public boolean isAbstract(){
+		return getModifiers().isAbstract();
+	}
 	
 	@SuppressWarnings("unchecked")
     public JModifiers getModifiers(){

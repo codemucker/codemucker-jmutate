@@ -67,7 +67,7 @@ public class JTypeTest {
 		assertThat(newJType("class MyTopClass {}").isTopLevelClass(),isTrue());
 		assertThat(newJType("class AnotherTopClass { class MyInnerClass{} }").isTopLevelClass(),isTrue());
 		
-		assertThat(newJType("class AnotherTopClass { class MyInnerClass{} }").getDirectChildTypeWithName("MyInnerClass").isTopLevelClass(),isFalse());
+		assertThat(newJType("class AnotherTopClass { class MyInnerClass{} }").getChildTypeWithName("MyInnerClass").isTopLevelClass(),isFalse());
 	}
 	
 	
@@ -91,7 +91,7 @@ public class JTypeTest {
 		t.pl("	class SubSubClass extends SubClass {}");
 		t.pl("}");
 		
-		JType type = t.asJTypeSnippet().getDirectChildTypeWithName("SubSubClass");
+		JType type = t.asJTypeSnippet().getChildTypeWithName("SubSubClass");
 		
 		Expect.that(type.isSubClassOf(MyParentClass.class)).is(true);
 	}

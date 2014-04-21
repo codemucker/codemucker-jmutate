@@ -53,17 +53,17 @@ public class NodeToSourceBuilder {
 		return line.replaceAll("\"", "\\\"");
 	}
 	
-	public NodeToSourceBuilder setFlattener(AstNodeFlattener flattener) {
+	public NodeToSourceBuilder flattener(AstNodeFlattener flattener) {
 		this.flattener = flattener;
 		return this;
 	}
 	
-	public NodeToSourceBuilder setCtxt(MutateContext ctxt) {
+	public NodeToSourceBuilder ctxt(MutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}
 
-	public NodeToSourceBuilder setNode(ASTNode node) {
+	public NodeToSourceBuilder flattenNode(ASTNode node) {
 		this.node = node;
 		return this;
 	}

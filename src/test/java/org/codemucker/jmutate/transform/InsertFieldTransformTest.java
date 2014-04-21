@@ -36,10 +36,10 @@ public class InsertFieldTransformTest {
 		
 		JType after = srcBefore.asResolvedJTypeNamed("com.bertvanbrakel.codegen.bean.TestBeanModify");
 		
-		JField field = JFieldBuilder.builder()
-			.setContext(ctxt)
+		JField field = JFieldBuilder.with()
+			.context(ctxt)
 			.markedGenerated(true)
-			.setPattern("mypattern")
+			.pattern("mypattern")
 			.fieldType("String")
 			.fieldName("myField")
 			.build();

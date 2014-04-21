@@ -4,13 +4,13 @@ import static org.codemucker.lang.Check.checkNotNull;
 
 import org.codemucker.jmutate.ast.AstNodeFlattener;
 import org.codemucker.jmutate.ast.JAccess;
-import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JField;
+import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.TypeUtil;
 import org.codemucker.jpattern.Pattern;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
-
 
 public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
 
@@ -19,22 +19,22 @@ public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
 	}
 
 	private String name;
-	private String type;
+	private String fieldType;
 	private JAccess access = JAccess.PRIVATE;
-	private Expression initializer;
+	private Expression fieldValue;
 
-	public static JFieldBuilder builder(){
+	public static JFieldBuilder with(){
 		return new JFieldBuilder();
 	}
 	
 	public JFieldBuilder(){
-		setPattern("bean.property");
+		pattern("bean.property");
 	}
 	
 	public JField build(){
 		checkFieldsSet();
 		checkNotNull("name", name);
-		checkNotNull("type", type);
+		checkNotNull("type", fieldType);
 
 		return JField.from(toFieldNode());
 	}
@@ -42,7 +42,7 @@ public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
 	private FieldDeclaration toFieldNode(){
 		SourceTemplate t = getContext().newSourceTemplate()
 			.setVar("fieldName", name)
-			.setVar("fieldType", type);
+			.setVar("fieldType", fieldType);
 
 		if(isMarkedGenerated()){
 			t.p('@')
@@ -53,10 +53,10 @@ public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
 		}
 		t.print(access.toCode());
 		t.print(" ${fieldType} ${fieldName}");
-		if( initializer != null){
-			String valAsString = getContext().obtain(AstNodeFlattener.class).flatten(initializer);
-			t.setVar("initializer", valAsString);
-			t.pl(" = ${initializer};");
+		if( fieldValue != null){
+			String valAsString = getContext().obtain(AstNodeFlattener.class).flatten(fieldValue);
+			t.setVar("value", valAsString);
+			t.pl(" = ${value};");
 		} else {
 			t.pl(";");
 		}
@@ -64,7 +64,7 @@ public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
 		return t.asResolvedFieldNode();
 	}
 
-	public JFieldBuilder setFieldAccess(JAccess access) {
+	public JFieldBuilder fieldAccess(JAccess access) {
     	this.access  = access;
     	return this;
     }
@@ -74,26 +74,26 @@ public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
 		return this;
 	}
 
+	public JFieldBuilder fieldType(Type type) {
+		fieldType(JavaNameUtil.resolveQualifiedName(type));
+		return this;
+	}
+	
 	public JFieldBuilder fieldType(String type) {
-		this.type = type;
+		this.fieldType = TypeUtil.toShortNameIfDefaultImport(type);
 		return this;
 	}
-	
-	public JFieldBuilder setFieldType(Type type) {
-		this.type = JAstFlattener.asString(type);
-		return this;
-	}
-	
-	public JFieldBuilder setFieldInitializer(String value) {
-		this.initializer = getContext()
+
+	public JFieldBuilder fieldValue(String value) {
+		this.fieldValue = getContext()
 			.newSourceTemplate()
 			.p(value)
 			.asExpressionNode();
 		return this;
 	}
 	
-	public JFieldBuilder setFieldInitializer(Expression expression) {
-		this.initializer = expression;
+	public JFieldBuilder fieldValue(Expression expression) {
+		this.fieldValue = expression;
 		return this;
 	}
 }

@@ -127,9 +127,9 @@ public class AJType extends ObjectMatcher<JType> {
     	return this;
     }
     
-	public AJType packageMatchesAntPattern(final String pkgAntExpression){
+	public AJType packageMatchingAntPattern(final String pkgAntExpression){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
-			private final Matcher<String> pkgNameMatcher = AString.withAntPattern(pkgAntExpression);
+			private final Matcher<String> pkgNameMatcher = AString.matchingAntPattern(pkgAntExpression);
 			
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -243,7 +243,7 @@ public class AJType extends ObjectMatcher<JType> {
 	
 	public AJType fullName(final String antPattern){
 		addMatcher(new AbstractMatcher<JType>() {
-			private final Matcher<String> nameMatcher = AString.withAntPattern(antPattern);
+			private final Matcher<String> nameMatcher = AString.matchingAntPattern(antPattern);
 			
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -261,13 +261,13 @@ public class AJType extends ObjectMatcher<JType> {
 	}
 	
 	public AJType simpleName(final String name){
-		simpleNameMatchesAntPattern(name);
+		simpleNameMatchingAntPattern(name);
 		return this;
 	}
 	
-	public AJType simpleNameMatchesAntPattern(final String antPattern){
+	public AJType simpleNameMatchingAntPattern(final String antPattern){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
-			private final Matcher<String> matcher = AString.withAntPattern(antPattern);
+			private final Matcher<String> matcher = AString.matchingAntPattern(antPattern);
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 				return matcher.matches(found.getSimpleName());

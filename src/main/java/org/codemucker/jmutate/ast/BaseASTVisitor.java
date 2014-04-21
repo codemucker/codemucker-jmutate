@@ -80,6 +80,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclarationStatement;
 import org.eclipse.jdt.core.dom.TypeLiteral;
 import org.eclipse.jdt.core.dom.TypeParameter;
+import org.eclipse.jdt.core.dom.UnionType;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
@@ -467,9 +468,10 @@ public class BaseASTVisitor extends ASTVisitor {
 		endVisitNode(node);
 	}
 
-	// @Override public void endVisit(UnionType node) {
-	// endVisitNode(node);
-	// }
+	@Override public void endVisit(UnionType node) {
+		endVisitNode(node);
+	}
+	
 	@Override public void endVisit(VariableDeclarationExpression node) {
 		endVisitNode(node);
 	}
@@ -809,9 +811,9 @@ public class BaseASTVisitor extends ASTVisitor {
 		return visitNode(node);
 	}
 
-	// @Override public boolean visit(UnionType node) {
-	// return visitNode(node);
-	// }
+	@Override public boolean visit(UnionType node) {
+		return visitNode(node);
+	}
 
 	@Override public boolean visit(VariableDeclarationExpression node) {
 		return visitNode(node);

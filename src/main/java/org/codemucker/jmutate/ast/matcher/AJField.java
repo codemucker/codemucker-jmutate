@@ -60,7 +60,7 @@ public class AJField extends ObjectMatcher<JField>{
 	
 	public AJField name(final String antPattern){
 		addMatcher(new AbstractMatcher<JField>(AllowNulls.NO) {
-			private final Matcher<String> nameMatcher = AString.withAntPattern(antPattern);		
+			private final Matcher<String> nameMatcher = AString.matchingAntPattern(antPattern);		
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
 				for (String name : found.getNames()) {

@@ -30,7 +30,7 @@ public abstract class AbstractBuilder<S extends AbstractBuilder<S>> {
 		return self();
 	}
 
-	public S setContext(MutateContext context) {
+	public S context(MutateContext context) {
 		this.context = context;
 		return self();
 	}
@@ -39,7 +39,7 @@ public abstract class AbstractBuilder<S extends AbstractBuilder<S>> {
     	return pattern;
     }
 
-	public S setPattern(String pattern) {
+	public S pattern(String pattern) {
     	this.pattern = pattern;
     	return self();
 	}

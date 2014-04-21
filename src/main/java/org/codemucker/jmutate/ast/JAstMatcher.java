@@ -106,7 +106,7 @@ public class JAstMatcher extends ASTMatcher {
 	 */
 	private boolean matchDocTags;
 
-	public static Builder builder(){
+	public static Builder with(){
 		return new Builder();
 	}
 
@@ -117,7 +117,7 @@ public class JAstMatcher extends ASTMatcher {
 	 * to be compared by default, and <code>false</code> otherwise
 	 * @see #match(Javadoc,Object)
 	 * @since 3.0
-	 * @See {@link #builder()}
+	 * @See {@link #with()}
 	 */
 	private JAstMatcher(boolean matchDocTags) {
 		this.matchDocTags = matchDocTags;
@@ -2180,7 +2180,7 @@ public class JAstMatcher extends ASTMatcher {
 			return copy;
 		}
 		
-		public Builder setMatchDocTags(boolean matchDocTags) {
+		public Builder matchDocTags(boolean matchDocTags) {
         	this.matchDocTags = matchDocTags;
         	return this;
         }
