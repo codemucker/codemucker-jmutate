@@ -161,6 +161,8 @@ public class EnforcerExampleTest
 					.name(not(AString.equalToAny("build","copyOf")))
 					.name(not(AString.matchingAntPattern("build*"))));
 			
+			String builderSelfTypeName = builder.getSelfTypeGenericParam();
+			
 			for(JMethod method : builderMethods){
 				
 				//ensure method names don't start with bad prefixes
@@ -171,27 +173,13 @@ public class EnforcerExampleTest
 				
 				//ensure return type is builder. Slightly tricky in that the builder could return 'Self' which could
 				//be a generic type so that it can be sub classed
-				if( !method.getReturnTypeFullName().equals(builderTypeFullName)){
+				String returnType = method.getReturnTypeFullName();
+				if( !returnType.equals(builderTypeFullName)){
 					
-					final String returnType =  method.getReturnTypeFullName();
 					
-					System.out.println("builder:" + builder.getFullName());
-					FindResult<TypeParameter> types = builder.findGenericTypes(new Predicate<TypeParameter>() {
-						
-						@Override
-						public boolean apply(TypeParameter param) {
-							System.out.println(param.getName().getIdentifier());
-							return param.getName().getIdentifier() == returnType;
-						}
-					});
-					if(!types.isEmpty()){
-						continue;//self type?
+					if(builderSelfTypeName != null && builderSelfTypeName.equals(returnType)){
+						continue;
 					}
-					
-					//TODO:check if return self
-					Block body = method.getAstNode().getBody();
-					//find last 'return'
-					
 					
 					String msg = String.format("FAIL : expected builder method %s.%s to return the enclosing builder '%s' but got '%s' for \n\n method \n%s\n in parent \n%s ", 
 

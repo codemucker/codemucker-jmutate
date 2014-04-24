@@ -11,10 +11,8 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.Roots;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
-import org.codemucker.jmutate.SourceFinder;
 import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass1;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass2;
@@ -487,4 +485,76 @@ public class JTypeTest {
 		
 		
 	}
+
+	@Test
+	public void GetSelfTypeParamNoParam(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		t.pl("class MyClass<S> {} ");
+		JType type = t.asResolvedJTypeNamed("MyClass");
+		
+		String name = type.getSelfTypeGenericParam();
+		Assert.assertEquals(null, name);
+	}
+	
+	@Test
+	public void GetSelfTypeParamSingleParam(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		t.pl("class MyClass<S extends MyClass<S>> {} ");
+		Assert.assertEquals("S", t.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());
+		
+		//with a number in the name
+		SourceTemplate t2 = ctxt.newSourceTemplate();
+		t2.pl("class MyClass2<S extends MyClass2<S>> {} ");
+		Assert.assertEquals("S", t2.asResolvedJTypeNamed("MyClass2").getSelfTypeGenericParam());
+	}
+
+	@Test
+	public void GetSelfTypeParamSingleParamNoSelf(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		t.pl("class MyClass<S extends MyClass<?>> {} ");
+
+		Assert.assertEquals(null, t.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());
+	}
+	
+	@Test
+	public void GetSelfTypeParamTwoParams(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		t.pl("class MyClass<T,S extends MyClass<T,S>> {} ");
+		Assert.assertEquals("S", t.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());	
+
+		SourceTemplate t2 = ctxt.newSourceTemplate();
+		t2.pl("class MyClass<T extends MyClass<T,S>,S> {} ");
+		Assert.assertEquals("T", t2.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());	
+	}
+	
+	@Test
+	public void GetSelfTypeParamThreeParams(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		t.pl("class MyClass<T extends MyClass<T,S,Z>,S,Z> {} ");
+		Assert.assertEquals("T", t.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());	
+	
+		SourceTemplate t2 = ctxt.newSourceTemplate();
+		t2.pl("class MyClass<T,S extends MyClass<T,S,Z>,Z> {} ");
+		Assert.assertEquals("S", t2.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());
+	
+		SourceTemplate t3 = ctxt.newSourceTemplate();
+		t3.pl("class MyClass<T,S,Z extends MyClass<T,S,Z>> {} ");
+		Assert.assertEquals("Z", t3.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());
+	}
+	
+	@Test
+	public void GetSelfTypeParamThreeParamsNoSelf(){
+		//non matching type
+		SourceTemplate t = ctxt.newSourceTemplate();
+		t.pl("class MyClass<T extends MyClass<?,S,Z>,S,Z> {} ");
+		Assert.assertEquals(null, t.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());	
+	
+		//different order
+		SourceTemplate t2 = ctxt.newSourceTemplate();
+		t2.pl("class MyClass<T extends MyClass<Z,T,S>,S,Z> {} ");
+		Assert.assertEquals(null, t2.asResolvedJTypeNamed("MyClass").getSelfTypeGenericParam());	
+	
+	}
+	
+	
 }

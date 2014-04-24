@@ -5,6 +5,7 @@ import static org.codemucker.lang.Check.checkNotNull;
 import groovy.inspect.swingui.AstNodeToScriptVisitor;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 import javassist.compiler.JvstTypeChecker;
 
@@ -43,11 +45,13 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.ParameterizedType;
+import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeParameter;
 import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
@@ -58,6 +62,10 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 
 	private final ASTNode typeNode;
 	
+	//e.g. S extends Foo<S>
+	//TODO: S extends Foo<S,T>
+	private static final Pattern RE_EXTRACT_SELF_PARAM = Pattern.compile("^(\\w+) extends (\\w+)<\\1>$");
+			
 	public static boolean isTypeNode(ASTNode node){
 		return node instanceof AbstractTypeDeclaration || node instanceof AnonymousClassDeclaration;
 	}
@@ -159,14 +167,14 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		getAstNode().accept(visitor);
 		return DefaultFindResult.from(found);
 	}
-	
-	private static String trim(String s){
-		if( s.length() > 40){
-			return s.substring(0,40);
-		}
-		return s;
-	}
-	
+//	
+//	private static String trim(String s){
+//		if( s.length() > 40){
+//			return s.substring(0,40);
+//		}
+//		return s;
+//	}
+//	
 	/**
 	 * Find a child type with the given simple name, or throw an exception if no child type with that name
 	 */
@@ -506,6 +514,70 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		//all
 		return getAnnotations(true);
 	}
+
+	/**
+	 * Returns the name of the generic type param which is used to reference self, or null if none.
+	 * 
+	 * E.g. in 
+	 * 
+	 * MyClass&lt;S extends MyClass&lt;S&gt;&gt;{}
+	 * 
+	 * returns 'S'
+	 * 
+	 * MyClass&lt;S&gt;{}
+	 * 
+	 * returns null
+	 * 
+	 * 
+	 * @return
+	 */
+	public String getSelfTypeGenericParam() {
+		//e.g. S extends Foo<S>
+		List<TypeParameter> types = this.findGenericTypes().toList();
+		if(types.isEmpty()){
+			return null;
+		}
+		if(types.size()==1){
+			String thisFullName = getFullName();
+			String thisShortName = getSimpleName();
+			
+			for(TypeParameter t :types){
+				java.util.regex.Matcher m = RE_EXTRACT_SELF_PARAM.matcher(t.toString());
+				if(m.matches()){
+					String selfName = m.group(1);
+					String className = m.group(2);
+					if(className.equals(thisFullName)||className.equals(thisShortName)){
+						return selfName;
+					}
+				}
+			}
+		} else if (types.size() > 1){
+			//e.g. T,S extends Foo<T,S> or S extends Foo<S,T>,T
+			List<String> names = new ArrayList<>();
+			StringBuilder sb = new StringBuilder(getSimpleName());
+			sb.append("<");
+			boolean comma = false;
+			for(TypeParameter t :types){
+				String name = t.getName().getIdentifier();
+				names.add(name);
+				if(comma){
+					sb.append(",");
+				}
+				sb.append(name);
+				comma=true;
+			}
+			sb.append(">");
+			String lookFor = " extends " + sb.toString();//eg Foo<S,T,Z>
+			for(TypeParameter t :types){
+				if( t.toString().equals(t.getName().getIdentifier() + lookFor)){
+					return t.getName().getIdentifier();
+				}
+			}
+		}
+		return null;
+	}
+	
+
 	
 	/**
 	 * Returns all the annotations attached to this class. This does not include annotation declarations, but rather use.
