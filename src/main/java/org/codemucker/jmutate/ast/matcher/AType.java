@@ -11,6 +11,10 @@ import org.eclipse.jdt.core.dom.Type;
 
 public class AType extends ObjectMatcher<Type>{
 
+	public static final AType STRING = AType.with().fullName("java.lang.String");
+	public static final AType BOOL_PRIMITIVE = AType.with().fullName("boolean");
+	public static final AType VOID = AType.with().fullName("void");
+	
 	public static AType that(){
 		return with();
 	}

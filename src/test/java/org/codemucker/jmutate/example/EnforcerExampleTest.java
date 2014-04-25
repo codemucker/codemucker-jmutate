@@ -12,6 +12,7 @@ import org.codemucker.jfind.JClass;
 import org.codemucker.jfind.MatchListener;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jmatch.AString;
+import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceFinder;
@@ -26,14 +27,11 @@ import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.ast.matcher.AType;
 import org.codemucker.lang.IBuilder;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Block;
-import org.eclipse.jdt.core.dom.TypeParameter;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicate;
 
 public class EnforcerExampleTest 
 {
@@ -115,17 +113,14 @@ public class EnforcerExampleTest
 				.listener(new MatchListener<Object>() {
 					@Override
 					public void onMatched(Object result) {
-						// TODO Auto-generated method stub
 					}
 					
 					@Override
 					public void onIgnored(Object result) {
-						// TODO Auto-generated method stub
 					}
 					
 					@Override
 					public void onError(Object record, Exception e) throws Exception {
-						// TODO Auto-generated method stub	
 					}
 				})
 				.filter(SourceFilter.with()
@@ -155,19 +150,29 @@ public class EnforcerExampleTest
 			String builderTypeName = builder.getSimpleName();
 			String builderTypeFullName = builder.getFullName();
 			
-			FindResult<JMethod> builderMethods = builder.findMethodsMatching(AJMethod.with()
-					.access(JAccess.PUBLIC)
-					.isConstructor(false)
-					.name(not(AString.equalToAny("build","copyOf")))
-					.name(not(AString.matchingAntPattern("build*"))));
+			FindResult<JMethod> builderMethods = builder.findMethodsMatching(
+					AJMethod.all(
+							AJMethod.with()
+								.access(JAccess.PUBLIC)
+								.isConstructor(false)
+					    	,AJMethod.with()
+								.name(not(AString.equalToAny("build","copyOf")))
+								.name(not(AString.matchingAntPattern("build*")))
+							,not(AJMethod.with()
+								.name(AString.matchingAntPattern("get*"))
+								.numArgs(0))
+							,not(AJMethod.with()
+								.name(AString.matchingAntPattern("is??*"))
+								.numArgs(0)
+								.returning(AType.BOOL_PRIMITIVE))));
 			
 			String builderSelfTypeName = builder.getSelfTypeGenericParam();
 			
 			for(JMethod method : builderMethods){
 				
 				//ensure method names don't start with bad prefixes
-				if( method.getName().startsWith("get") || method.getName().startsWith("set") || (method.getName().startsWith("with") && !(method.getName().equals("with") && method.isStatic()))) {
-					String msg = String.format("FAIL: expected builder method %s.%s to _not_ start with any of 'get,set,with'", method.getEnclosingJType().getFullName(), method.getFullSignature());
+				if( method.getName().startsWith("set") || (method.getName().startsWith("with") && !(method.getName().equals("with") && method.isStatic()))) {
+					String msg = String.format("FAIL: expected builder method %s.%s to _not_ start with any of 'set,with'", method.getEnclosingJType().getFullName(), method.getFullSignature());
 					failMsgs.add(msg);
 				}
 				

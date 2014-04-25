@@ -75,6 +75,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
+	@SafeVarargs
 	public static Matcher<JMethod> all(final Matcher<JMethod>... matchers) {
     	return Logical.and(matchers);
     }

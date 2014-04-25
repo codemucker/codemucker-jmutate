@@ -7,15 +7,26 @@ import org.codemucker.jmutate.ast.ContextNames;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-
+/**
+ * Provides the basic properties to set for all transforms 
+ *
+ * @param <S>
+ */
 public abstract class AbstractBuilder<S extends AbstractBuilder<S>> {
 
 	@Inject
 	private MutateContext context;
 	
+	/**
+	 * Whether to mark the generated class with the fact it's been generated
+	 */
 	@Inject
 	@Named(ContextNames.MARK_GENERATED)
 	private boolean markedGenerated;
+	
+	/**
+	 * The name of the pattern this builder generates
+	 */
 	private String pattern;
 	
 	protected void checkFieldsSet(){
