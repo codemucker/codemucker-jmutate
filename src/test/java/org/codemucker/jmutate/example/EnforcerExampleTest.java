@@ -25,6 +25,7 @@ import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJSourceFile;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.ast.matcher.AType;
+import org.codemucker.jmutate.transform.AbstractBuilder;
 import org.codemucker.lang.IBuilder;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.junit.Assert;
@@ -78,7 +79,7 @@ public class EnforcerExampleTest
 		FindResult<JType> matchers = SourceFinder.with()
 			.searchRoots(Roots.with().mainSrcDir(true))
 			.filter(SourceFilter.with()
-				.includeType(AJType.that().isASubclassOf(ObjectMatcher.class).isAbstract(false)))
+				.includeType(AJType.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
 			.build()
 			.findTypes();
 		
@@ -102,7 +103,7 @@ public class EnforcerExampleTest
 			Assert.fail(Joiner.on("\n").join(failMsgs));
 		}
 	}
-	
+
 	@Test
 	public void ensureBuildersAreCorrectlyNamed()
 	{
@@ -113,6 +114,9 @@ public class EnforcerExampleTest
 				.listener(new MatchListener<Object>() {
 					@Override
 					public void onMatched(Object result) {
+//						if( result instanceof JType){
+//							System.out.println(((JType)result).getFullName());
+//						}
 					}
 					
 					@Override
@@ -124,10 +128,11 @@ public class EnforcerExampleTest
 					}
 				})
 				.filter(SourceFilter.with()
-					.includeSource(AJSourceFile.with().typeFullName("**AbstractBuilder"))
 					.includeType(AJType.with().simpleNameMatchingAntPattern("*Builder"))
 					.includeType(AJType.that().isASubclassOf(IBuilder.class))
-					.includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*"))))
+					.includeType(AJType.that().isASubclassOf(AbstractBuilder.class))
+					.includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*")))
+					)
 				.build()
 				.findTypes();
 		
@@ -136,16 +141,21 @@ public class EnforcerExampleTest
 		for (JType builder : builders) {			
 			FindResult<JMethod> buildMethod = builder.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build"));
 			
-			if(!builder.isAbstract()){//don't expect build methods on abstract builders
+			if(builder.isNotAbstract()){//don't expect build methods on abstract builders
 				if(buildMethod.isEmpty()){
 					failMsgs.add("FAIL: expect to find a build method on " + builder.getFullName());
 					continue;
 				} 
-				
-				JType parent = builder.getParentJType();
-				if(parent != null && !parent.hasMethodsMatching(AJMethod.with().name("with").numArgs(0).isStatic(true).returning(AType.that().isEqualTo(builder)))){
-					failMsgs.add("FAIL: expect to find a static builder factory method named 'with' on " + parent.getFullName());
+				JType parent;
+				if(builder.isInnerClass()){
+					parent = builder.getParentJType();
+				} else {
+					parent = builder;
 				}
+				if(parent != null && !parent.hasMethodsMatching(AJMethod.with().name("with").numArgs(0).isStatic().returning(AType.that().isEqualTo(builder)))){
+					failMsgs.add("FAIL: expect to find a static builder factory method named 'with' on " + parent.getFullName() + " to return a new instance of " + builder.getFullName());
+				}
+			
 			}
 			String builderTypeName = builder.getSimpleName();
 			String builderTypeFullName = builder.getFullName();
@@ -154,7 +164,7 @@ public class EnforcerExampleTest
 					AJMethod.all(
 							AJMethod.with()
 								.access(JAccess.PUBLIC)
-								.isConstructor(false)
+								.isNotConstructor()
 					    	,AJMethod.with()
 								.name(not(AString.equalToAny("build","copyOf")))
 								.name(not(AString.matchingAntPattern("build*")))
@@ -179,12 +189,8 @@ public class EnforcerExampleTest
 				//ensure return type is builder. Slightly tricky in that the builder could return 'Self' which could
 				//be a generic type so that it can be sub classed
 				String returnType = method.getReturnTypeFullName();
-				if( !returnType.equals(builderTypeFullName)){
-					
-					
-					if(builderSelfTypeName != null && builderSelfTypeName.equals(returnType)){
-						continue;
-					}
+				boolean returnsBuilder = returnType.equals(builderTypeFullName) || (builderSelfTypeName != null && builderSelfTypeName.equals(returnType));
+				if (!returnsBuilder){
 					
 					String msg = String.format("FAIL : expected builder method %s.%s to return the enclosing builder '%s' but got '%s' for \n\n method \n%s\n in parent \n%s ", 
 

@@ -17,7 +17,7 @@ public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBui
 	private boolean cloneOnReturn;
 	private JAccess access = JAccess.PUBLIC;
 	
-	public static JMethodGetterBuilder builder(){
+	public static JMethodGetterBuilder with(){
 		return new JMethodGetterBuilder();
 	}
 	

@@ -122,6 +122,10 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		return this;
 	}
 
+	public AJMethod isStatic() {
+		return isStatic(true);
+	}
+	
 	public AJMethod isStatic(final boolean b) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override

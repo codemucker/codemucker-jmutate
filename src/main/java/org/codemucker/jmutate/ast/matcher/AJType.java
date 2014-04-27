@@ -221,6 +221,11 @@ public class AJType extends ObjectMatcher<JType> {
 		return this;
 	}
 	
+	public AJType isNotAbstract(){
+		isAbstract(false);
+		return this;
+	}
+	
 	public AJType isAbstract(boolean b){
 		addMatcher(b?ABSTRACT_MATCHER:not(ABSTRACT_MATCHER));
 		return this;

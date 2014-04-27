@@ -16,7 +16,7 @@ import com.google.inject.Inject;
  * some existing code) and convert this into a method which when runs regenerates the original node source. Useful when
  * wanting to take existing code and turn it into a template.
  */
-public class NodeToSourceBuilder {
+public class ASTNodeToSourceBuilder {
 
 	@Inject
 	private MutateContext ctxt;
@@ -27,6 +27,10 @@ public class NodeToSourceBuilder {
 	//the node to copy
 	private ASTNode node;
 
+	public static ASTNodeToSourceBuilder with(){
+		return new ASTNodeToSourceBuilder();
+	}
+	
 	public JMethod build(){
 		String src = flattener.flatten(node);
 		SourceTemplate t = ctxt.newSourceTemplate();
@@ -53,17 +57,17 @@ public class NodeToSourceBuilder {
 		return line.replaceAll("\"", "\\\"");
 	}
 	
-	public NodeToSourceBuilder flattener(AstNodeFlattener flattener) {
+	public ASTNodeToSourceBuilder flattener(AstNodeFlattener flattener) {
 		this.flattener = flattener;
 		return this;
 	}
 	
-	public NodeToSourceBuilder ctxt(MutateContext ctxt) {
+	public ASTNodeToSourceBuilder ctxt(MutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}
 
-	public NodeToSourceBuilder flattenNode(ASTNode node) {
+	public ASTNodeToSourceBuilder flattenNode(ASTNode node) {
 		this.node = node;
 		return this;
 	}

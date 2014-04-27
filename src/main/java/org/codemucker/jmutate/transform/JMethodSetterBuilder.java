@@ -29,7 +29,7 @@ public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBui
 	private String fieldType;
 	private JType target;
 
-	public static JMethodSetterBuilder builder() {
+	public static JMethodSetterBuilder with() {
 		return new JMethodSetterBuilder();
 	}
 

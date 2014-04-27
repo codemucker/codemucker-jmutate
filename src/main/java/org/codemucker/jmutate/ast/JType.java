@@ -412,7 +412,8 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	}
 
 	/**
-	 * Find the immediate parent type, or null if none
+	 * Find the immediate parent type, or null if none. The parent is parent _node_, not the parent
+	 * type
 	 * @return
 	 */
 	public JType getParentJType() {
@@ -445,6 +446,10 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	
 	public boolean isAbstract() {
 		return getModifiers().isAbstract();
+	}
+	
+	public boolean isNotAbstract() {
+		return getModifiers().isAbstract(false);
 	}
 	
 	public boolean isEnum() {
