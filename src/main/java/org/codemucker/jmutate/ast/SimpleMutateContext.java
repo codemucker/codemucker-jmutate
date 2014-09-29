@@ -78,10 +78,6 @@ public class SimpleMutateContext implements MutateContext {
 
 		@Override
 		protected void configure() {
-			bind(Object.class).annotatedWith(new NamedAnnotation(ContextNames.FIELD)).toInstance(provideDefaultFieldPlacement());
-			bind(Object.class).annotatedWith(new NamedAnnotation(ContextNames.CTOR)).toInstance(provideDefaultCtorPlacement());
-			bind(Object.class).annotatedWith(new NamedAnnotation(ContextNames.METHOD)).toInstance(provideDefaultMethodPlacement());
-			bind(Object.class).annotatedWith(new NamedAnnotation(ContextNames.TYPE)).toInstance(provideDefaultTypePlacement());
 		}
 
 		@Provides

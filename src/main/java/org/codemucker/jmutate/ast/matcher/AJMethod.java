@@ -10,10 +10,8 @@ import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JAccess;
-import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifiers;
-import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.Type;
 
 import com.google.common.base.Predicate;
@@ -34,6 +32,10 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		return new AJMethod();
 	}
 
+	public AJMethod(){
+	    super(JMethod.class);
+	}
+	
 	public AJMethod method(Predicate<JMethod> predicate){
 		predicate(predicate);
 		return this;
@@ -69,7 +71,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				Type t = found.getAstNode().getReturnType2();
-				return diag.TryMatch(t, matcher);
+				return diag.tryMatch(this,t, matcher);
 			}
 		});
 		return this;
@@ -140,7 +142,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-				return diag.TryMatch(found.getModifiers(), matcher);
+				return diag.tryMatch(this,found.getModifiers(), matcher);
 			}
 		});
 		return this;

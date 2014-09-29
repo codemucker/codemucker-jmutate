@@ -23,6 +23,10 @@ public class AType extends ObjectMatcher<Type>{
 		return new AType();
 	}
 	
+	public AType(){
+	    super(Type.class);
+	}
+	
 	public AType isEqualTo(JType t){
 		fullName(t.getFullName());
 		return this;
@@ -37,7 +41,7 @@ public class AType extends ObjectMatcher<Type>{
 		addMatcher(new AbstractNotNullMatcher<Type>() {
 			@Override
 			public boolean matchesSafely(Type found, MatchDiagnostics diag) {
-				return diag.TryMatch(JavaNameUtil.resolveQualifiedName(found),fullNameMatcher);
+				return diag.tryMatch(this,JavaNameUtil.resolveQualifiedName(found),fullNameMatcher);
 				
 			}
 		});

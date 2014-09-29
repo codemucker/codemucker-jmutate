@@ -28,6 +28,10 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
 		return new AJSourceFile();
 	}
 	
+	public AJSourceFile(){
+	    super(JSourceFile.class);
+	}
+	
 	public AJSourceFile source(Predicate<JSourceFile> predicate){
 		predicate(predicate);
 		return this;

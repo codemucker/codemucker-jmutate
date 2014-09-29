@@ -25,3 +25,5 @@ out.txt
 # svn
 .svn
 
+# code generation
+src/generated/

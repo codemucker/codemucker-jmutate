@@ -38,6 +38,10 @@ public class AJField extends ObjectMatcher<JField>{
 	public static AJField with(){
 		return new AJField();
 	}
+	
+	public AJField(){
+	    super(JField.class);
+	}
 
 	public AJField field(Predicate<JField> predicate){
 		predicate(predicate);

@@ -90,8 +90,9 @@ public class AJType extends ObjectMatcher<JType> {
 		return new AJType();
 	}
 
+	//prevent instantiation
 	private AJType() {
-    	//prevent instantiation
+    	super(JType.class);
 	}
 
     public AJType type(Predicate<JType> predicate){
@@ -113,7 +114,7 @@ public class AJType extends ObjectMatcher<JType> {
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 				String pkgName = found.getPackageName();
 				if (pkgName != null) {
-					return diag.TryMatch(found.getPackageName(), pkgNameMatcher);
+					return diag.tryMatch(this,found.getPackageName(), pkgNameMatcher);
 				}
 				return false;
 			}
@@ -135,7 +136,7 @@ public class AJType extends ObjectMatcher<JType> {
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 				String pkgName = Strings.emptyToNull(found.getPackageName());
 				if (pkgName != null) {
-					return diag.TryMatch(found.getPackageName(), pkgNameMatcher);
+					return diag.tryMatch(this,found.getPackageName(), pkgNameMatcher);
 				}
 				return false;
 			}
@@ -253,7 +254,7 @@ public class AJType extends ObjectMatcher<JType> {
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 				return found != null
-						&& diag.TryMatch(found.getFullName(), nameMatcher);
+						&& diag.tryMatch(this,found.getFullName(), nameMatcher);
 			}
 
 			@Override
