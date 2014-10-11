@@ -5,7 +5,7 @@ import static org.codemucker.lang.Check.checkNotNull;
 
 import java.util.List;
 
-import org.codemucker.jmutate.transform.MutateContext;
+import org.codemucker.jmutate.MutateContext;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 

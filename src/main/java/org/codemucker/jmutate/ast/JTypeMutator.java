@@ -2,14 +2,14 @@ package org.codemucker.jmutate.ast;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.MutateException;
-import org.codemucker.jmutate.transform.MutateContext;
+import org.codemucker.jmutate.PlacementStrategies;
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.transform.InsertTypeTransform;
-import org.codemucker.jmutate.transform.PlacementStrategies;
-import org.codemucker.jmutate.transform.SourceTemplate;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;

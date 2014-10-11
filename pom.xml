@@ -13,80 +13,80 @@
 	<name>org.codemucker - JMutate (Source Mutator)</name>
 	<description>Source code modification and assertion</description>
 	<properties>
-	    <orient.version>1.7.8</orient.version>
+		<orient.version>2.0-M1</orient.version>
 	</properties>
 	<dependencyManagement>
-        <dependencies>
-          <dependency>
-            <groupId>org.eclipse.equinox</groupId>
-            <artifactId>app</artifactId>
-            <version>1.3.100-v20130327-1442</version>
-            <type>jar</type>
-          </dependency>
-        </dependencies>
-    </dependencyManagement>
-      
+		<dependencies>
+			<dependency>
+				<groupId>org.eclipse.equinox</groupId>
+				<artifactId>app</artifactId>
+				<version>1.3.100-v20130327-1442</version>
+				<type>jar</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 		<dependency>
-            <groupId>org.codemucker</groupId>
-            <artifactId>codemucker-jtest</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codemucker</groupId>
-            <artifactId>codemucker-jfind</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codemucker</groupId>
-            <artifactId>codemucker-jpattern</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codemucker</groupId>
-            <artifactId>codemucker-lang</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codemucker</groupId>
-            <artifactId>codemucker-jmatch</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codemucker</groupId>
-            <artifactId>codemucker-testfirst</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-            <dependency>
-                <groupId>com.orientechnologies</groupId>
-                <artifactId>orient-commons</artifactId>
-                <version>${orient.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.orientechnologies</groupId>
-                <artifactId>orientdb-core</artifactId>
-                <version>${orient.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.orientechnologies</groupId>
-                <artifactId>orientdb-graphdb</artifactId>
-                <version>${orient.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.orientechnologies</groupId>
-                <artifactId>orientdb-enterprise</artifactId>
-                <version>${orient.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.orientechnologies</groupId>
-                <artifactId>orientdb-client</artifactId>
-                <version>${orient.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.orientechnologies</groupId>
-                <artifactId>orientdb-object</artifactId>
-                <version>${orient.version}</version>
-            </dependency>
+			<groupId>org.codemucker</groupId>
+			<artifactId>codemucker-jtest</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codemucker</groupId>
+			<artifactId>codemucker-jfind</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codemucker</groupId>
+			<artifactId>codemucker-jpattern</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codemucker</groupId>
+			<artifactId>codemucker-lang</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codemucker</groupId>
+			<artifactId>codemucker-jmatch</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codemucker</groupId>
+			<artifactId>codemucker-testfirst</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orient-commons</artifactId>
+			<version>${orient.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-core</artifactId>
+			<version>${orient.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-graphdb</artifactId>
+			<version>${orient.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-enterprise</artifactId>
+			<version>${orient.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-client</artifactId>
+			<version>${orient.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-object</artifactId>
+			<version>${orient.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
@@ -98,12 +98,12 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-            <scope>compile</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit-addons</groupId>
 			<artifactId>junit-addons</artifactId>
-            <scope>runtime</scope>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
@@ -120,13 +120,25 @@
 		<dependency>
 			<groupId>org.eclipse.tycho</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>3.9.1.v20130905-0837</version>
+			<version>3.10.0.v20140604-1726</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.jdt</groupId>
-			<artifactId>ui</artifactId>
-			<version>3.3.0-v20070607-0010</version>
+			<groupId>org.eclipse.core</groupId>
+			<artifactId>runtime</artifactId>
+			<version>3.10.0-v20140318-2214</version>
 		</dependency>
+		<dependency>
+			<groupId>org.eclipse.birt.runtime</groupId>
+			<artifactId>org.eclipse.core.resources</artifactId>
+			<version>3.9.0.v20140514-1307</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.text</groupId>
+			<artifactId>org.eclipse.text</artifactId>
+			<version>3.5.101</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.eclipse.birt.runtime</groupId> <artifactId>org.eclipse.core.runtime</artifactId> 
+			<version>3.10.0.v20140318-2214</version> </dependency> -->
 		<dependency>
 			<groupId>com.google.inject</groupId>
 			<artifactId>guice</artifactId>
@@ -134,28 +146,28 @@
 	</dependencies>
 	<build>
 		<plugins>
-		   <plugin>
-		     <groupId>org.apache.felix</groupId>
-		     <artifactId>maven-bundle-plugin</artifactId>
-		     <version>2.3.6</version>
-		     <extensions>true</extensions>
-		   </plugin>
-	      <plugin>
-	        <groupId>org.eclipse.tycho</groupId>
-	        <artifactId>target-platform-configuration</artifactId>
-	        <version>0.19.0</version>
-	        <configuration>
-	          <dependency-resolution>
-	            <extraRequirements>
-	              <requirement>
-	                <type>eclipse-plugin</type>
-	                <id>org.eclipse.jface.text</id>
-	                <versionRange>0.0.0</versionRange>
-	              </requirement>
-	            </extraRequirements>
-	          </dependency-resolution>
-	        </configuration>
-	      </plugin>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.3.7</version>
+				<extensions>true</extensions>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>0.21.0</version>
+				<configuration>
+					<dependency-resolution>
+						<extraRequirements>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.jface.text</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+						</extraRequirements>
+					</dependency-resolution>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>

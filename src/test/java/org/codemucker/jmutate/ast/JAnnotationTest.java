@@ -8,10 +8,10 @@ import java.util.List;
 
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.SourceHelper;
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.matcher.AnAnnotation;
-import org.codemucker.jmutate.transform.MutateContext;
-import org.codemucker.jmutate.transform.SourceTemplate;
 import org.codemucker.jpattern.IsGenerated;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.junit.Test;

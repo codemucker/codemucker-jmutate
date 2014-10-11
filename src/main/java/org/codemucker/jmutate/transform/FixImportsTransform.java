@@ -7,12 +7,16 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newTreeSet;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.AstNodeProvider;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
@@ -31,7 +35,7 @@ import com.google.inject.Inject;
  * Converts types in a class to short names and adds an import. Useful when generating code to use fully qualified
  * names in code modifications, then apply this after to insert correct imports,
  */
-public class FixImportsTransform {
+public class FixImportsTransform implements Transform {
 
 	@Inject
 	private MutateContext ctxt;
@@ -44,7 +48,8 @@ public class FixImportsTransform {
 
 	private boolean addMissingImports = true;
 	
-	public void apply() {
+	@Override
+	public void transform() {
 		checkNotNull(ctxt, "expect ctxt");
 		checkNotNull(node, "expect node");
 		
@@ -65,8 +70,8 @@ public class FixImportsTransform {
 			
 			//add the additional import declarations
 			AST ast = cu.getAST();
-			for(Map.Entry<String, String> entry:importsToAdd.entrySet()){
-				String className = entry.getValue();
+			Set<String> sortedImportsToAdd = new TreeSet<>(importsToAdd.values());
+			for(String className:sortedImportsToAdd){
 				if( !isIgnoreImport(className)){
 					ImportDeclaration importDec = createImport(ast,className);
 					cu.imports().add(importDec);
@@ -86,6 +91,7 @@ public class FixImportsTransform {
 		//shorten all fqn's in imports list
 		FullNameShortenerVisitor shortenerVisitor = new FullNameShortenerVisitor(swapKeysAndValues(classNamesByShortNameToConvert));
 		node.accept(shortenerVisitor);
+		
 	}
 	
 	//TODO:list of exclusions, configurable...

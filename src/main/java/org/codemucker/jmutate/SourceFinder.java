@@ -233,9 +233,10 @@ public class SourceFinder {
 		
 		private MatchListener<Object> listener;
 		
-		public SourceFinder build(){			
+		public SourceFinder build(){
+		    JAstParser parser = buildParser();
 			return new SourceFinder(
-				toParser()
+			     parser
 				, roots
 				, anyIfNull(objectMatcher)
 				, anyIfNull(rootMatcher)
@@ -251,9 +252,16 @@ public class SourceFinder {
 			return Logical.anyIfNull(matcher);
 		}
 		
-		private JAstParser toParser(){
-			return parser != null ? parser : JAstParser.newDefaultJParser();
-		}
+        private JAstParser buildParser() {
+            if (parser != null) {
+                return parser;
+            }
+            return JAstParser.with()
+                    .defaults()
+                    .roots(roots)//path to all the code we're searching
+                    .addRoots(Roots.with().classpath(true))//include the current VM classpath (which we may not include in search)
+                    .build();
+        }
 
 		public Builder searchRoots(Roots.Builder searchRoots) {
         	searchRoots(searchRoots.build());

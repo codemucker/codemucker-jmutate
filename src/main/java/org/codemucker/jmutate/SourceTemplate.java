@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.transform;
+package org.codemucker.jmutate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.junit.Assert.assertEquals;
@@ -8,7 +8,6 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JCompilationUnit;
 import org.codemucker.jmutate.ast.JField;

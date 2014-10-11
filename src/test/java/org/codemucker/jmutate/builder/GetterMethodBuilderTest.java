@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codemucker.jmutate.transform;
+package org.codemucker.jmutate.builder;
 
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.SimpleMutateContext;
+import org.codemucker.jmutate.builder.JMethodGetterBuilder;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.Pattern;
 import org.junit.Test;

@@ -1,7 +1,8 @@
-package org.codemucker.jmutate.transform;
+package org.codemucker.jmutate.builder;
 
 import static org.codemucker.lang.Check.checkNotBlank;
 
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
@@ -10,7 +11,7 @@ import org.codemucker.jpattern.Pattern;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
-public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBuilder> {
+public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBuilder,JMethod> {
 
 	private String fieldName;
 	private String fieldType;
@@ -25,6 +26,7 @@ public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBui
 		pattern("bean.getter");
 	}
 	
+	@Override
 	public JMethod build(){
 		checkFieldsSet();
 		checkNotBlank("fieldName", fieldName);

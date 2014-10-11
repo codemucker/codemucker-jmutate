@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.AstNodeFlattener;
 import org.codemucker.jmutate.ast.JMethod;
 import org.eclipse.jdt.core.dom.ASTNode;

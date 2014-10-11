@@ -2,15 +2,17 @@ package org.codemucker.jmutate.util;
 
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import javax.persistence.criteria.AbstractQuery;
+
 import org.codemucker.jmutate.MutateException;
-import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
-import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -67,7 +69,7 @@ public class JavaNameUtil {
 	
 	public static void resolveQualifiedName(Type t, StringBuilder sb){
 		if(!tryResolveQualifiedName(t,sb)){
-			throw new MutateException("Currently don't know how to handle type:" + t);
+			throw new MutateException("Currently don't know how to handle type " + t.getClass().getName() + ", " + t);
 		}
 	}
 	/**
@@ -89,6 +91,9 @@ public class JavaNameUtil {
 			if( fqn != null){
 				sb.append(fqn);
 				return true;
+			} else{
+			    
+			    return false;
 			}
 		} else if (t.isQualifiedType()) {
 			QualifiedType qt = (QualifiedType) t;
@@ -117,7 +122,9 @@ public class JavaNameUtil {
 			return true;
 		} else if( t.isUnionType()){
 			
-		}
+		}  else if (t.isNameQualifiedType()){
+            
+        }
 		return false;
 	}
 	

@@ -1,7 +1,8 @@
-package org.codemucker.jmutate.transform;
+package org.codemucker.jmutate.builder;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.AstNodeFlattener;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
@@ -12,7 +13,7 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 
-public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
+public class JFieldBuilder extends AbstractBuilder<JFieldBuilder,JField> {
 
 	public static enum RETURN {
 		VOID, TARGET, ARG;
@@ -31,6 +32,7 @@ public class JFieldBuilder extends AbstractBuilder<JFieldBuilder> {
 		pattern("bean.property");
 	}
 	
+	@Override
 	public JField build(){
 		checkFieldsSet();
 		checkNotNull("name", name);

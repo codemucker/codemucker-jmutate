@@ -13,7 +13,9 @@ import java.util.List;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.SourceHelper;
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass1;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass2;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass3;
@@ -21,9 +23,7 @@ import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyNonExtendingClass;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.JFieldBuilder;
-import org.codemucker.jmutate.transform.MutateContext;
-import org.codemucker.jmutate.transform.SourceTemplate;
+import org.codemucker.jmutate.builder.JFieldBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -52,7 +52,8 @@ public class JTypeTest {
 	public void testIsConcreteClass() {
 		assertThat(newJType("class MyClass{}").isConcreteClass(),isTrue());
 		
-		assertThat(newJType("interface MyInterface{}").isConcreteClass(),isFalse());
+		assertThat(newJType("abstract class MyAbstractClass{}").isConcreteClass(),isFalse());
+        assertThat(newJType("interface MyInterface{}").isConcreteClass(),isFalse());
 		assertThat(newJType("enum MyEnum{}").isConcreteClass(),isFalse());
 	}
 	
@@ -478,11 +479,10 @@ public class JTypeTest {
 	@Test
 	public void getPackageNameOnFoundType(){
 		String pkgName = SourceHelper.findSourceForClass(JTypeTest.class).getMainType().getPackageName();
-		Assert.assertEquals("org.codemucker.jmutate.ast", pkgName);	
+		Assert.assertEquals(JTypeTest.class.getPackage().getName(), pkgName);	
 		
 		pkgName = SourceHelper.findSourceForClass(JFieldBuilder.class).getMainType().getPackageName();
-		Assert.assertEquals("org.codemucker.jmutate.transform", pkgName);	
-		
+		Assert.assertEquals(JFieldBuilder.class.getPackage().getName(), pkgName);	
 		
 	}
 

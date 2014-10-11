@@ -2,11 +2,17 @@ package org.codemucker.jmutate.transform;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import org.codemucker.jmutate.ClashStrategy;
+import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 
 import com.google.inject.Inject;
 
+/**
+ * Base helper transform to insert a set of AST nodes. Up to implementations to determine where in the AST these are inserted (handling duplicates)
+ * @param <S>
+ */
 public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTransform<S>> implements Transform {
 	private JType target;
 	

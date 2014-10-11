@@ -3,8 +3,10 @@ package org.codemucker.jmutate.ast.matcher;
 import java.lang.annotation.Annotation;
 
 import org.codemucker.jmatch.AString;
+import org.codemucker.jmatch.AbstractMatcher;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.AnInt;
+import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
@@ -12,6 +14,8 @@ import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifiers;
+import org.codemucker.jmutate.util.JavaNameUtil;
+import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.Type;
 
 import com.google.common.base.Predicate;
@@ -62,10 +66,60 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return matcher.matches(found.getName());
 			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("with name", matcher);
+            }
 		});
 		return this;
 	}
 	
+	public AJMethod returningSomething() {
+        addMatcher(Logical.not(newVoidReturnMatcher()));
+        return this;
+    }
+	
+	public AJMethod returningVoid() {
+	    addMatcher(newVoidReturnMatcher());
+	    return this;
+	}
+	
+	private static Matcher<JMethod> newVoidReturnMatcher(){
+	    final Matcher<Type> voidTypeMatcher = newVoidTypeMatcher();
+	    return new AbstractNotNullMatcher<JMethod>() {
+            @Override
+            public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+                Type returnType = found.getAstNode().getReturnType2();
+                return diag.tryMatch(this, returnType, voidTypeMatcher);
+            }
+            
+            @Override
+            public void describeTo(Description desc) {
+                desc.text("returning void");
+            }
+        };
+	}
+	
+	   private static Matcher<Type> newVoidTypeMatcher(){
+	        return new AbstractMatcher<Type>(AllowNulls.YES) {
+	            @Override
+	            public boolean matchesSafely(Type found, MatchDiagnostics diag) {
+	                if (found != null && !(found.isPrimitiveType() && ((PrimitiveType) found).getPrimitiveTypeCode() == PrimitiveType.VOID)) {
+	                    diag.mismatched("expect void but was " + JavaNameUtil.resolveQualifiedNameElseShort(found));
+	                    return false;
+	                }
+	                diag.matched("is void");
+	                return true;
+	            }
+	            
+	            @Override
+	            public void describeTo(Description desc) {
+	                desc.text("returning void");
+	            }
+	        };
+	    }
+	   
 	public AJMethod returning(final Matcher<Type> matcher) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
@@ -73,6 +127,11 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 				Type t = found.getAstNode().getReturnType2();
 				return diag.tryMatch(this,t, matcher);
 			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("returning:", matcher);
+            }
 		});
 		return this;
 	}
@@ -100,20 +159,46 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
-	public AJMethod isConstructor(boolean val) {
+	public AJMethod isConstructor(final boolean isCtor) {
 		Matcher<JMethod> matcher = new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-				return found.isConstructor();
+				if(found.isConstructor()){
+				    diag.matched("is constructor");
+				    return true;
+				} else {
+				    diag.mismatched("is not constructor");
+				    return false;
+				}
+			}
+			
+			@Override
+			public void describeTo(Description desc) {
+			    desc.text(isCtor?"is constructor":"is not constructor");
 			}
 		};
-		if(!val ){
+		if(!isCtor ){
 			matcher = Logical.not(matcher);
 		}
 		addMatcher(matcher);
 		return this;
 	}
 	
+	public AJMethod isNotPublic() {
+	    notAccess(JAccess.PUBLIC);
+        return this;
+    }
+	
+	public AJMethod isPublic() {
+	    access(JAccess.PUBLIC);
+	    return this;
+	}
+	
+	public AJMethod isNotPrivate() {
+	    notAccess(JAccess.PRIVATE);
+        return this;
+    }
+    
 	public AJMethod access(final JAccess access) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
@@ -124,16 +209,40 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		return this;
 	}
 
+	   public AJMethod notAccess(final JAccess access) {
+	        addMatcher(new AbstractNotNullMatcher<JMethod>() {
+                @Override
+	            public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+	                return !found.getModifiers().isAccess(access);
+	            }
+                
+                @Override
+                public void describeTo(Description desc) {
+                    desc.text("is not " + access.name());
+                }
+	        });
+	        return this;
+	    }
+
 	public AJMethod isStatic() {
 		return isStatic(true);
 	}
 	
-	public AJMethod isStatic(final boolean b) {
+	public AJMethod isNotStatic() {
+        return isStatic(false);
+    }
+	
+	public AJMethod isStatic(final boolean isStatic) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-				return found.getModifiers().isStatic(b);
+				return found.getModifiers().isStatic(isStatic);
 			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.text("is " + (isStatic?"":" not ")+ " static");
+            }
 		});
 		return this;
 	}
@@ -144,6 +253,11 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return diag.tryMatch(this,found.getModifiers(), matcher);
 			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("modifier:", matcher);
+            }
 		});
 		return this;
 	}
@@ -154,6 +268,11 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return found.hasAnnotationOfType(annotationClass);
 			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("with annotation:", annotationClass.getName());
+            }
 		});
 		return this;
 	}
@@ -164,6 +283,11 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return found.hasParameterAnnotationOfType(annotationClass);
 			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("with parameter annotation:", annotationClass.getName());
+            }
 		});
 		return this;
 	}
@@ -179,6 +303,11 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
 				return numArgMatcher.matches(found.getAstNode().parameters().size());
 			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("num args:", numArgMatcher);
+            }
 		});
 		return this;
 	}
@@ -196,6 +325,11 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 					&& name.equals(found.getName()) 
 					&& sig.equals(found.getClashDetectionSignature());
 			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("with signature:", sig);
+            }
 		});
 		return this;
 	}

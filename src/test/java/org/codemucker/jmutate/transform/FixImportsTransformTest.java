@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.SimpleMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -25,7 +27,7 @@ public class FixImportsTransformTest {
 		//do the actual import clean
 		ctxt.obtain(FixImportsTransform.class)
 			.setNodeToClean(actual)
-			.apply();
+			.transform();
 		
 		SourceAsserts.assertAstsMatch(expected, actual);
 	}
@@ -39,7 +41,7 @@ public class FixImportsTransformTest {
 		ctxt.obtain(FixImportsTransform.class)
 			.setNodeToClean(actual)
 			.addMissingImports(false)
-			.apply();
+			.transform();
 		
 		SourceAsserts.assertAstsMatch(expected, actual);
 	}

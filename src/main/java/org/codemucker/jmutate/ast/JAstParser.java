@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -51,8 +52,10 @@ public class JAstParser {
 		return new Builder();
 	}
 	
-	private final Root snippetRoot;
-	
+    public static JAstParser newDefaultJParser() {
+        return with().defaults().build();
+    }
+
 	private static final String[] EMPTY = new String[]{};
 	
 	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Root snippetRoot, Iterable<Root> resolveRoots) {
@@ -61,8 +64,7 @@ public class JAstParser {
 	    this.checkParse = checkParse;
 	    this.recordModifications = recordModifications;
 	    this.options = checkNotNull(options,"expect parser options");
-		this.snippetRoot = snippetRoot;
-		
+	    
 	    List<String> sources = newArrayList();
 	    sources.add(snippetRoot.getPathName());
 	    
@@ -93,7 +95,7 @@ public class JAstParser {
 				List<IProblem> errors = extractErrors(problems);
 				if( !errors.isEmpty()){		
 					String problemString = Joiner.on("\n").join(Lists.transform(errors, problemToStringFunc()));
-					fail(String.format("Parsing error for resource %s,  source %s\n,  problems are %s", resource==null?null:resource.getRelPath(), prependLineNumbers(src), problemString));
+					fail(String.format("Parsing error for resource %s,  full path %s, source %s\n,  problems are %s", resource==null?null:resource.getRelPath(), resource==null?null:resource.getFullPathInfo(), prependLineNumbers(src), problemString));
 				}
 			}
 		}
@@ -161,10 +163,14 @@ public class JAstParser {
 		if( resource != null ){
 			parser.setUnitName(resource.getRelPath());
 		}
-		if( binaryRoots.length > 0 || sourceRoots.length > 0){
-			boolean includeRunningVMBootclasspath = true;//if false can't find all the JDK classes?
-	    	parser.setEnvironment(binaryRoots, sourceRoots, null, includeRunningVMBootclasspath);
-	    }
+        if (binaryRoots.length > 0 || sourceRoots.length > 0) {
+            boolean includeRunningVMBootclasspath = true;// if false can't find all the JDK classes?
+            String[] encodings = new String[sourceRoots.length];
+            for (int i = 0; i < sourceRoots.length; i++) {
+                encodings[i] = "UTF-8";
+            }
+            parser.setEnvironment(binaryRoots, sourceRoots, encodings, includeRunningVMBootclasspath);
+        }
 		parser.setSource(src.toString().toCharArray());
 		parser.setKind(kind);
 		ASTNode node = parser.createAST(null);
@@ -186,18 +192,10 @@ public class JAstParser {
 		return parser;
 	}
 
-	public static JAstParser newDefaultJParser() {
-		return with().build();
+	public static ASTParser newDefaultParser() {
+		return with().defaults().build().parser;
 	}
 
-	public static ASTParser newDefaultParser() {
-		return with().build().parser;
-	}
-	
-	public static class CompilerOptions {
-		
-	}
-	
 	public static class Builder implements IBuilder<JAstParser> {
 		private ASTParser parser;
 		private boolean checkParse = true;
@@ -209,17 +207,18 @@ public class JAstParser {
 		private Root snippetRoot;
 		
 		public Builder(){
-			sourceLevel(JavaCore.VERSION_1_7);
+		    sourceAndTargetVersion(JavaCore.VERSION_1_8);
 		}
 		
 		public Builder defaults() {
         	parser(newDefaultAstParser());
-        	sourceLevel(JavaCore.VERSION_1_7);
+        	sourceAndTargetVersion(JavaCore.VERSION_1_8);
         	compilerOption(JavaCore.COMPILER_PB_UNUSED_LOCAL, "ignore");
         	compilerOption(JavaCore.COMPILER_PB_UNUSED_PRIVATE_MEMBER, "ignore");
         	compilerOption(JavaCore.COMPILER_PB_UNUSED_PARAMETER, "ignore");
         	compilerOption(JavaCore.COMPILER_PB_UNUSED_TYPE_ARGUMENTS_FOR_METHOD_INVOCATION, "ignore");
-         	compilerOption(JavaCore.COMPILER_PB_UNUSED_IMPORT, "ignore");
+        	compilerOption(JavaCore.COMPILER_PB_UNUSED_IMPORT, "ignore");
+
         	return this;
         }
 
@@ -255,8 +254,10 @@ public class JAstParser {
 		}
 		
 		private ASTParser newDefaultAstParser(){
-			ASTParser parser = ASTParser.newParser(AST.JLS4);
+			ASTParser parser = ASTParser.newParser(AST.JLS8);
 			parser.setResolveBindings(resolveBindings);
+			parser.setBindingsRecovery(resolveBindings);
+            //parser.setEnvironment(rootsToEntries(),new String[]{toSnippetRoot().getPathName()}, new String[]{"UTF-8"}, true);
 		    parser.setCompilerOptions(options);
 
 			return parser;
@@ -269,21 +270,41 @@ public class JAstParser {
 		
 		/**
 		 * Add a root to use to use in resolving bindings
-		 * @param root
+		 * 
+		 * @param builder
 		 * @return
 		 */
-		public Builder root(Root root){
-			this.roots.add(root);
-			return this;
-		}
-
-		public Builder roots(IBuilder<? extends Iterable<Root>> builder){
-			roots(builder.build());
+		public Builder addRoots(IBuilder<? extends Iterable<Root>> builder){
+			for(Root root:builder.build()){
+			    root(root);
+			}
 			return this;
 		}
 		
+	      /**
+         * Add a root to use to use in resolving bindings
+         * @param root
+         * @return
+         */
+        public Builder root(Root root){
+            this.roots.add(root);
+            return this;
+        }
+
+        /**
+         * Set all the roots to use in resolving bindings. Replaces existing roots.
+         * 
+         * @param builder
+         * @return
+         */
+        public Builder roots(IBuilder<? extends Iterable<Root>> builder){
+            roots(builder.build());
+            return this;
+        }
+        
 		/**
-		 * Set the roots to use to resolve bindings
+		 * Set all the roots to use in resolving bindings. Replaces existing roots.
+		 * 
 		 * @param roots
 		 * @return
 		 */
@@ -307,10 +328,36 @@ public class JAstParser {
 			return this;
 		}
 
+		public Builder sourceAndTargetVersion(String version) {
+		    sourceLevel(version);
+		    targetLevel(version);
+            return this;
+        }
+        
+		public Builder java1_6() {
+		    sourceAndTargetVersion(JavaCore.VERSION_1_6);
+            return this;
+        }
+		
+		public Builder java1_7() {
+		    sourceAndTargetVersion(JavaCore.VERSION_1_7);
+            return this;
+        }
+        
+		public Builder java1_8() {
+		    sourceAndTargetVersion(JavaCore.VERSION_1_8);
+            return this;
+        }
+        
 		public Builder sourceLevel(String sourceLevel) {
 			compilerOption(JavaCore.COMPILER_SOURCE, sourceLevel);
 			return this;
 		}
+		
+		public Builder targetLevel(String targetVersion) {
+            compilerOption(JavaCore.COMPILER_COMPLIANCE, targetVersion);
+            return this;
+        }
 		
 		public Builder compilerOption(String name, String value) {
 			options.put(name, value);

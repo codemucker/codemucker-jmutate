@@ -23,11 +23,11 @@ import org.codemucker.jfind.PredicateToFindFilterAdapter;
 import org.codemucker.jmatch.AnInstance;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.util.ClassUtil;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.AST;
@@ -461,7 +461,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	}
 
 	public boolean isConcreteClass() {
-		return isClass() && !asTypeDecl().isInterface();
+		return isClass() && !isAbstract() && !isInterface();
 	}
 
 	public boolean isInterface() {

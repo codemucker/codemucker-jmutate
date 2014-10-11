@@ -15,9 +15,9 @@
  */
 package org.codemucker.jmutate.pattern;
 
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.SimpleMutateContext;
-import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.Property;
 import org.codemucker.jpattern.Pattern;

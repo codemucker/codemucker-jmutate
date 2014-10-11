@@ -2,6 +2,7 @@ package org.codemucker.jmutate.ast.matcher;
 
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
@@ -42,7 +43,11 @@ public class AType extends ObjectMatcher<Type>{
 			@Override
 			public boolean matchesSafely(Type found, MatchDiagnostics diag) {
 				return diag.tryMatch(this,JavaNameUtil.resolveQualifiedName(found),fullNameMatcher);
-				
+			}
+			
+			@Override
+			public void describeTo(Description desc) {
+			    desc.value("with fullname",fullNameMatcher);
 			}
 		});
 		return this;

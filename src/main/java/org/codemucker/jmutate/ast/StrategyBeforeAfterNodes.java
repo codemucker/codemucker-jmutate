@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.codemucker.jmutate.transform.PlacementStrategy;
+import org.codemucker.jmutate.PlacementStrategy;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 

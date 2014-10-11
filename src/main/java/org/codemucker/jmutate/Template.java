@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.transform;
+package org.codemucker.jmutate;
 
 public interface Template {
 

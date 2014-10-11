@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.matcher.AJMethod;

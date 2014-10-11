@@ -1,8 +1,8 @@
 package org.codemucker.jmutate.pattern;
 
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.MutateContext;
 import org.codemucker.jmutate.transform.Transform;
 
 import com.google.inject.Inject;

@@ -2,10 +2,10 @@ package org.codemucker.jmutate.util;
 
 import static org.junit.Assert.assertEquals;
 
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.SimpleMutateContext;
-import org.codemucker.jmutate.transform.SourceTemplate;
 import org.junit.Test;
 
 public class JavaNameUtilTest {
@@ -76,7 +76,7 @@ public class JavaNameUtilTest {
 		
 		assertEquals(expectName, actualName);
 	}
-	
+
 	public static interface MyInterface {
 	};
 	

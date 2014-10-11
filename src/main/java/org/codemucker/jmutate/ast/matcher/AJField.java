@@ -8,13 +8,10 @@ import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmatch.PredicateToMatcher;
-import org.codemucker.jmatch.AbstractMatcher.AllowNulls;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.internal.corext.template.java.JavaContextType;
 
 import com.google.common.base.Predicate;
 

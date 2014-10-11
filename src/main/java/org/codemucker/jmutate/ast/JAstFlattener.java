@@ -921,9 +921,9 @@ public class JAstFlattener extends ASTVisitor {
     for (int i= 0; i < node.getExtraDimensions(); i++) {
       this.buffer.append("[]"); //$NON-NLS-1$
     }
-    if (!node.thrownExceptions().isEmpty()) {
+    if (!node.thrownExceptionTypes().isEmpty()) {
       this.buffer.append(" throws ");//$NON-NLS-1$
-      for (Iterator<?> it= node.thrownExceptions().iterator(); it.hasNext();) {
+      for (Iterator<?> it= node.thrownExceptionTypes().iterator(); it.hasNext();) {
         Name n= (Name) it.next();
         n.accept(this);
         if (it.hasNext()) {

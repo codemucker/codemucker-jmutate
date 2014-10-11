@@ -240,9 +240,13 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 			QualifiedType qt = (QualifiedType) t;
 			sb.append(JavaNameUtil.resolveQualifiedName(qt.getName()));
 		} else if (t.isArrayType()) {
-			ArrayType at = (ArrayType) t;
-			toNonGenericFullName(at.getComponentType(), sb);
-			sb.append("[]");
+			Type elementType = ((ArrayType) t).getElementType();
+			int dimensions = ((ArrayType) t).getDimensions();
+			toNonGenericFullName(elementType, sb);
+			while(dimensions> 0){
+			    sb.append("[]");
+			    dimensions--;
+			}
 		} else if(t.isParameterizedType()){
 			ParameterizedType pt = (ParameterizedType)t;
 			toNonGenericFullName(pt.getType(),sb);

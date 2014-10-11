@@ -7,20 +7,20 @@ import java.util.List;
 
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JField.SingleJField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifiers;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.transform.MutateContext;
+import org.codemucker.jmutate.builder.JMethodSetterBuilder;
 import org.codemucker.jmutate.transform.FixImportsTransform;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.transform.InsertTypeTransform;
-import org.codemucker.jmutate.transform.JMethodSetterBuilder;
-import org.codemucker.jmutate.transform.SourceTemplate;
 import org.codemucker.jmutate.transform.Transform;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.codemucker.jmutate.util.TypeUtil;
@@ -84,7 +84,7 @@ public class BeanBuilderTransform implements Transform {
 	    ctxt.obtain(FixImportsTransform.class)
 	    	.addMissingImports(true)
 	    	.nodeToClean(target)
-	    	.apply();
+	    	.transform();
 	}
 
 	private static List<SingleJField> collectSingleFields(Iterable<JField> fields) {
@@ -149,7 +149,7 @@ public class BeanBuilderTransform implements Transform {
 		return this;
 	}
 	
-	public static class BeanBuilderBuildMethodPattern {
+	public static class BeanBuilderBuildMethodPattern implements Pattern {
 		@Inject
 		private MutateContext ctxt;
 		//rename, possibly not a bean ..?
@@ -158,7 +158,7 @@ public class BeanBuilderTransform implements Transform {
 		private JType target;
 		private List<SingleJField> fields;
 		
-		
+		@Override
 		public void apply() {
 			checkNotNull("ctxt", ctxt);
 			checkNotNull("target", target);
@@ -223,14 +223,15 @@ public class BeanBuilderTransform implements Transform {
 		}
 	}
 
-	public static class BeanBuilderFieldCtorPattern {
+	public static class BeanBuilderFieldCtorPattern implements Pattern {
 		@Inject
 		private MutateContext ctxt;
 		private JType target;
 		private List<SingleJField> fields;
 		private Boolean useQualifiedName = true;
 		
-		private void apply() {
+		@Override
+		public void apply() {
 			checkNotNull("ctxt", ctxt);
 			checkNotNull("target", target);
 			checkNotNull("fields", fields);
@@ -308,13 +309,14 @@ public class BeanBuilderTransform implements Transform {
 		
 	}
 
-    public static class BeanBuilderPropertiesPattern {
+    public static class BeanBuilderPropertiesPattern implements Pattern {
     	
     	@Inject
     	private MutateContext ctxt;
     	private JType target;
     	private List<SingleJField> fields;
 		
+    	@Override
 		public void apply() {	
 			checkNotNull("ctxt", ctxt);
 			checkNotNull("target", target);

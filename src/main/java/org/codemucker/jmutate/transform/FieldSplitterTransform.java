@@ -2,9 +2,13 @@ package org.codemucker.jmutate.transform;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
+import org.codemucker.jmutate.ClashStrategy;
+import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.PlacementStrategies;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JField.SingleJField;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jmutate.builder.JFieldBuilder;
 
 import com.google.inject.Inject;
 /**
@@ -18,7 +22,7 @@ import com.google.inject.Inject;
  * string a = "";
  * </pre>
  */
-public class FieldSplitterTransform {
+public class FieldSplitterTransform implements Transform {
 
 	@Inject
 	private MutateContext ctxt;
@@ -45,7 +49,8 @@ public class FieldSplitterTransform {
 		return this;
 	}
 
-	public FieldSplitterTransform apply() {
+	@Override
+	public void transform() {
 		checkNotNull("target", target);
 		checkNotNull("field", field);
 		checkNotNull("context", ctxt);
@@ -69,7 +74,5 @@ public class FieldSplitterTransform {
 		}
 		//remove the old fields
 		field.getAstNode().delete();
-		
-		return this;
 	}
 }

@@ -1,7 +1,7 @@
 package org.codemucker.jmutate.ast;
 
-import org.codemucker.jmutate.transform.MutateContext;
-import org.codemucker.jmutate.transform.SourceTemplate;
+import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.SourceTemplate;
 import org.junit.Assert;
 import org.junit.Test;
 

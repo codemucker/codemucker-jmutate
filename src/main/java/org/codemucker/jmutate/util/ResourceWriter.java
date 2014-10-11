@@ -10,8 +10,8 @@ import org.apache.commons.io.IOUtils;
 import org.codemucker.jfind.DirectoryRoot;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
+import org.codemucker.jmutate.Template;
 import org.codemucker.jmutate.bean.BeanGenerationException;
-import org.codemucker.jmutate.transform.Template;
 import org.codemucker.jtest.ProjectFinder;
 
 

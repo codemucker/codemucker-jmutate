@@ -9,10 +9,9 @@ import java.util.List;
 import org.codemucker.jfind.AMethod;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.JClass;
-import org.codemucker.jfind.MatchListener;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jmatch.AString;
-import org.codemucker.jmatch.AnInt;
+import org.codemucker.jmatch.Expect;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceFinder;
@@ -22,10 +21,8 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
-import org.codemucker.jmutate.ast.matcher.AJSourceFile;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.ast.matcher.AType;
-import org.codemucker.jmutate.transform.AbstractBuilder;
+import org.codemucker.jmutate.builder.AbstractBuilder;
 import org.codemucker.lang.IBuilder;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.junit.Assert;
@@ -105,109 +102,45 @@ public class EnforcerExampleTest
 	}
 
 	@Test
-	public void ensureBuildersAreCorrectlyNamed()
-	{
-		FindResult<JType> builders = SourceFinder.with()
-				.searchRoots(Roots.with()
-					.mainSrcDir(true)
-					.testSrcDir(true))
-				.listener(new MatchListener<Object>() {
-					@Override
-					public void onMatched(Object result) {
-//						if( result instanceof JType){
-//							System.out.println(((JType)result).getFullName());
-//						}
-					}
-					
-					@Override
-					public void onIgnored(Object result) {
-					}
-					
-					@Override
-					public void onError(Object record, Exception e) throws Exception {
-					}
-				})
-				.filter(SourceFilter.with()
-					.includeType(AJType.with().simpleNameMatchingAntPattern("*Builder"))
-					.includeType(AJType.that().isASubclassOf(IBuilder.class))
-					.includeType(AJType.that().isASubclassOf(AbstractBuilder.class))
-					.includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*")))
-					)
-				.build()
-				.findTypes();
-		
-		List<String> failMsgs = new ArrayList<>();
-		
-		for (JType builder : builders) {			
-			FindResult<JMethod> buildMethod = builder.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build"));
-			
-			if(builder.isNotAbstract()){//don't expect build methods on abstract builders
-				if(buildMethod.isEmpty()){
-					failMsgs.add("FAIL: expect to find a build method on " + builder.getFullName());
-					continue;
-				} 
-				JType parent;
-				if(builder.isInnerClass()){
-					parent = builder.getParentJType();
-				} else {
-					parent = builder;
-				}
-				if(parent != null && !parent.hasMethodsMatching(AJMethod.with().name("with").numArgs(0).isStatic().returning(AType.that().isEqualTo(builder)))){
-					failMsgs.add("FAIL: expect to find a static builder factory method named 'with' on " + parent.getFullName() + " to return a new instance of " + builder.getFullName());
-				}
-			
-			}
-			String builderTypeName = builder.getSimpleName();
-			String builderTypeFullName = builder.getFullName();
-			
-			FindResult<JMethod> builderMethods = builder.findMethodsMatching(
-					AJMethod.all(
-							AJMethod.with()
-								.access(JAccess.PUBLIC)
-								.isNotConstructor()
-					    	,AJMethod.with()
-								.name(not(AString.equalToAny("build","copyOf")))
-								.name(not(AString.matchingAntPattern("build*")))
-							,not(AJMethod.with()
-								.name(AString.matchingAntPattern("get*"))
-								.numArgs(0))
-							,not(AJMethod.with()
-								.name(AString.matchingAntPattern("is??*"))
-								.numArgs(0)
-								.returning(AType.BOOL_PRIMITIVE))));
-			
-			String builderSelfTypeName = builder.getSelfTypeGenericParam();
-			
-			for(JMethod method : builderMethods){
-				
-				//ensure method names don't start with bad prefixes
-				if( method.getName().startsWith("set") || (method.getName().startsWith("with") && !(method.getName().equals("with") && method.isStatic()))) {
-					String msg = String.format("FAIL: expected builder method %s.%s to _not_ start with any of 'set,with'", method.getEnclosingJType().getFullName(), method.getFullSignature());
-					failMsgs.add(msg);
-				}
-				
-				//ensure return type is builder. Slightly tricky in that the builder could return 'Self' which could
-				//be a generic type so that it can be sub classed
-				String returnType = method.getReturnTypeFullName();
-				boolean returnsBuilder = returnType.equals(builderTypeFullName) || (builderSelfTypeName != null && builderSelfTypeName.equals(returnType));
-				if (!returnsBuilder){
-					
-					String msg = String.format("FAIL : expected builder method %s.%s to return the enclosing builder '%s' but got '%s' for \n\n method \n%s\n in parent \n%s ", 
-
-						method.getEnclosingJType().getFullName(),
-						method.getFullSignature(),
-						builderTypeName,
-						method.getAstNode().getReturnType2().toString(),
-						method.getAstNode(),
-						method.getEnclosingType());
-					failMsgs.add(msg);
-				}
-				
-				//TODO:all builder methods taking a boolean, should be named isX(..) or hasX(..)
-			}
-		}	
-		if(failMsgs.size() > 0){
-			Assert.fail(failMsgs.size() + " failures\n" + Joiner.on("\n").join(failMsgs));
-		}
+	public void ensureBuildersAreCorrectlyNamed(){
+	    BuilderFinderEnforcer.with().build().invoke();
 	}
+	
+    static class BuilderFinderEnforcer {
+	        
+        public static Builder with(){
+            return new Builder();
+        }
+
+        public void invoke(){
+
+            FindResult<JType> foundBuilders = SourceFinder.with()
+                    .searchRoots(Roots.with()
+                        .mainSrcDir(true)
+                        .testSrcDir(true))
+                    .filter(SourceFilter.with()
+                        .includeType(AJType.with().simpleNameMatchingAntPattern("*Builder"))
+                        .includeType(AJType.that().isASubclassOf(IBuilder.class))
+                        .includeType(AJType.that().isASubclassOf(AbstractBuilder.class))
+                        .includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*"))))
+                    .build()
+                    .findTypes();
+            
+            for (JType builderType : foundBuilders) {            
+                Expect
+                    .that(builderType)
+                    .is(ABuilderPattern.with()
+                        .defaults()
+                        .ignoreMethod(AJMethod.with().name("copyOf").returningSomething())
+                        .ignoreMethod(AJMethod.with().name("describeTo").returningVoid()));
+            }
+        }
+        //TODO:add build options
+        public static class Builder implements IBuilder<BuilderFinderEnforcer>{
+            @Override
+            public BuilderFinderEnforcer build() {
+                return new BuilderFinderEnforcer();
+            }           
+        }
+    }   
 }

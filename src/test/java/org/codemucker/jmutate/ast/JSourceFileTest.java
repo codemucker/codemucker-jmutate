@@ -2,8 +2,8 @@ package org.codemucker.jmutate.ast;
 
 import static org.junit.Assert.assertEquals;
 
-import org.codemucker.jmutate.transform.MutateContext;
-import org.codemucker.jmutate.transform.SourceTemplate;
+import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jtest.ClassNameUtil;
 import org.codemucker.jtest.TestHelper;
 import org.junit.Test;

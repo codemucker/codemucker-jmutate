@@ -1,9 +1,10 @@
-package org.codemucker.jmutate.transform;
+package org.codemucker.jmutate.builder;
 
 import static org.codemucker.lang.Check.checkNotBlank;
 import static org.codemucker.lang.Check.checkNotNull;
 import static org.codemucker.lang.Check.checkTrue;
 
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
@@ -15,8 +16,7 @@ import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 
-
-public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBuilder> {
+public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBuilder,JMethod> {
 
 	public static enum RETURNS {
 		VOID, TARGET, ARG;
@@ -37,6 +37,7 @@ public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBui
 		pattern("bean.setter");
 	}
 	
+	@Override
 	public JMethod build() {
 		checkFieldsSet();
 		

@@ -1,5 +1,6 @@
 package org.codemucker.jmutate.transform;
 
+import org.codemucker.jmutate.MutateContext;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.SimpleMutateContext;
@@ -26,7 +27,7 @@ public class FieldSplitterTransformTest {
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
 			.setField(field)
-			.apply();
+			.transform();
 		
 		JType expected = ctxt.newSourceTemplate()
 			.pl("class Foo{")
@@ -53,7 +54,7 @@ public class FieldSplitterTransformTest {
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
 			.setField(field)
-			.apply();
+			.transform();
 		
 		JType expected = ctxt.newSourceTemplate()
 			.pl("class Foo{")

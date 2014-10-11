@@ -2,9 +2,6 @@ package org.codemucker.jmutate.util;
 
 import java.util.Collection;
 
-import org.codemucker.jmutate.ast.JAstFlattener;
-import org.eclipse.jdt.core.dom.Type;
-
 import com.google.common.collect.ImmutableList;
 
 public class TypeUtil {

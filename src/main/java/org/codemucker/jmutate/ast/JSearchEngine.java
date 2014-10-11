@@ -33,7 +33,7 @@ public class JSearchEngine implements Closeable {
 		
 		this.parser = parser;
         db = Orient.instance()
-        	.getDatabaseFactory().createDatabase("graph","local:" + dbDirectoy.getAbsolutePath());
+        	.getDatabaseFactory().createDatabase("graph","plocal:" + dbDirectoy.getAbsolutePath());
 
         //TODO:turn off locking while we index
         //TODO:put it in a reusable location so multiple calls find the already indexed code
@@ -41,16 +41,18 @@ public class JSearchEngine implements Closeable {
         db.create();
         
         db.declareIntent(new OIntentMassiveInsert());
+        
+        Object orgValTxUseLog = OGlobalConfiguration.TX_USE_LOG.getValue();
+        Object orgValCacheEnabled = OGlobalConfiguration.CACHE_LOCAL_ENABLED.getValue();
+        
         OGlobalConfiguration.TX_USE_LOG.setValue(false);
-        OGlobalConfiguration.CACHE_LEVEL1_ENABLED.setValue(false);
-        OGlobalConfiguration.CACHE_LEVEL2_ENABLED.setValue(false);
+        OGlobalConfiguration.CACHE_LOCAL_ENABLED.setValue(false);
         index(roots);
       
         //reset intent
         db.declareIntent(null);
-        OGlobalConfiguration.TX_USE_LOG.setValue(true);
-        OGlobalConfiguration.CACHE_LEVEL1_ENABLED.setValue(true);
-        OGlobalConfiguration.CACHE_LEVEL2_ENABLED.setValue(true);
+        OGlobalConfiguration.TX_USE_LOG.setValue(orgValTxUseLog);
+        OGlobalConfiguration.CACHE_LOCAL_ENABLED.setValue(orgValCacheEnabled);
 	}
 
 	public void index(List<Root> roots) {
