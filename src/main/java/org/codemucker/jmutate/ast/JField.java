@@ -4,20 +4,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.List;
 
 import org.codemucker.jmutate.util.JavaNameUtil;
-import org.codemucker.jmutate.util.TypeUtil;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import com.google.common.base.Function;
 
-public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
+public class JField implements HasAnnotations, AstNodeProvider<FieldDeclaration> {
 
 	public static final Function<FieldDeclaration, JField> TRANSFORMER = new Function<FieldDeclaration, JField>() {
 		public JField apply(FieldDeclaration node){
@@ -27,6 +26,19 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 	
 	private final FieldDeclaration fieldNode;
 
+	private final AbstractAnnotations annotable = new AbstractAnnotations(){
+        @Override
+        protected ASTNode getAstNode() {
+            return fieldNode;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected List<IExtendedModifier> getModifiers() {
+            return fieldNode.modifiers();
+        } 
+	};
+	
 	public static JField from(FieldDeclaration node){
 		return new JField(node);
 	}
@@ -141,19 +153,9 @@ public class JField implements JAnnotatable, AstNodeProvider<FieldDeclaration> {
 		return new JModifiers(fieldNode.getAST(),fieldNode.modifiers());
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-    public <A extends Annotation> boolean hasAnnotationOfType(final Class<A> annotationClass) {
-		return JAnnotation.hasAnnotation(annotationClass, fieldNode.modifiers());
-	}
-
-	@Override
-	public <A extends Annotation> JAnnotation getAnnotationOfType(final Class<A> annotationClass) {
-		return JAnnotation.getAnnotationOfType(fieldNode, JAnnotation.ANY_DEPTH, annotationClass);
-	}
-
-	@Override
-	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
-		return JAnnotation.findAnnotations(fieldNode);
-	}
+	public Annotations getAnnotations(){
+        return annotable;
+    }
+ 
 }

@@ -38,7 +38,7 @@ import com.google.inject.Inject;
  * 
  * 
  */
-public class SourceFinder {
+public class JSourceFinder {
 
 	private static final String JAVA_EXTENSION = "java";
 	private static final MatchListener<Object> NULL_LISTENER = new MatchListener<Object>() {
@@ -52,8 +52,6 @@ public class SourceFinder {
 
 		@Override
 		public void onError(Object record, Exception e) throws Exception {
-			// TODO Auto-generated method stub
-			
 		}
 	};
 	
@@ -84,7 +82,7 @@ public class SourceFinder {
 	}
 
 	@Inject
-	public SourceFinder(
+	public JSourceFinder(
 			JAstParser parser
 			, Iterable<Root> classPathRoots
 			, SourceMatcher matchers
@@ -102,7 +100,7 @@ public class SourceFinder {
 		);
 	}
 
-	public SourceFinder(
+	public JSourceFinder(
 			JAstParser parser
 			, Iterable<Root> roots
 			, Matcher<Object> objectFilter
@@ -233,9 +231,9 @@ public class SourceFinder {
 		
 		private MatchListener<Object> listener;
 		
-		public SourceFinder build(){
+		public JSourceFinder build(){
 		    JAstParser parser = buildParser();
-			return new SourceFinder(
+			return new JSourceFinder(
 			     parser
 				, roots
 				, anyIfNull(objectMatcher)
@@ -290,7 +288,7 @@ public class SourceFinder {
         	return this;
 		}
 	 	
-	 	public Builder filter(SourceFilter.Builder filter) {
+	 	public Builder filter(JSourceFilter.Builder filter) {
         	filter(filter.build());
         	return this;
 		}

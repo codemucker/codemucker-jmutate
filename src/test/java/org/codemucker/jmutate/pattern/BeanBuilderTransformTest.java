@@ -5,8 +5,8 @@ import java.util.Collection;
 
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.SourceFilter;
-import org.codemucker.jmutate.SourceHelper;
+import org.codemucker.jmutate.JSourceFilter;
+import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.SimpleMutateContext;
@@ -18,7 +18,7 @@ import org.junit.Test;
 
 public class BeanBuilderTransformTest {
 
-	MutateContext ctxt = new SimpleMutateContext();	
+	MutateContext ctxt = SimpleMutateContext.with().defaults().build();	
 	
 	@Test
 	public void test_apply_pattern(){
@@ -72,8 +72,8 @@ public class BeanBuilderTransformTest {
 	}
 
 	private FindResult<JType> findTypesToTransform() {
-	    FindResult<JType> found = SourceHelper.newTestSourcesResolvingFinder()
-			.filter(SourceFilter.with()
+	    FindResult<JType> found = TestSourceHelper.newTestSourcesResolvingFinder()
+			.filter(JSourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				.includeType(AJType.with().name(TestBuilderBean.class))
 			)	

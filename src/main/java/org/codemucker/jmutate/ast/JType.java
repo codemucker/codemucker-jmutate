@@ -2,9 +2,7 @@ package org.codemucker.jmutate.ast;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static org.codemucker.lang.Check.checkNotNull;
-import groovy.inspect.swingui.AstNodeToScriptVisitor;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,12 +13,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
-import javassist.compiler.JvstTypeChecker;
-
-import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.DefaultFindResult;
+import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.PredicateToFindFilterAdapter;
-import org.codemucker.jmatch.AnInstance;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.MutateContext;
@@ -36,7 +31,6 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
-import org.eclipse.jdt.core.dom.ArrayCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -44,21 +38,17 @@ import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
-import org.eclipse.jdt.core.dom.ParameterizedType;
-import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeParameter;
-import org.eclipse.jdt.core.dom.VariableDeclarationExpression;
 
-import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
 /**
  * A convenience wrapper around an Ast java type
  */
-public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
+public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> {
 
 	private final ASTNode typeNode;
 	
@@ -117,7 +107,7 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
     public abstract List<ASTNode> getBodyDeclarations();
 	public abstract boolean isInnerClass();
 	public abstract boolean isTopLevelClass();
-	
+    
 	@Override
 	public ASTNode getAstNode(){
 		return typeNode;
@@ -162,19 +152,11 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			//	System.out.println("end visit" + node.getClass() + "  " + trim(node.toString()));
 			}
 			
-			
 		};
 		getAstNode().accept(visitor);
 		return DefaultFindResult.from(found);
 	}
-//	
-//	private static String trim(String s){
-//		if( s.length() > 40){
-//			return s.substring(0,40);
-//		}
-//		return s;
-//	}
-//	
+
 	/**
 	 * Find a child type with the given simple name, or throw an exception if no child type with that name
 	 */
@@ -496,30 +478,6 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 		return (AnonymousClassDeclaration) typeNode;
 	}
 
-	@Override
-	public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass) {
-		return hasAnnotationOfType(annotationClass, false);
-	}
-	
-	public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass,boolean includeChildClassesInLookup) {
-		return getAnnotationOfType(annotationClass,includeChildClassesInLookup) != null;
-	}
-
-	@Override
-	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass) {
-		return getAnnotationOfType(annotationClass,false);
-	}
-	
-	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass, boolean includeChildClassesInLookup) {
-		return JAnnotation.getAnnotationOfType(typeNode, includeChildClassesInLookup?JAnnotation.ANY_DEPTH:JAnnotation.DIRECT_DEPTH, annotationClass);
-	}
-	
-	@Override
-	public List<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
-		//all
-		return getAnnotations(true);
-	}
-
 	/**
 	 * Returns the name of the generic type param which is used to reference self, or null if none.
 	 * 
@@ -580,17 +538,6 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 			}
 		}
 		return null;
-	}
-	
-
-	
-	/**
-	 * Returns all the annotations attached to this class. This does not include annotation declarations, but rather use.
-	 * @return
-	 */
-	public List<org.eclipse.jdt.core.dom.Annotation> getAnnotations(final boolean includeChildClassesInLookup){
-		final int maxDepth = includeChildClassesInLookup?-1:0;
-		return JAnnotation.findAnnotations(typeNode, maxDepth);
 	}
 	
 	public boolean isSubClassOf(Class<?> superClass) {
@@ -717,10 +664,28 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 
 		private final AbstractTypeDeclaration typeNode;
 		
+		private final AbstractAnnotations annotable = new AbstractAnnotations() {
+	        @Override
+	        protected ASTNode getAstNode() {
+	            return typeNode;
+	        }
+
+	        @SuppressWarnings("unchecked")
+	        @Override
+	        protected List<IExtendedModifier> getModifiers() {
+	            return typeNode.modifiers();
+	        }
+	    };
+	    
 		public AbstractTypeJType(AbstractTypeDeclaration type) {
 			super(type);
 			this.typeNode = type;
 		}
+
+		@Override
+        public Annotations getAnnotations() {
+            return annotable;
+        }
 		
 		public String getFullName(){
 			return JavaNameUtil.resolveQualifiedName(typeNode);
@@ -769,16 +734,34 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 	}
 	
 	//TODO:count occurrances in the source file to calculate anonymuous class number
-	public static class AnonynousClassJType extends JType {
+	public static class AnonynousClassJType extends JType 
+	{
 		private static final List<IExtendedModifier> modifiers = Collections.emptyList();
 		
 		private final AnonymousClassDeclaration typeNode;
 		
+        private final AbstractAnnotations annotable = new AbstractAnnotations() {
+            @Override
+            protected ASTNode getAstNode() {
+                return typeNode;
+            }
+
+            @Override
+            protected List<IExtendedModifier> getModifiers() {
+                return modifiers;
+            }
+        };
+
 		public AnonynousClassJType(AnonymousClassDeclaration type) {
 			super(type);
 			this.typeNode = type;
 		}
 		
+        @Override
+        public Annotations getAnnotations() {
+            return annotable;
+        }
+
 		public String getFullName(){
 			return findParentType().getFullName() + "." + extractAnonymousClassNumber();//typeNode.getName().getIdentifier();
 		}
@@ -846,7 +829,8 @@ public abstract class JType implements JAnnotatable, AstNodeProvider<ASTNode> {
 				types.addAll(type.superInterfaceTypes());	
 			}
 			return types;
-		}
+		}        
 	}
+
 
 }

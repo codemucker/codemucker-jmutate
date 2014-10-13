@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class FixImportsTransformTest {
 
-	MutateContext ctxt = new SimpleMutateContext();
+	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_add_imports(){

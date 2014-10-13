@@ -10,7 +10,7 @@ import org.junit.Test;
 
 public class JavaNameUtilTest {
 
-	SimpleMutateContext ctxt = new SimpleMutateContext();
+	SimpleMutateContext ctxt = SimpleMutateContext.with().defaults().build();
 	
 	/**
 	 * bug where interfaces declared on types are not being resolved correctly

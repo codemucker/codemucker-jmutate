@@ -12,15 +12,12 @@ import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
-import org.codemucker.jmatch.PredicateToMatcher;
+import org.codemucker.jmutate.ast.Depth;
 import org.codemucker.jmutate.ast.JAccess;
-import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.JavaNameUtil;
 
-import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 /**
@@ -33,6 +30,11 @@ public class AJType extends ObjectMatcher<JType> {
 		public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 			return found.isAnonymousClass();
 		}
+		
+		@Override
+        public void describeTo(Description desc) {
+            desc.text("is anonymous class");
+        };
 	};
 
 	private static Matcher<JType> ANNOTATION_MATCHER = new AbstractNotNullMatcher<JType>() {
@@ -40,6 +42,11 @@ public class AJType extends ObjectMatcher<JType> {
 		public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 			return found.isAnnotation();
 		}
+		
+		@Override
+		public void describeTo(Description desc) {
+		    desc.text("is annotation");
+		};
 	};
 	
 	private static Matcher<JType> INTERFACE_MATCHER = new AbstractNotNullMatcher<JType>() {
@@ -47,6 +54,10 @@ public class AJType extends ObjectMatcher<JType> {
 		public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 			return found.isInterface();
 		}
+		@Override
+        public void describeTo(Description desc) {
+            desc.text("is interface");
+        };
 	};
 	
 	private static Matcher<JType> INNER_CLASS_MATCHER = new AbstractNotNullMatcher<JType>() {
@@ -54,6 +65,10 @@ public class AJType extends ObjectMatcher<JType> {
 		public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 			return found.isInnerClass();
 		}
+		@Override
+        public void describeTo(Description desc) {
+            desc.text("is inner class");
+        };
 	};
 	
 	private static Matcher<JType> ENUM_MATCHER = new AbstractNotNullMatcher<JType>() {
@@ -61,6 +76,10 @@ public class AJType extends ObjectMatcher<JType> {
 		public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 			return found.isEnum();
 		}
+		@Override
+        public void describeTo(Description desc) {
+            desc.text("is enum");
+        };
 	};
 	
 	private static Matcher<JType> ABSTRACT_MATCHER = new AbstractNotNullMatcher<JType>() {
@@ -68,6 +87,10 @@ public class AJType extends ObjectMatcher<JType> {
 		public boolean matchesSafely(JType found, MatchDiagnostics diag) {
 			return found.isAbstract();
 		}
+		@Override
+        public void describeTo(Description desc) {
+            desc.text("is abstract class");
+        };
 	};
 	
     public static Matcher<JType> any() {
@@ -121,8 +144,8 @@ public class AJType extends ObjectMatcher<JType> {
 
 			@Override
 			public void describeTo(Description desc) {
-				super.describeTo(desc);
-				desc.value("type with packageName matching", pkgNameMatcher);
+				//super.describeTo(desc);
+				desc.value("package name matching", pkgNameMatcher);
 			}
 		});
     	return this;
@@ -143,8 +166,8 @@ public class AJType extends ObjectMatcher<JType> {
 
 			@Override
 			public void describeTo(Description desc) {
-				super.describeTo(desc);
-				desc.value("type with packageName matching", pkgNameMatcher);
+				//super.describeTo(desc);
+				desc.value("package name matching", pkgNameMatcher);
 			}
 		});
 		return this;
@@ -158,11 +181,9 @@ public class AJType extends ObjectMatcher<JType> {
 			}
 			
 			@Override
-			public String toString(){
-				return Objects.toStringHelper(this)
-					.add("subclass of", superClassOrInterface)
-					.toString();
-			}
+			public void describeTo(Description desc) {
+			    desc.value("subclass of", superClassOrInterface.getName());
+			};
 		});
 		return this;
 	}
@@ -243,49 +264,53 @@ public class AJType extends ObjectMatcher<JType> {
 	}
 
 	public AJType name(final Class<?> matchingClassName){
-		fullName(JavaNameUtil.compiledNameToSourceName(matchingClassName.getName()));
+		String fullName = JavaNameUtil.compiledNameToSourceName(matchingClassName.getName());
+		fullName(fullName);
 		return this;
 	}
 	
-	public AJType fullName(final String antPattern){
-		addMatcher(new AbstractMatcher<JType>() {
-			private final Matcher<String> nameMatcher = AString.matchingAntPattern(antPattern);
-			
-			@Override
-			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
-				return found != null
-						&& diag.tryMatch(this,found.getFullName(), nameMatcher);
-			}
+    public AJType simpleName(final String simpleNameAntPattern){
+        simpleName(AString.matchingAntPattern(simpleNameAntPattern));
+        return this;
+    }
+    
+    public AJType simpleName(final Matcher<String> matcher){
+        addMatcher(new AbstractMatcher<JType>() {
+            @Override
+            public boolean matchesSafely(JType found, MatchDiagnostics diag) {
+                return found != null
+                        && diag.tryMatch(this,found.getSimpleName(), matcher);
+            }
 
-			@Override
-			public void describeTo(Description desc) {
-				super.describeTo(desc);
-				desc.value("type with fullName matching", nameMatcher);
-			}
-		});
-		return this;
-	}
-	
-	public AJType simpleName(final String name){
-		simpleNameMatchingAntPattern(name);
-		return this;
-	}
-	
-	public AJType simpleNameMatchingAntPattern(final String antPattern){
-		addMatcher(new AbstractNotNullMatcher<JType>() {
-			private final Matcher<String> matcher = AString.matchingAntPattern(antPattern);
-			@Override
-			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
-				return matcher.matches(found.getSimpleName());
-			}
-			@Override
-			public void describeTo(Description desc) {
-				super.describeTo(desc);
-				desc.value("type with simpleName matching ant pattern", antPattern);
-			}
-		});
-		return this;
-	}
+            @Override
+            public void describeTo(Description desc) {
+                super.describeTo(desc);
+                desc.value("simple name matching", matcher);
+            }
+        });
+        return this;
+    }
+    
+    public AJType fullName(final String antPattern){
+        fullName(AString.matchingAntPattern(antPattern));
+        return this;
+    }
+    
+    public AJType fullName(final Matcher<String> matcher) {
+        addMatcher(new AbstractMatcher<JType>() {
+            @Override
+            public boolean matchesSafely(JType found, MatchDiagnostics diag) {
+                return found != null && diag.tryMatch(this, found.getFullName(), matcher);
+            }
+
+            @Override
+            public void describeTo(Description desc) {
+                //super.describeTo(desc);
+                desc.value("fullname matching", matcher);
+            }
+        });
+        return this;
+    }
 
 	public AJType method(final Matcher<JMethod> methodMatcher){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
@@ -296,25 +321,46 @@ public class AJType extends ObjectMatcher<JType> {
 			
 			@Override
 			public void describeTo(Description desc) {
-				super.describeTo(desc);
-				desc.value("type with method", methodMatcher);
+				//super.describeTo(desc);
+				desc.value("with method", methodMatcher);
 			}
 		});
 		return this;
 	}
 	
 	public <A extends Annotation> AJType annotation(final Class<A> annotation){
+	    final AJAnnotation matcher = AJAnnotation.with().fullName(annotation);
+	    
 		addMatcher(new AbstractNotNullMatcher<JType>() {
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
-				return found.hasAnnotationOfType(annotation, false);
+				return found.getAnnotations().contains(matcher);
 			}
 			@Override
 			public void describeTo(Description desc) {
-				super.describeTo(desc);
-				desc.value("type with annotation", annotation);
+				//super.describeTo(desc);
+				desc.value("marked with annotation", annotation);
 			}
 		});
 		return this;
 	}
+	
+	public <A extends Annotation> AJType nestedAnnotation(final Class<A> annotation){
+        final AJAnnotation matcher = AJAnnotation.with().fullName(annotation);
+        
+        addMatcher(new AbstractNotNullMatcher<JType>() {
+            @Override
+            public boolean matchesSafely(JType found, MatchDiagnostics diag) {
+                return found.getAnnotations().contains(matcher, Depth.ANY);
+            }
+            @Override
+            public void describeTo(Description desc) {
+                //super.describeTo(desc);
+                desc.value("with nested annotation", annotation);
+            }
+        });
+        return this;
+    }
+    
+    
 }

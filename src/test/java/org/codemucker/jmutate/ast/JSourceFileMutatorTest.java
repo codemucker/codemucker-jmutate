@@ -13,7 +13,7 @@ import org.junit.Test;
 public class JSourceFileMutatorTest {
 
 	TestHelper helper = new TestHelper();
-	MutateContext context = new SimpleMutateContext();
+	MutateContext context = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void testGetMainTypeAsResolved() throws Exception {

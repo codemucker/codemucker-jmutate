@@ -10,6 +10,7 @@ import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JAccess;
+import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
 import org.eclipse.jdt.core.dom.Type;
 
@@ -83,10 +84,11 @@ public class AJField extends ObjectMatcher<JField>{
 	}
 	
 	public <A extends Annotation> AJField annotation(final Class<A> annotationClass){
+	    final Matcher<JAnnotation> matcher = AJAnnotation.with().fullName(annotationClass);
 		addMatcher(new AbstractNotNullMatcher<JField>() {
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
-				return found.hasAnnotationOfType(annotationClass);
+				return found.getAnnotations().contains(matcher);
 			}
 		});
 		return this;

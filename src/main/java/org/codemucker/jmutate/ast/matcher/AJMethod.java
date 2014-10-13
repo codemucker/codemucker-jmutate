@@ -266,7 +266,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-				return found.hasAnnotationOfType(annotationClass);
+				return found.getAnnotations().contains(annotationClass);
 			}
 			
 			@Override

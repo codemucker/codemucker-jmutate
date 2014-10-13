@@ -59,6 +59,10 @@ public class JTypeMutator {
 			.asResolvedFieldNode();
 		addField(field);
 	}
+
+	public void addField(JField field){
+	    addField(field.getAstNode());
+	}
 	
 	public void addField(FieldDeclaration field){
 		ctxt.obtain(InsertFieldTransform.class)
@@ -74,7 +78,11 @@ public class JTypeMutator {
 			.asResolvedMethodNode();
 		addMethod(method);
 	}
-		
+    
+	public void addMethod(JMethod method){
+        addMethod(method.getAstNode());
+    }
+    
 	public void addMethod(MethodDeclaration method){
 		if( method.isConstructor()){
 			//TODO:do we really want to check and change this? Should we throw an exception instead?

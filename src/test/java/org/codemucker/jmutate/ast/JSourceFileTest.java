@@ -12,7 +12,7 @@ import org.junit.Test;
 public class JSourceFileTest {
 
 	TestHelper helper = new TestHelper();
-	MutateContext ctxt = new SimpleMutateContext();
+	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 
 	@Test
 	public void testGetSimpleClassnameBasedOnPath() {

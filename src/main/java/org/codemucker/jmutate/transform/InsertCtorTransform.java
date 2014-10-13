@@ -15,7 +15,7 @@ import com.google.inject.name.Named;
 
 public final class InsertCtorTransform extends AbstractNodeInsertTransform<InsertCtorTransform> {
 	
-	private JMethod ctor;
+	private JMethod contructorToAdd;
 
 	public static InsertCtorTransform newTransform(){
 		return new InsertCtorTransform();
@@ -24,18 +24,18 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 	@Override
 	public void transform(){
 		checkFieldsSet();
-		checkState(ctor != null, "missing constructor");
+		checkState(contructorToAdd != null, "missing constructor to add");
 		
 		boolean insert = true;
-		if( !ctor.isConstructor()){
-			throw new MutateException("Constructor method is not a constructor. Method is %s",ctor);
+		if( !contructorToAdd.isConstructor()){
+			throw new MutateException("Constructor method is not a constructor. Method is %s",contructorToAdd);
 			
 		}
-		if( !getTarget().getSimpleName().equals(ctor.getName())){
-			throw new MutateException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),ctor.getName());
+		if( !getTarget().getSimpleName().equals(contructorToAdd.getName())){
+			throw new MutateException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),contructorToAdd.getName());
 		}
 		
-		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.with().nameAndArgSignature(ctor));
+		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.with().nameAndArgSignature(contructorToAdd));
     	if( !found.isEmpty()){
     		insert = false;
     		JMethod existingCtor = found.getFirst();
@@ -48,7 +48,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new MutateException("Existing ctor %s, not replacing with %s", existingCtor.getAstNode(), ctor);
+				throw new MutateException("Existing ctor %s, not replacing with %s", existingCtor.getAstNode(), contructorToAdd);
 			default:
 				throw new MutateException("Existing ctor method %s, unsupported clash strategy %s", existingCtor.getAstNode(), getClashStrategy());
 			}
@@ -56,7 +56,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
     	if(insert){
     		new NodeInserter()
                 .target(getTarget())
-                .nodeToInsert(ctor.getAstNode())
+                .nodeToInsert(contructorToAdd.getAstNode())
                 .placementStrategy(getPlacementStrategy())
                 .insert();
     	}
@@ -88,7 +88,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 	 * @return
 	 */
 	public InsertCtorTransform setCtor(JMethod constructor) {
-    	this.ctor = constructor;
+    	this.contructorToAdd = constructor;
     	return this;
 	}
 }

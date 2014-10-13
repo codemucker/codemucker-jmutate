@@ -111,7 +111,7 @@ public class BeanBuilderTransform implements Transform {
 	
     private JType getOrCreateBuilderClass(final JType type) {
 	    JType builder;
-	    final List<JType> builders = type.findTypesMatching(AJType.with().simpleNameMatchingAntPattern(builderClassName)).toList();
+	    final List<JType> builders = type.findTypesMatching(AJType.with().simpleName(builderClassName)).toList();
 		if (builders.size() == 1) {
 	    	builder = builders.get(0);
 		} else if (builders.size() == 0) {
@@ -127,7 +127,7 @@ public class BeanBuilderTransform implements Transform {
 	    	//we want a handle to the inserted nodes. These are copied on insert so adding anything to the
 	    	//original node doesn't make it in. Hence we need to lookup the newly created
 	    	//builder
-	    	builder = type.findTypesMatching(AJType.with().simpleNameMatchingAntPattern(builderClassName)).toList().get(0);
+	    	builder = type.findTypesMatching(AJType.with().simpleName(builderClassName)).toList().get(0);
 	    } else {
 	    	throw new MutateException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
 	    }
@@ -165,14 +165,14 @@ public class BeanBuilderTransform implements Transform {
 			checkNotNull("bean", bean);
 			checkNotNull("fields", fields);
 
-			JMethod buildMethod = createBuildMethod();
+			JMethod buildMethod = createBuilderBuildMethod();
 			ctxt.obtain(InsertMethodTransform.class)
 				.target(target)
 				.method(buildMethod)
 				.transform();
 		}
 
-		private JMethod createBuildMethod() {
+		private JMethod createBuilderBuildMethod() {
 			SourceTemplate t = ctxt.newSourceTemplate();
 			t.setVar("beanType", bean.getSimpleName());
 			t.p("public ${beanType} build(){");
@@ -223,6 +223,9 @@ public class BeanBuilderTransform implements Transform {
 		}
 	}
 
+	/**
+	 * Add a constructor to a bean which assigns all the fields at once
+	 */
 	public static class BeanBuilderFieldCtorPattern implements Pattern {
 		@Inject
 		private MutateContext ctxt;
@@ -244,14 +247,32 @@ public class BeanBuilderTransform implements Transform {
 		        .transform();
 		}
 	
+		/**
+		 * Create a constructor which assigns all the fields at once
+		 */
 	    private MethodDeclaration createCtorFromFields() {
 	        final SourceTemplate t = ctxt.newSourceTemplate();
 	
 		    t.setVar("ctorName", target.getSimpleName());
 	
 		    t.pl("public ${ctorName}(");
-		    boolean comma = false;
-		    
+		    generateCtorArgs(t);
+		    t.pl(") {");
+		    generateFieldAssignments(t);
+		    t.pl("}");
+
+		    final MethodDeclaration ctor = t.asResolvedConstructorNode();
+	        return ctor;
+	    }
+
+        private void generateFieldAssignments(final SourceTemplate t) {
+            for(final SingleJField field:fields){
+	            t.p("this.").p(field.getName()).p("=").p(field.getName()).pl(";");
+	        }
+        }
+
+        private void generateCtorArgs(final SourceTemplate t) {
+            boolean comma = false;
 		    for(final SingleJField field:fields){
 		    	if( comma ){
 		            t.pl(",");
@@ -266,17 +287,7 @@ public class BeanBuilderTransform implements Transform {
 				t.p(" ");
 		        t.p(field.getName());
 		    }
-		    t.pl(") {");
-	
-		    for(final SingleJField field:fields){
-	            t.p("this.").p(field.getName()).p("=").p(field.getName()).pl(";");
-	        }
-	
-		    t.pl("}");
-
-		    final MethodDeclaration ctor = t.asResolvedConstructorNode();
-	        return ctor;
-	    }
+        }
 
 		public BeanBuilderFieldCtorPattern setCtxt(MutateContext ctxt) {
 			this.ctxt = ctxt;
@@ -309,6 +320,9 @@ public class BeanBuilderTransform implements Transform {
 		
 	}
 
+	/**
+	 * Add bean f
+	 */
     public static class BeanBuilderPropertiesPattern implements Pattern {
     	
     	@Inject
@@ -322,16 +336,18 @@ public class BeanBuilderTransform implements Transform {
 			checkNotNull("target", target);
 			checkNotNull("fields", fields);
 
-			//add the builder fields and setters
-		    final BeanPropertyTransform pattern = ctxt.obtain(BeanPropertyTransform.class)
+			//set the transform options
+		    final BeanPropertyTransform transform = ctxt.obtain(BeanPropertyTransform.class)
 		    	.setTarget(target)
 		    	.setCreateGetter(false)
 		    	.setSetterReturns(JMethodSetterBuilder.RETURNS.TARGET);
 	
+		    //apply transform for each field
 		    for(final SingleJField field:fields){
-		    	pattern.setPropertyType(field.getType());
-				pattern.setPropertyName(field.getName());
-				pattern.transform();
+		    	transform.setPropertyType(field.getType());
+				transform.setPropertyName(field.getName());
+				//apply it
+				transform.transform();
 		    }
 	    }
 		

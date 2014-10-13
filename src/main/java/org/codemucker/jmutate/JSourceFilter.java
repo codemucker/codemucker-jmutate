@@ -9,13 +9,13 @@ import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.SourceFinder.SourceMatcher;
+import org.codemucker.jmutate.JSourceFinder.SourceMatcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.lang.IBuilder;
 
-public class SourceFilter implements SourceMatcher {
+public class JSourceFilter implements SourceMatcher {
 
 	private final FindResult.Filter<Object> objectFilter;
 	private final FindResult.Filter<Root> rootFilter;
@@ -24,7 +24,7 @@ public class SourceFilter implements SourceMatcher {
 	private final FindResult.Filter<JType> typeMatcher;
 	private final FindResult.Filter<JMethod> methodFilter;
 	
-	private SourceFilter(
+	private JSourceFilter(
 			FindResult.Filter<Object> objectFilter
 			, FindResult.Filter<Root> rootFilter
 			, FindResult.Filter<RootResource> resourceMatcher
@@ -118,7 +118,7 @@ public class SourceFilter implements SourceMatcher {
 		}
 		
 		public SourceMatcher build(){
-			return new SourceFilter(
+			return new JSourceFilter(
 				 ANY	
 				, toFilter(roots.build())
 				, toFilter(mergeResourceMatchers(resources.build(),resourceNames.build()))

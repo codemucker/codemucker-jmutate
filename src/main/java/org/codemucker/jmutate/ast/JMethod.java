@@ -3,15 +3,17 @@ package org.codemucker.jmutate.ast;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.List;
 
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.PrimitiveType;
@@ -23,24 +25,37 @@ import org.eclipse.jdt.core.dom.TypeParameter;
 
 import com.google.common.base.Function;
 
-public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration> {
+public class JMethod implements HasAnnotations, AstNodeProvider<MethodDeclaration> {
 
 	private static final Function<MethodDeclaration, JMethod> TRANSFORMER = new Function<MethodDeclaration, JMethod>() {
 		public JMethod apply(MethodDeclaration node){
 			return JMethod.from(node);
 		}
 	};
-	
-	public static boolean isMethodNode(ASTNode node){
-		return node instanceof MethodDeclaration;
-	}
-	
-	public static Function<MethodDeclaration, JMethod> transformer(){
-		return TRANSFORMER;
-	}
-	
+
 	private final MethodDeclaration methodNode;
 
+    private final AbstractAnnotations annotable = new AbstractAnnotations() {
+        @Override
+        protected ASTNode getAstNode() {
+            return methodNode;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        protected List<IExtendedModifier> getModifiers() {
+            return methodNode.modifiers();
+        }
+    };
+	  
+    public static boolean isMethodNode(ASTNode node){
+        return node instanceof MethodDeclaration;
+    }
+    
+    public static Function<MethodDeclaration, JMethod> transformer(){
+        return TRANSFORMER;
+    }
+    
 	public static JMethod from(ASTNode node){
 		if(node instanceof MethodDeclaration){
 			return from((MethodDeclaration)node);
@@ -61,6 +76,11 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		this.methodNode = methodNode;
 	}
 
+	@Override
+    public Annotations getAnnotations(){
+        return annotable;
+    }
+    
 	public JType getEnclosingJType(){
 		return JType.from(getEnclosingType());
 	}
@@ -141,33 +161,38 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 		return new JModifiers(methodNode.getAST(),methodNode.modifiers());
 	}
 
-	@SuppressWarnings("unchecked")
     public <A extends Annotation> boolean hasParameterAnnotationOfType(Class<A> annotationClass) {
-        List<SingleVariableDeclaration> parameters = methodNode.parameters();
-		for( SingleVariableDeclaration param:parameters){
-			if( JAnnotation.hasAnnotation(annotationClass, param.modifiers())){
-				return true;
-			}
-		}
-		return false;
+		return hasParameterAnnotation(AJAnnotation.with().fullName(annotationClass));
 	}
 	
 	@SuppressWarnings("unchecked")
-	@Override
-    public <A extends Annotation> boolean hasAnnotationOfType(Class<A> annotationClass) {
-		return JAnnotation.hasAnnotation(annotationClass, methodNode.modifiers());
-	}
-
-	@Override
-	public <A extends Annotation> JAnnotation getAnnotationOfType(Class<A> annotationClass) {
-		return JAnnotation.getAnnotationOfType(methodNode, JAnnotation.DIRECT_DEPTH, annotationClass);
-	}
+    public boolean hasParameterAnnotation(final Matcher<JAnnotation> matcher) {
+	    ParamAnnotations paramAnons = new ParamAnnotations();
+        List<SingleVariableDeclaration> parameters = methodNode.parameters();
+        for( SingleVariableDeclaration param:parameters){
+            paramAnons.var = param;
+            if(paramAnons.contains(matcher)){
+                return true;
+            }
+        }
+        return false;
+    }
 	
-	@Override
-	public Collection<org.eclipse.jdt.core.dom.Annotation> getAnnotations(){
-		return JAnnotation.findAnnotations(methodNode, JAnnotation.DIRECT_DEPTH);
-	}
+	private static class ParamAnnotations extends AbstractAnnotations {
+	    SingleVariableDeclaration var;
+	    
+        @Override
+        protected ASTNode getAstNode() {
+            return var;
+        }
 
+        @SuppressWarnings("unchecked")
+        @Override
+        protected List<IExtendedModifier> getModifiers() {
+            return var.modifiers();
+        }
+	};
+	
 	public String getFullSignature() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getName());
@@ -254,17 +279,10 @@ public class JMethod implements JAnnotatable, AstNodeProvider<MethodDeclaration>
 			throw new MutateException("Currently don't know how to handle type:" + t);
 		}
 	}
-	
-//	@Override
-//	public String toString(){
-//		return Objects
-//			.toStringHelper(JMethod.class)
-//			.add("name", toClashDetectionSignature())
-//			.toString();
-//	}
-	
+
 	@Override
 	public String toString(){
 		return getAstNode().toString();
 	}
+
 }

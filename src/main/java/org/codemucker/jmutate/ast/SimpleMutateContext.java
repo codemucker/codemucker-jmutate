@@ -14,6 +14,7 @@ import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.PlacementStrategies;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.SourceTemplate;
+import org.codemucker.lang.annotation.Optional;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
 import org.eclipse.jdt.internal.formatter.DefaultCodeFormatter;
@@ -30,18 +31,9 @@ import com.google.inject.name.Named;
 @Singleton
 public class SimpleMutateContext implements MutateContext {
 
-	private final PlacementStrategies strategyProvider = PlacementStrategies.with().defaults().build();
-
-	private final JAstParser parser = JAstParser.with()
-		.defaults()
-		.roots(Roots.with()
-			.classpath(true)
-			.testSrcDir(true)
-			.mainSrcDir(true)
-			.build()	
-		)
-		.build();
-	private final Root snippetRoot = newTmpSnippetRoot();
+	private final PlacementStrategies strategyProvider;
+	private final Root snippetRoot;
+	private final JAstParser parser;
 	/**
 	 * If set, generated classes will be marked as such
 	 */
@@ -52,29 +44,23 @@ public class SimpleMutateContext implements MutateContext {
 		return new Builder();
 	}
 	
-	public SimpleMutateContext(){
-		this(false);
-	}
-	
-	public SimpleMutateContext(boolean markGenerated){
-		injector = Guice.createInjector(Stage.PRODUCTION, new MutationModule());
-		this.markGenerated = markGenerated;
-	}
-	
-	private static Root newTmpSnippetRoot(){
-		try {
-			File f = File.createTempFile("SimpleCodeMuckContextSnippetRoot","");
-			File tmpDir = new File(f.getAbsolutePath() + ".d/");
-			tmpDir.mkdirs();
-			
-			return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
-		} catch (IOException e) {
-			throw new MutateException("Couldn't create a tmp root");
-		}
-	}
-	
+	private SimpleMutateContext(Root snippetRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategies strategyProvider) {
+        super();
+        this.snippetRoot = snippetRoot;
+        this.parser = parser;
+        this.markGenerated = markGenerated;
+        this.strategyProvider = strategyProvider;
+        injector = Guice.createInjector(Stage.PRODUCTION, new MutationModule(formatterOptions));
+    }
+
 	private class MutationModule extends AbstractModule {
 
+	    private final DefaultCodeFormatterOptions options;
+	    
+	    public MutationModule(DefaultCodeFormatterOptions options){
+	        this.options = options;
+	    }
+	    
 		@Override
 		protected void configure() {
 		}
@@ -85,9 +71,7 @@ public class SimpleMutateContext implements MutateContext {
 		}
 		
 		private DefaultCodeFormatterOptions getFormattingOptions(){
-			DefaultCodeFormatterOptions opts = new DefaultCodeFormatterOptions(DefaultCodeFormatterConstants.getJavaConventionsSettings());
-			//TODO:add custom options from format file
-			return opts;
+			return options;
 		}
 		
 		@Provides
@@ -171,7 +155,11 @@ public class SimpleMutateContext implements MutateContext {
 	public static class Builder {
 	
 		private boolean markGenerated = false;
-
+		private JAstParser parser;
+		private DefaultCodeFormatterOptions formattingOptions;
+		private Root root;
+		private PlacementStrategies placementStrategy;
+		
 		private Builder(){
 		}
 
@@ -179,14 +167,92 @@ public class SimpleMutateContext implements MutateContext {
         	return this;
 		}
 
-		public SimpleMutateContext build(){
-			return new SimpleMutateContext(markGenerated);
+        public SimpleMutateContext build() {
+            Root generateTo = getGenerationRootOrDefault();
+            JAstParser parser = getParserOrDefault(generateTo);
+            DefaultCodeFormatterOptions formatter = getFormatterOptionsOrDefault();
+            PlacementStrategies strategy = getPlacementStrategyOrDefault();
+            
+            return new SimpleMutateContext(generateTo, parser, markGenerated, formatter,strategy);
+        }
+		
+        private JAstParser getParserOrDefault(Root contextRoot) {
+            return parser == null ? newDefaultAstParser(contextRoot) : parser;
+        }
+
+		private JAstParser newDefaultAstParser(Root contextGenerationRoot){
+            return JAstParser.with()
+                    .defaults()
+                    .roots(Roots.with()
+                        .classpath(true)
+                        .testSrcDir(true)
+                        .mainSrcDir(true)
+                        .root(contextGenerationRoot)
+                        .build()    
+                    )
+                    .build();
+        }
+		
+		private DefaultCodeFormatterOptions getFormatterOptionsOrDefault(){
+		    return formattingOptions==null?newDefaultFormatter():formattingOptions;
 		}
 		
+		private DefaultCodeFormatterOptions newDefaultFormatter(){
+            return new DefaultCodeFormatterOptions(DefaultCodeFormatterConstants.getJavaConventionsSettings());
+        }
+		
+		private Root getGenerationRootOrDefault(){
+		    return root==null?newTmpSnippetRoot():root;
+		}
+		
+	    private static Root newTmpSnippetRoot(){
+	        try {
+	            File f = File.createTempFile("SimpleCodeMuckContextSnippetRoot","");
+	            File tmpDir = new File(f.getAbsolutePath() + ".d/");
+	            tmpDir.mkdirs();
+	            
+	            return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
+	        } catch (IOException e) {
+	            throw new MutateException("Couldn't create a tmp root");
+	        }
+	    }
+	    
+	    private PlacementStrategies getPlacementStrategyOrDefault(){
+	        return placementStrategy==null?newDefaultPlacementStrategy():placementStrategy;
+	    }
+	    
+	    private PlacementStrategies newDefaultPlacementStrategy(){
+	        return PlacementStrategies.with().defaults().build();
+	    }
+	    
+	    @Optional
 		public Builder markGenerated(boolean markGenerated) {
         	this.markGenerated = markGenerated;
         	return this;
 		}
-		
+
+		@Optional
+        public Builder parser(JAstParser parser) {
+            this.parser = parser;
+            return this;
+        }
+
+        @Optional
+        public Builder formattingOptions(DefaultCodeFormatterOptions formattingOptions) {
+            this.formattingOptions = formattingOptions;
+            return this;
+        }
+
+        @Optional
+        public Builder root(Root root) {
+            this.root = root;
+            return this;
+        }
+
+        @Optional
+        public Builder placementStrategy(PlacementStrategies strategy) {
+            this.placementStrategy = strategy;
+            return this;
+        }
 	}
 }

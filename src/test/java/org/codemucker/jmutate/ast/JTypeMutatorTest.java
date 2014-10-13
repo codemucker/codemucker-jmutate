@@ -5,7 +5,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 
 import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.SourceHelper;
+import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.a.TestBean;
 import org.codemucker.jmutate.ast.a.TestBeanSimple;
 import org.codemucker.jmutate.util.SourceAsserts;
@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class JTypeMutatorTest {
 
-	private MutateContext context = new SimpleMutateContext();
+	private MutateContext context = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void testAddSimpleField() throws Exception {		
@@ -56,7 +56,7 @@ public class JTypeMutatorTest {
 	}
 	
 	private JTypeMutator getMutatorFor(Class<?> klass){
-		return SourceHelper.findSourceForClass(klass).asMutator(context).getMainTypeAsMutable();
+		return TestSourceHelper.findSourceForClass(klass).asMutator(context).getMainTypeAsMutable();
 	}
 	
 	private void assertAstEquals(String expectPath, JTypeMutator actual){

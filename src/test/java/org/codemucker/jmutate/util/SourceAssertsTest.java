@@ -27,7 +27,7 @@ import org.junit.Test;
 
 public class SourceAssertsTest {
 
-	private MutateContext ctxt = new SimpleMutateContext();
+	private MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_sameSrcFileMatches() throws Exception {

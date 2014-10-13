@@ -27,7 +27,7 @@ import org.junit.Test;
 
 public class SetterMethodBuilderTest {
 
-	MutateContext ctxt = new SimpleMutateContext();
+	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_create_with_defaults() throws Exception {

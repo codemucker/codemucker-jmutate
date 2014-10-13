@@ -10,20 +10,19 @@ import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.MatchListener;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
-import org.codemucker.jmutate.SourceFilter;
-import org.codemucker.jmutate.SourceFinder;
-import org.codemucker.jmutate.SourceHelper;
+import org.codemucker.jmutate.JSourceFilter;
+import org.codemucker.jmutate.JSourceFinder;
+import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.junit.Test;
-
 
 public class SourceFinderTest {
 
 	@Test
 	public void testFindClassesWithMethodMatch() throws Exception {
-		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
-			.filter(SourceFilter.with()
+		JSourceFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+			.filter(JSourceFilter.with()
 				.includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
 			)
 			.build();
@@ -34,8 +33,8 @@ public class SourceFinderTest {
 	
 	@Test
 	public void testFindClassesExtending() throws Exception {
-		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
-			.filter(SourceFilter.with()
+		JSourceFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+			.filter(JSourceFilter.with()
 				.includeType(AJType.with().isASubclassOf(MyClass.class)))
 			.build();
 
@@ -51,8 +50,8 @@ public class SourceFinderTest {
 	
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
-		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder()
-			.filter(SourceFilter.with()
+		JSourceFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+			.filter(JSourceFilter.with()
 				.includeType(AJType.with().annotation(MyAnnotation.class))
 			)
 			.listener(new MatchListener<Object>() {
@@ -72,12 +71,12 @@ public class SourceFinderTest {
 						
 						if( src.getFullName().contains("ClassWithAnnotation")){
 							System.out.println("ignored=" + src.getFullName());
-							List<org.eclipse.jdt.core.dom.Annotation> as = src.getAnnotations();
-							for(org.eclipse.jdt.core.dom.Annotation a:as){
-								System.out.println("a=" + as);
+							List<JAnnotation> as = src.getAnnotations().getAllDirect();
+							for(JAnnotation a:as){
+								System.out.println("a=" + a.getAstNode());
 							}
-							System.out.println("getAnnotation=" + src.getAnnotationOfType(MyAnnotation.class));
-							System.out.println("hasAnnotation=" + src.hasAnnotationOfType(MyAnnotation.class));
+							System.out.println("getAnnotation=" + src.getAnnotations().get(MyAnnotation.class));
+							System.out.println("hasAnnotation=" + src.getAnnotations().contains(MyAnnotation.class));
 						}
 					}
 				}
@@ -87,6 +86,7 @@ public class SourceFinderTest {
 		List<JType> foundTypes = finder.findTypes().toList();
 		*/
 		Expect
+		    .with().debugEnabled(true)
 			.that(finder.findTypes())
 			.is(AList.of(JType.class)
 				.inAnyOrder()
@@ -107,7 +107,7 @@ public class SourceFinderTest {
 	
 	@Test
 	public void testFindWithMethods(){
-		SourceFinder finder = SourceHelper.newAllSourcesResolvingFinder().build();
+		JSourceFinder finder = TestSourceHelper.newAllSourcesResolvingFinder().build();
 		
 		FindResult<JMethod> methods = finder.findMethods();
 		assertThat(methods.isEmpty(),isFalse());

@@ -24,6 +24,8 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import com.google.inject.Inject;
+
 
 /**
  * Template which exposes various parse methods to convert the template text into various Java ast nodes
@@ -41,9 +43,10 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * Used by the DI container to set the default
 	 * @param parser
 	 */
+	@Inject
 	public SourceTemplate(JAstParser parser, Root snippetRoot){
 		this.parser = checkNotNull(parser,"expect parser");
-		this.snippetRoot = checkNotNull(snippetRoot, "expect snippt root");
+		this.snippetRoot = checkNotNull(snippetRoot, "expect snippet root");
 	}
 	
 	/**
@@ -278,11 +281,8 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		throw new MutateException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolateTemplate());
 	}
 
-
-
 	/**
-	 * Try to parse the template text as a source file with the given relative source path. A temporary
-	 * root will be used.
+	 * Try to parse the template text as a source file with the given relative source path. Uses the current root
 	 * 
 	 * @param fqn the fully qualified source name without the file extension. As in 'foo.bar.MyClass'.
 	 * @return

@@ -11,7 +11,7 @@ import org.junit.Test;
 
 public class FieldSplitterTransformTest {
 
-	MutateContext ctxt = new SimpleMutateContext();
+	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_split_with_string_initializer(){

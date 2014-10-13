@@ -27,7 +27,7 @@ import org.junit.Test;
 
 public class GetterMethodBuilderTest {
 
-	MutateContext ctxt = new SimpleMutateContext();
+	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_default_create(){

@@ -11,7 +11,8 @@ import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.MutateException;
 import org.codemucker.jmutate.ast.AstNodeProvider;
-import org.codemucker.jmutate.ast.JAnnotatable;
+import org.codemucker.jmutate.ast.HasAnnotations;
+import org.codemucker.jmutate.ast.Annotations;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
@@ -191,8 +192,8 @@ public class RefactorTest {
 		return ClassUtils.isReaderMethodFromName(m.getName());
 	}
 
-	private <A extends Annotation> String getAnonationValue(JAnnotatable annotatable, Class<A> anon, String attributeName){
-		JAnnotation janon = annotatable.getAnnotationOfType(Property.class);
+	private <A extends Annotation> String getAnonationValue(HasAnnotations  annotatable, Class<A> anon, String attributeName){
+		JAnnotation janon = annotatable.getAnnotations().get(Property.class);
 		if( anon != null ){
 			String value = janon.getValueForAttribute("name", null);
 			if( StringUtils.isBlank(value)){

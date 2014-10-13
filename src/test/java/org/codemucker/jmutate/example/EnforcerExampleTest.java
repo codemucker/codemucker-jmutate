@@ -13,9 +13,9 @@ import org.codemucker.jfind.Roots;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmatch.ObjectMatcher;
-import org.codemucker.jmutate.SourceFilter;
-import org.codemucker.jmutate.SourceFinder;
-import org.codemucker.jmutate.SourceHelper;
+import org.codemucker.jmutate.JSourceFilter;
+import org.codemucker.jmutate.JSourceFinder;
+import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
@@ -35,7 +35,7 @@ public class EnforcerExampleTest
 {
 	@Test
 	public void baseASTVisitorOverridesAllParentVisitMethods(){
-		JType baseVisitor = SourceHelper.findSourceForClass(BaseASTVisitor.class).getMainType();
+		JType baseVisitor = TestSourceHelper.findSourceForClass(BaseASTVisitor.class).getMainType();
 		List<String> haveMethodSigs = baseVisitor
 				.findMethodsMatching(AJMethod.with().name(AString.equalToAny("visit", "endVisit")))
 				.transform(new Function<JMethod, String>() {
@@ -73,9 +73,9 @@ public class EnforcerExampleTest
 	@Test
 	public void ensureMatcherBuildersAreCorrectlyNamed()
 	{
-		FindResult<JType> matchers = SourceFinder.with()
+		FindResult<JType> matchers = JSourceFinder.with()
 			.searchRoots(Roots.with().mainSrcDir(true))
-			.filter(SourceFilter.with()
+			.filter(JSourceFilter.with()
 				.includeType(AJType.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
 			.build()
 			.findTypes();
@@ -114,12 +114,12 @@ public class EnforcerExampleTest
 
         public void invoke(){
 
-            FindResult<JType> foundBuilders = SourceFinder.with()
+            FindResult<JType> foundBuilders = JSourceFinder.with()
                     .searchRoots(Roots.with()
                         .mainSrcDir(true)
                         .testSrcDir(true))
-                    .filter(SourceFilter.with()
-                        .includeType(AJType.with().simpleNameMatchingAntPattern("*Builder"))
+                    .filter(JSourceFilter.with()
+                        .includeType(AJType.with().simpleName("*Builder"))
                         .includeType(AJType.that().isASubclassOf(IBuilder.class))
                         .includeType(AJType.that().isASubclassOf(AbstractBuilder.class))
                         .includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*"))))

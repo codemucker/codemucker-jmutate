@@ -32,6 +32,7 @@ public class BeanPropertyTransform implements Transform {
 	private String propertyType;	
 	private boolean createGetter = true;
 	private boolean createSetter = true;
+	
 	private JMethodSetterBuilder.RETURNS setterReturns = JMethodSetterBuilder.RETURNS.VOID;
 	
 	@Override

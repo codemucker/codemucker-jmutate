@@ -14,12 +14,13 @@ import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.SourceHelper;
 import org.codemucker.jmutate.SourceTemplate;
+import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass1;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass2;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyChildClass3;
 import org.codemucker.jmutate.ast.JTypeTest.MyClass.MyNonExtendingClass;
+import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
@@ -29,7 +30,7 @@ import org.junit.Test;
 
 public class JTypeTest {
 
-	MutateContext ctxt = new SimpleMutateContext();
+	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void testIsAbstract() {
@@ -294,7 +295,7 @@ public class JTypeTest {
 	@Test
 	//For a bug where performing a method search on top level children also return nested methods
 	public void testFindJavaMethodsExcludingAnonymousTypeMethodsEmbeddedInMethods(){
-		JType type = SourceHelper.findSourceForClass(getClass()).getTypeWithName(MyTestClass.class);
+		JType type = TestSourceHelper.findSourceForClass(getClass()).getTypeWithName(MyTestClass.class);
 		FindResult<JMethod> foundMethods = type.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("get*"));
 
 		assertThat(
@@ -419,7 +420,7 @@ public class JTypeTest {
 		t.pl("@${a1}");
 		t.pl("class MyClass  {}");
 	
-		assertThat(t.asResolvedJTypeNamed("MyClass").hasAnnotationOfType(MyAnnotation.class),isFalse());
+		assertThat(t.asResolvedJTypeNamed("MyClass").getAnnotations().contains(MyAnnotation.class),isFalse());
 	}
 	
 	@Test
@@ -429,7 +430,7 @@ public class JTypeTest {
 		t.pl("@${a1}");
 		t.pl("class MyClass {}");
 		
-		assertThat(t.asResolvedJTypeNamed("MyClass").hasAnnotationOfType(MyAnnotation.class),isTrue());
+		assertThat(t.asResolvedJTypeNamed("MyClass").getAnnotations().contains(MyAnnotation.class),isTrue());
 	}
 	
 	public @interface MyAnnotation {}
@@ -438,7 +439,7 @@ public class JTypeTest {
 	
 	@Test
 	public void testImplementsClass(){
-		JSourceFile source = SourceHelper.findSourceForClass(getClass());
+		JSourceFile source = TestSourceHelper.findSourceForClass(getClass());
 		assertThat(source.getTypeWithName(MyChildClass1.class).isSubClassOf(MyExtendedClass.class),isFalse());
 		assertThat(source.getTypeWithName(MyChildClass2.class).isSubClassOf(MyExtendedClass.class),isTrue());
 		assertThat(source.getTypeWithName(MyChildClass3.class).isSubClassOf(MyExtendedClass.class),isTrue());
@@ -478,10 +479,10 @@ public class JTypeTest {
 	
 	@Test
 	public void getPackageNameOnFoundType(){
-		String pkgName = SourceHelper.findSourceForClass(JTypeTest.class).getMainType().getPackageName();
+		String pkgName = TestSourceHelper.findSourceForClass(JTypeTest.class).getMainType().getPackageName();
 		Assert.assertEquals(JTypeTest.class.getPackage().getName(), pkgName);	
 		
-		pkgName = SourceHelper.findSourceForClass(JFieldBuilder.class).getMainType().getPackageName();
+		pkgName = TestSourceHelper.findSourceForClass(JFieldBuilder.class).getMainType().getPackageName();
 		Assert.assertEquals(JFieldBuilder.class.getPackage().getName(), pkgName);	
 		
 	}
@@ -543,7 +544,7 @@ public class JTypeTest {
 	}
 	
 	@Test
-	public void GetSelfTypeParamThreeParamsNoSelf(){
+	public void testGetSelfTypeParamThreeParamsNoSelf(){
 		//non matching type
 		SourceTemplate t = ctxt.newSourceTemplate();
 		t.pl("class MyClass<T extends MyClass<?,S,Z>,S,Z> {} ");
@@ -556,5 +557,64 @@ public class JTypeTest {
 	
 	}
 	
+	@Test
+    public void testFindAnnotations(){
+        SourceTemplate t = ctxt.newSourceTemplate();
+        t.v("a1", MyAnnotation1.class);
+        t.v("a2", MyAnnotation2.class);
+        t.pl("import ${a1};");
+        t.pl("import ${a2};");
+        t.pl("@${a1}");
+        t.pl("class MyClass {");
+        t.pl("  @${a2}");
+        t.pl("  class MySubClass {");
+        t.pl("  }");
+        t.pl("}");
+        
+        JType type = t.asResolvedSourceFileNamed("MyClass").getMainType();
+        
+        List<JAnnotation> found = type.getAnnotations().getAllIncludeNested();
+
+        Expect
+            .that(found)
+            .is(AList
+                .inOrder()
+                .withOnly()
+                .item(AJAnnotation.with().fullName(MyAnnotation1.class))
+                .and(AJAnnotation.with().fullName(MyAnnotation2.class)));
+    }
+
+    @Test
+    public void testFindAnnotations_ignoreNested(){
+        SourceTemplate t = ctxt.newSourceTemplate();
+        t.v("a1", MyAnnotation1.class);
+        t.v("a2", MyAnnotation2.class);
+        t.pl("import ${a1};");
+        t.pl("import ${a2};");
+        t.pl("@${a1}");
+        t.pl("class MyClass {");
+        t.pl("  @${a2}");
+        t.pl("  class MySubClass {");
+        t.pl("  }");
+        t.pl("}");
+        
+        JType type = t.asResolvedSourceFileNamed("MyClass").getMainType();
+        
+        List<JAnnotation> found = type.getAnnotations().getAllDirect();
+
+        Expect
+            .that(found)
+            .is(AList.withOnly(AJAnnotation.with().fullName(MyAnnotation1.class)));
+    }
+
+    public @interface MyAnnotation1 {
+        
+    }
+    
+    public @interface MyAnnotation2 {
+        
+    }
+    
+
 	
 }

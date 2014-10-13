@@ -31,7 +31,7 @@ public class InsertFieldTransformTest {
 
 	@Test
 	public void test_add_field() throws Exception {
-		MutateContext ctxt = new SimpleMutateContext();
+		MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 		
 		SourceTemplate srcBefore = ctxt.newSourceTemplate()
 			.pl("package com.bertvanbrakel.codegen.bean;")

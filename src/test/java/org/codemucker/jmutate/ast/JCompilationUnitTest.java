@@ -7,7 +7,7 @@ import org.junit.Test;
 
 public class JCompilationUnitTest {
 
-	MutateContext ctxt = new SimpleMutateContext();
+	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
 	
 	@Test
 	public void getPackage(){

@@ -137,6 +137,12 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 
 	//TODO:code smell here, should JSource really know about the mutator? should the mutator use a builder instead?
+	/**
+	 * Use the given mutation context to make changes to the current source file
+	 * 
+	 * @param ctxt
+	 * @return
+	 */
 	public JSourceFileMutator asMutator(MutateContext ctxt){
 		return new JSourceFileMutator(ctxt, this);
 	}
