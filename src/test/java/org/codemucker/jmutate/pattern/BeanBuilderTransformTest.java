@@ -10,7 +10,7 @@ import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.DefaultMutateContext;
-import org.codemucker.jmutate.ast.matcher.AJTypeNode;
+import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.builder.GenerateBuilder;
 import org.junit.Test;
@@ -75,7 +75,7 @@ public class BeanBuilderTransformTest {
 	    FindResult<JType> found = TestSourceHelper.newTestSourcesResolvingFinder()
 			.filter(JMutateFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
-				.includeType(AJTypeNode.with().name(TestBuilderBean.class))
+				.includeType(AJType.with().name(TestBuilderBean.class))
 			)	
 			.build()
 			.findTypes();

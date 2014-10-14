@@ -20,9 +20,9 @@ import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.ast.matcher.AJFieldNode;
-import org.codemucker.jmutate.ast.matcher.AJMethodNode;
-import org.codemucker.jmutate.ast.matcher.AJTypeNode;
+import org.codemucker.jmutate.ast.matcher.AJField;
+import org.codemucker.jmutate.ast.matcher.AJMethod;
+import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.ClassUtil;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.AST;
@@ -183,11 +183,11 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 
 	public FindResult<JField> findFields(){
-		return findDirectMatching(AJFieldNode.any(),Include.DIRECT_ONLY);
+		return findDirectMatching(AJField.any(),Include.DIRECT_ONLY);
 	}
 	
 	public FindResult<JField> findNestedFields(){
-		return findDirectMatching(AJFieldNode.any(),Include.CHILDREN_ALSO);
+		return findDirectMatching(AJField.any(),Include.CHILDREN_ALSO);
 	}
 	
 	public FindResult<JField> findFieldsMatching(final Matcher<JField> matcher) {
@@ -229,11 +229,11 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 * @return
 	 */
 	public FindResult<JMethod> findMethods() {
-		return findMethodsMatching(AJMethodNode.any(),Include.DIRECT_ONLY);		
+		return findMethodsMatching(AJMethod.any(),Include.DIRECT_ONLY);		
 	}
 	
 	public FindResult<JMethod> findNestedMethods() {
-		return findMethodsMatching(AJMethodNode.any(),Include.CHILDREN_ALSO);		
+		return findMethodsMatching(AJMethod.any(),Include.CHILDREN_ALSO);		
 	}
 	
 	/**
@@ -313,7 +313,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 	
 	public FindResult<JType> findChildTypes(){
-		return findTypesMatching(AJTypeNode.any(),Include.DIRECT_ONLY);
+		return findTypesMatching(AJType.any(),Include.DIRECT_ONLY);
 	}
 	
 	/**
@@ -327,7 +327,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 * Recursively find all child types
 	 */
 	public FindResult<JType> findNestedTypes() {
-		return findTypesMatching(AJTypeNode.any(),Include.CHILDREN_ALSO);
+		return findTypesMatching(AJType.any(),Include.CHILDREN_ALSO);
 	}
 	
 	/**

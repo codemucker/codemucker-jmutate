@@ -12,7 +12,7 @@ import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJMethodNode;
+import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AType;
 /**
  * Beginnings of pattern enforcement. More cleanup required
@@ -20,7 +20,7 @@ import org.codemucker.jmutate.ast.matcher.AType;
 class ABuilderPattern extends AbstractMatcher<JType>{
 
     private Matcher<JMethod> builderMethods;
-    private Matcher<JMethod> disallowedBuilderMethods = AJMethodNode.none();
+    private Matcher<JMethod> disallowedBuilderMethods = AJMethod.none();
     private final String builderStaticCreateMethod = "with";
     private boolean requireStaticBuilderFactoryMethodOnParent = true;
     private final List<Matcher<JMethod>> ignoreMethods = new ArrayList<>();
@@ -43,7 +43,7 @@ class ABuilderPattern extends AbstractMatcher<JType>{
     
     private boolean validateBuilderClass(ABuilderPattern.MatchHolder holder,MatchDiagnostics diag){
         if(holder.builderType.isConcreteClass()){//don't expect build methods on abstract builders
-            FindResult<JMethod> buildMethod = holder.builderType.findMethodsMatching(AJMethodNode.with().nameMatchingAntPattern("build*").returningSomething());
+            FindResult<JMethod> buildMethod = holder.builderType.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build*").returningSomething());
             
             if(buildMethod.isEmpty()){
                 diag.mismatched("expect to find a build*() method on " + holder.builderType.getFullName());
@@ -57,7 +57,7 @@ class ABuilderPattern extends AbstractMatcher<JType>{
                 } else {
                     parent = holder.builderType;
                 }
-                if(parent != null && !parent.hasMethodsMatching(AJMethodNode.with().name(builderStaticCreateMethod).numArgs(0).isStatic().returning(AType.that().isEqualTo(holder.builderType)))){
+                if(parent != null && !parent.hasMethodsMatching(AJMethod.with().name(builderStaticCreateMethod).numArgs(0).isStatic().returning(AType.that().isEqualTo(holder.builderType)))){
                     Description desc = diag.newDescription();
                 
                     desc.text("expect to find a static builder factory method");
@@ -116,14 +116,14 @@ class ABuilderPattern extends AbstractMatcher<JType>{
     }
     
     public ABuilderPattern defaults(){
-        ignoreMethods.add(AJMethodNode.that().isConstructor());
-        ignoreMethods.add(AJMethodNode.that().isNotPublic());
-        ignoreMethods.add(AJMethodNode.with().name(AString.matchingAntPattern("get*")).returningSomething());
-        ignoreMethods.add(AJMethodNode.with().name(AString.matchingAntPattern("build*")).returningSomething());
+        ignoreMethods.add(AJMethod.that().isConstructor());
+        ignoreMethods.add(AJMethod.that().isNotPublic());
+        ignoreMethods.add(AJMethod.with().name(AString.matchingAntPattern("get*")).returningSomething());
+        ignoreMethods.add(AJMethod.with().name(AString.matchingAntPattern("build*")).returningSomething());
         
-        ignoreMethods.add(AJMethodNode.with().name(AString.matchingAntPattern("is??*")).numArgs(0).returning(AType.BOOL_PRIMITIVE));
-        ignoreMethods.add(AJMethodNode.with().name(AString.matchingAnyAntPattern("set*","with?*")));
-        ignoreMethods.add(AJMethodNode.with().name(AString.equalTo("with")).isNotStatic());
+        ignoreMethods.add(AJMethod.with().name(AString.matchingAntPattern("is??*")).numArgs(0).returning(AType.BOOL_PRIMITIVE));
+        ignoreMethods.add(AJMethod.with().name(AString.matchingAnyAntPattern("set*","with?*")));
+        ignoreMethods.add(AJMethod.with().name(AString.equalTo("with")).isNotStatic());
         
         return this;
     }

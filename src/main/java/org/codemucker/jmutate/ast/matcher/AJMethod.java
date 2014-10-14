@@ -21,26 +21,26 @@ import org.eclipse.jdt.core.dom.Type;
 import com.google.common.base.Predicate;
 
 
-public class AJMethodNode extends ObjectMatcher<JMethod> {
+public class AJMethod extends ObjectMatcher<JMethod> {
 	
 	/**
 	 * synonym for with()
 	 * 
 	 * @return
 	 */
-	public static AJMethodNode that(){
+	public static AJMethod that(){
 		return with();
 	}
 	
-	public static AJMethodNode with(){
-		return new AJMethodNode();
+	public static AJMethod with(){
+		return new AJMethod();
 	}
 
-	public AJMethodNode(){
+	public AJMethod(){
 	    super(JMethod.class);
 	}
 	
-	public AJMethodNode method(Predicate<JMethod> predicate){
+	public AJMethod method(Predicate<JMethod> predicate){
 		predicate(predicate);
 		return this;
 	}
@@ -50,17 +50,17 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 	 * @param antPattern ant style pattern. E.g. *foo*bar??Ho
 	 * @return
 	 */
-	public AJMethodNode nameMatchingAntPattern(final String antPattern) {
+	public AJMethod nameMatchingAntPattern(final String antPattern) {
 		name(AString.matchingAntPattern(antPattern));
 		return this;
 	}
 	
-	public AJMethodNode name(final String name) {
+	public AJMethod name(final String name) {
 		name(AString.equalTo(name));
 		return this;
 	}
 	
-	public AJMethodNode name(final Matcher<String> matcher) {
+	public AJMethod name(final Matcher<String> matcher) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -75,12 +75,12 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
-	public AJMethodNode returningSomething() {
+	public AJMethod returningSomething() {
         addMatcher(Logical.not(newVoidReturnMatcher()));
         return this;
     }
 	
-	public AJMethodNode returningVoid() {
+	public AJMethod returningVoid() {
 	    addMatcher(newVoidReturnMatcher());
 	    return this;
 	}
@@ -120,7 +120,7 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 	        };
 	    }
 	   
-	public AJMethodNode returning(final Matcher<Type> matcher) {
+	public AJMethod returning(final Matcher<Type> matcher) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -149,17 +149,17 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return Logical.none();
 	}
 
-	public AJMethodNode isNotConstructor() {
+	public AJMethod isNotConstructor() {
 		isConstructor(false);
 		return this;
 	}
 
-	public AJMethodNode isConstructor() {
+	public AJMethod isConstructor() {
 		isConstructor(true);
 		return this;
 	}
 	
-	public AJMethodNode isConstructor(final boolean isCtor) {
+	public AJMethod isConstructor(final boolean isCtor) {
 		Matcher<JMethod> matcher = new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -184,22 +184,22 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
-	public AJMethodNode isNotPublic() {
+	public AJMethod isNotPublic() {
 	    notAccess(JAccess.PUBLIC);
         return this;
     }
 	
-	public AJMethodNode isPublic() {
+	public AJMethod isPublic() {
 	    access(JAccess.PUBLIC);
 	    return this;
 	}
 	
-	public AJMethodNode isNotPrivate() {
+	public AJMethod isNotPrivate() {
 	    notAccess(JAccess.PRIVATE);
         return this;
     }
     
-	public AJMethodNode access(final JAccess access) {
+	public AJMethod access(final JAccess access) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -209,7 +209,7 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return this;
 	}
 
-	   public AJMethodNode notAccess(final JAccess access) {
+	   public AJMethod notAccess(final JAccess access) {
 	        addMatcher(new AbstractNotNullMatcher<JMethod>() {
                 @Override
 	            public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -224,15 +224,15 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 	        return this;
 	    }
 
-	public AJMethodNode isStatic() {
+	public AJMethod isStatic() {
 		return isStatic(true);
 	}
 	
-	public AJMethodNode isNotStatic() {
+	public AJMethod isNotStatic() {
         return isStatic(false);
     }
 	
-	public AJMethodNode isStatic(final boolean isStatic) {
+	public AJMethod isStatic(final boolean isStatic) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -247,7 +247,7 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
-	public AJMethodNode modifier(final Matcher<JModifier> matcher) {
+	public AJMethod modifier(final Matcher<JModifier> matcher) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -262,7 +262,7 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
-	public <A extends Annotation> AJMethodNode methodAnnotation(final Class<A> annotationClass) {
+	public <A extends Annotation> AJMethod methodAnnotation(final Class<A> annotationClass) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -277,7 +277,7 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return this;
 	}
 
-	public <A extends Annotation> AJMethodNode parameterAnnotation(final Class<A> annotationClass) {
+	public <A extends Annotation> AJMethod parameterAnnotation(final Class<A> annotationClass) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -292,12 +292,12 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return this;
 	}
 
-	public AJMethodNode numArgs(final int numArgs) {
+	public AJMethod numArgs(final int numArgs) {
 		numArgs(AnInt.equalTo(numArgs));
 		return this;
 	}
 
-	public AJMethodNode numArgs(final Matcher<Integer> numArgMatcher) {
+	public AJMethod numArgs(final Matcher<Integer> numArgMatcher) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
@@ -312,7 +312,7 @@ public class AJMethodNode extends ObjectMatcher<JMethod> {
 		return this;
 	}
 
-	public AJMethodNode nameAndArgSignature(JMethod method) {
+	public AJMethod nameAndArgSignature(JMethod method) {
 		final String name = method.getName();
 		final int numArgs = method.getAstNode().typeParameters().size();
 		final String sig = method.getClashDetectionSignature();

@@ -43,19 +43,19 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
     }
 	
 	public AJSourceFile isSubclassOf(Class<?> superClassOrInterface) {
-		return contains(AJTypeNode.with().isASubclassOf(superClassOrInterface));
+		return contains(AJType.with().isASubclassOf(superClassOrInterface));
 	}
 	
 	public AJSourceFile annotation(Class<? extends Annotation> annotation){
-		return contains(AJTypeNode.with().annotation(annotation));
+		return contains(AJType.with().annotation(annotation));
 	}
 	
 	public AJSourceFile typeFullName(Class<?> className){
-		return contains(AJTypeNode.with().name(className));
+		return contains(AJType.with().name(className));
 	}
 	
 	public AJSourceFile typeFullName(String classNameAntPattern){
-		return contains(AJTypeNode.with().fullName(classNameAntPattern));
+		return contains(AJType.with().fullName(classNameAntPattern));
 	}
 	
 	public AJSourceFile isEnum() {
@@ -63,7 +63,7 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
 	}
 
 	public AJSourceFile isEnum(boolean b) {
-		contains(AJTypeNode.with().isEnum(b));
+		contains(AJType.with().isEnum(b));
 		return this;
 	}
 	
@@ -73,7 +73,7 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
 	}
 	
 	public AJSourceFile isAnonymous(boolean b) {
-		contains(AJTypeNode.with().isAnonymous(b));
+		contains(AJType.with().isAnonymous(b));
 		return this;
 	}
 	
@@ -83,7 +83,7 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
 	}
 	
 	public AJSourceFile isInterface(boolean b) {
-		contains(AJTypeNode.with().isInterface(b));
+		contains(AJType.with().isInterface(b));
 		return this;
 	}
 	

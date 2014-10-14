@@ -8,7 +8,7 @@ import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JModifier;
 
-public class AJModifierNode extends ObjectMatcher<JModifier> {
+public class AJModifier extends ObjectMatcher<JModifier> {
 
     private static final Matcher<JModifier> MATCH_ANY = new AbstractNotNullMatcher<JModifier>() {
         @Override
@@ -22,15 +22,15 @@ public class AJModifierNode extends ObjectMatcher<JModifier> {
      * 
      * @return
      */
-    public static AJModifierNode that() {
+    public static AJModifier that() {
         return with();
     }
 
-    public static AJModifierNode with() {
-        return new AJModifierNode();
+    public static AJModifier with() {
+        return new AJModifier();
     }
 
-    public AJModifierNode() {
+    public AJModifier() {
         super(JField.class);
     }
 
@@ -47,7 +47,7 @@ public class AJModifierNode extends ObjectMatcher<JModifier> {
      * 
      * @return
      */
-    public AJModifierNode isMutableInstance() {
+    public AJModifier isMutableInstance() {
         isNotNative();
         isNotStatic();
         isNotTransient();
@@ -55,17 +55,17 @@ public class AJModifierNode extends ObjectMatcher<JModifier> {
         return this;
     }
 
-    public AJModifierNode isFinal() {
+    public AJModifier isFinal() {
         isFinal(true);
         return this;
     }
 
-    public AJModifierNode isNotFinal() {
+    public AJModifier isNotFinal() {
         isFinal(false);
         return this;
     }
     
-    public AJModifierNode isFinal(final boolean b) {
+    public AJModifier isFinal(final boolean b) {
         addMatcher(new AbstractNotNullMatcher<JModifier>() {
             @Override
             public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {
@@ -81,17 +81,17 @@ public class AJModifierNode extends ObjectMatcher<JModifier> {
     }
 
     
-    public AJModifierNode isStatic() {
+    public AJModifier isStatic() {
         isStatic(true);
         return this;
     }
 
-    public AJModifierNode isNotStatic() {
+    public AJModifier isNotStatic() {
         isStatic(false);
         return this;
     }
     
-    public AJModifierNode isStatic(final boolean b) {
+    public AJModifier isStatic(final boolean b) {
         addMatcher(new AbstractNotNullMatcher<JModifier>() {
             @Override
             public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {
@@ -106,17 +106,17 @@ public class AJModifierNode extends ObjectMatcher<JModifier> {
         return this;
     }
 
-    public AJModifierNode isTransient() {
+    public AJModifier isTransient() {
         isTransient(true);
         return this;
     }
 
-    public AJModifierNode isNotTransient() {
+    public AJModifier isNotTransient() {
         isTransient(false);
         return this;
     }
 
-    public AJModifierNode isTransient(final boolean b) {
+    public AJModifier isTransient(final boolean b) {
         addMatcher(new AbstractNotNullMatcher<JModifier>() {
             @Override
             public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {
@@ -131,17 +131,17 @@ public class AJModifierNode extends ObjectMatcher<JModifier> {
         return this;
     }
 
-    public AJModifierNode isNative() {
+    public AJModifier isNative() {
         isNative(true);
         return this;
     }
 
-    public AJModifierNode isNotNative() {
+    public AJModifier isNotNative() {
         isNative(false);
         return this;
     }
 
-    public AJModifierNode isNative(final boolean b) {
+    public AJModifier isNative(final boolean b) {
         addMatcher(new AbstractNotNullMatcher<JModifier>() {
             @Override
             public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {
@@ -156,17 +156,17 @@ public class AJModifierNode extends ObjectMatcher<JModifier> {
         return this;
     }
 
-    public AJModifierNode isVolatile() {
+    public AJModifier isVolatile() {
         isVolatile(true);
         return this;
     }
 
-    public AJModifierNode isNotVolatile() {
+    public AJModifier isNotVolatile() {
         isVolatile(false);
         return this;
     }
 
-    public AJModifierNode isVolatile(final boolean b) {
+    public AJModifier isVolatile(final boolean b) {
         addMatcher(new AbstractNotNullMatcher<JModifier>() {
             @Override
             public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {
@@ -181,17 +181,17 @@ public class AJModifierNode extends ObjectMatcher<JModifier> {
         return this;
     }
 
-    public AJModifierNode isSynchronized() {
+    public AJModifier isSynchronized() {
         isSynchronized(true);
         return this;
     }
 
-    public AJModifierNode isNotSynchronized() {
+    public AJModifier isNotSynchronized() {
         isSynchronized(false);
         return this;
     }
 
-    public AJModifierNode isSynchronized(final boolean b) {
+    public AJModifier isSynchronized(final boolean b) {
         addMatcher(new AbstractNotNullMatcher<JModifier>() {
             @Override
             public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {

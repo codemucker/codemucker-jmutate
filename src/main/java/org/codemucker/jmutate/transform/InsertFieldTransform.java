@@ -7,7 +7,7 @@ import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JField;
-import org.codemucker.jmutate.ast.matcher.AJFieldNode;
+import org.codemucker.jmutate.ast.matcher.AJField;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 
 import com.google.inject.Inject;
@@ -29,7 +29,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	    boolean insert = true;
 		for( String fieldName:field.getNames()){
 			//TODO:unwrap single field decl with multiple field (all same type/assignment)
-			FindResult<JField> found = getTarget().findFieldsMatching(AJFieldNode.with().name(fieldName));
+			FindResult<JField> found = getTarget().findFieldsMatching(AJField.with().name(fieldName));
 			if(!found.isEmpty()){
 				insert = false;
 				JField existingField = found.getFirst();

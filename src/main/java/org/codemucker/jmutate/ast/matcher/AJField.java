@@ -17,7 +17,7 @@ import org.eclipse.jdt.core.dom.Type;
 
 import com.google.common.base.Predicate;
 
-public class AJFieldNode extends ObjectMatcher<JField>{
+public class AJField extends ObjectMatcher<JField>{
 
 	private static final Matcher<JField> MATCH_ANY  = new AbstractNotNullMatcher<JField>() {
 		@Override
@@ -30,19 +30,19 @@ public class AJFieldNode extends ObjectMatcher<JField>{
 	 * synonym for with()
 	 * @return
 	 */
-	public static AJFieldNode that(){
+	public static AJField that(){
 		return with();
 	}
 	
-	public static AJFieldNode with(){
-		return new AJFieldNode();
+	public static AJField with(){
+		return new AJField();
 	}
 	
-	public AJFieldNode(){
+	public AJField(){
 	    super(JField.class);
 	}
 
-	public AJFieldNode field(Predicate<JField> predicate){
+	public AJField field(Predicate<JField> predicate){
 		predicate(predicate);
 		return this;
 	}
@@ -51,7 +51,7 @@ public class AJFieldNode extends ObjectMatcher<JField>{
 		return MATCH_ANY;
 	}
 
-	public AJFieldNode ofType(final Matcher<Type> typeMatcher){
+	public AJField ofType(final Matcher<Type> typeMatcher){
 		addMatcher(new AbstractNotNullMatcher<JField>() {
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
@@ -66,7 +66,7 @@ public class AJFieldNode extends ObjectMatcher<JField>{
 		return this;
 	}
 	
-	public AJFieldNode name(final String antPattern){
+	public AJField name(final String antPattern){
 		addMatcher(new AbstractMatcher<JField>(AllowNulls.NO) {
 			private final Matcher<String> nameMatcher = AString.matchingAntPattern(antPattern);		
 			@Override
@@ -87,9 +87,9 @@ public class AJFieldNode extends ObjectMatcher<JField>{
 		return this;
 	}
 	
-	public <A extends Annotation> AJFieldNode annotation(final Class<A> annotationClass){
+	public <A extends Annotation> AJField annotation(final Class<A> annotationClass){
 		addMatcher(new AbstractNotNullMatcher<JField>() {
-			private final Matcher<JAnnotation> matcher = AJAnnotationNode.with().fullName(annotationClass);
+			private final Matcher<JAnnotation> matcher = AJAnnotation.with().fullName(annotationClass);
 			
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
@@ -99,7 +99,7 @@ public class AJFieldNode extends ObjectMatcher<JField>{
 		return this;
 	}
 
-	public AJFieldNode access(final JAccess access){
+	public AJField access(final JAccess access){
 		addMatcher(new AbstractNotNullMatcher<JField>() {
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
@@ -114,7 +114,7 @@ public class AJFieldNode extends ObjectMatcher<JField>{
 		return this;
 	}
 	
-	public AJFieldNode modifiers(final Matcher<JModifier> matcher){
+	public AJField modifiers(final Matcher<JModifier> matcher){
         addMatcher(new AbstractNotNullMatcher<JField>() {
             @Override
             public boolean matchesSafely(JField found, MatchDiagnostics diag) {

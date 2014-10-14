@@ -24,7 +24,7 @@ import com.google.common.base.Strings;
 /**
  * Provides convenience static methods for creating {@link Matcher<JType>} matchers
  */
-public class AJTypeNode extends ObjectMatcher<JType> { 
+public class AJType extends ObjectMatcher<JType> { 
 
 	private static final Matcher<JType> ANONYMOUS_MATCHER = new AbstractNotNullMatcher<JType>() {
 		@Override
@@ -106,31 +106,31 @@ public class AJTypeNode extends ObjectMatcher<JType> {
 	 * Synonym for with()
 	 * @return
 	 */
-	public static AJTypeNode that() {
+	public static AJType that() {
 		return with();
 	}
 	
-	public static AJTypeNode with() {
-		return new AJTypeNode();
+	public static AJType with() {
+		return new AJType();
 	}
 
 	//prevent instantiation
-	private AJTypeNode() {
+	private AJType() {
     	super(JType.class);
 	}
 
-    public AJTypeNode type(Predicate<JType> predicate){
+    public AJType type(Predicate<JType> predicate){
 		predicate(predicate);
 		return this;
 	}
     
-    public AJTypeNode packageName(final Class<?> classInPackage){
+    public AJType packageName(final Class<?> classInPackage){
     	String pkgName = JavaNameUtil.compiledNameToSourceName(classInPackage.getPackage().getName());
     	packageName(pkgName);
     	return this;
     }
     
-    public AJTypeNode packageName(final String pkgName){
+    public AJType packageName(final String pkgName){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
 			private final Matcher<String> pkgNameMatcher = AString.equalTo(pkgName);
 			
@@ -152,7 +152,7 @@ public class AJTypeNode extends ObjectMatcher<JType> {
     	return this;
     }
     
-	public AJTypeNode packageMatchingAntPattern(final String pkgAntExpression){
+	public AJType packageMatchingAntPattern(final String pkgAntExpression){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
 			private final Matcher<String> pkgNameMatcher = AString.matchingAntPattern(pkgAntExpression);
 			
@@ -174,7 +174,7 @@ public class AJTypeNode extends ObjectMatcher<JType> {
 		return this;
 	}
 	
-	public AJTypeNode isASubclassOf(final Class<?> superClassOrInterface){
+	public AJType isASubclassOf(final Class<?> superClassOrInterface){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -189,72 +189,72 @@ public class AJTypeNode extends ObjectMatcher<JType> {
 		return this;
 	}
 	
-	public AJTypeNode isAnonymous(){		
+	public AJType isAnonymous(){		
 		isAnonymous(true);
 		return this;
 	}
 	
-	public AJTypeNode isAnonymous(boolean b){
+	public AJType isAnonymous(boolean b){
 		addMatcher(b?ANONYMOUS_MATCHER:not(ANONYMOUS_MATCHER));
 		return this;
 	}
 	
-	public AJTypeNode isInterface(){
+	public AJType isInterface(){
 		isInterface(true);
 		return this;
 	}
 	
-	public AJTypeNode isInterface(boolean b){
+	public AJType isInterface(boolean b){
 		addMatcher(b?INTERFACE_MATCHER:not(INTERFACE_MATCHER));
 		return this;
 	}
 	
-	public AJTypeNode isAnnotation(){
+	public AJType isAnnotation(){
 		isAnnotation(true);
 		return this;
 	}
 	
-	public AJTypeNode isAnnotation(boolean b){
+	public AJType isAnnotation(boolean b){
 		addMatcher(b?ANNOTATION_MATCHER:not(ANNOTATION_MATCHER));
 		return this;
 	}
 	
-	public AJTypeNode isInnerClass(){
+	public AJType isInnerClass(){
 		isInnerClass(true);
 		return this;
 	}
 	
-	public AJTypeNode isInnerClass(boolean b){
+	public AJType isInnerClass(boolean b){
 		addMatcher(b?INNER_CLASS_MATCHER:not(INNER_CLASS_MATCHER));
 		return this;
 	}
 
-	public AJTypeNode isEnum(){
+	public AJType isEnum(){
 		isEnum(true);
 		return this;
 	}
 	
-	public AJTypeNode isEnum(boolean b){
+	public AJType isEnum(boolean b){
 		addMatcher(b?ENUM_MATCHER:not(ENUM_MATCHER));
 		return this;
 	}
 	
-	public AJTypeNode isAbstract(){
+	public AJType isAbstract(){
 		isAbstract(true);
 		return this;
 	}
 	
-	public AJTypeNode isNotAbstract(){
+	public AJType isNotAbstract(){
 		isAbstract(false);
 		return this;
 	}
 	
-	public AJTypeNode isAbstract(boolean b){
+	public AJType isAbstract(boolean b){
 		addMatcher(b?ABSTRACT_MATCHER:not(ABSTRACT_MATCHER));
 		return this;
 	}
 	
-	public AJTypeNode access(final JAccess access){
+	public AJType access(final JAccess access){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -264,18 +264,18 @@ public class AJTypeNode extends ObjectMatcher<JType> {
 		return this;
 	}
 
-	public AJTypeNode name(final Class<?> matchingClassName){
+	public AJType name(final Class<?> matchingClassName){
 		String fullName = JavaNameUtil.compiledNameToSourceName(matchingClassName.getName());
 		fullName(fullName);
 		return this;
 	}
 	
-    public AJTypeNode simpleName(final String simpleNameAntPattern){
+    public AJType simpleName(final String simpleNameAntPattern){
         simpleName(AString.matchingAntPattern(simpleNameAntPattern));
         return this;
     }
     
-    public AJTypeNode simpleName(final Matcher<String> matcher){
+    public AJType simpleName(final Matcher<String> matcher){
         addMatcher(new AbstractMatcher<JType>() {
             @Override
             public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -292,12 +292,12 @@ public class AJTypeNode extends ObjectMatcher<JType> {
         return this;
     }
     
-    public AJTypeNode fullName(final String antPattern){
+    public AJType fullName(final String antPattern){
         fullName(AString.matchingAntPattern(antPattern));
         return this;
     }
     
-    public AJTypeNode fullName(final Matcher<String> matcher) {
+    public AJType fullName(final Matcher<String> matcher) {
         addMatcher(new AbstractMatcher<JType>() {
             @Override
             public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -313,7 +313,7 @@ public class AJTypeNode extends ObjectMatcher<JType> {
         return this;
     }
 
-	public AJTypeNode method(final Matcher<JMethod> methodMatcher){
+	public AJType method(final Matcher<JMethod> methodMatcher){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -329,12 +329,12 @@ public class AJTypeNode extends ObjectMatcher<JType> {
 		return this;
 	}
 	
-	public <A extends Annotation> AJTypeNode annotation(final Class<A> annotation){
-	    annotation(AJAnnotationNode.with().fullName(annotation));
+	public <A extends Annotation> AJType annotation(final Class<A> annotation){
+	    annotation(AJAnnotation.with().fullName(annotation));
 		return this;
 	}
 	
-	public AJTypeNode annotation(final Matcher<JAnnotation> matcher){
+	public AJType annotation(final Matcher<JAnnotation> matcher){
   
         addMatcher(new AbstractNotNullMatcher<JType>() {
             @Override
@@ -350,12 +350,12 @@ public class AJTypeNode extends ObjectMatcher<JType> {
         return this;
     }
 	
-	public <A extends Annotation> AJTypeNode nestedAnnotation(final Class<A> annotation){
-        nestedAnnotation(AJAnnotationNode.with().fullName(annotation));
+	public <A extends Annotation> AJType nestedAnnotation(final Class<A> annotation){
+        nestedAnnotation(AJAnnotation.with().fullName(annotation));
         return this;
     }
 	
-	   public AJTypeNode nestedAnnotation(final Matcher<JAnnotation> matcher){
+	   public AJType nestedAnnotation(final Matcher<JAnnotation> matcher){
 	       
 	        addMatcher(new AbstractNotNullMatcher<JType>() {
 	            @Override

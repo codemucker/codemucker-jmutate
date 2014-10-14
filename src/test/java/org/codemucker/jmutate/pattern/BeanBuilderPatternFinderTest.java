@@ -7,8 +7,8 @@ import org.codemucker.jmutate.JMutateFilter;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJMethodNode;
-import org.codemucker.jmutate.ast.matcher.AJTypeNode;
+import org.codemucker.jmutate.ast.matcher.AJMethod;
+import org.codemucker.jmutate.ast.matcher.AJType;
 import org.junit.Test;
 
 
@@ -24,7 +24,7 @@ public class BeanBuilderPatternFinderTest {
 			.filter(JMutateFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.includeType(AJTypeNode.with().fullName("*Builder"))
+				.includeType(AJType.with().fullName("*Builder"))
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)
 			.build()
@@ -36,7 +36,7 @@ public class BeanBuilderPatternFinderTest {
 			System.out.println( type.getFullName());
 			
 			//builds what???
-			FindResult<JMethod> methods = type.findMethodsMatching(AJMethodNode.with().nameMatchingAntPattern("build*"));
+			FindResult<JMethod> methods = type.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build*"));
 			for (JMethod method : methods) {
 				//could do checks on the build method here. COntains args? maybe not good?
 				//return null? another warning
@@ -48,7 +48,7 @@ public class BeanBuilderPatternFinderTest {
 	
 	@Test
 	public void testFindLongCtorClasses() {
-		Matcher<JMethod> methodMatcher = AJMethodNode.that()
+		Matcher<JMethod> methodMatcher = AJMethod.that()
 				.isConstructor()
 				.numArgs(AnInt.greaterOrEqualTo(3));
 		
@@ -56,7 +56,7 @@ public class BeanBuilderPatternFinderTest {
 			.filter(JMutateFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.includeType(AJTypeNode.with().method(methodMatcher))
+				.includeType(AJType.with().method(methodMatcher))
 				.includeMethods(methodMatcher)
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)	

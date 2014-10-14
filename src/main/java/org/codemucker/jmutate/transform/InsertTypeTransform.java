@@ -8,7 +8,7 @@ import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJTypeNode;
+import org.codemucker.jmutate.ast.matcher.AJType;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 
 import com.google.inject.Inject;
@@ -31,7 +31,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		List<JType> found = target.findNestedTypesMatching(AJTypeNode.with().fullName(type.getSimpleName())).toList();
+		List<JType> found = target.findNestedTypesMatching(AJType.with().fullName(type.getSimpleName())).toList();
 		if( !found.isEmpty()){
 			insert = false;
 			JType existingType = found.get(0);

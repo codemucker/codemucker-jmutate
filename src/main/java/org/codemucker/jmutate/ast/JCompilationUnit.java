@@ -9,7 +9,7 @@ import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.ast.matcher.AJTypeNode;
+import org.codemucker.jmutate.ast.matcher.AJType;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -65,7 +65,7 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 	}
 	
 	public FindResult<JType> findAllTypes(){
-		return findTypesMatching(AJTypeNode.any());
+		return findTypesMatching(AJType.any());
 	}
 	
 	public FindResult<JType> findTypesMatching(final Matcher<JType> matcher){

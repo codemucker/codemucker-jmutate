@@ -15,7 +15,7 @@ import org.codemucker.jmutate.ast.JField.SingleJField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifier;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJTypeNode;
+import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.builder.JMethodSetterBuilder;
 import org.codemucker.jmutate.transform.FixImportsTransform;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
@@ -110,7 +110,7 @@ public class BeanBuilderTransform implements Transform {
 	
     private JType getOrCreateBuilderClass(final JType type) {
 	    JType builder;
-	    final List<JType> builders = type.findTypesMatching(AJTypeNode.with().simpleName(builderClassName)).toList();
+	    final List<JType> builders = type.findTypesMatching(AJType.with().simpleName(builderClassName)).toList();
 		if (builders.size() == 1) {
 	    	builder = builders.get(0);
 		} else if (builders.size() == 0) {
@@ -126,7 +126,7 @@ public class BeanBuilderTransform implements Transform {
 	    	//we want a handle to the inserted nodes. These are copied on insert so adding anything to the
 	    	//original node doesn't make it in. Hence we need to lookup the newly created
 	    	//builder
-	    	builder = type.findTypesMatching(AJTypeNode.with().simpleName(builderClassName)).toList().get(0);
+	    	builder = type.findTypesMatching(AJType.with().simpleName(builderClassName)).toList().get(0);
 	    } else {
 	    	throw new JMutateException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
 	    }

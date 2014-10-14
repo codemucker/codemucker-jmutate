@@ -18,7 +18,7 @@ import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.ast.matcher.AJTypeNode;
+import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -216,7 +216,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 
 	public List<JType> findAllTypes(){
-		return internalFindTypesMatching(AJTypeNode.any());
+		return internalFindTypesMatching(AJType.any());
 	}
 	
 	public List<JType> findTypesMatching(Matcher<JType> matcher){

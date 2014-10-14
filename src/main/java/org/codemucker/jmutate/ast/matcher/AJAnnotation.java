@@ -10,39 +10,39 @@ import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.util.JavaNameUtil;
 
-public class AJAnnotationNode extends ObjectMatcher<JAnnotation>{ 
+public class AJAnnotation extends ObjectMatcher<JAnnotation>{ 
     
-    public AJAnnotationNode() {
+    public AJAnnotation() {
         super(JAnnotation.class);
     }
 
-    public static AJAnnotationNode with(){
-        return new AJAnnotationNode();
+    public static AJAnnotation with(){
+        return new AJAnnotation();
     }
     
-    public <A extends java.lang.annotation.Annotation> AJAnnotationNode notFullName(final Class<A> annotationClass){
+    public <A extends java.lang.annotation.Annotation> AJAnnotation notFullName(final Class<A> annotationClass){
         String name = JavaNameUtil.compiledNameToSourceName(annotationClass);
         fullName(Logical.not(AString.equalTo(name)));
         return this;
     }
     
-	public <A extends java.lang.annotation.Annotation> AJAnnotationNode fullName(final Class<A> annotationClass){
+	public <A extends java.lang.annotation.Annotation> AJAnnotation fullName(final Class<A> annotationClass){
 	    String fullName = JavaNameUtil.compiledNameToSourceName(annotationClass);
 	    fullName(fullName);
 		return this;
 	}
 	
-	public AJAnnotationNode fullName(final String name){
+	public AJAnnotation fullName(final String name){
 	    fullName(AString.equalTo(name));
 	    return this;
 	}
 	
-	public AJAnnotationNode notFullName(final Matcher<String> matcher){
+	public AJAnnotation notFullName(final Matcher<String> matcher){
 	    fullName(Logical.not(matcher));
 	    return this;
 	}
 	
-    public AJAnnotationNode fullName(final Matcher<String> matcher) {
+    public AJAnnotation fullName(final Matcher<String> matcher) {
         addMatcher(new AbstractNotNullMatcher<JAnnotation>() {
             @Override
             public boolean matchesSafely(JAnnotation found, MatchDiagnostics diag) {

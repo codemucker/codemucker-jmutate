@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.ast.matcher.AJAnnotationNode;
+import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
@@ -22,7 +22,7 @@ public abstract class AbstractAnnotations implements Annotations {
 
     @Override
     public <A extends java.lang.annotation.Annotation> boolean contains(Class<A> annotationClass) {
-        return contains(AJAnnotationNode.with().fullName(annotationClass));
+        return contains(AJAnnotation.with().fullName(annotationClass));
     }
 
     @Override
@@ -47,7 +47,7 @@ public abstract class AbstractAnnotations implements Annotations {
 
     @Override
     public <A extends java.lang.annotation.Annotation> JAnnotation get(Class<A> annotationClass) {
-        return get(AJAnnotationNode.with().fullName(annotationClass));
+        return get(AJAnnotation.with().fullName(annotationClass));
     }
 
     @Override

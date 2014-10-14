@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.ast.matcher.AJAnnotationNode;
+import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -162,7 +162,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 	}
 
     public <A extends Annotation> boolean hasParameterAnnotationOfType(Class<A> annotationClass) {
-		return hasParameterAnnotation(AJAnnotationNode.with().fullName(annotationClass));
+		return hasParameterAnnotation(AJAnnotation.with().fullName(annotationClass));
 	}
 	
 	@SuppressWarnings("unchecked")
