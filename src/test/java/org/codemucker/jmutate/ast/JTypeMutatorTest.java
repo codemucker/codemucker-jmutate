@@ -4,6 +4,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
+import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.a.TestBean;

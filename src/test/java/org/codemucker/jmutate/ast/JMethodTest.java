@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
+import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.junit.Assert;
 import org.junit.Test;

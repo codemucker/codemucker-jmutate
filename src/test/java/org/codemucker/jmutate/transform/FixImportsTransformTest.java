@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.Test;

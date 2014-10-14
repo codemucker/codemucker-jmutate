@@ -15,12 +15,12 @@
  */
 package org.codemucker.jmutate.transform;
 
+import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.PlacementStrategies;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.codemucker.jmutate.builder.JFieldBuilder;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.Pattern;

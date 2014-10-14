@@ -1,6 +1,6 @@
 package org.codemucker.jmutate;
 
-import org.codemucker.jmutate.ast.DefaultMutateContext;
+import org.codemucker.jmutate.ast.JAstParser;
 
 import com.google.inject.ImplementedBy;
 
@@ -23,4 +23,11 @@ public interface JMutateContext {
 	 * @return
 	 */
 	<T> T obtain(Class<T> type);
+	
+	/**
+	 * Get hold of the parser used
+	 * 
+	 * @return
+	 */
+	JAstParser getParser();
 }

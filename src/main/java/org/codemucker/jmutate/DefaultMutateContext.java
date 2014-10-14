@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.ast;
+package org.codemucker.jmutate;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,12 +8,10 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
-import org.codemucker.jmutate.ClashStrategy;
-import org.codemucker.jmutate.JMutateContext;
-import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.PlacementStrategies;
-import org.codemucker.jmutate.PlacementStrategy;
+import org.codemucker.jmutate.ast.AstNodeFlattener;
+import org.codemucker.jmutate.ast.ContextNames;
+import org.codemucker.jmutate.ast.JAstParser;
+import org.codemucker.jmutate.ast.SimpleFlattener;
 import org.codemucker.lang.annotation.Optional;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
@@ -53,105 +51,110 @@ public class DefaultMutateContext implements JMutateContext {
         injector = Guice.createInjector(Stage.PRODUCTION, new DefaultMutationModule(formatterOptions));
     }
 
-	private class DefaultMutationModule extends AbstractModule {
-
-	    private final DefaultCodeFormatterOptions options;
-	    
-	    public DefaultMutationModule(DefaultCodeFormatterOptions options){
-	        this.options = options;
-	    }
-	    
-		@Override
-		protected void configure() {
-		}
-
-		@Provides
-		public CodeFormatter provideCodeFormatter(){
-			return new DefaultCodeFormatter(getFormattingOptions());
-		}
-		
-		private DefaultCodeFormatterOptions getFormattingOptions(){
-			return options;
-		}
-		
-		@Provides
-		public ClashStrategy provideDefaultClashStrategy(){
-			return ClashStrategy.ERROR;
-		}
-		
-		@Named(ContextNames.MARK_GENERATED)
-		@Provides
-		public boolean provideDefaultMarkGenerated(){
-			return markGenerated;
-		}
-		
-		@Provides
-		public AstNodeFlattener provideFlattener(){
-			return obtain(SimpleFlattener.class);
-		}
-		
-		@Provides
-		@Singleton
-		public JMutateContext provideContext(){
-			return DefaultMutateContext.this;
-		}
-		
-		@Provides
-		@Singleton
-		public PlacementStrategies provideDefaultStrategies(){
-			return strategyProvider;
-		}
-		
-		@Provides
-		@Singleton
-		@Named(ContextNames.FIELD)
-		public PlacementStrategy provideDefaultFieldPlacement(){
-			return strategyProvider.getFieldStrategy();
-		}
-		
-		@Provides
-		@Singleton
-		@Named(ContextNames.CTOR)
-		public PlacementStrategy provideDefaultCtorPlacement(){
-			return strategyProvider.getCtorStrategy();
-		}
-		
-		@Provides
-		@Singleton
-		@Named(ContextNames.METHOD)
-		public PlacementStrategy provideDefaultMethodPlacement(){
-			return strategyProvider.getMethodStrategy();
-		}
-		
-		@Provides
-		@Singleton
-		@Named(ContextNames.TYPE)
-		public PlacementStrategy provideDefaultTypePlacement(){
-			return strategyProvider.getTypeStrategy();
-		}
-		
-		@Provides
-		@Singleton
-		public JAstParser provideParser(){
-			return parser;
-		}
-		
-		@Provides
-		public SourceTemplate provideSourceTemplate(){
-			return new SourceTemplate(provideParser(),snippetRoot);
-		}	
-	}
-
 	@Override
     public SourceTemplate newSourceTemplate(){
     	return obtain(SourceTemplate.class);
     }
 
 	@Override
+    public JAstParser getParser() {
+	    return obtain(JAstParser.class);
+    }
+ 
+	@Override
 	public <T> T obtain(Class<T> type){
 		return injector.getInstance(type);
 	}
 	
+    private class DefaultMutationModule extends AbstractModule {
+
+        private final DefaultCodeFormatterOptions options;
+
+        public DefaultMutationModule(DefaultCodeFormatterOptions options) {
+            this.options = options;
+        }
+
+        @Override
+        protected void configure() {
+        }
+
+        @Provides
+        public CodeFormatter provideCodeFormatter() {
+            return new DefaultCodeFormatter(getFormattingOptions());
+        }
+
+        private DefaultCodeFormatterOptions getFormattingOptions() {
+            return options;
+        }
+
+        @Provides
+        public ClashStrategy provideDefaultClashStrategy() {
+            return ClashStrategy.ERROR;
+        }
+
+        @Named(ContextNames.MARK_GENERATED)
+        @Provides
+        public boolean provideDefaultMarkGenerated() {
+            return markGenerated;
+        }
+
+        @Provides
+        public AstNodeFlattener provideFlattener() {
+            return obtain(SimpleFlattener.class);
+        }
+
+        @Provides
+        @Singleton
+        public JMutateContext provideContext() {
+            return DefaultMutateContext.this;
+        }
+
+        @Provides
+        @Singleton
+        public PlacementStrategies provideDefaultStrategies() {
+            return strategyProvider;
+        }
+
+        @Provides
+        @Singleton
+        @Named(ContextNames.FIELD)
+        public PlacementStrategy provideDefaultFieldPlacement() {
+            return strategyProvider.getFieldStrategy();
+        }
+
+        @Provides
+        @Singleton
+        @Named(ContextNames.CTOR)
+        public PlacementStrategy provideDefaultCtorPlacement() {
+            return strategyProvider.getCtorStrategy();
+        }
+
+        @Provides
+        @Singleton
+        @Named(ContextNames.METHOD)
+        public PlacementStrategy provideDefaultMethodPlacement() {
+            return strategyProvider.getMethodStrategy();
+        }
+
+        @Provides
+        @Singleton
+        @Named(ContextNames.TYPE)
+        public PlacementStrategy provideDefaultTypePlacement() {
+            return strategyProvider.getTypeStrategy();
+        }
+
+        @Provides
+        @Singleton
+        public JAstParser provideParser() {
+            return parser;
+        }
+
+        @Provides
+        public SourceTemplate provideSourceTemplate() {
+            return new SourceTemplate(provideParser(), snippetRoot);
+        }
+    }
+	   
 	public static class Builder {
 	
 		private boolean markGenerated = false;
@@ -255,4 +258,5 @@ public class DefaultMutateContext implements JMutateContext {
             return this;
         }
 	}
+
 }

@@ -13,6 +13,7 @@ import java.util.List;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
+import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.TestSourceHelper;

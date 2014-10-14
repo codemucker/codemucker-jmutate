@@ -4,12 +4,12 @@ package org.codemucker.jmutate.pattern;
 import java.util.Collection;
 
 import org.codemucker.jfind.FindResult;
+import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateFilter;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.builder.GenerateBuilder;

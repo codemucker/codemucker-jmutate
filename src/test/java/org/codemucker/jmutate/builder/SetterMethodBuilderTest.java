@@ -15,10 +15,10 @@
  */
 package org.codemucker.jmutate.builder;
 
+import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
-import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.Pattern;
 import org.junit.Test;
