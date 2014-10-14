@@ -15,9 +15,9 @@
  */
 package org.codemucker.jmutate.ast.a;
 
-import org.codemucker.jpattern.Property;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jpattern.PatternType;
+import org.codemucker.jpattern.bean.Property;
 
 @Pattern(type=PatternType.Builder)
 public class TestBean {

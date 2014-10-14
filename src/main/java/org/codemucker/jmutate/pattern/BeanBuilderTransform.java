@@ -7,15 +7,15 @@ import java.util.List;
 
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JField.SingleJField;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.ast.JModifiers;
+import org.codemucker.jmutate.ast.JModifier;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.codemucker.jmutate.builder.JMethodSetterBuilder;
 import org.codemucker.jmutate.transform.FixImportsTransform;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
@@ -23,7 +23,6 @@ import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.transform.InsertTypeTransform;
 import org.codemucker.jmutate.transform.Transform;
 import org.codemucker.jmutate.util.JavaNameUtil;
-import org.codemucker.jmutate.util.TypeUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.inject.Inject;
@@ -34,7 +33,7 @@ import com.google.inject.Inject;
 public class BeanBuilderTransform implements Transform {
 
 	@Inject
-	private MutateContext ctxt;
+	private JMutateContext ctxt;
 
 	private JType target;
 
@@ -99,7 +98,7 @@ public class BeanBuilderTransform implements Transform {
 	    return target.findFieldsMatching(new AbstractNotNullMatcher<JField>() {
             @Override
             public boolean matchesSafely(final JField field, MatchDiagnostics diag) {
-                final JModifiers mods = field.getJavaModifiers();
+                final JModifier mods = field.getJavaModifiers();
                 if( mods.isFinal() || mods.isStatic() || mods.isStrictFp()){
                     return false;
                 }
@@ -111,7 +110,7 @@ public class BeanBuilderTransform implements Transform {
 	
     private JType getOrCreateBuilderClass(final JType type) {
 	    JType builder;
-	    final List<JType> builders = type.findTypesMatching(AJType.with().simpleName(builderClassName)).toList();
+	    final List<JType> builders = type.findTypesMatching(AJTypeNode.with().simpleName(builderClassName)).toList();
 		if (builders.size() == 1) {
 	    	builder = builders.get(0);
 		} else if (builders.size() == 0) {
@@ -127,14 +126,14 @@ public class BeanBuilderTransform implements Transform {
 	    	//we want a handle to the inserted nodes. These are copied on insert so adding anything to the
 	    	//original node doesn't make it in. Hence we need to lookup the newly created
 	    	//builder
-	    	builder = type.findTypesMatching(AJType.with().simpleName(builderClassName)).toList().get(0);
+	    	builder = type.findTypesMatching(AJTypeNode.with().simpleName(builderClassName)).toList().get(0);
 	    } else {
-	    	throw new MutateException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
+	    	throw new JMutateException("expected only a single builder nameed '%s' on type %s", builderClassName, type);
 	    }
 	    return builder;
     }
 
-	public BeanBuilderTransform setCtxt(final MutateContext ctxt) {
+	public BeanBuilderTransform setCtxt(final JMutateContext ctxt) {
     	this.ctxt = ctxt;
     	return this;
     }
@@ -151,7 +150,7 @@ public class BeanBuilderTransform implements Transform {
 	
 	public static class BeanBuilderBuildMethodPattern implements Pattern {
 		@Inject
-		private MutateContext ctxt;
+		private JMutateContext ctxt;
 		//rename, possibly not a bean ..?
 		private JType bean;
 		//rename to builder?
@@ -193,7 +192,7 @@ public class BeanBuilderTransform implements Transform {
 			return buildMethod;
 		}
 		
-		public BeanBuilderBuildMethodPattern setCtxt(MutateContext ctxt) {
+		public BeanBuilderBuildMethodPattern setCtxt(JMutateContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}
@@ -228,7 +227,7 @@ public class BeanBuilderTransform implements Transform {
 	 */
 	public static class BeanBuilderFieldCtorPattern implements Pattern {
 		@Inject
-		private MutateContext ctxt;
+		private JMutateContext ctxt;
 		private JType target;
 		private List<SingleJField> fields;
 		private Boolean useQualifiedName = true;
@@ -289,7 +288,7 @@ public class BeanBuilderTransform implements Transform {
 		    }
         }
 
-		public BeanBuilderFieldCtorPattern setCtxt(MutateContext ctxt) {
+		public BeanBuilderFieldCtorPattern setCtxt(JMutateContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}
@@ -326,7 +325,7 @@ public class BeanBuilderTransform implements Transform {
     public static class BeanBuilderPropertiesPattern implements Pattern {
     	
     	@Inject
-    	private MutateContext ctxt;
+    	private JMutateContext ctxt;
     	private JType target;
     	private List<SingleJField> fields;
 		
@@ -351,7 +350,7 @@ public class BeanBuilderTransform implements Transform {
 		    }
 	    }
 		
-		public BeanBuilderPropertiesPattern setCtxt(MutateContext ctxt) {
+		public BeanBuilderPropertiesPattern setCtxt(JMutateContext ctxt) {
 			this.ctxt = ctxt;
 			return this;
 		}

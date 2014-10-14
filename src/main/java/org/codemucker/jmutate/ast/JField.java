@@ -16,7 +16,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import com.google.common.base.Function;
 
-public class JField implements HasAnnotations, AstNodeProvider<FieldDeclaration> {
+public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclaration> {
 
 	public static final Function<FieldDeclaration, JField> TRANSFORMER = new Function<FieldDeclaration, JField>() {
 		public JField apply(FieldDeclaration node){
@@ -149,8 +149,8 @@ public class JField implements HasAnnotations, AstNodeProvider<FieldDeclaration>
 	}
 
 	@SuppressWarnings("unchecked")
-    public JModifiers getJavaModifiers(){
-		return new JModifiers(fieldNode.getAST(),fieldNode.modifiers());
+    public JModifier getJavaModifiers(){
+		return new JModifier(fieldNode.getAST(),fieldNode.modifiers());
 	}
 
 	@Override

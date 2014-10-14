@@ -5,12 +5,12 @@ import static org.junit.Assert.assertEquals;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleMutateContext;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.junit.Test;
 
 public class JavaNameUtilTest {
 
-	SimpleMutateContext ctxt = SimpleMutateContext.with().defaults().build();
+	DefaultMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 	
 	/**
 	 * bug where interfaces declared on types are not being resolved correctly

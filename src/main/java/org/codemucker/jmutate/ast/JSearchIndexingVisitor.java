@@ -218,7 +218,7 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisito
 		db.save(doc);
 	}
 	
-	private void setModifiersFlags(ODocument doc, JModifiers mods){
+	private void setModifiersFlags(ODocument doc, JModifier mods){
 		doc.field("access", mods.asAccess().name());
 		doc.field("isFinal", mods.isFinal());
 		doc.field("isStatic", mods.isStatic());

@@ -1,13 +1,14 @@
 package org.codemucker.jmutate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.junit.Assert.assertEquals;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
+import org.codemucker.jmatch.Assert;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JCompilationUnit;
 import org.codemucker.jmutate.ast.JField;
@@ -33,8 +34,9 @@ import com.google.inject.Inject;
 @NotThreadSafe
 public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 {
-	private static String NL = System.getProperty("line.separator");
-		
+    private static final String NL = System.getProperty("line.separator");
+    private static final String JAVA_EXTENSION = "java";
+    
 	private final JAstParser parser;
 	
 	private final Root snippetRoot;
@@ -169,7 +171,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	
 	private FieldDeclaration asFieldNode(boolean resolve){
 		TypeDeclaration type = toTempWrappingType(false);
-		assertEquals("expected a single field", 1, type.getFields().length);
+		Assert.assertEquals("expected a single field", 1, type.getFields().length);
 		FieldDeclaration fieldNode = type.getFields()[0];
 		return fieldNode;
 	}
@@ -189,10 +191,10 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	private MethodDeclaration asConstructorNode(boolean resolve){
 		//TODO:decide and sort out exception types to throw. Assertions or custom bean assertions?
 		TypeDeclaration type = toTempWrappingType(resolve);
-		assertEquals("Expected a single constructor", 1, type.getMethods().length);
+		Assert.assertEquals("Expected a single constructor", 1, type.getMethods().length);
 		MethodDeclaration method = type.getMethods()[0];
 		if (method.getReturnType2() != null) {
-			throw new MutateException("Constructors should not have any return type. Constructor was %s",method);
+			throw new JMutateException("Constructors should not have any return type. Constructor was %s",method);
 		}
 		method.setConstructor(true);
 		return method;
@@ -230,19 +232,19 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	
 	private MethodDeclaration asMethodNode(boolean resolve){
 		TypeDeclaration type = toTempWrappingType(resolve);
-		assertEquals("Expected a single method", 1, type.getMethods().length);
+		Assert.assertEquals("Expected a single method", 1, type.getMethods().length);
 		MethodDeclaration method = type.getMethods()[0];
 		return method;
 	}
 	
 	private TypeDeclaration toTempWrappingType(boolean resolve) {
-		String tmpTypeName = SourceTemplate.class.getSimpleName() + "__TmpWrapperType" + System.currentTimeMillis() + "__";
+		String tmpTypeName = SourceTemplate.class.getSimpleName() + "__TmpWrapperType" + UUID.randomUUID().toString().replace('-', '_') + "__";
 		String src = "class " + tmpTypeName + "{" + NL + interpolateTemplate()  + NL +  "}";
 		//Disable resolving as we are making snippets to merge...
 		RootResource resource = resolve?fqnToResource(tmpTypeName):null;
 		CompilationUnit cu = parser.parseCompilationUnit(src,resource);
 		List<?> types = cu.types();
-		assertEquals("expected only a single type", 1, types.size());
+		Assert.assertEquals("expected only a single type", 1, types.size());
 		TypeDeclaration type = (TypeDeclaration) types.get(0);
 		return type;
 	}
@@ -276,9 +278,9 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 			return (AbstractTypeDeclaration) cu.types().get(0);
 		}
 		if(cu.types().size() == 0){
-			throw new MutateException("Source template does not contain any types. Expected 1 but got 0. Parsed source %s",interpolateTemplate());
+			throw new JMutateException("Source template does not contain any types. Expected 1 but got 0. Parsed source %s",interpolateTemplate());
 		}
-		throw new MutateException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolateTemplate());
+		throw new JMutateException("Source template contains more than one type. Expected 1 but got %d. Parsed source %s",cu.types().size(), interpolateTemplate());
 	}
 
 	/**
@@ -301,7 +303,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		CompilationUnit cu = parser.parseCompilationUnit(src, null);//don't get compiler to resolve
 		JType mainType = JCompilationUnit.from(cu).findMainType();
 		String fqn = mainType.getFullName();
-		RootResource resource = fqnToResource(fqn);
+		RootResource resource = fqnToResource(fqn + ".java");
 		return new JSourceFile(resource, cu, src);
 	}
 
@@ -319,10 +321,14 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	}
 	
 	private RootResource fqnToResource(String fqn){
+	    return fqnToResource(fqn,JAVA_EXTENSION);
+	}
+	
+	private RootResource fqnToResource(String fqn, String extension){
 		RootResource resource = null;
 		if( fqn != null){
 			String path  = expandFqnToRelativePath(fqn);
-			resource = new RootResource(snippetRoot, path);
+			resource = new RootResource(snippetRoot, path + "." + extension);
 		}
 		return resource;
 	}

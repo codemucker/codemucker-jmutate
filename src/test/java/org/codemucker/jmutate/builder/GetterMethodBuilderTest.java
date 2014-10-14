@@ -15,11 +15,10 @@
  */
 package org.codemucker.jmutate.builder;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.ast.SimpleMutateContext;
-import org.codemucker.jmutate.builder.JMethodGetterBuilder;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.Pattern;
 import org.junit.Test;
@@ -27,7 +26,7 @@ import org.junit.Test;
 
 public class GetterMethodBuilderTest {
 
-	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
+	JMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_default_create(){

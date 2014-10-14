@@ -8,8 +8,8 @@ import java.util.List;
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.MutateException;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -44,7 +44,7 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 		List<AbstractTypeDeclaration> topTypes = compilationUnit.types();
 		JType mainType = null;
 		if(topTypes.isEmpty()){
-			throw new MutateException("no types found in compilation unit so couldn't determine source path to generate");
+			throw new JMutateException("no types found in compilation unit so couldn't determine source path to generate");
 		} else if(topTypes.size() == 1){
 			mainType = JType.from(topTypes.get(0));
 		} else { //find the public class
@@ -52,20 +52,20 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 				JType type = JType.from(node);
 				if(type.getModifiers().isPublic()){
 					if( mainType != null){
-						throw new MutateException("Multiple top level types in compilation unit and more than one is public. Can't determine main type");
+						throw new JMutateException("Multiple top level types in compilation unit and more than one is public. Can't determine main type");
 					}
 					mainType = type;
 				}
 			}
 			if(mainType == null){
-				throw new MutateException("Multiple top level types in compilation unit and could not determine one to use. Try setting one to public access");
+				throw new JMutateException("Multiple top level types in compilation unit and could not determine one to use. Try setting one to public access");
 			}
 		}
 		return mainType;
 	}
 	
 	public FindResult<JType> findAllTypes(){
-		return findTypesMatching(AJType.any());
+		return findTypesMatching(AJTypeNode.any());
 	}
 	
 	public FindResult<JType> findTypesMatching(final Matcher<JType> matcher){

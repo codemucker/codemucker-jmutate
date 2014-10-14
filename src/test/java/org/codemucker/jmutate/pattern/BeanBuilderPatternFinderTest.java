@@ -3,12 +3,12 @@ package org.codemucker.jmutate.pattern;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.JSourceFilter;
+import org.codemucker.jmutate.JMutateFilter;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJMethod;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.ast.matcher.AJMethodNode;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.junit.Test;
 
 
@@ -21,10 +21,10 @@ public class BeanBuilderPatternFinderTest {
 		//classes where most methods return itself - confidence 60%
 		//classes which contain a method starting with 'build' - confidence 70%
 		FindResult<JType> foundBuilders = TestSourceHelper.newAllSourcesResolvingFinder()
-			.filter(JSourceFilter.with()
+			.filter(JMutateFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.includeType(AJType.with().fullName("*Builder"))
+				.includeType(AJTypeNode.with().fullName("*Builder"))
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)
 			.build()
@@ -36,7 +36,7 @@ public class BeanBuilderPatternFinderTest {
 			System.out.println( type.getFullName());
 			
 			//builds what???
-			FindResult<JMethod> methods = type.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build*"));
+			FindResult<JMethod> methods = type.findMethodsMatching(AJMethodNode.with().nameMatchingAntPattern("build*"));
 			for (JMethod method : methods) {
 				//could do checks on the build method here. COntains args? maybe not good?
 				//return null? another warning
@@ -48,15 +48,15 @@ public class BeanBuilderPatternFinderTest {
 	
 	@Test
 	public void testFindLongCtorClasses() {
-		Matcher<JMethod> methodMatcher = AJMethod.that()
+		Matcher<JMethod> methodMatcher = AJMethodNode.that()
 				.isConstructor()
 				.numArgs(AnInt.greaterOrEqualTo(3));
 		
 		Iterable<JMethod> found = TestSourceHelper.newAllSourcesResolvingFinder()
-			.filter(JSourceFilter.with()
+			.filter(JMutateFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.includeType(AJType.with().method(methodMatcher))
+				.includeType(AJTypeNode.with().method(methodMatcher))
 				.includeMethods(methodMatcher)
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)	

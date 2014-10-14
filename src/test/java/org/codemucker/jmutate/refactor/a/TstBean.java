@@ -2,12 +2,12 @@ package org.codemucker.jmutate.refactor.a;
 
 import java.util.Collection;
 
-import org.codemucker.jpattern.TransferBean;
-import org.codemucker.jpattern.GenerateBuilder;
+import org.codemucker.jpattern.bean.TransferBean;
+import org.codemucker.jpattern.builder.GenerateBuilder;
 
 
 @TransferBean
-@GenerateBuilder(ctor=true)
+@GenerateBuilder(generateNoArgCtor=true)
 public class TstBean {
 
 	private String myFeildString;

@@ -5,17 +5,16 @@ import org.codemucker.jfind.IncludeExcludeMatcherBuilder;
 import org.codemucker.jfind.MatcherToFindFilterAdapter;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.JSourceFinder.SourceMatcher;
+import org.codemucker.jmutate.JMutateFinder.SourceMatcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.lang.IBuilder;
 
-public class JSourceFilter implements SourceMatcher {
+public class JMutateFilter implements SourceMatcher {
 
 	private final FindResult.Filter<Object> objectFilter;
 	private final FindResult.Filter<Root> rootFilter;
@@ -24,7 +23,11 @@ public class JSourceFilter implements SourceMatcher {
 	private final FindResult.Filter<JType> typeMatcher;
 	private final FindResult.Filter<JMethod> methodFilter;
 	
-	private JSourceFilter(
+    public static Builder with() {
+        return new Builder();
+    }
+
+	private JMutateFilter(
 			FindResult.Filter<Object> objectFilter
 			, FindResult.Filter<Root> rootFilter
 			, FindResult.Filter<RootResource> resourceMatcher
@@ -70,14 +73,10 @@ public class JSourceFilter implements SourceMatcher {
 	public FindResult.Filter<JMethod> getMethodMatcher() {
 		return methodFilter;
 	}	
-	
-	public static Builder with(){
-		return new Builder();
-	}
 
 	public static class Builder implements IBuilder<SourceMatcher> {
 		
-		private FindResult.Filter<Object> ANY = new FindResult.Filter<Object>(){
+		private static final FindResult.Filter<Object> ANY = new FindResult.Filter<Object>(){
 
 			@Override
 			public boolean matches(Object found) {
@@ -106,9 +105,7 @@ public class JSourceFilter implements SourceMatcher {
 	    };
 	    
 	    private IncludeExcludeMatcherBuilder<Root> roots = IncludeExcludeMatcherBuilder.builder();
-		private IncludeExcludeMatcherBuilder<String> resourceNames = IncludeExcludeMatcherBuilder.builder();
-		private IncludeExcludeMatcherBuilder<RootResource> resources = IncludeExcludeMatcherBuilder.builder();	
-		private IncludeExcludeMatcherBuilder<String> classNames = IncludeExcludeMatcherBuilder.builder();
+		private IncludeExcludeMatcherBuilder<RootResource> resources = IncludeExcludeMatcherBuilder.builder();
 		private IncludeExcludeMatcherBuilder<JSourceFile> sources = IncludeExcludeMatcherBuilder.builder();
 		private IncludeExcludeMatcherBuilder<JMethod> methods = IncludeExcludeMatcherBuilder.builder();
 		private IncludeExcludeMatcherBuilder<JType> types = IncludeExcludeMatcherBuilder.builder();
@@ -118,11 +115,11 @@ public class JSourceFilter implements SourceMatcher {
 		}
 		
 		public SourceMatcher build(){
-			return new JSourceFilter(
+			return new JMutateFilter(
 				 ANY	
 				, toFilter(roots.build())
-				, toFilter(mergeResourceMatchers(resources.build(),resourceNames.build()))
-				, toFilter(mergeSourceMatchers(sources.build(),classNames.build()))
+				, toFilter(resources.build())
+				, toFilter(sources.build())
 				, toFilter(types.build())
 				, toFilter(methods.build())
 			);	
@@ -130,24 +127,6 @@ public class JSourceFilter implements SourceMatcher {
 			
 		private <T> FindResult.Filter<T> toFilter(Matcher<T> matcher){
 			return MatcherToFindFilterAdapter.from(matcher);
-		}
-		
-		private static Matcher<RootResource> mergeResourceMatchers(final Matcher<RootResource> matcher, final Matcher<String> resourceNameMatcher){
-			return new AbstractNotNullMatcher<RootResource>(){
-				@Override
-				public boolean matchesSafely(RootResource found, MatchDiagnostics diag) {
-					return resourceNameMatcher.matches(found.getRelPath()) && matcher.matches(found);
-				}
-			};
-		}
-		
-		private static Matcher<JSourceFile> mergeSourceMatchers(final Matcher<JSourceFile> matcher, final Matcher<String> classNameMatcher){
-			return new AbstractNotNullMatcher<JSourceFile>(){
-				@Override
-				public boolean matchesSafely(JSourceFile found, MatchDiagnostics diag) {
-					return classNameMatcher.matches(found.getClassnameBasedOnPath()) && matcher.matches(found);
-				}
-			};
 		}
 		
 		public Builder includeResource(Matcher<RootResource> matcher) {

@@ -5,15 +5,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.lang.annotation.Annotation;
 
 import org.codemucker.jmatch.AbstractNotNullMatcher;
-import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
-import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.util.JavaNameUtil;
 
 import com.google.common.base.Predicate;
 
@@ -46,19 +43,19 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
     }
 	
 	public AJSourceFile isSubclassOf(Class<?> superClassOrInterface) {
-		return contains(AJType.with().isASubclassOf(superClassOrInterface));
+		return contains(AJTypeNode.with().isASubclassOf(superClassOrInterface));
 	}
 	
 	public AJSourceFile annotation(Class<? extends Annotation> annotation){
-		return contains(AJType.with().annotation(annotation));
+		return contains(AJTypeNode.with().annotation(annotation));
 	}
 	
 	public AJSourceFile typeFullName(Class<?> className){
-		return contains(AJType.with().name(className));
+		return contains(AJTypeNode.with().name(className));
 	}
 	
 	public AJSourceFile typeFullName(String classNameAntPattern){
-		return contains(AJType.with().fullName(classNameAntPattern));
+		return contains(AJTypeNode.with().fullName(classNameAntPattern));
 	}
 	
 	public AJSourceFile isEnum() {
@@ -66,7 +63,7 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
 	}
 
 	public AJSourceFile isEnum(boolean b) {
-		contains(AJType.with().isEnum(b));
+		contains(AJTypeNode.with().isEnum(b));
 		return this;
 	}
 	
@@ -76,7 +73,7 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
 	}
 	
 	public AJSourceFile isAnonymous(boolean b) {
-		contains(AJType.with().isAnonymous(b));
+		contains(AJTypeNode.with().isAnonymous(b));
 		return this;
 	}
 	
@@ -86,7 +83,7 @@ public class AJSourceFile extends ObjectMatcher<JSourceFile> {
 	}
 	
 	public AJSourceFile isInterface(boolean b) {
-		contains(AJType.with().isInterface(b));
+		contains(AJTypeNode.with().isInterface(b));
 		return this;
 	}
 	

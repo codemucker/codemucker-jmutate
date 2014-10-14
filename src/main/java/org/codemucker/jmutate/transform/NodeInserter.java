@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.AST;
@@ -36,7 +36,7 @@ public class NodeInserter {
 
 		int index = strategy.findIndexToPlaceInto(clonedNode, nodesToInsertInto);
 		if (index < 0) {
-			throw new MutateException("Insertion strategy %s couldn't find an index to insert %s into", strategy, nodeToInsert);
+			throw new JMutateException("Insertion strategy %s couldn't find an index to insert %s into", strategy, nodeToInsert);
 		}
 		nodesToInsertInto.add(index, clonedNode);
 		return clonedNode;

@@ -3,11 +3,11 @@ package org.codemucker.jmutate.transform;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.ast.matcher.AJMethod;
+import org.codemucker.jmutate.ast.matcher.AJMethodNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.inject.Inject;
@@ -28,14 +28,14 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 		
 		boolean insert = true;
 		if( !contructorToAdd.isConstructor()){
-			throw new MutateException("Constructor method is not a constructor. Method is %s",contructorToAdd);
+			throw new JMutateException("Constructor method is not a constructor. Method is %s",contructorToAdd);
 			
 		}
 		if( !getTarget().getSimpleName().equals(contructorToAdd.getName())){
-			throw new MutateException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),contructorToAdd.getName());
+			throw new JMutateException("Constructor method name should be the same as the target type. Expected name to be %s but was %s",getTarget().getSimpleName(),contructorToAdd.getName());
 		}
 		
-		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.with().nameAndArgSignature(contructorToAdd));
+		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethodNode.with().nameAndArgSignature(contructorToAdd));
     	if( !found.isEmpty()){
     		insert = false;
     		JMethod existingCtor = found.getFirst();
@@ -48,9 +48,9 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new MutateException("Existing ctor %s, not replacing with %s", existingCtor.getAstNode(), contructorToAdd);
+				throw new JMutateException("Existing ctor %s, not replacing with %s", existingCtor.getAstNode(), contructorToAdd);
 			default:
-				throw new MutateException("Existing ctor method %s, unsupported clash strategy %s", existingCtor.getAstNode(), getClashStrategy());
+				throw new JMutateException("Existing ctor method %s, unsupported clash strategy %s", existingCtor.getAstNode(), getClashStrategy());
 			}
     	}
     	if(insert){

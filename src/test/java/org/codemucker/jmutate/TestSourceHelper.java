@@ -2,9 +2,9 @@ package org.codemucker.jmutate;
 
 import static org.junit.Assert.assertEquals;
 
-import org.codemucker.jfind.AResource;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.Roots;
+import org.codemucker.jfind.matcher.AResource;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
 
@@ -17,8 +17,8 @@ public class TestSourceHelper {
 	 */
 	public static JSourceFile findSourceForClass(Class<?> classToFindSourceFor){
 		String filePath = classToFindSourceFor.getName().replace('.', '/') + ".java";
-		JSourceFinder finder = newAllSourcesResolvingFinder()
-			.filter(JSourceFilter.with()
+		JMutateFinder finder = newAllSourcesResolvingFinder()
+			.filter(JMutateFilter.with()
 				.includeResource(AResource.with().path(filePath)))
 			.build();
 		FindResult<JSourceFile> sources = finder.findSources();
@@ -32,19 +32,21 @@ public class TestSourceHelper {
 	 * Look in all source locations including tests
 	 * @return
 	 */
-	public static JSourceFinder.Builder newAllSourcesResolvingFinder(){
-		return JSourceFinder.with()
+	public static JMutateFinder.Builder newAllSourcesResolvingFinder(){
+		return JMutateFinder.with()
 			.searchRoots(Roots.with()
 					.mainSrcDir(true)
-					.testSrcDir(true))
+					.testSrcDir(true)
+					.classpath(true))
 			.parser(newResolvingParser());
 	}
 	
-	public static JSourceFinder.Builder newTestSourcesResolvingFinder(){
-		return JSourceFinder.with()
+	public static JMutateFinder.Builder newTestSourcesResolvingFinder(){
+		return JMutateFinder.with()
 			.searchRoots(Roots.with()
 				.mainSrcDir(false)
-				.testSrcDir(true))
+				.testSrcDir(true)
+				.classpath(true))
 			.parser(
 				newResolvingParser());
 	}

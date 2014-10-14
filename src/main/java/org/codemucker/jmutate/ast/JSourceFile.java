@@ -16,9 +16,9 @@ import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.MutateException;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.codemucker.jtest.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -52,7 +52,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		try {
 			src = resource.readAsString();
 		} catch(IOException e){
-			throw new MutateException("Error reading resource contents " + resource,e);
+			throw new JMutateException("Error reading resource contents " + resource,e);
 		}
 		
 		return fromSource(resource, src, parser);
@@ -88,9 +88,9 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 			os = resource.getOutputStream();
 			IOUtils.write(src, os);
 		} catch (FileNotFoundException e) {
-			throw new MutateException("Couldn't write source to file" + resource, e);
+			throw new JMutateException("Couldn't write source to file" + resource, e);
 		} catch (IOException e) {
-			throw new MutateException("Couldn't write source to file" + resource, e);
+			throw new JMutateException("Couldn't write source to file" + resource, e);
 		} finally {
 			IOUtils.closeQuietly(os);
 		}
@@ -105,9 +105,9 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
     	try {
     		edits.apply(doc);
     	} catch (MalformedTreeException e) {
-    		throw new MutateException("can't apply changes", e);
+    		throw new JMutateException("can't apply changes", e);
     	} catch (BadLocationException e) {
-    		throw new MutateException("can't apply changes", e);
+    		throw new JMutateException("can't apply changes", e);
     	}
     	String updatedSrc = doc.get();
     	return updatedSrc;
@@ -143,7 +143,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	 * @param ctxt
 	 * @return
 	 */
-	public JSourceFileMutator asMutator(MutateContext ctxt){
+	public JSourceFileMutator asMutator(JMutateContext ctxt){
 		return new JSourceFileMutator(ctxt, this);
 	}
 	
@@ -187,7 +187,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 			}
 		}
 		Collection<String> names = extractTopTypeNames(types);
-		throw new MutateException("Can't find top level type named '%s' in resource '%s'. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
+		throw new JMutateException("Can't find top level type named '%s' in resource '%s'. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
 	}
 	
 
@@ -207,16 +207,16 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		};
 		List<JType> found = internalFindTypesMatching(matcher);
 		if (found.size() > 1) {
-			throw new MutateException("Invalid source file, found more than one type with name '%s'", simpleName);
+			throw new JMutateException("Invalid source file, found more than one type with name '%s'", simpleName);
 		}
 		if (found.size() == 1) {
 			return found.get(0);
 		}
-		throw new MutateException("Could not find type with name '%s' in %s", simpleName, this);
+		throw new JMutateException("Could not find type with name '%s' in %s", simpleName, this);
 	}
 
 	public List<JType> findAllTypes(){
-		return internalFindTypesMatching(AJType.any());
+		return internalFindTypesMatching(AJTypeNode.any());
 	}
 	
 	public List<JType> findTypesMatching(Matcher<JType> matcher){

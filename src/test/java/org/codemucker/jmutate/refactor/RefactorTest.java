@@ -9,14 +9,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ast.AnnotationsProvider;
 import org.codemucker.jmutate.ast.AstNodeProvider;
-import org.codemucker.jmutate.ast.HasAnnotations;
-import org.codemucker.jmutate.ast.Annotations;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jpattern.Property;
+import org.codemucker.jpattern.bean.Property;
 import org.codemucker.jtest.bean.ClassUtils;
 
 
@@ -192,12 +191,12 @@ public class RefactorTest {
 		return ClassUtils.isReaderMethodFromName(m.getName());
 	}
 
-	private <A extends Annotation> String getAnonationValue(HasAnnotations  annotatable, Class<A> anon, String attributeName){
+	private <A extends Annotation> String getAnonationValue(AnnotationsProvider  annotatable, Class<A> anon, String attributeName){
 		JAnnotation janon = annotatable.getAnnotations().get(Property.class);
 		if( anon != null ){
 			String value = janon.getValueForAttribute("name", null);
 			if( StringUtils.isBlank(value)){
-				throw new MutateException("Expected a value for 'name' for annotation 'BeanProperty'");
+				throw new JMutateException("Expected a value for 'name' for annotation 'BeanProperty'");
 			}
 			return value;
 		} 

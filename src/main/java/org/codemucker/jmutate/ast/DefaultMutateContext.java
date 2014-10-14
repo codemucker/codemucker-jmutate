@@ -9,11 +9,11 @@ import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jmutate.ClashStrategy;
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.PlacementStrategies;
 import org.codemucker.jmutate.PlacementStrategy;
-import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.lang.annotation.Optional;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
@@ -29,7 +29,7 @@ import com.google.inject.Stage;
 import com.google.inject.name.Named;
 
 @Singleton
-public class SimpleMutateContext implements MutateContext {
+public class DefaultMutateContext implements JMutateContext {
 
 	private final PlacementStrategies strategyProvider;
 	private final Root snippetRoot;
@@ -44,20 +44,20 @@ public class SimpleMutateContext implements MutateContext {
 		return new Builder();
 	}
 	
-	private SimpleMutateContext(Root snippetRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategies strategyProvider) {
+	private DefaultMutateContext(Root snippetRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategies strategyProvider) {
         super();
         this.snippetRoot = snippetRoot;
         this.parser = parser;
         this.markGenerated = markGenerated;
         this.strategyProvider = strategyProvider;
-        injector = Guice.createInjector(Stage.PRODUCTION, new MutationModule(formatterOptions));
+        injector = Guice.createInjector(Stage.PRODUCTION, new DefaultMutationModule(formatterOptions));
     }
 
-	private class MutationModule extends AbstractModule {
+	private class DefaultMutationModule extends AbstractModule {
 
 	    private final DefaultCodeFormatterOptions options;
 	    
-	    public MutationModule(DefaultCodeFormatterOptions options){
+	    public DefaultMutationModule(DefaultCodeFormatterOptions options){
 	        this.options = options;
 	    }
 	    
@@ -92,8 +92,8 @@ public class SimpleMutateContext implements MutateContext {
 		
 		@Provides
 		@Singleton
-		public MutateContext provideContext(){
-			return SimpleMutateContext.this;
+		public JMutateContext provideContext(){
+			return DefaultMutateContext.this;
 		}
 		
 		@Provides
@@ -167,13 +167,13 @@ public class SimpleMutateContext implements MutateContext {
         	return this;
 		}
 
-        public SimpleMutateContext build() {
+        public DefaultMutateContext build() {
             Root generateTo = getGenerationRootOrDefault();
             JAstParser parser = getParserOrDefault(generateTo);
             DefaultCodeFormatterOptions formatter = getFormatterOptionsOrDefault();
             PlacementStrategies strategy = getPlacementStrategyOrDefault();
             
-            return new SimpleMutateContext(generateTo, parser, markGenerated, formatter,strategy);
+            return new DefaultMutateContext(generateTo, parser, markGenerated, formatter,strategy);
         }
 		
         private JAstParser getParserOrDefault(Root contextRoot) {
@@ -213,7 +213,7 @@ public class SimpleMutateContext implements MutateContext {
 	            
 	            return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
 	        } catch (IOException e) {
-	            throw new MutateException("Couldn't create a tmp root");
+	            throw new JMutateException("Couldn't create a tmp root");
 	        }
 	    }
 	    

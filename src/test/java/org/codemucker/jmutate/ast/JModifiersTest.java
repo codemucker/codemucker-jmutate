@@ -16,7 +16,7 @@ public class JModifiersTest {
 
 	@Test
 	public void testIsPublic() throws IOException {
-		JModifiers mods = newJavaModifiersWithKeywords(ModifierKeyword.ABSTRACT_KEYWORD, ModifierKeyword.NATIVE_KEYWORD, ModifierKeyword.PUBLIC_KEYWORD);
+		JModifier mods = newJavaModifiersWithKeywords(ModifierKeyword.ABSTRACT_KEYWORD, ModifierKeyword.NATIVE_KEYWORD, ModifierKeyword.PUBLIC_KEYWORD);
 		
 		assertTrue(mods.isPublic());
 		
@@ -27,7 +27,7 @@ public class JModifiersTest {
 	
 	@Test
 	public void testIsPackagePrivate() throws IOException {
-		JModifiers mods = newJavaModifiersWithKeywords();
+		JModifier mods = newJavaModifiersWithKeywords();
 		
 		assertTrue(mods.isPackagePrivate());
 		
@@ -38,7 +38,7 @@ public class JModifiersTest {
 	
 	@Test
 	public void testIsProtected() throws IOException {
-		JModifiers mods = newJavaModifiersWithKeywords(ModifierKeyword.ABSTRACT_KEYWORD, ModifierKeyword.NATIVE_KEYWORD, ModifierKeyword.PROTECTED_KEYWORD);
+		JModifier mods = newJavaModifiersWithKeywords(ModifierKeyword.ABSTRACT_KEYWORD, ModifierKeyword.NATIVE_KEYWORD, ModifierKeyword.PROTECTED_KEYWORD);
 		
 		assertTrue(mods.isProtected());
 		
@@ -49,7 +49,7 @@ public class JModifiersTest {
 	
 	@Test
 	public void testIsPrivate() throws IOException {
-		JModifiers mods = newJavaModifiersWithKeywords(ModifierKeyword.ABSTRACT_KEYWORD, ModifierKeyword.NATIVE_KEYWORD, ModifierKeyword.PRIVATE_KEYWORD);
+		JModifier mods = newJavaModifiersWithKeywords(ModifierKeyword.ABSTRACT_KEYWORD, ModifierKeyword.NATIVE_KEYWORD, ModifierKeyword.PRIVATE_KEYWORD);
 		
 		assertTrue(mods.isPrivate());
 		
@@ -60,8 +60,8 @@ public class JModifiersTest {
 	
 	@Test
 	public void testIsAbstract() throws IOException {
-		JModifiers mods1 = newJavaModifiersWithKeywords(ModifierKeyword.ABSTRACT_KEYWORD, ModifierKeyword.FINAL_KEYWORD);
-		JModifiers mods2 = newJavaModifiersWithKeywords(ModifierKeyword.FINAL_KEYWORD);
+		JModifier mods1 = newJavaModifiersWithKeywords(ModifierKeyword.ABSTRACT_KEYWORD, ModifierKeyword.FINAL_KEYWORD);
+		JModifier mods2 = newJavaModifiersWithKeywords(ModifierKeyword.FINAL_KEYWORD);
 		
 		assertTrue(mods1.isAbstract());
 		assertFalse(mods2.isAbstract());
@@ -70,23 +70,23 @@ public class JModifiersTest {
 	@Test
 	public void testSetAccess() throws IOException {
 		for( JAccess access:new JAccess[]{ JAccess.PRIVATE, JAccess.PROTECTED, JAccess.PUBLIC } ){
-			JModifiers mods = newJavaModifiersWithKeywords();
+			JModifier mods = newJavaModifiersWithKeywords();
 			
 			assertFalse(mods.isAccess(access));
 			mods.setAccess(access);
 			assertTrue(mods.isAccess(access));
 		}
 		//package
-		JModifiers mods = newJavaModifiersWithKeywords(ModifierKeyword.PUBLIC_KEYWORD);
+		JModifier mods = newJavaModifiersWithKeywords(ModifierKeyword.PUBLIC_KEYWORD);
 		
 		assertFalse(mods.isAccess(JAccess.PACKAGE));
 		mods.setAccess(JAccess.PACKAGE);
 		assertTrue(mods.isAccess(JAccess.PACKAGE));
 	}
 
-	private static JModifiers newJavaModifiersWithKeywords(ModifierKeyword... keywords){
+	private static JModifier newJavaModifiersWithKeywords(ModifierKeyword... keywords){
 		AST ast = AST.newAST(AST.JLS4);
-		JModifiers mods = new JModifiers(ast, toModifiers(ast,keywords));
+		JModifier mods = new JModifier(ast, toModifiers(ast,keywords));
 		
 		return  mods;
 	}

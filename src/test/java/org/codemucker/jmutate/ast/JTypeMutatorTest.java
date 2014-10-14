@@ -4,7 +4,7 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.a.TestBean;
 import org.codemucker.jmutate.ast.a.TestBeanSimple;
@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class JTypeMutatorTest {
 
-	private MutateContext context = SimpleMutateContext.with().defaults().build();
+	private JMutateContext context = DefaultMutateContext.with().defaults().build();
 	
 	@Test
 	public void testAddSimpleField() throws Exception {		

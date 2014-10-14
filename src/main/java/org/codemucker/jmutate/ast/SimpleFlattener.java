@@ -2,7 +2,7 @@ package org.codemucker.jmutate.ast;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
@@ -49,9 +49,9 @@ public class SimpleFlattener implements AstNodeFlattener {
     	try {
     		edits.apply(doc);
     	} catch (MalformedTreeException e) {
-    		throw new MutateException("can't apply changes", e);
+    		throw new JMutateException("can't apply changes", e);
     	} catch (BadLocationException e) {
-    		throw new MutateException("can't apply changes", e);
+    		throw new JMutateException("can't apply changes", e);
     	}
     
     	String updatedSrc = doc.get();

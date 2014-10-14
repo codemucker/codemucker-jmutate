@@ -14,6 +14,7 @@ public interface Annotations {
     public boolean contains(Matcher<JAnnotation> matcher, Depth depth);
 
     public List<JAnnotation> getAllDirect();
+
     public List<JAnnotation> getAllIncludeNested();
 
     public JAnnotation get(Matcher<JAnnotation> matcher);

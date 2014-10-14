@@ -8,9 +8,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.codemucker.jfind.BaseRootVisitor;
-import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.DefaultFindResult;
-import org.codemucker.jfind.MatchListener;
+import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.JFindMatchListener;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.RootVisitor;
@@ -38,10 +38,10 @@ import com.google.inject.Inject;
  * 
  * 
  */
-public class JSourceFinder {
+public class JMutateFinder {
 
 	private static final String JAVA_EXTENSION = "java";
-	private static final MatchListener<Object> NULL_LISTENER = new MatchListener<Object>() {
+	private static final JFindMatchListener<Object> NULL_LISTENER = new JFindMatchListener<Object>() {
 		@Override
 		public void onMatched(Object obj) {
 		}
@@ -63,7 +63,7 @@ public class JSourceFinder {
 	private final Matcher<JType> typeMatcher;
 	private final Matcher<JMethod> methodMatcher;
 	
-	private final MatchListener<Object> listener;
+	private final JFindMatchListener<Object> listener;
 	
 	@Inject
 	private final JAstParser parser;
@@ -82,11 +82,11 @@ public class JSourceFinder {
 	}
 
 	@Inject
-	public JSourceFinder(
+	public JMutateFinder(
 			JAstParser parser
 			, Iterable<Root> classPathRoots
 			, SourceMatcher matchers
-			, MatchListener<Object> listener
+			, JFindMatchListener<Object> listener
 			) {
 		this(parser,
 			classPathRoots,
@@ -100,7 +100,7 @@ public class JSourceFinder {
 		);
 	}
 
-	public JSourceFinder(
+	public JMutateFinder(
 			JAstParser parser
 			, Iterable<Root> roots
 			, Matcher<Object> objectFilter
@@ -109,7 +109,7 @@ public class JSourceFinder {
 			, Matcher<JSourceFile> sourceFilter
 			, Matcher<JType> typeFilter
 			, Matcher<JMethod> methodFilter
-			, MatchListener<Object> listener
+			, JFindMatchListener<Object> listener
 			) {
 		
 		checkNotNull(roots, "expect class path roots");
@@ -229,11 +229,11 @@ public class JSourceFinder {
 		private Matcher<JType> typeMatcher;
 		private Matcher<JMethod> methodMatcher;
 		
-		private MatchListener<Object> listener;
+		private JFindMatchListener<Object> listener;
 		
-		public JSourceFinder build(){
+		public JMutateFinder build(){
 		    JAstParser parser = buildParser();
-			return new JSourceFinder(
+			return new JMutateFinder(
 			     parser
 				, roots
 				, anyIfNull(objectMatcher)
@@ -283,12 +283,12 @@ public class JSourceFinder {
         	return this;
         }
 
-	 	public Builder listener(MatchListener<Object> listener) {
+	 	public Builder listener(JFindMatchListener<Object> listener) {
         	this.listener = listener;
         	return this;
 		}
 	 	
-	 	public Builder filter(JSourceFilter.Builder filter) {
+	 	public Builder filter(JMutateFilter.Builder filter) {
         	filter(filter.build());
         	return this;
 		}

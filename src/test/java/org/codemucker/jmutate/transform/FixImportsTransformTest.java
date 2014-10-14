@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.SimpleMutateContext;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.Test;
@@ -17,7 +17,7 @@ import org.junit.Test;
 
 public class FixImportsTransformTest {
 
-	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
+	JMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_add_imports(){
@@ -58,7 +58,7 @@ public class FixImportsTransformTest {
 			checkNotNull(is,"couldn't find template:" + path);
 			return IOUtils.toString(is,"UTF-8");
 		} catch (IOException e){
-			throw new MutateException("error reading template path:" + path,e);
+			throw new JMutateException("error reading template path:" + path,e);
 		} finally {
 			IOUtils.closeQuietly(is);
 		}

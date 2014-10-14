@@ -1,11 +1,11 @@
 package org.codemucker.jmutate;
 
-import org.codemucker.jmutate.ast.SimpleMutateContext;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
 
 import com.google.inject.ImplementedBy;
 
-@ImplementedBy(SimpleMutateContext.class)
-public interface MutateContext {
+@ImplementedBy(DefaultMutateContext.class)
+public interface JMutateContext {
 
 	/**
 	 * Shortcut for {@link #obtain(SourceTemplate.class)}

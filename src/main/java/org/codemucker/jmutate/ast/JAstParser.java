@@ -3,11 +3,9 @@ package org.codemucker.jmutate.ast;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
-import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -17,9 +15,11 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmatch.Assert;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.lang.IBuilder;
 import org.codemucker.lang.annotation.NotThreadSafe;
+import org.codemucker.lang.annotation.Optional;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.AST;
@@ -94,8 +94,13 @@ public class JAstParser {
 			if (problems.length > 0) {
 				List<IProblem> errors = extractErrors(problems);
 				if( !errors.isEmpty()){		
-					String problemString = Joiner.on("\n").join(Lists.transform(errors, problemToStringFunc()));
-					fail(String.format("Parsing error for resource %s,  full path %s, source %s\n,  problems are %s", resource==null?null:resource.getRelPath(), resource==null?null:resource.getFullPathInfo(), prependLineNumbers(src), problemString));
+				    String problemString = Joiner.on("\n").join(Lists.transform(errors, problemToStringFunc()));
+					String msg = String.format("Parsing error for resource %s,  full path %s, source %s\n,  problems are %s", resource==null?null:resource.getRelPath(), resource==null?null:resource.getFullPathInfo(), prependLineNumbers(src), problemString);
+					if(containsResolveError(errors)){
+					    msg += "\nsource roots:" + Joiner.on("\n").join(sourceRoots);
+					    msg += "\nbinary roots:" + Joiner.on("\n").join(binaryRoots);
+					}
+					Assert.fail(msg);
 				}
 			}
 		}
@@ -104,6 +109,15 @@ public class JAstParser {
 		}
 
 		return cu;
+	}
+	
+	private boolean containsResolveError(List<IProblem> errors){
+	    for(IProblem prob:errors){
+	        if(prob.getMessage().contains("cannot") && prob.getMessage().contains("resolved")){
+	            return true;
+	        }
+	    }
+	    return false;
 	}
 	
 	private List<IProblem> extractErrors(IProblem[] problems){
@@ -205,13 +219,13 @@ public class JAstParser {
         private Map<Object,Object> options = newHashMap(JavaCore.getOptions());
 		private List<Root> roots = newArrayList();
 		private Root snippetRoot;
+		private int astJSL = AST.JLS8;
 		
 		public Builder(){
 		    sourceAndTargetVersion(JavaCore.VERSION_1_8);
 		}
 		
 		public Builder defaults() {
-        	parser(newDefaultAstParser());
         	sourceAndTargetVersion(JavaCore.VERSION_1_8);
         	compilerOption(JavaCore.COMPILER_PB_UNUSED_LOCAL, "ignore");
         	compilerOption(JavaCore.COMPILER_PB_UNUSED_PRIVATE_MEMBER, "ignore");
@@ -249,12 +263,12 @@ public class JAstParser {
 				
 				return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
 			} catch (IOException e) {
-				throw new MutateException("Couldn't create a tmp root");
+				throw new JMutateException("Couldn't create a tmp root");
 			}
 		}
 		
 		private ASTParser newDefaultAstParser(){
-			ASTParser parser = ASTParser.newParser(AST.JLS8);
+			ASTParser parser = ASTParser.newParser(astJSL);
 			parser.setResolveBindings(resolveBindings);
 			parser.setBindingsRecovery(resolveBindings);
             //parser.setEnvironment(rootsToEntries(),new String[]{toSnippetRoot().getPathName()}, new String[]{"UTF-8"}, true);
@@ -368,5 +382,11 @@ public class JAstParser {
 			options.putAll(options);
 			return this;
 		}
+
+		@Optional
+        public Builder astJSL(int astJSL) {
+            this.astJSL = astJSL;
+            return this;
+        }
 	}
 }

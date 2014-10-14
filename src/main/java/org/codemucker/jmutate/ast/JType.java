@@ -18,11 +18,11 @@ import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.PredicateToFindFilterAdapter;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.MutateException;
-import org.codemucker.jmutate.ast.matcher.AJField;
-import org.codemucker.jmutate.ast.matcher.AJMethod;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ast.matcher.AJFieldNode;
+import org.codemucker.jmutate.ast.matcher.AJMethodNode;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.codemucker.jmutate.util.ClassUtil;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.AST;
@@ -48,7 +48,7 @@ import com.google.common.collect.Lists;
 /**
  * A convenience wrapper around an Ast java type
  */
-public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> {
+public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTNode> {
 
 	private final ASTNode typeNode;
 	
@@ -103,7 +103,7 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 	
 	public abstract String getFullName();
 	public abstract String getSimpleName();
-	public abstract JModifiers getModifiers();
+	public abstract JModifier getModifiers();
     public abstract List<ASTNode> getBodyDeclarations();
 	public abstract boolean isInnerClass();
 	public abstract boolean isTopLevelClass();
@@ -162,7 +162,7 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 	 */
 	public JType getChildTypeWithName(String simpleName){
 		if (!isClass()) {
-			throw new MutateException("Type '%s' is not a class so can't search for type named '%s'",getSimpleName(), simpleName);
+			throw new JMutateException("Type '%s' is not a class so can't search for type named '%s'",getSimpleName(), simpleName);
 		}
 		TypeDeclaration[] types = asTypeDecl().getTypes();
 		for (AbstractTypeDeclaration type : types) {
@@ -171,7 +171,7 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 			}
 		}
 		Collection<String> names = extractTypeNames(types);
-		throw new MutateException("Can't find type named %s in %s. Found %s", simpleName, this, Arrays.toString(names.toArray()));
+		throw new JMutateException("Can't find type named %s in %s. Found %s", simpleName, this, Arrays.toString(names.toArray()));
 	}
 
 	private static Collection<String> extractTypeNames(TypeDeclaration[] types){
@@ -183,11 +183,11 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 	}
 
 	public FindResult<JField> findFields(){
-		return findDirectMatching(AJField.any(),Include.DIRECT_ONLY);
+		return findDirectMatching(AJFieldNode.any(),Include.DIRECT_ONLY);
 	}
 	
 	public FindResult<JField> findNestedFields(){
-		return findDirectMatching(AJField.any(),Include.CHILDREN_ALSO);
+		return findDirectMatching(AJFieldNode.any(),Include.CHILDREN_ALSO);
 	}
 	
 	public FindResult<JField> findFieldsMatching(final Matcher<JField> matcher) {
@@ -229,11 +229,11 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 	 * @return
 	 */
 	public FindResult<JMethod> findMethods() {
-		return findMethodsMatching(AJMethod.any(),Include.DIRECT_ONLY);		
+		return findMethodsMatching(AJMethodNode.any(),Include.DIRECT_ONLY);		
 	}
 	
 	public FindResult<JMethod> findNestedMethods() {
-		return findMethodsMatching(AJMethod.any(),Include.CHILDREN_ALSO);		
+		return findMethodsMatching(AJMethodNode.any(),Include.CHILDREN_ALSO);		
 	}
 	
 	/**
@@ -313,7 +313,7 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 	}
 	
 	public FindResult<JType> findChildTypes(){
-		return findTypesMatching(AJType.any(),Include.DIRECT_ONLY);
+		return findTypesMatching(AJTypeNode.any(),Include.DIRECT_ONLY);
 	}
 	
 	/**
@@ -327,7 +327,7 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 	 * Recursively find all child types
 	 */
 	public FindResult<JType> findNestedTypes() {
-		return findTypesMatching(AJType.any(),Include.CHILDREN_ALSO);
+		return findTypesMatching(AJTypeNode.any(),Include.CHILDREN_ALSO);
 	}
 	
 	/**
@@ -390,7 +390,7 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 			}
 			parent = parent.getParent();			
 		}
-		throw new MutateException("Couldn't find compilation unit. Unexpected");
+		throw new JMutateException("Couldn't find compilation unit. Unexpected");
 	}
 
 	/**
@@ -454,7 +454,7 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 		return typeNode instanceof TypeDeclaration;
 	}
 
-	public JTypeMutator asMutator(MutateContext ctxt){
+	public JTypeMutator asMutator(JMutateContext ctxt){
 		return new JTypeMutator(ctxt, this);
 	}
 	
@@ -701,8 +701,8 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 	    }
 		
 		@SuppressWarnings("unchecked")
-	    public JModifiers getModifiers(){
-			return new JModifiers(typeNode.getAST(),typeNode.modifiers());
+	    public JModifier getModifiers(){
+			return new JModifier(typeNode.getAST(),typeNode.modifiers());
 		}
 
 		public boolean isInnerClass() {
@@ -778,7 +778,7 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 				}
 				parent = parent.getParent();
 			}
-			throw new MutateException("couldn't find parent type");
+			throw new JMutateException("couldn't find parent type");
 		}
 		
 		private int extractAnonymousClassNumber(){
@@ -804,8 +804,8 @@ public abstract class JType implements HasAnnotations, AstNodeProvider<ASTNode> 
 		    return typeNode.bodyDeclarations();
 	    }
 		
-	    public JModifiers getModifiers(){
-			return new JModifiers(typeNode.getAST(),modifiers);
+	    public JModifier getModifiers(){
+			return new JModifier(typeNode.getAST(),modifiers);
 		}
 
 	    //TODO:should this be an inner class? is the idea the same?

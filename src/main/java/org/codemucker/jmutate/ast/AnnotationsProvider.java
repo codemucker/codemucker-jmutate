@@ -1,6 +1,5 @@
 package org.codemucker.jmutate.ast;
 
-public interface HasAnnotations {
-
+public interface AnnotationsProvider {
     public Annotations getAnnotations();
 }

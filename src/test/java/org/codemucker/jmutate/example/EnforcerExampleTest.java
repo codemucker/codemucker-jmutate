@@ -6,22 +6,22 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codemucker.jfind.AMethod;
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.JClass;
+import org.codemucker.jfind.JFindClass;
 import org.codemucker.jfind.Roots;
+import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmatch.ObjectMatcher;
-import org.codemucker.jmutate.JSourceFilter;
-import org.codemucker.jmutate.JSourceFinder;
+import org.codemucker.jmutate.JMutateFilter;
+import org.codemucker.jmutate.JMutateFinder;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJMethod;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.ast.matcher.AJMethodNode;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.codemucker.jmutate.builder.AbstractBuilder;
 import org.codemucker.lang.IBuilder;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -37,7 +37,7 @@ public class EnforcerExampleTest
 	public void baseASTVisitorOverridesAllParentVisitMethods(){
 		JType baseVisitor = TestSourceHelper.findSourceForClass(BaseASTVisitor.class).getMainType();
 		List<String> haveMethodSigs = baseVisitor
-				.findMethodsMatching(AJMethod.with().name(AString.equalToAny("visit", "endVisit")))
+				.findMethodsMatching(AJMethodNode.with().name(AString.equalToAny("visit", "endVisit")))
 				.transform(new Function<JMethod, String>() {
 						@Override
 						public String apply(JMethod m) {		
@@ -46,7 +46,7 @@ public class EnforcerExampleTest
 					})	
 				.toList();
 		
-		JClass astVisitor = new JClass(ASTVisitor.class);
+		JFindClass astVisitor = new JFindClass(ASTVisitor.class);
 		List<String> expectMethodSigs = astVisitor
 				.findMethodsMatching(AMethod.with().name(AString.equalToAny("visit", "endVisit")))
 				.transform(new Function<Method, String>() {
@@ -73,17 +73,17 @@ public class EnforcerExampleTest
 	@Test
 	public void ensureMatcherBuildersAreCorrectlyNamed()
 	{
-		FindResult<JType> matchers = JSourceFinder.with()
+		FindResult<JType> matchers = JMutateFinder.with()
 			.searchRoots(Roots.with().mainSrcDir(true))
-			.filter(JSourceFilter.with()
-				.includeType(AJType.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
+			.filter(JMutateFilter.with()
+				.includeType(AJTypeNode.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
 			.build()
 			.findTypes();
 		
 		List<String> failMsgs = new ArrayList<>();
 		
 		for(JType t : matchers){
-			FindResult<JMethod> methods = t.findMethodsMatching(AJMethod.with()
+			FindResult<JMethod> methods = t.findMethodsMatching(AJMethodNode.with()
 				.access(JAccess.PUBLIC)
 				.name(not(AString.equalToAny("with", "that", "any", "none", "all"))));
 
@@ -114,15 +114,15 @@ public class EnforcerExampleTest
 
         public void invoke(){
 
-            FindResult<JType> foundBuilders = JSourceFinder.with()
+            FindResult<JType> foundBuilders = JMutateFinder.with()
                     .searchRoots(Roots.with()
                         .mainSrcDir(true)
                         .testSrcDir(true))
-                    .filter(JSourceFilter.with()
-                        .includeType(AJType.with().simpleName("*Builder"))
-                        .includeType(AJType.that().isASubclassOf(IBuilder.class))
-                        .includeType(AJType.that().isASubclassOf(AbstractBuilder.class))
-                        .includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*"))))
+                    .filter(JMutateFilter.with()
+                        .includeType(AJTypeNode.with().simpleName("*Builder"))
+                        .includeType(AJTypeNode.that().isASubclassOf(IBuilder.class))
+                        .includeType(AJTypeNode.that().isASubclassOf(AbstractBuilder.class))
+                        .includeType(AJTypeNode.with().method(AJMethodNode.with().nameMatchingAntPattern("build*"))))
                     .build()
                     .findTypes();
             
@@ -131,8 +131,8 @@ public class EnforcerExampleTest
                     .that(builderType)
                     .is(ABuilderPattern.with()
                         .defaults()
-                        .ignoreMethod(AJMethod.with().name("copyOf").returningSomething())
-                        .ignoreMethod(AJMethod.with().name("describeTo").returningVoid()));
+                        .ignoreMethod(AJMethodNode.with().name("copyOf").returningSomething())
+                        .ignoreMethod(AJMethodNode.with().name("describeTo").returningVoid()));
             }
         }
         //TODO:add build options

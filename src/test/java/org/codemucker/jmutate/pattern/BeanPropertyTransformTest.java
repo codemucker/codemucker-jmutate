@@ -15,18 +15,18 @@
  */
 package org.codemucker.jmutate.pattern;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleMutateContext;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.codemucker.jmutate.util.SourceAsserts;
-import org.codemucker.jpattern.Property;
 import org.codemucker.jpattern.Pattern;
+import org.codemucker.jpattern.bean.Property;
 import org.junit.Test;
 
 
 public class BeanPropertyTransformTest {
 
-	private MutateContext ctxt = SimpleMutateContext.with()
+	private JMutateContext ctxt = DefaultMutateContext.with()
 			.markGenerated(true)
 			.build();
 		
@@ -42,7 +42,7 @@ public class BeanPropertyTransformTest {
     	SourceAsserts.assertRootAstsMatch(expectType,target);
 	}
 
-	private void whenAPropertyTransformIsApplied(MutateContext ctxt, JType target) {
+	private void whenAPropertyTransformIsApplied(JMutateContext ctxt, JType target) {
 		ctxt.obtain(BeanPropertyTransform.class)
 			.setTarget(target)
 			.setPropertyName("myField")
@@ -50,7 +50,7 @@ public class BeanPropertyTransformTest {
 			.transform();
 	}
 
-	private JType beanWithNoProperties(MutateContext ctxt) {
+	private JType beanWithNoProperties(JMutateContext ctxt) {
 		JType target = ctxt.newSourceTemplate()
 				.pl("package com.mypkg.codegen.bean;")
 				.pl("import " + Property.class.getName() + ";")
@@ -60,7 +60,7 @@ public class BeanPropertyTransformTest {
 		return target;
 	}
 
-	private JType expectBeanWithProperty(MutateContext ctxt) {
+	private JType expectBeanWithProperty(JMutateContext ctxt) {
 		JType expectType = ctxt.newSourceTemplate()
     		.pl("package com.mypkg.codegen.bean;")
     		.pl("import " + Property.class.getName() + ";")

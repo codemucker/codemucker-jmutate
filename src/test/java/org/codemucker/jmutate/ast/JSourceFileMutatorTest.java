@@ -3,7 +3,7 @@ package org.codemucker.jmutate.ast;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jtest.TestHelper;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -13,7 +13,7 @@ import org.junit.Test;
 public class JSourceFileMutatorTest {
 
 	TestHelper helper = new TestHelper();
-	MutateContext context = SimpleMutateContext.with().defaults().build();
+	JMutateContext context = DefaultMutateContext.with().defaults().build();
 	
 	@Test
 	public void testGetMainTypeAsResolved() throws Exception {

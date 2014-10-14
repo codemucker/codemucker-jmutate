@@ -18,16 +18,16 @@ package org.codemucker.jmutate.util;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.SimpleMutateContext;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.junit.Test;
 
 
 public class SourceAssertsTest {
 
-	private MutateContext ctxt = SimpleMutateContext.with().defaults().build();
+	private JMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_sameSrcFileMatches() throws Exception {

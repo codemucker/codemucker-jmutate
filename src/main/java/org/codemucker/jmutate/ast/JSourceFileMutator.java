@@ -5,16 +5,16 @@ import static org.codemucker.lang.Check.checkNotNull;
 
 import java.util.List;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 
 public class JSourceFileMutator {
 	private final JSourceFile source;
-	private final MutateContext context;
+	private final JMutateContext context;
 
-	public JSourceFileMutator(MutateContext context, JSourceFile source) {;
+	public JSourceFileMutator(JMutateContext context, JSourceFile source) {;
 		this.context = checkNotNull("context", context);
 		this.source = checkNotNull("source", source);
 	}

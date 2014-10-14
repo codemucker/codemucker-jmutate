@@ -15,12 +15,12 @@
  */
 package org.codemucker.jmutate.transform;
 
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.PlacementStrategies;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
+import org.codemucker.jmutate.PlacementStrategies;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleMutateContext;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
 import org.codemucker.jmutate.builder.JFieldBuilder;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.codemucker.jpattern.Pattern;
@@ -31,7 +31,7 @@ public class InsertFieldTransformTest {
 
 	@Test
 	public void test_add_field() throws Exception {
-		MutateContext ctxt = SimpleMutateContext.with().defaults().build();
+		JMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 		
 		SourceTemplate srcBefore = ctxt.newSourceTemplate()
 			.pl("package com.bertvanbrakel.codegen.bean;")

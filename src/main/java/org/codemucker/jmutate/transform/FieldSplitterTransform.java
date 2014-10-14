@@ -3,7 +3,7 @@ package org.codemucker.jmutate.transform;
 import static org.codemucker.lang.Check.checkNotNull;
 
 import org.codemucker.jmutate.ClashStrategy;
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.PlacementStrategies;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JField.SingleJField;
@@ -25,7 +25,7 @@ import com.google.inject.Inject;
 public class FieldSplitterTransform implements Transform {
 
 	@Inject
-	private MutateContext ctxt;
+	private JMutateContext ctxt;
 
 	private JType target;
 	private JField field;
@@ -34,7 +34,7 @@ public class FieldSplitterTransform implements Transform {
 		return new FieldSplitterTransform();
 	}
 
-	public FieldSplitterTransform setContext(MutateContext ctxt) {
+	public FieldSplitterTransform setContext(JMutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}

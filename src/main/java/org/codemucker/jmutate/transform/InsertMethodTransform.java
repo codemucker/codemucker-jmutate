@@ -3,11 +3,11 @@ package org.codemucker.jmutate.transform;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.ast.matcher.AJMethod;
+import org.codemucker.jmutate.ast.matcher.AJMethodNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.inject.Inject;
@@ -28,7 +28,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.with().nameAndArgSignature(method));
+		FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethodNode.with().nameAndArgSignature(method));
 		if(!found.isEmpty()){
 			insert = false;
 			JMethod existingMethod = found.getFirst();
@@ -40,9 +40,9 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new MutateException("Existing method %s, not replacing with %s", existingMethod.getAstNode(), method);
+				throw new JMutateException("Existing method:\n %s\n, not replacing with %s", existingMethod.getAstNode(), method);
 			default:
-				throw new MutateException("Existing method %s, unsupported clash strategy %s", existingMethod.getAstNode(), getClashStrategy());
+				throw new JMutateException("Existing method:\n %s\n, unsupported clash strategy %s", existingMethod.getAstNode(), getClashStrategy());
 			}
 		}
 		if(insert){

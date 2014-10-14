@@ -7,8 +7,6 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.google.common.collect.Sets.newTreeSet;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,8 +14,8 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.AstNodeProvider;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
 import org.codemucker.jtest.ClassNameUtil;
@@ -38,7 +36,7 @@ import com.google.inject.Inject;
 public class FixImportsTransform implements Transform {
 
 	@Inject
-	private MutateContext ctxt;
+	private JMutateContext ctxt;
 	
 	private ASTNode node;
 	
@@ -169,7 +167,7 @@ public class FixImportsTransform implements Transform {
 		return this;
 	}
 
-	public FixImportsTransform ctxt(MutateContext ctxt) {
+	public FixImportsTransform ctxt(JMutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}
@@ -268,6 +266,6 @@ public class FixImportsTransform implements Transform {
 			}
 			parent = parent.getParent();
 		}
-		throw new MutateException("Couldn't find compilation unit");
+		throw new JMutateException("Couldn't find compilation unit");
 	}
 }

@@ -3,7 +3,7 @@ package org.codemucker.jmutate.builder;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.apache.commons.lang3.StringUtils;
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.ast.ContextNames;
 
 import com.google.inject.Inject;
@@ -17,7 +17,7 @@ import com.google.inject.name.Named;
 public abstract class AbstractBuilder<TSelf extends AbstractBuilder<TSelf,TBuild>,TBuild> implements Builder<TBuild> {
 
 	@Inject
-	private MutateContext context;
+	private JMutateContext context;
 	
 	/**
 	 * Whether to mark the generated class with the fact it's been generated
@@ -43,7 +43,7 @@ public abstract class AbstractBuilder<TSelf extends AbstractBuilder<TSelf,TBuild
 		return self();
 	}
 
-	public TSelf context(MutateContext context) {
+	public TSelf context(JMutateContext context) {
 		this.context = context;
 		return self();
 	}
@@ -61,7 +61,7 @@ public abstract class AbstractBuilder<TSelf extends AbstractBuilder<TSelf,TBuild
     	return markedGenerated;
     }
 
-	public MutateContext getContext() {
+	public JMutateContext getContext() {
     	return context;
     }
 	

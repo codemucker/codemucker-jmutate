@@ -4,11 +4,11 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.List;
 
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 
 import com.google.inject.Inject;
@@ -31,7 +31,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		
 	    //TODO:detect if it exists?
 		boolean insert = true;
-		List<JType> found = target.findNestedTypesMatching(AJType.with().fullName(type.getSimpleName())).toList();
+		List<JType> found = target.findNestedTypesMatching(AJTypeNode.with().fullName(type.getSimpleName())).toList();
 		if( !found.isEmpty()){
 			insert = false;
 			JType existingType = found.get(0);
@@ -43,9 +43,9 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 			case IGNORE:
 				break;
 			case ERROR:
-				throw new MutateException("Existing type %s, not replacing with %s", existingType.getAstNode(), type);
+				throw new JMutateException("Existing type %s, not replacing with %s", existingType.getAstNode(), type);
 			default:
-				throw new MutateException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), getClashStrategy());
+				throw new JMutateException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), getClashStrategy());
 			}
 		}
 		if(insert){

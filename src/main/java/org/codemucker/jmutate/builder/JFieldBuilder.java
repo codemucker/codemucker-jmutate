@@ -13,6 +13,9 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 
+/**
+ * I build a {@link JField}
+ */
 public class JFieldBuilder extends AbstractBuilder<JFieldBuilder,JField> {
 
 	public static enum RETURN {

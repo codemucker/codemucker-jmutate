@@ -26,9 +26,16 @@ public class JAnnotationTest {
 	
 	public static class TestBean {
 		
-		@IsGenerated
+		@IsGenerated(generator="meh")
 		public void myMethod(){
 			
 		}
+	}
+	
+	private @interface MyTestAnnotation {
+	    
+	    @interface NestedAnnotation {
+	        String nestedName() default "";
+	    }
 	}
 }

@@ -4,8 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.AstNodeFlattener;
 import org.codemucker.jmutate.ast.JMethod;
@@ -21,7 +21,7 @@ import com.google.inject.Inject;
 public class ASTNodeToSourceBuilder {
 
 	@Inject
-	private MutateContext ctxt;
+	private JMutateContext ctxt;
 
 	@Inject
 	private AstNodeFlattener flattener;
@@ -37,7 +37,7 @@ public class ASTNodeToSourceBuilder {
 		String src = flattener.flatten(node);
 		SourceTemplate t = ctxt.newSourceTemplate();
 		
-		t.p("public void generateNode(").p(MutateContext.class.getName()).p(" ctxt").pl("){")
+		t.p("public void generateNode(").p(JMutateContext.class.getName()).p(" ctxt").pl("){")
 		 .p(SourceTemplate.class.getName()).p(" t = ctxt.newSourceTemplate();");
 	
 		BufferedReader reader = new BufferedReader(new StringReader(src));
@@ -48,7 +48,7 @@ public class ASTNodeToSourceBuilder {
 			}
         } catch (IOException e) {
 	        //never thrown
-        	throw new MutateException("error reading source:" + src, e);
+        	throw new JMutateException("error reading source:" + src, e);
         }
 		t.pl("}");
 		
@@ -64,7 +64,7 @@ public class ASTNodeToSourceBuilder {
 		return this;
 	}
 	
-	public ASTNodeToSourceBuilder ctxt(MutateContext ctxt) {
+	public ASTNodeToSourceBuilder ctxt(JMutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}

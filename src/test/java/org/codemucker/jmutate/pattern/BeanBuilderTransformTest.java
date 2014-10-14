@@ -4,21 +4,21 @@ package org.codemucker.jmutate.pattern;
 import java.util.Collection;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jmutate.MutateContext;
-import org.codemucker.jmutate.JSourceFilter;
-import org.codemucker.jmutate.TestSourceHelper;
+import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateFilter;
 import org.codemucker.jmutate.SourceTemplate;
+import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleMutateContext;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.codemucker.jmutate.util.SourceAsserts;
-import org.codemucker.jpattern.GenerateBuilder;
+import org.codemucker.jpattern.builder.GenerateBuilder;
 import org.junit.Test;
 
 
 public class BeanBuilderTransformTest {
 
-	MutateContext ctxt = SimpleMutateContext.with().defaults().build();	
+	JMutateContext ctxt = DefaultMutateContext.with().defaults().build();	
 	
 	@Test
 	public void test_apply_pattern(){
@@ -37,7 +37,7 @@ public class BeanBuilderTransformTest {
 			.transform();
 	}
 	
-	public JType generateExpect(MutateContext ctxt){
+	public JType generateExpect(JMutateContext ctxt){
 		SourceTemplate t=ctxt.newSourceTemplate();
 		t.pl("@" + GenerateBuilder.class.getSimpleName());
 		t.pl("public static class TestBuilderBean {");
@@ -73,9 +73,9 @@ public class BeanBuilderTransformTest {
 
 	private FindResult<JType> findTypesToTransform() {
 	    FindResult<JType> found = TestSourceHelper.newTestSourcesResolvingFinder()
-			.filter(JSourceFilter.with()
+			.filter(JMutateFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
-				.includeType(AJType.with().name(TestBuilderBean.class))
+				.includeType(AJTypeNode.with().name(TestBuilderBean.class))
 			)	
 			.build()
 			.findTypes();

@@ -2,14 +2,10 @@ package org.codemucker.jmutate.util;
 
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
-import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import javax.persistence.criteria.AbstractQuery;
-
-import org.codemucker.jmutate.MutateException;
+import org.codemucker.jmutate.JMutateException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
@@ -69,7 +65,7 @@ public class JavaNameUtil {
 	
 	public static void resolveQualifiedName(Type t, StringBuilder sb){
 		if(!tryResolveQualifiedName(t,sb)){
-			throw new MutateException("Currently don't know how to handle type " + t.getClass().getName() + ", " + t);
+			throw new JMutateException("Currently don't know how to handle type " + t.getClass().getName() + ", " + t);
 		}
 	}
 	/**
@@ -172,7 +168,7 @@ public class JavaNameUtil {
 	public static String resolveQualifiedName(Name name) {
 		String fqdn = resolveQualifiedNameOrNull(name);
 		if (fqdn == null) {
-			throw new MutateException("Could not resolve simple name '%s' defined in '%s'", name.getFullyQualifiedName(), getCompilationUnit(name));
+			throw new JMutateException("Could not resolve simple name '%s' defined in '%s'", name.getFullyQualifiedName(), getCompilationUnit(name));
 		}
 		return fqdn;
 	}
@@ -212,7 +208,7 @@ public class JavaNameUtil {
 			CompilationUnit cu = (CompilationUnit) root;
 			return cu;
 		}
-		throw new MutateException("Can't find compilation unit node");
+		throw new JMutateException("Can't find compilation unit node");
 	}
 	
 	@VisibleForTesting

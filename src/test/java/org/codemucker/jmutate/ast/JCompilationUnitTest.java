@@ -1,13 +1,13 @@
 package org.codemucker.jmutate.ast;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class JCompilationUnitTest {
 
-	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
+	JMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 	
 	@Test
 	public void getPackage(){

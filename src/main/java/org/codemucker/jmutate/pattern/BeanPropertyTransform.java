@@ -3,7 +3,7 @@ package org.codemucker.jmutate.pattern;
 import static org.codemucker.lang.Check.checkNotBlank;
 import static org.codemucker.lang.Check.checkNotNull;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
@@ -25,7 +25,7 @@ import com.google.inject.Inject;
 public class BeanPropertyTransform implements Transform {
 
 	@Inject
-	private MutateContext ctxt;
+	private JMutateContext ctxt;
 
 	private JType target;
 	private String propertyName;
@@ -81,7 +81,7 @@ public class BeanPropertyTransform implements Transform {
 	}
 	 
 	@Inject
-	public BeanPropertyTransform setCtxt(MutateContext ctxt) {
+	public BeanPropertyTransform setCtxt(JMutateContext ctxt) {
 		this.ctxt = ctxt;
 		return this;
 	}

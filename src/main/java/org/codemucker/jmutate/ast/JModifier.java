@@ -10,11 +10,11 @@ import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.Modifier.ModifierKeyword;
 
-public class JModifiers {
+public class JModifier {
 	private final AST ast;
 	private final List<IExtendedModifier> modifiers;
 
-	public JModifiers(AST ast, List<IExtendedModifier> modifiers) {
+	public JModifier(AST ast, List<IExtendedModifier> modifiers) {
 		super();
 		this.modifiers = modifiers;
 		this.ast = ast;

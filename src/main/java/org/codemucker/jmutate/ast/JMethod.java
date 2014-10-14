@@ -6,8 +6,8 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.MutateException;
-import org.codemucker.jmutate.ast.matcher.AJAnnotation;
+import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ast.matcher.AJAnnotationNode;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -25,7 +25,7 @@ import org.eclipse.jdt.core.dom.TypeParameter;
 
 import com.google.common.base.Function;
 
-public class JMethod implements HasAnnotations, AstNodeProvider<MethodDeclaration> {
+public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDeclaration> {
 
 	private static final Function<MethodDeclaration, JMethod> TRANSFORMER = new Function<MethodDeclaration, JMethod>() {
 		public JMethod apply(MethodDeclaration node){
@@ -93,7 +93,7 @@ public class JMethod implements HasAnnotations, AstNodeProvider<MethodDeclaratio
 			}
 			node = node.getParent();
 		}
-		throw new MutateException("Couldn't find parent type. Unexpected");
+		throw new JMutateException("Couldn't find parent type. Unexpected");
 	}
 	
 	public CompilationUnit getCompilationUnit(){
@@ -104,7 +104,7 @@ public class JMethod implements HasAnnotations, AstNodeProvider<MethodDeclaratio
 			}
 			node = node.getParent();
 		}
-		throw new MutateException("Couldn't find compilation unit. Unexpected");
+		throw new JMutateException("Couldn't find compilation unit. Unexpected");
 	}
 	
 	@Override
@@ -157,12 +157,12 @@ public class JMethod implements HasAnnotations, AstNodeProvider<MethodDeclaratio
 	}
 	
 	@SuppressWarnings("unchecked")
-    public JModifiers getModifiers(){
-		return new JModifiers(methodNode.getAST(),methodNode.modifiers());
+    public JModifier getModifiers(){
+		return new JModifier(methodNode.getAST(),methodNode.modifiers());
 	}
 
     public <A extends Annotation> boolean hasParameterAnnotationOfType(Class<A> annotationClass) {
-		return hasParameterAnnotation(AJAnnotation.with().fullName(annotationClass));
+		return hasParameterAnnotation(AJAnnotationNode.with().fullName(annotationClass));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -276,7 +276,7 @@ public class JMethod implements HasAnnotations, AstNodeProvider<MethodDeclaratio
 			ParameterizedType pt = (ParameterizedType)t;
 			toNonGenericFullName(pt.getType(),sb);
 		} else {
-			throw new MutateException("Currently don't know how to handle type:" + t);
+			throw new JMutateException("Currently don't know how to handle type:" + t);
 		}
 	}
 

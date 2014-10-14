@@ -1,17 +1,17 @@
 package org.codemucker.jmutate.transform;
 
-import org.codemucker.jmutate.MutateContext;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.ast.SimpleMutateContext;
-import org.codemucker.jmutate.ast.matcher.AJField;
+import org.codemucker.jmutate.ast.DefaultMutateContext;
+import org.codemucker.jmutate.ast.matcher.AJFieldNode;
 import org.codemucker.jmutate.util.SourceAsserts;
 import org.junit.Test;
 
 
 public class FieldSplitterTransformTest {
 
-	MutateContext ctxt = SimpleMutateContext.with().defaults().build();
+	JMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 	
 	@Test
 	public void test_split_with_string_initializer(){
@@ -22,7 +22,7 @@ public class FieldSplitterTransformTest {
 			.pl("}")
 			.asResolvedJTypeNamed("Foo");
 		
-		JField field = actual.findFieldsMatching(AJField.with().name("a")).getFirst();
+		JField field = actual.findFieldsMatching(AJFieldNode.with().name("a")).getFirst();
 		
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)
@@ -49,7 +49,7 @@ public class FieldSplitterTransformTest {
 			.pl("}")
 			.asResolvedJTypeNamed("Foo");
 		
-		JField field = actual.findFieldsMatching(AJField.with().name("a")).getFirst();
+		JField field = actual.findFieldsMatching(AJFieldNode.with().name("a")).getFirst();
 		
 		ctxt.obtain(FieldSplitterTransform.class)
 			.setTarget(actual)

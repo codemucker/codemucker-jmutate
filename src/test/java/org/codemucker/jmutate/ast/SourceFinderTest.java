@@ -7,35 +7,35 @@ import static org.codemucker.jmatch.Assert.isFalse;
 import java.util.List;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.MatchListener;
+import org.codemucker.jfind.JFindMatchListener;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
-import org.codemucker.jmutate.JSourceFilter;
-import org.codemucker.jmutate.JSourceFinder;
+import org.codemucker.jmutate.JMutateFilter;
+import org.codemucker.jmutate.JMutateFinder;
 import org.codemucker.jmutate.TestSourceHelper;
-import org.codemucker.jmutate.ast.matcher.AJMethod;
-import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.ast.matcher.AJMethodNode;
+import org.codemucker.jmutate.ast.matcher.AJTypeNode;
 import org.junit.Test;
 
 public class SourceFinderTest {
 
 	@Test
 	public void testFindClassesWithMethodMatch() throws Exception {
-		JSourceFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
-			.filter(JSourceFilter.with()
-				.includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
+		JMutateFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+			.filter(JMutateFilter.with()
+				.includeType(AJTypeNode.with().method(AJMethodNode.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
 			)
 			.build();
 		JType type = finder.findTypes().getFirst();
 		
-		assertThat(type, is(AJType.with().name(SourceFinderTest.class)));
+		assertThat(type, is(AJTypeNode.with().name(SourceFinderTest.class)));
 	}
 	
 	@Test
 	public void testFindClassesExtending() throws Exception {
-		JSourceFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
-			.filter(JSourceFilter.with()
-				.includeType(AJType.with().isASubclassOf(MyClass.class)))
+		JMutateFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+			.filter(JMutateFilter.with()
+				.includeType(AJTypeNode.with().isASubclassOf(MyClass.class)))
 			.build();
 
 		Expect
@@ -43,18 +43,18 @@ public class SourceFinderTest {
 			.is(AList.of(JType.class)
 				.inAnyOrder()
 				.withOnly()
-				.item(AJType.with().name(MySubClass.class))
-				.item(AJType.with().name(MySubSubClass.class))
-				.item(AJType.with().name(org.codemucker.jmutate.ast.SourceFinderTest.SomeClass.SomeEmbeddedSubClass.class)));
+				.item(AJTypeNode.with().name(MySubClass.class))
+				.item(AJTypeNode.with().name(MySubSubClass.class))
+				.item(AJTypeNode.with().name(org.codemucker.jmutate.ast.SourceFinderTest.SomeClass.SomeEmbeddedSubClass.class)));
 	}
 	
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
-		JSourceFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
-			.filter(JSourceFilter.with()
-				.includeType(AJType.with().annotation(MyAnnotation.class))
+		JMutateFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+			.filter(JMutateFilter.with()
+				.includeType(AJTypeNode.with().annotation(MyAnnotation.class))
 			)
-			.listener(new MatchListener<Object>() {
+			.listener(new JFindMatchListener<Object>() {
 				@Override
 				public void onMatched(Object result) {
 				}
@@ -91,7 +91,7 @@ public class SourceFinderTest {
 			.is(AList.of(JType.class)
 				.inAnyOrder()
 				.withOnly()
-				.item(AJType.with().name(ClassWithAnnotation.class)));
+				.item(AJTypeNode.with().name(ClassWithAnnotation.class)));
 			
 		/*for( JType type:foundTypes){
 			assertThat(type.getSimpleName(), is(AString.equalTo(ClassWithAnnotation.class.getSimpleName())));
@@ -107,7 +107,7 @@ public class SourceFinderTest {
 	
 	@Test
 	public void testFindWithMethods(){
-		JSourceFinder finder = TestSourceHelper.newAllSourcesResolvingFinder().build();
+		JMutateFinder finder = TestSourceHelper.newAllSourcesResolvingFinder().build();
 		
 		FindResult<JMethod> methods = finder.findMethods();
 		assertThat(methods.isEmpty(),isFalse());
