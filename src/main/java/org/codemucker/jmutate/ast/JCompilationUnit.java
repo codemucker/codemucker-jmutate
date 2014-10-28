@@ -9,6 +9,7 @@ import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -26,6 +27,21 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 		checkNotNull("compilationUnit", cu);
 		this.compilationUnit = cu;
 	}
+	
+	
+	public static boolean is(ASTNode node){
+        return node instanceof CompilationUnit;
+    }
+	
+	public static JCompilationUnit from(ASTNode node){
+	    if(!is(node)){
+	        throw new IllegalArgumentException(String.format("Expected a %s but was %s",
+                JCompilationUnit.class.getName(),
+                node.getClass().getName()
+            ));
+	    }
+        return from((CompilationUnit)node);
+    }
 	
 	public static JCompilationUnit from(CompilationUnit cu){
 		return new JCompilationUnit(cu);

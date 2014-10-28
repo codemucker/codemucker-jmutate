@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
@@ -39,10 +40,21 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
         } 
 	};
 	
+    public static JField from(ASTNode node) {
+        if (node instanceof FieldDeclaration) {
+            return from((FieldDeclaration) node);
+        }
+        throw new IllegalArgumentException(String.format("Expect a {0} but was {1}", FieldDeclaration.class.getName(), node.getClass().getName()));
+    }
+	   
 	public static JField from(FieldDeclaration node){
 		return new JField(node);
 	}
 	
+	public static boolean is(ASTNode node) {
+        return node instanceof FieldDeclaration;
+    }
+    
 	private JField(final FieldDeclaration fieldNode) {
 		checkNotNull(fieldNode, "expect field declaration");
 		this.fieldNode = fieldNode;

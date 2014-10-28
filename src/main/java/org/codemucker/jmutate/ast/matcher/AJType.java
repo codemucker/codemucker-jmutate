@@ -335,7 +335,6 @@ public class AJType extends ObjectMatcher<JType> {
 	}
 	
 	public AJType annotation(final Matcher<JAnnotation> matcher){
-  
         addMatcher(new AbstractNotNullMatcher<JType>() {
             @Override
             public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -344,7 +343,7 @@ public class AJType extends ObjectMatcher<JType> {
             @Override
             public void describeTo(Description desc) {
                 //super.describeTo(desc);
-                desc.value("marked with annotation", matcher);
+                desc.value("with annotation", matcher);
             }
         });
         return this;
@@ -355,21 +354,20 @@ public class AJType extends ObjectMatcher<JType> {
         return this;
     }
 	
-	   public AJType nestedAnnotation(final Matcher<JAnnotation> matcher){
-	       
-	        addMatcher(new AbstractNotNullMatcher<JType>() {
-	            @Override
-	            public boolean matchesSafely(JType found, MatchDiagnostics diag) {
-	                return found.getAnnotations().contains(matcher, Depth.ANY);
-	            }
-	            @Override
-	            public void describeTo(Description desc) {
-	                //super.describeTo(desc);
-	                desc.value("with nested annotation", matcher);
-	            }
-	        });
-	        return this;
-	    }
-    
+    public AJType nestedAnnotation(final Matcher<JAnnotation> matcher) {
+        addMatcher(new AbstractNotNullMatcher<JType>() {
+            @Override
+            public boolean matchesSafely(JType found, MatchDiagnostics diag) {
+                return found.getAnnotations().contains(matcher, Depth.ANY);
+            }
+
+            @Override
+            public void describeTo(Description desc) {
+                // super.describeTo(desc);
+                desc.value("with nested annotation", matcher);
+            }
+        });
+        return this;
+    }
     
 }

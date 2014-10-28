@@ -1,5 +1,9 @@
 package org.codemucker.jmutate;
 
+import java.util.List;
+
+import org.codemucker.jfind.Root;
+import org.codemucker.jmutate.ast.ToSourceConverter;
 import org.codemucker.jmutate.ast.JAstParser;
 
 import com.google.inject.ImplementedBy;
@@ -8,12 +12,19 @@ import com.google.inject.ImplementedBy;
 public interface JMutateContext {
 
 	/**
-	 * Shortcut for {@link #obtain(SourceTemplate.class)}
+	 * Shortcut for {@link #obtain(SourceTemplate.class)}. Returns a source template using the default generation root
 	 * 
 	 * @return
 	 */
 	SourceTemplate newSourceTemplate();
-	
+
+
+	/**
+	 * Returns a new source template using a temporary generation root unique to this template
+	 * @return
+	 */
+    SourceTemplate newTempSourceTemplate();
+    
 	/**
 	 * Obtain an instance of the given class. This may be a singleton or a new instance and may or may
 	 * not be fully initialised depending on the class. This allows callers to be decoupled from
@@ -25,9 +36,37 @@ public interface JMutateContext {
 	<T> T obtain(Class<T> type);
 	
 	/**
-	 * Get hold of the parser used
+	 * Get hold of the parser used. Shortcut for {@link #obtain(JAstParser.class)}
 	 * 
 	 * @return
 	 */
 	JAstParser getParser();
+	
+	/**
+	 * Get hold of the compiler used. Shortcut for {@link #obtain(JCompiler.class)}
+	 * @return
+	 */
+	JCompiler getCompiler();
+	
+	ToSourceConverter getNodeToSourceConverter();
+	
+//	/**
+//	 * Return an immutable list of roots used by defaults. This is used for resolution.
+//	 * 
+//	 * @return
+//	 */
+//	List<Root> getDefaultRoots();
+	
+	/**
+	 * Where code is generated to by default
+	 * @return
+	 */
+	Root getDefaultGenerationRoot();
+	
+	/**
+	 * Return the resource loader used for resolving resources and classnames
+	 * @return
+	 */
+	ResourceLoader getResourceLoader();
+
 }

@@ -11,7 +11,7 @@ import org.codemucker.jfind.JFindMatchListener;
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.JMutateFilter;
-import org.codemucker.jmutate.JMutateFinder;
+import org.codemucker.jmutate.JMutateScanner;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
@@ -21,7 +21,7 @@ public class SourceFinderTest {
 
 	@Test
 	public void testFindClassesWithMethodMatch() throws Exception {
-		JMutateFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+		JMutateScanner finder = TestSourceHelper.newAllSourcesResolvingFinder()
 			.filter(JMutateFilter.with()
 				.includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
 			)
@@ -33,7 +33,7 @@ public class SourceFinderTest {
 	
 	@Test
 	public void testFindClassesExtending() throws Exception {
-		JMutateFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+		JMutateScanner finder = TestSourceHelper.newAllSourcesResolvingFinder()
 			.filter(JMutateFilter.with()
 				.includeType(AJType.with().isASubclassOf(MyClass.class)))
 			.build();
@@ -50,7 +50,7 @@ public class SourceFinderTest {
 	
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
-		JMutateFinder finder = TestSourceHelper.newAllSourcesResolvingFinder()
+		JMutateScanner finder = TestSourceHelper.newAllSourcesResolvingFinder()
 			.filter(JMutateFilter.with()
 				.includeType(AJType.with().annotation(MyAnnotation.class))
 			)
@@ -107,7 +107,7 @@ public class SourceFinderTest {
 	
 	@Test
 	public void testFindWithMethods(){
-		JMutateFinder finder = TestSourceHelper.newAllSourcesResolvingFinder().build();
+		JMutateScanner finder = TestSourceHelper.newAllSourcesResolvingFinder().build();
 		
 		FindResult<JMethod> methods = finder.findMethods();
 		assertThat(methods.isEmpty(),isFalse());

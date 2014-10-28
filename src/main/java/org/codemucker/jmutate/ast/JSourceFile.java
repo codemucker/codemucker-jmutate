@@ -3,15 +3,13 @@ package org.codemucker.jmutate.ast;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.codemucker.lang.Check.checkNotNull;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
@@ -29,7 +27,6 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
-
 public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
 	//TODO:cache calculated fields, but clear on node modification
@@ -37,65 +34,56 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	private final RootResource resource;
 	private final CompilationUnit compilationUnitNode;
 	private final CharSequence sourceCode;
-
-	public JSourceFile(RootResource resource, CompilationUnit cu, CharSequence sourceCode) {
+	/**
+	 * The timestamp of the resource when it was read to create the source for this file. Used to detect changes to teh version on disk
+	 */
+	private final long originalTimestamp;
+	private final long originalAstModificationCount;
+    
+	private JSourceFile(RootResource resource, CompilationUnit cu, CharSequence sourceCode, long originalTimestamp) {
 		this.resource = checkNotNull("resource", resource);
 		this.sourceCode = sourceCode;
 		this.compilationUnitNode = cu;
+		this.originalTimestamp = originalTimestamp;
+		this.originalAstModificationCount = cu.getAST().modificationCount();
 	}
 
 	public static JSourceFile fromResource(RootResource resource, JAstParser parser){
 		checkNotNull("resource", resource);
 		checkNotNull("parser", parser);
 		
-		String src;
 		try {
-			src = resource.readAsString();
+		    //small chance things change between now and reading, but no different if
+	        //changes made just _after_we read it	        
+		    long lastModified = resource.getLastModified();	        
+		    String src = resource.readAsString();
+		    CompilationUnit cu = parser.parseCompilationUnit(src,resource);
+		    return new JSourceFile(resource, cu, src, lastModified);
 		} catch(IOException e){
 			throw new JMutateException("Error reading resource contents " + resource,e);
-		}
-		
-		return fromSource(resource, src, parser);
+		}		
 	}
+	
+	public static JSourceFile fromSource(RootResource resource, CharSequence sourceCode,CompilationUnit cu){
+        checkNotNull("resource", resource);
+        return new JSourceFile(resource, cu, sourceCode, Root.TIMESTAMP_NOT_EXIST);
+    }
 	
 	public static JSourceFile fromSource(RootResource resource, CharSequence sourceCode, JAstParser parser){
 		checkNotNull("resource", resource);
 		checkNotNull("parser", parser);
 		
 		CompilationUnit cu = parser.parseCompilationUnit(sourceCode,resource);
-		return new JSourceFile(resource, cu, sourceCode);
+		return new JSourceFile(resource, cu, sourceCode, Root.TIMESTAMP_NOT_EXIST);
 	}
 
 	/**
-	 * Write any modifications to the AST back to disk. May throw an exception if the resource is not modifiable
+	 * Determine whether this source is in sync with the resource it represents
 	 */
-	public void writeModificationsToDisk() {
-		if( hasModifications() ){
-			internalWriteChangesToFile();
-		}
-	}
+	public boolean isInSyncWithResource(){
+        return originalTimestamp != Root.TIMESTAMP_NOT_EXIST && getCompilationUnitNode().getAST().modificationCount() == originalAstModificationCount && getResource().getLastModified() == originalTimestamp;
+    }
 
-	public boolean hasModifications(){
-		return getCompilationUnitNode().getAST().modificationCount() > 0;
-	}
-
-	private void internalWriteChangesToFile() {
-		//TODO:check current contents of resource to validate no changes between the time we loaded
-		//it and now?
-		String src = getCurrentSource();
-		OutputStream os = null;
-		try {
-			os = resource.getOutputStream();
-			IOUtils.write(src, os);
-		} catch (FileNotFoundException e) {
-			throw new JMutateException("Couldn't write source to file" + resource, e);
-		} catch (IOException e) {
-			throw new JMutateException("Couldn't write source to file" + resource, e);
-		} finally {
-			IOUtils.closeQuietly(os);
-		}
-	}
-	
 	/**
 	 * Return the source as it would look with all the current modifications to the AST applied
 	 */
@@ -113,6 +101,20 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
     	return updatedSrc;
 	}		
 	
+	/**
+	 * Return the source as returned by the resource (so effectively latest on disk)
+	 * @return
+	 */
+	public String getLatestSource(){
+	    if(resource.exists()){
+	        try {
+                return resource.readAsString();
+            } catch (IOException e) {
+                throw new JMutateException("Error reading latest source",e);
+            }
+	    }
+	    return null;
+	}
 	/**
 	 * Return the source as it was before any modifications were applied
 	 */

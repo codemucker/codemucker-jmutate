@@ -13,6 +13,8 @@ import com.google.common.base.Objects;
 @NotThreadSafe
 public abstract class AbstractTemplate<TSelf extends AbstractTemplate<TSelf>> implements Template {
     
+    public static final String NL = System.getProperty("line.separator");
+    
     /**
      * Variables which will be used to interpolate the template content
      */
@@ -49,14 +51,13 @@ public abstract class AbstractTemplate<TSelf extends AbstractTemplate<TSelf>> im
     /**
      * Shorthand for {@link #setVar(String, Object)}
      */
-    public TSelf v(String name, Object val) {
+    public TSelf var(String name, Object val) {
         setVar(name, val);
         return self();
     }
 
     /**
-     * Set a template variable. Shorthand version is
-     * {@link #setVar(String, Object)}. Name is case sensitive
+     * Set a template variable. Shorthand version is {@link #var(String, Object)}. Name is case sensitive
      * 
      * @param name
      *            variable name, case sensitive.
@@ -148,7 +149,7 @@ public abstract class AbstractTemplate<TSelf extends AbstractTemplate<TSelf>> im
      * @return self for chaining
      */
     public TSelf println() {
-        this.buffer.append("\n");
+        this.buffer.append(NL);
         return self();
     }
 

@@ -8,7 +8,7 @@ import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.JMutateFinder.SourceMatcher;
+import org.codemucker.jmutate.JMutateScanner.SourceMatcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
@@ -129,11 +129,21 @@ public class JMutateFilter implements SourceMatcher {
 			return MatcherToFindFilterAdapter.from(matcher);
 		}
 		
+		public Builder includeRoot(Matcher<Root> matcher) {
+            roots.addInclude(matcher);
+            return this;
+        }
+		
 		public Builder includeResource(Matcher<RootResource> matcher) {
 			resources.addInclude(matcher);
 			return this;
 		}
 	
+		public Builder excludeRoot(Matcher<Root> matcher) {
+            roots.addExclude(matcher);
+            return this;
+        }
+        
 		public Builder excludeResource(Matcher<RootResource> matcher) {
 			resources.addExclude(matcher);
 			return this;

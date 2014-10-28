@@ -17,7 +17,7 @@ public class TestSourceHelper {
 	 */
 	public static JSourceFile findSourceForClass(Class<?> classToFindSourceFor){
 		String filePath = classToFindSourceFor.getName().replace('.', '/') + ".java";
-		JMutateFinder finder = newAllSourcesResolvingFinder()
+		JMutateScanner finder = newAllSourcesResolvingFinder()
 			.filter(JMutateFilter.with()
 				.includeResource(AResource.with().path(filePath)))
 			.build();
@@ -32,18 +32,18 @@ public class TestSourceHelper {
 	 * Look in all source locations including tests
 	 * @return
 	 */
-	public static JMutateFinder.Builder newAllSourcesResolvingFinder(){
-		return JMutateFinder.with()
-			.searchRoots(Roots.with()
+	public static JMutateScanner.Builder newAllSourcesResolvingFinder(){
+		return JMutateScanner.with()
+			.scanRoots(Roots.with()
 					.mainSrcDir(true)
 					.testSrcDir(true)
 					.classpath(true))
 			.parser(newResolvingParser());
 	}
 	
-	public static JMutateFinder.Builder newTestSourcesResolvingFinder(){
-		return JMutateFinder.with()
-			.searchRoots(Roots.with()
+	public static JMutateScanner.Builder newTestSourcesResolvingFinder(){
+		return JMutateScanner.with()
+			.scanRoots(Roots.with()
 				.mainSrcDir(false)
 				.testSrcDir(true)
 				.classpath(true))

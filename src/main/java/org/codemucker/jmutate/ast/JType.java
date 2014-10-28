@@ -67,8 +67,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 */
 	public static JType from(ASTNode node){
 		JType t = fromOrNull(node);
-		if(t == null)
-		{
+		if(t == null){
 			throw new IllegalArgumentException(String.format("Expect either a %s or a %s but was %s",
 				AbstractTypeDeclaration.class.getName(),
 				AnonymousClassDeclaration.class.getName(), 
@@ -96,7 +95,11 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		return new AnonynousClassJType(node);
 	}
 
-	protected JType(ASTNode type) {
+	public static boolean is(ASTNode node){
+	    return node instanceof AbstractTypeDeclaration || node instanceof AnonymousClassDeclaration || node instanceof AnnotationTypeDeclaration;
+	}
+	
+	private JType(ASTNode type) {
 		checkNotNull("type", type);
 		this.typeNode = type;
 	}
@@ -732,7 +735,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 			return types;
 		}
 	}
-	
+
 	//TODO:count occurrances in the source file to calculate anonymuous class number
 	public static class AnonynousClassJType extends JType 
 	{

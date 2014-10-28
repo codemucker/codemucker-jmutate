@@ -69,7 +69,7 @@ public class JMethodTest {
 		SourceTemplate t = ctxt.newSourceTemplate();
 		String pkg =  JMethod.class.getPackage().getName();
 		
-		t.v("pkg", pkg);
+		t.var("pkg", pkg);
 		t.pl("package ${pkg};");
 		t.pl("class MyType {");
 		t.pl("public interface MyInterface {}");

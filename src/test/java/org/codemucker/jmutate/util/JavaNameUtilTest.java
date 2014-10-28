@@ -18,8 +18,8 @@ public class JavaNameUtilTest {
 	@Test
 	public void resolveQualifiedName_onInterfacesDeclaredInSamePackageMembers(){
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.v("pkg", JavaNameUtilTest.class.getPackage().getName());
-		t.v("declaringClass", JavaNameUtilTest.class.getName());
+		t.var("pkg", JavaNameUtilTest.class.getPackage().getName());
+		t.var("declaringClass", JavaNameUtilTest.class.getName());
 		t.pl("package ${pkg};");
 		t.pl("import ${declaringClass}.MyInterface;");
 		
@@ -36,8 +36,8 @@ public class JavaNameUtilTest {
 	public void resolveQualifiedName_handleStarImports(){
 		//TODO:what about when it's not a compiled class but a generated source file?
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.v("pkg", JavaNameUtilTest.class.getPackage().getName());
-		t.v("declaringClass", JavaNameUtilTest.class.getName());
+		t.var("pkg", JavaNameUtilTest.class.getPackage().getName());
+		t.var("declaringClass", JavaNameUtilTest.class.getName());
 		t.pl("package ${pkg};");
 		t.pl("import java.util.*;");
 		t.pl("import ${declaringClass}.*;");
@@ -59,8 +59,8 @@ public class JavaNameUtilTest {
 	@Test
 	public void resolveQualifiedName_forNameReferencingTypeInSameCompilationUnitWhereSameSimpleNameClassExistsInPackage(){
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.v("pkg", JavaNameUtilTest.class.getPackage().getName());
-		t.v("clashingClassName", JavaNameUtilTest.class.getSimpleName());
+		t.var("pkg", JavaNameUtilTest.class.getPackage().getName());
+		t.var("clashingClassName", JavaNameUtilTest.class.getSimpleName());
 		
 		t.pl("package ${pkg};");
 		t.pl("class MyClass {");

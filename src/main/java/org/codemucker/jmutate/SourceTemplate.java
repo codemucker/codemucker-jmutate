@@ -35,12 +35,11 @@ import com.google.inject.Inject;
 public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 {
     private static final String NL = System.getProperty("line.separator");
-    private static final String JAVA_EXTENSION = "java";
     
 	private final JAstParser parser;
 	
 	private final Root snippetRoot;
-	
+    
 	/**
 	 * Used by the DI container to set the default
 	 * @param parser
@@ -59,7 +58,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public SourceTemplate v(String name,Class<?> klass){
-		setVar(name,JavaNameUtil.compiledNameToSourceName(klass));
+		setVar(name,klass);
 		return this;
 	}
 	
@@ -294,8 +293,8 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		
 		RootResource resource = fqnToResource(fqn);
 		CharSequence src = interpolateTemplate();
-		CompilationUnit cu = parser.parseCompilationUnit(src, resource);
-		return new JSourceFile(resource, cu, src);
+		
+		return JSourceFile.fromSource(resource, src, parser);
 	}
 	
 	public JSourceFile asSourceFileSnippet() {
@@ -303,8 +302,8 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		CompilationUnit cu = parser.parseCompilationUnit(src, null);//don't get compiler to resolve
 		JType mainType = JCompilationUnit.from(cu).findMainType();
 		String fqn = mainType.getFullName();
-		RootResource resource = fqnToResource(fqn + ".java");
-		return new JSourceFile(resource, cu, src);
+		RootResource resource = fqnToResource(fqn);
+		return JSourceFile.fromSource(resource, src, cu);
 	}
 
 	/**
@@ -321,7 +320,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	}
 	
 	private RootResource fqnToResource(String fqn){
-	    return fqnToResource(fqn,JAVA_EXTENSION);
+	    return fqnToResource(fqn,JCompiler.JAVA_SRC_EXTENSION);
 	}
 	
 	private RootResource fqnToResource(String fqn, String extension){

@@ -7,7 +7,7 @@ import java.io.StringReader;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.AstNodeFlattener;
+import org.codemucker.jmutate.ast.ToSourceConverter;
 import org.codemucker.jmutate.ast.JMethod;
 import org.eclipse.jdt.core.dom.ASTNode;
 
@@ -24,7 +24,7 @@ public class ASTNodeToSourceBuilder {
 	private JMutateContext ctxt;
 
 	@Inject
-	private AstNodeFlattener flattener;
+	private ToSourceConverter flattener;
 	
 	//the node to copy
 	private ASTNode node;
@@ -34,7 +34,7 @@ public class ASTNodeToSourceBuilder {
 	}
 	
 	public JMethod build(){
-		String src = flattener.flatten(node);
+		String src = flattener.toSource(node);
 		SourceTemplate t = ctxt.newSourceTemplate();
 		
 		t.p("public void generateNode(").p(JMutateContext.class.getName()).p(" ctxt").pl("){")
@@ -59,7 +59,7 @@ public class ASTNodeToSourceBuilder {
 		return line.replaceAll("\"", "\\\"");
 	}
 	
-	public ASTNodeToSourceBuilder flattener(AstNodeFlattener flattener) {
+	public ASTNodeToSourceBuilder flattener(ToSourceConverter flattener) {
 		this.flattener = flattener;
 		return this;
 	}

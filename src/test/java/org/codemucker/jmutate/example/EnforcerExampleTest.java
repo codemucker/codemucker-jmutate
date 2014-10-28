@@ -14,7 +14,7 @@ import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.JMutateFilter;
-import org.codemucker.jmutate.JMutateFinder;
+import org.codemucker.jmutate.JMutateScanner;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
 import org.codemucker.jmutate.ast.JAccess;
@@ -73,8 +73,8 @@ public class EnforcerExampleTest
 	@Test
 	public void ensureMatcherBuildersAreCorrectlyNamed()
 	{
-		FindResult<JType> matchers = JMutateFinder.with()
-			.searchRoots(Roots.with().mainSrcDir(true))
+		FindResult<JType> matchers = JMutateScanner.with()
+			.scanRoots(Roots.with().mainSrcDir(true))
 			.filter(JMutateFilter.with()
 				.includeType(AJType.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
 			.build()
@@ -114,8 +114,8 @@ public class EnforcerExampleTest
 
         public void invoke(){
 
-            FindResult<JType> foundBuilders = JMutateFinder.with()
-                    .searchRoots(Roots.with()
+            FindResult<JType> foundBuilders = JMutateScanner.with()
+                    .scanRoots(Roots.with()
                         .mainSrcDir(true)
                         .testSrcDir(true))
                     .filter(JMutateFilter.with()

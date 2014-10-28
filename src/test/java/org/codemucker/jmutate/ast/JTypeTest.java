@@ -173,8 +173,8 @@ public class JTypeTest {
 	@Test
 	public void isSubclassOfConcreteClassChildIsEmbeddedAndClassWithSameSimpleNameAlsoExistsInPackage(){
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.v("pkg", JTypeTest.class.getPackage().getName());
-		t.v("clashingClassName", JTypeTest.class.getSimpleName());
+		t.var("pkg", JTypeTest.class.getPackage().getName());
+		t.var("clashingClassName", JTypeTest.class.getSimpleName());
 		
 		t.pl("package ${pkg};");
 		t.pl("class MyClass {");

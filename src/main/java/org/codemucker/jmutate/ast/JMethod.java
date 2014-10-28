@@ -70,6 +70,10 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 		return new JMethod(node);
 	}
 	
+    public static boolean is(ASTNode node) {
+        return node instanceof MethodDeclaration;
+    }
+	
 	private JMethod(MethodDeclaration methodNode) {
 		checkNotNull(methodNode, "expect java method node");
 
@@ -161,7 +165,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 		return new JModifier(methodNode.getAST(),methodNode.modifiers());
 	}
 
-    public <A extends Annotation> boolean hasParameterAnnotationOfType(Class<A> annotationClass) {
+    public <A extends Annotation> boolean hasParameterAnnotation(Class<A> annotationClass) {
 		return hasParameterAnnotation(AJAnnotation.with().fullName(annotationClass));
 	}
 	

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ResourceLoader;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
@@ -27,6 +28,9 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 
+/**
+ * Contains all the mess for resolving names to qualified names and some utility functions
+ */
 public class JavaNameUtil {
 	
 	public static String removeGenericPart(String shortOrQualifiedName){
@@ -168,7 +172,8 @@ public class JavaNameUtil {
 	public static String resolveQualifiedName(Name name) {
 		String fqdn = resolveQualifiedNameOrNull(name);
 		if (fqdn == null) {
-			throw new JMutateException("Could not resolve simple name '%s' defined in '%s'", name.getFullyQualifiedName(), getCompilationUnit(name));
+		    String pkg = getPackageFor(name);
+			throw new JMutateException("Could not resolve simple name '%s' (tried pkg %s) defined in %n%s", name.getFullyQualifiedName(), pkg, getCompilationUnit(name));
 		}
 		return fqdn;
 	}
@@ -192,7 +197,7 @@ public class JavaNameUtil {
 		if (fqdn == null) {
 			fqdn = resolveQualifiedNameFromImportsOrNull(name, cu);
 		}
-		
+		//this won't work for annotations?
 		if( fqdn == null ){
 			fqdn = resolveQualifiedNameFromClassLoaderOrNull(name);
 		}
@@ -213,7 +218,7 @@ public class JavaNameUtil {
 	
 	@VisibleForTesting
 	static String resolveQualifiedNameFromImportsOrNull(SimpleName name, CompilationUnit cu) {
-		// not a locally declared type, look through imports
+		// not a locally declared type, look through fully qualified imports
 		String nameWithDot = "." + name.getIdentifier();
 		List<ImportDeclaration> imports = cu.imports();
 		for (ImportDeclaration imprt : imports) {
@@ -224,19 +229,29 @@ public class JavaNameUtil {
 				return fqn;
 			}
 		}
+		
 		//look for wildcards (star imports)
-		ClassLoader cl = ClassUtil.getClassLoaderForResolving();
+		ResourceLoader loader = getLoaderFor(cu);
+		
+		//ClassLoader cl = ClassUtil.getClassLoaderForResolving();
 		for (ImportDeclaration imprt : imports) {
 			if( imprt.isOnDemand()) {//aka foo.bar.*
 				String pkgName = imprt.getName().getFullyQualifiedName();
 				String className = pkgName + nameWithDot;
-				if(ClassUtil.canLoadClass(cl, className)){
-					return className;
+				if(loader.canLoadClassOrSource(className)){
+				    return className;
 				}
+				/*if(ClassUtil.canLoadClass(cl, className)){
+					return className;
+				}*/
 			}
 		}
 		
 		return null;
+	}
+	
+	private static ResourceLoader getLoaderFor(ASTNode node){
+	    return ClassUtil.getResourceLoader(node);
 	}
 	
 	private static String resolveQualifiedNameFromClassLoaderOrNull(SimpleName name) {
@@ -245,13 +260,19 @@ public class JavaNameUtil {
 	}
 	
 	private static String resolveQualifiedNameFromClassLoaderOrNull(SimpleName name, String... packagePrefixes) {
-		ClassLoader cl = ClassUtil.getClassLoaderForResolving();
+	    //TODO:need to include context resolver?? how about a single classloader from the context?
+		//ClassLoader cl = ClassUtil.getClassLoaderForResolving();
+		ResourceLoader loader = getLoaderFor(name);
+		
 		for (String prefix : packagePrefixes) {
 			prefix = prefix == null ? "" : prefix;
 			String className = prefix + name.getIdentifier();
-			if(ClassUtil.canLoadClass(cl, className)){
-				return className;
+			if(loader.canLoadClassOrSource(className)){
+			    return className;
 			}
+//			if(ClassUtil.canLoadClass(cl, className)){
+//				return className;
+//			}
 		}
 		return null;
 	}

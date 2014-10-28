@@ -2,6 +2,7 @@ package org.codemucker.jmutate.ast;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import org.codemucker.jfind.Root;
@@ -32,8 +33,9 @@ public class JSearchEngine implements Closeable {
 		Preconditions.checkNotNull(parser, "expect parser");
 		
 		this.parser = parser;
+		String dbName = getClass().getSimpleName() + "_db";
         db = Orient.instance()
-        	.getDatabaseFactory().createDatabase("graph","plocal:" + dbDirectoy.getAbsolutePath());
+        	.getDatabaseFactory().createDatabase("graph","memory:" + dbName);
 
         //TODO:turn off locking while we index
         //TODO:put it in a reusable location so multiple calls find the already indexed code
@@ -65,13 +67,17 @@ public class JSearchEngine implements Closeable {
 	//TODO:add search query
 	public void find(){
 		ORecordIteratorClass<ODocument> types = db.browseClass("Type");
-		System.out.println("JSearchEngine:browse DB");
+		log("browse DB");
 		for (ODocument doc : types) {
-			System.out.println("JSearchEngine:fqdn " + doc.field("fqdn"));
-			System.out.println("     path:" + doc.field("resource"));
+		    log("fqdn " + doc.field("fqdn"));
+			log("     path:" + doc.field("resource"));
 		}
 		//db.query(ONativeQuery<OQueryContextNative>, iArgs)
-		System.out.println("JSearchEngine:end browse DB");
+		log("end browse DB");
+	}
+	
+	private void log(String msg){
+	    //System.out.println(JSearchEngine.class.getName() + " [DEBUG} " + msg);
 	}
 	
 	public void findPatternNamedX(){
@@ -89,7 +95,7 @@ public class JSearchEngine implements Closeable {
 		private List<Root> roots = Lists.newArrayList();
 		
 		public JSearchEngine build(){
-			Preconditions.checkNotNull(dbDirectory, "expect a database drectory to be set (or use defaults)");
+			Preconditions.checkNotNull(dbDirectory, "expect a database directory to be set (or use defaults)");
 			Preconditions.checkNotNull(parser, "expect a parser to be set (or use defaults)");
 			
 			return new JSearchEngine(dbDirectory,roots,parser);
@@ -102,7 +108,11 @@ public class JSearchEngine implements Closeable {
 		}
 
 		public Builder useDefaultDBDirectory(){
-			dbDirectory("c:/tmp/orientdb_codemucker_search_test" + System.currentTimeMillis());
+			try {
+                dbDirectory(File.createTempFile("orientdb_codemucker_search_test",""));
+            } catch (IOException e) {
+                throw new RuntimeException("Couldn't create tmp directory",e);
+            }
 			return this;
 		}
 		

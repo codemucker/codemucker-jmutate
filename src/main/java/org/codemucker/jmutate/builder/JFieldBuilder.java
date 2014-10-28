@@ -3,7 +3,7 @@ package org.codemucker.jmutate.builder;
 import static org.codemucker.lang.Check.checkNotNull;
 
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.AstNodeFlattener;
+import org.codemucker.jmutate.ast.ToSourceConverter;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.util.JavaNameUtil;
@@ -59,7 +59,7 @@ public class JFieldBuilder extends AbstractBuilder<JFieldBuilder,JField> {
 		t.print(access.toCode());
 		t.print(" ${fieldType} ${fieldName}");
 		if( fieldValue != null){
-			String valAsString = getContext().obtain(AstNodeFlattener.class).flatten(fieldValue);
+			String valAsString = getContext().obtain(ToSourceConverter.class).toSource(fieldValue);
 			t.setVar("value", valAsString);
 			t.pl(" = ${value};");
 		} else {

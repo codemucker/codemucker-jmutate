@@ -8,10 +8,13 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
-import org.codemucker.jmutate.ast.AstNodeFlattener;
 import org.codemucker.jmutate.ast.ContextNames;
+import org.codemucker.jmutate.ast.DefaultToSourceConverter;
+import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JAstParser;
-import org.codemucker.jmutate.ast.SimpleFlattener;
+import org.codemucker.jmutate.ast.ToSourceConverter;
+import org.codemucker.jtest.MavenLayoutProjectResolver;
+import org.codemucker.jtest.ProjectResolver;
 import org.codemucker.lang.annotation.Optional;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
@@ -29,25 +32,37 @@ import com.google.inject.name.Named;
 @Singleton
 public class DefaultMutateContext implements JMutateContext {
 
-	private final PlacementStrategies strategyProvider;
-	private final Root snippetRoot;
+    private final ProjectResolver projectResolver;
+    private final ResourceLoader resourceLoader;
+    
+    private final PlacementStrategies strategyProvider;
+	/**
+	 * Where by default any generated code is output to
+	 */
+	private final Root generationRoot;
 	private final JAstParser parser;
 	/**
 	 * If set, generated classes will be marked as such
 	 */
 	private final boolean markGenerated;
-	private final Injector injector;
 	
+	//internally created
+    private final Injector injector;
+    private int tmpCount;
+    
 	public static Builder with(){
 		return new Builder();
 	}
 	
-	private DefaultMutateContext(Root snippetRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategies strategyProvider) {
+	private DefaultMutateContext(ProjectResolver projectResolver, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategies strategyProvider) {
         super();
-        this.snippetRoot = snippetRoot;
+        this.projectResolver = projectResolver;
+        this.generationRoot = generationRoot;
         this.parser = parser;
         this.markGenerated = markGenerated;
         this.strategyProvider = strategyProvider;
+        this.resourceLoader = DefaultResourceLoader.with().parentLoader(parser.getResourceLoader()).addRoot(generationRoot).build();
+        
         injector = Guice.createInjector(Stage.PRODUCTION, new DefaultMutationModule(formatterOptions));
     }
 
@@ -57,10 +72,47 @@ public class DefaultMutateContext implements JMutateContext {
     }
 
 	@Override
+    public SourceTemplate newTempSourceTemplate(){
+        return new SourceTemplate(getParser(), newTmpSnippetRoot());
+    }
+	
+	 private Root newTmpSnippetRoot(){
+         tmpCount++;
+         File tmpDir = new File(projectResolver.getTmpDir(),"SnippetRoot" + tmpCount + "/" );
+         if(!tmpDir.mkdirs()){
+             throw new JMutateException("Couldn't create a tmp root '" + tmpDir.getAbsolutePath() + "'");     
+         }
+         if(!tmpDir.isDirectory()){
+             throw new JMutateException("Couldn't create a tmp root '" + tmpDir.getAbsolutePath() + "', seems it's not a directory");     
+         }
+         return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
+     }
+	
+	@Override
     public JAstParser getParser() {
 	    return obtain(JAstParser.class);
     }
  
+	@Override
+    public JCompiler getCompiler() {
+        return obtain(JCompiler.class);
+    }
+	
+	@Override
+    public ToSourceConverter getNodeToSourceConverter() {
+	    return obtain(ToSourceConverter.class);
+	};
+	
+	@Override
+	public Root getDefaultGenerationRoot() {
+	    return generationRoot;	    
+	};
+	
+	@Override
+	public ResourceLoader getResourceLoader() {
+	    return resourceLoader;
+	}
+	
 	@Override
 	public <T> T obtain(Class<T> type){
 		return injector.getInstance(type);
@@ -76,6 +128,7 @@ public class DefaultMutateContext implements JMutateContext {
 
         @Override
         protected void configure() {
+            bind(JCompiler.class).to(DefaultCompiler.class).in(Singleton.class);;
         }
 
         @Provides
@@ -99,8 +152,13 @@ public class DefaultMutateContext implements JMutateContext {
         }
 
         @Provides
-        public AstNodeFlattener provideFlattener() {
-            return obtain(SimpleFlattener.class);
+        public ToSourceConverter provideFlattener() {
+            return obtain(DefaultToSourceConverter.class);
+        }
+        
+        @Provides
+        public JAstFlattener provideToSourceVisitor() {
+            return obtain(JAstFlattener.class);
         }
 
         @Provides
@@ -151,16 +209,30 @@ public class DefaultMutateContext implements JMutateContext {
 
         @Provides
         public SourceTemplate provideSourceTemplate() {
-            return new SourceTemplate(provideParser(), snippetRoot);
+            return new SourceTemplate(provideParser(), generationRoot);
+        }
+        
+        @Provides
+        @Singleton
+        public ResourceLoader provideResourceLoader() {
+            return resourceLoader;
+        }
+        
+        @Provides
+        @Singleton
+        public ProjectResolver provideProjectResolver() {
+            return projectResolver;
         }
     }
-	   
+	
 	public static class Builder {
 	
 		private boolean markGenerated = false;
 		private JAstParser parser;
 		private DefaultCodeFormatterOptions formattingOptions;
-		private Root root;
+		private Root generateRoot;
+		private ProjectResolver projectResolver;
+        
 		private PlacementStrategies placementStrategy;
 		
 		private Builder(){
@@ -171,22 +243,24 @@ public class DefaultMutateContext implements JMutateContext {
 		}
 
         public DefaultMutateContext build() {
-            Root generateTo = getGenerationRootOrDefault();
-            JAstParser parser = getParserOrDefault(generateTo);
+            ProjectResolver project = getProjectResolverOrDefault();
+            Root generateTo = getGenerationRootOrDefault(project);
+            JAstParser parser = getParserOrDefault(project, generateTo);
             DefaultCodeFormatterOptions formatter = getFormatterOptionsOrDefault();
             PlacementStrategies strategy = getPlacementStrategyOrDefault();
-            
-            return new DefaultMutateContext(generateTo, parser, markGenerated, formatter,strategy);
+
+            return new DefaultMutateContext(project, generateTo, parser, markGenerated, formatter,strategy);
         }
 		
-        private JAstParser getParserOrDefault(Root contextRoot) {
-            return parser == null ? newDefaultAstParser(contextRoot) : parser;
+        private JAstParser getParserOrDefault(ProjectResolver project,Root contextRoot) {
+            return parser == null ? newDefaultAstParser(project,contextRoot) : parser;
         }
 
-		private JAstParser newDefaultAstParser(Root contextGenerationRoot){
+		private JAstParser newDefaultAstParser(ProjectResolver project,Root contextGenerationRoot){
             return JAstParser.with()
                     .defaults()
                     .roots(Roots.with()
+                        .projectResolver(project)
                         .classpath(true)
                         .testSrcDir(true)
                         .mainSrcDir(true)
@@ -204,20 +278,17 @@ public class DefaultMutateContext implements JMutateContext {
             return new DefaultCodeFormatterOptions(DefaultCodeFormatterConstants.getJavaConventionsSettings());
         }
 		
-		private Root getGenerationRootOrDefault(){
-		    return root==null?newTmpSnippetRoot():root;
+		private Root getGenerationRootOrDefault(ProjectResolver project){
+		    return generateRoot==null?newTmpSnippetRoot(project):generateRoot;
 		}
 		
-	    private static Root newTmpSnippetRoot(){
-	        try {
-	            File f = File.createTempFile("SimpleCodeMuckContextSnippetRoot","");
-	            File tmpDir = new File(f.getAbsolutePath() + ".d/");
-	            tmpDir.mkdirs();
+	    private Root newTmpSnippetRoot(ProjectResolver project){
+	            File tmpDir = new File(project.getTmpDir(),"TmpGenRoot");
+	            if(!tmpDir.mkdirs()){
+	                throw new JMutateException("Couldn't generate mutate context tmp generation root '" + tmpDir.getAbsolutePath() + "'");
+	            }
 	            
 	            return new DirectoryRoot(tmpDir,RootType.GENERATED,RootContentType.SRC);
-	        } catch (IOException e) {
-	            throw new JMutateException("Couldn't create a tmp root");
-	        }
 	    }
 	    
 	    private PlacementStrategies getPlacementStrategyOrDefault(){
@@ -225,9 +296,17 @@ public class DefaultMutateContext implements JMutateContext {
 	    }
 	    
 	    private PlacementStrategies newDefaultPlacementStrategy(){
-	        return PlacementStrategies.with().defaults().build();
+            return PlacementStrategies.with().defaults().build();
+        }
+        
+	    private ProjectResolver getProjectResolverOrDefault(){
+	        return projectResolver==null?newDefaultProjectResolver():projectResolver;
 	    }
 	    
+	    private ProjectResolver newDefaultProjectResolver(){
+            return new MavenLayoutProjectResolver();
+        }
+        
 	    @Optional
 		public Builder markGenerated(boolean markGenerated) {
         	this.markGenerated = markGenerated;
@@ -248,13 +327,19 @@ public class DefaultMutateContext implements JMutateContext {
 
         @Optional
         public Builder root(Root root) {
-            this.root = root;
+            this.generateRoot = root;
             return this;
         }
 
         @Optional
         public Builder placementStrategy(PlacementStrategies strategy) {
             this.placementStrategy = strategy;
+            return this;
+        }
+        
+        @Optional
+        public Builder projectResolver(ProjectResolver project) {
+            this.projectResolver = project;
             return this;
         }
 	}

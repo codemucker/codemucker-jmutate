@@ -213,7 +213,7 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisito
 
 	private void save(ODocument doc, String id){
 		saveCount++;
-		System.out.println( "JSearchEngineIndexer:" + saveCount +" saving " + doc.getClassName() + ":" + id);
+		//System.out.println( "JSearchEngineIndexer:" + saveCount +" saving " + doc.getClassName() + ":" + id);
 		//TODO:add listener here for extension/
 		db.save(doc);
 	}

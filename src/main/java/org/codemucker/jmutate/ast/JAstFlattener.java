@@ -284,6 +284,23 @@ public class JAstFlattener extends ASTVisitor {
         return node.superInterfaces();
     }
 
+    /**
+     * Delegate to the relevant visit(<concrete-annotation-type>) method
+     * 
+     * @param node
+     * @return
+     */
+    public boolean visit(Annotation node) {
+        if (node.isMarkerAnnotation()) {
+            return visit((MarkerAnnotation) node);
+        } else if (node.isSingleMemberAnnotation()) {
+            return visit((SingleMemberAnnotation) node);
+        } else if (node.isNormalAnnotation()) {
+            return visit((NormalAnnotation) node);
+        }
+        return false;
+    }
+
     /*
      * @see ASTVisitor#visit(AnnotationTypeDeclaration)
      * 

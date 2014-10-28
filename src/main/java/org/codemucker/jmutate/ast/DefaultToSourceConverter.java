@@ -2,7 +2,10 @@ package org.codemucker.jmutate.ast;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.JMutateParseException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
@@ -13,17 +16,19 @@ import org.eclipse.text.edits.TextEdit;
 
 import com.google.inject.Inject;
 
-public class SimpleFlattener implements AstNodeFlattener {
+public class DefaultToSourceConverter implements ToSourceConverter {
 	
+    private final Logger log = LogManager.getLogger(DefaultToSourceConverter.class);
+    
 	private CodeFormatter formatter;
 	
 	@Inject
-	public SimpleFlattener(CodeFormatter formatter) {
+	public DefaultToSourceConverter(CodeFormatter formatter) {
 		this.formatter = checkNotNull("formatter", formatter);
 	}
 
 	@Override
-	public String flatten(ASTNode node) {
+	public String toSource(ASTNode node) {
 		String src = JAstFlattener.asString(node);
 		String formatted = format(src, getKindForNode(node));
 	
@@ -31,10 +36,18 @@ public class SimpleFlattener implements AstNodeFlattener {
 	}
 
 	private String format(String src, int kind){
-		String nl = System.getProperty("line.seperator");
+	    String formattedSource = src;
+	    
+	    String nl = System.getProperty("line.seperator");
 		int startIndentLevel = 0;
 		TextEdit edits  = formatter.format(kind, src, 0, src.length(), startIndentLevel, nl);
-		String formattedSource = applyTextEditsToSrc(src, edits);
+        if (edits == null) {
+            String msg = String.format("Can not format the provided source, returning source as is. Source is %n%s", src);
+            // throw new JMutateParseException(msg);
+            log.warn(msg);
+            formattedSource = applyTextEditsToSrc(src, edits);
+        }
+		 
 		return formattedSource;
 	}
 	
@@ -46,13 +59,15 @@ public class SimpleFlattener implements AstNodeFlattener {
 	 */
 	private static String applyTextEditsToSrc(String originalSource,TextEdit edits){
 		Document doc = new Document(originalSource);
-    	try {
-    		edits.apply(doc);
-    	} catch (MalformedTreeException e) {
-    		throw new JMutateException("can't apply changes", e);
-    	} catch (BadLocationException e) {
-    		throw new JMutateException("can't apply changes", e);
-    	}
+		if(edits != null){
+        	try {
+        		edits.apply(doc);
+        	} catch (MalformedTreeException e) {
+        		throw new JMutateException("can't apply changes", e);
+        	} catch (BadLocationException e) {
+        		throw new JMutateException("can't apply changes", e);
+        	}
+		}
     
     	String updatedSrc = doc.get();
     	return updatedSrc;

@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.codemucker.jfind.BaseRootVisitor;
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
@@ -38,10 +40,12 @@ import com.google.inject.Inject;
  * 
  * 
  */
-public class JMutateFinder {
+public class JMutateScanner {
 
-	private static final String JAVA_EXTENSION = "java";
-	private static final JFindMatchListener<Object> NULL_LISTENER = new JFindMatchListener<Object>() {
+    private static final Logger log = LogManager.getLogger(JMutateScanner.class);
+    
+	private static final String  JAVA_EXTENSION = "java";
+	private static final JFindMatchListener<Object> DEFAULT_LISTENER = new JFindMatchListener<Object>() {
 		@Override
 		public void onMatched(Object obj) {
 		}
@@ -52,6 +56,7 @@ public class JMutateFinder {
 
 		@Override
 		public void onError(Object record, Exception e) throws Exception {
+		    log.warn(String.format("Error processing '%s'", record),e);
 		}
 	};
 	
@@ -64,6 +69,8 @@ public class JMutateFinder {
 	private final Matcher<JMethod> methodMatcher;
 	
 	private final JFindMatchListener<Object> listener;
+
+	private final boolean failOnParseError;
 	
 	@Inject
 	private final JAstParser parser;
@@ -81,12 +88,12 @@ public class JMutateFinder {
 		return new Builder();
 	}
 
-	@Inject
-	public JMutateFinder(
+	public JMutateScanner(
 			JAstParser parser
 			, Iterable<Root> classPathRoots
 			, SourceMatcher matchers
 			, JFindMatchListener<Object> listener
+			, boolean failOnParseError
 			) {
 		this(parser,
 			classPathRoots,
@@ -96,11 +103,12 @@ public class JMutateFinder {
 			matchers.getSourceMatcher(),
 			matchers.getTypeMatcher(),
 			matchers.getMethodMatcher(),
-			listener
+			listener,
+			failOnParseError
 		);
 	}
 
-	public JMutateFinder(
+	public JMutateScanner(
 			JAstParser parser
 			, Iterable<Root> roots
 			, Matcher<Object> objectFilter
@@ -110,6 +118,7 @@ public class JMutateFinder {
 			, Matcher<JType> typeFilter
 			, Matcher<JMethod> methodFilter
 			, JFindMatchListener<Object> listener
+			, boolean failOnParseError
 			) {
 		
 		checkNotNull(roots, "expect class path roots");
@@ -124,6 +133,7 @@ public class JMutateFinder {
 		this.methodMatcher = join(checkNotNull(methodFilter, "expect method filter"), objectFilter);
 	
 		this.listener = checkNotNull(listener, "expect find listener");
+		this.failOnParseError = failOnParseError;
 	}
 	
 	private static <T> Matcher<T> join(final Matcher<T> matcher,final Matcher<Object> objMatcher){
@@ -171,16 +181,36 @@ public class JMutateFinder {
 	private Function<RootResource, JSourceFile> resourceToSource(){
 		return new Function<RootResource,JSourceFile>(){
 			public JSourceFile apply(RootResource resource){
-				if( resource.hasExtension(JAVA_EXTENSION)){
-					//TODO:catch error here and callback onerror?
-					return JSourceFile.fromResource(resource, parser);
+				if(resource.hasExtension(JAVA_EXTENSION)){
+				   try {
+				        return JSourceFile.fromResource(resource, parser);
+				    } catch(JMutateParseException e){
+				        if(failOnParseError){
+				            throw e;
+				        } else {
+				            onError(resource, e);
+				        }	            
+				    }
 				}
 				//indicate skip this item
 				return null;
 			}
 		};
 	}
-	
+
+
+    private void onError(RootResource resource, JMutateParseException e) {
+        try {
+            listener.onError(resource, e);
+        } catch (Exception rethrownEx) {
+            if (rethrownEx instanceof RuntimeException) {
+                throw (RuntimeException) rethrownEx;
+            } else {
+                throw new JMutateException("Error parsing source", rethrownEx);
+            }
+        }
+    }
+
 	public FindResult<RootResource> findResources(){
 		final List<RootResource> resources = Lists.newArrayListWithExpectedSize(200);	
 		RootVisitor visitor = new BaseRootVisitor(){
@@ -230,10 +260,11 @@ public class JMutateFinder {
 		private Matcher<JMethod> methodMatcher;
 		
 		private JFindMatchListener<Object> listener;
+        private boolean failOnParseError = true;
 		
-		public JMutateFinder build(){
+		public JMutateScanner build(){
 		    JAstParser parser = buildParser();
-			return new JMutateFinder(
+			return new JMutateScanner(
 			     parser
 				, roots
 				, anyIfNull(objectMatcher)
@@ -242,7 +273,8 @@ public class JMutateFinder {
 				, anyIfNull(sourceMatcher)
 				, anyIfNull(typeMatcher)
 				, anyIfNull(methodMatcher)
-				, listener==null?NULL_LISTENER:listener
+				, listener==null?DEFAULT_LISTENER:listener,
+				failOnParseError
 			);
 		}
 
@@ -261,24 +293,24 @@ public class JMutateFinder {
                     .build();
         }
 
-		public Builder searchRoots(Roots.Builder searchRoots) {
-        	searchRoots(searchRoots.build());
+		public Builder scanRoots(Roots.Builder searchRoots) {
+        	scanRoots(searchRoots.build());
         	return this;
         }
 		
-	 	public Builder searchRoots(IBuilder<? extends Iterable<Root>> rootsBuilder) {
-        	searchRoots(rootsBuilder.build());
+	 	public Builder scanRoots(IBuilder<? extends Iterable<Root>> rootsBuilder) {
+        	scanRoots(rootsBuilder.build());
         	return this;
         }
 	 	
-	 	public Builder searchRoots(Iterable<Root> roots) {
+	 	public Builder scanRoots(Iterable<Root> roots) {
 	 		for(Root r:roots){
-	 			searchRoot(r);
+	 			scanRoot(r);
 	 		}
         	return this;
         }
 	 	
-	 	public Builder searchRoot(Root root) {
+	 	public Builder scanRoot(Root root) {
         	this.roots.add(root);
         	return this;
         }
@@ -317,6 +349,11 @@ public class JMutateFinder {
 		public Builder parser(JAstParser parser) {
         	this.parser = parser;
         	return this;
+        }
+		
+		public Builder failOnParseError(boolean failOnParseError) {
+            this.failOnParseError= failOnParseError;
+            return this;
         }
 	}
 }

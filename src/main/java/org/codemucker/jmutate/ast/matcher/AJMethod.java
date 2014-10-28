@@ -12,8 +12,10 @@ import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JAccess;
+import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifier;
+import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.JavaNameUtil;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.Type;
@@ -261,32 +263,43 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		});
 		return this;
 	}
-	
-	public <A extends Annotation> AJMethod methodAnnotation(final Class<A> annotationClass) {
-		addMatcher(new AbstractNotNullMatcher<JMethod>() {
-			@Override
-			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-				return found.getAnnotations().contains(annotationClass);
-			}
-			
-			@Override
-            public void describeTo(Description desc) {
-                desc.value("with annotation:", annotationClass.getName());
-            }
-		});
-		return this;
-	}
 
-	public <A extends Annotation> AJMethod parameterAnnotation(final Class<A> annotationClass) {
+    public <A extends Annotation> AJMethod annotation(final Class<A> annotationClass) {
+        annotation(AJAnnotation.with().fullName(annotationClass));
+        return this;
+    }
+
+    public AJMethod annotation(final Matcher<JAnnotation> matcher) {
+        addMatcher(new AbstractNotNullMatcher<JMethod>() {
+            @Override
+            public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+                return found.getAnnotations().contains(matcher);
+            }
+
+            @Override
+            public void describeTo(Description desc) {
+                // super.describeTo(desc);
+                desc.value("with annotation", matcher);
+            }
+        });
+        return this;
+    }
+
+    public <A extends Annotation> AJMethod parameterAnnotation(final Class<A> annotationClass) {
+        parameterAnnotation(AJAnnotation.with().fullName(annotationClass));
+        return this;
+    }
+    
+	public AJMethod parameterAnnotation(final Matcher<JAnnotation> matcher) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-				return found.hasParameterAnnotationOfType(annotationClass);
+				return found.hasParameterAnnotation(matcher);
 			}
 			
 			@Override
             public void describeTo(Description desc) {
-                desc.value("with parameter annotation:", annotationClass.getName());
+                desc.value("with parameter annotation:", matcher);
             }
 		});
 		return this;

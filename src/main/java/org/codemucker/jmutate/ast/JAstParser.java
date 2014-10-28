@@ -6,6 +6,8 @@ import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -15,8 +17,11 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jmatch.Assert;
+import org.codemucker.jmutate.DefaultResourceLoader;
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.JMutateParseException;
+import org.codemucker.jmutate.ResourceLoader;
+import org.codemucker.jmutate.util.ClassUtil;
 import org.codemucker.lang.IBuilder;
 import org.codemucker.lang.annotation.NotThreadSafe;
 import org.codemucker.lang.annotation.Optional;
@@ -45,9 +50,13 @@ public class JAstParser {
 	private final boolean checkParse;
 	private final boolean recordModifications;
 	private final Map<?,?> options;
-	private final String[] binaryRoots;
-	private final String[] sourceRoots;
-	
+    private final ResourceLoader resourceLoader;
+    
+    //cached for parser
+    private final String[] binaryRoots;
+    private final String[] sourceRoots;
+    private final String[] sourceEncodings;
+    
 	public static Builder with(){
 		return new Builder();
 	}
@@ -56,31 +65,54 @@ public class JAstParser {
         return with().defaults().build();
     }
 
-	private static final String[] EMPTY = new String[]{};
-	
-	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Root snippetRoot, Iterable<Root> resolveRoots) {
+    private static final String[] EMPTY = new String[]{};
+    private static final String DEFAULT_SRC_ENCODING = "UTF-8";
+    
+	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Root snippetRoot, /*Iterable<Root> resolveRoots,*/ResourceLoader resourceLoader) {
 	    super();
 	    this.parser = checkNotNull(parser,"expect parser");
 	    this.checkParse = checkParse;
 	    this.recordModifications = recordModifications;
 	    this.options = checkNotNull(options,"expect parser options");
+	    //this.resolveRoots = ImmutableList.copyOf(resolveRoots);
+	    this.resourceLoader = resourceLoader;
 	    
-	    List<String> sources = newArrayList();
-	    sources.add(snippetRoot.getPathName());
-	    
-	    List<String> binaries = newArrayList();
-		for (Root root : resolveRoots) {
-			if(root.getContentType() == RootContentType.SRC){
-				sources.add(root.getPathName());
-			}  else {
-				binaries.add(root.getPathName());
-			}
-		}
-		
-		this.binaryRoots = binaries.toArray(EMPTY);
-		this.sourceRoots = sources.toArray(EMPTY);
-    }
+		Collection<Root> roots = resourceLoader.getAllRoots();
+		List<String> binaryRoots = new ArrayList<>(30);
+		List<String> srcRoots = new ArrayList<>(15);
+		List<String> srcEncodings = new ArrayList<>(15);
+        
+        srcRoots.add(snippetRoot.getPathName());
+        srcEncodings.add(DEFAULT_SRC_ENCODING);
 
+        for (Root root : roots) {
+            if (root.getContentType() == RootContentType.BINARY || root.getContentType() == RootContentType.MIXED) {
+                binaryRoots.add(root.getPathName());
+            }
+            //we don't want to compile dependency sources
+            if (root.getType() != RootType.DEPENDENCY && (root.getContentType() == RootContentType.SRC || root.getContentType() == RootContentType.MIXED)) {
+                srcRoots.add(root.getPathName());
+                srcEncodings.add(DEFAULT_SRC_ENCODING);
+            }
+        }
+        this.binaryRoots = binaryRoots.toArray(EMPTY);
+        this.sourceRoots = srcRoots.toArray(EMPTY);
+        this.sourceEncodings = srcEncodings.toArray(EMPTY);
+	}
+
+	/**
+	 * Return an immutable list of roots used in resolving bindings
+	 * 
+	 * @return
+	 *//*
+	public List<Root> getRoots(){
+	    return resolveRoots;
+	}
+	*/
+	
+	public ResourceLoader getResourceLoader(){
+	    return resourceLoader;
+	}
 	/**
 	 * Parse the given source as a compilation unit
 	 * 
@@ -89,6 +121,8 @@ public class JAstParser {
 	 */
 	public CompilationUnit parseCompilationUnit(CharSequence src,RootResource resource) {
 		CompilationUnit cu = (CompilationUnit) parseNode(src, ASTParser.K_COMPILATION_UNIT, resource);
+		bindToNode(cu,resourceLoader,resource);
+		
 		if (checkParse){
 			IProblem[] problems = cu.getProblems();
 			if (problems.length > 0) {
@@ -100,7 +134,7 @@ public class JAstParser {
 					    msg += "\nsource roots:" + Joiner.on("\n").join(sourceRoots);
 					    msg += "\nbinary roots:" + Joiner.on("\n").join(binaryRoots);
 					}
-					Assert.fail(msg);
+					throw new JMutateParseException(msg);
 				}
 			}
 		}
@@ -177,17 +211,17 @@ public class JAstParser {
 		if( resource != null ){
 			parser.setUnitName(resource.getRelPath());
 		}
+		Collection<Root> roots = resourceLoader.getAllRoots();
+		
         if (binaryRoots.length > 0 || sourceRoots.length > 0) {
             boolean includeRunningVMBootclasspath = true;// if false can't find all the JDK classes?
-            String[] encodings = new String[sourceRoots.length];
-            for (int i = 0; i < sourceRoots.length; i++) {
-                encodings[i] = "UTF-8";
-            }
-            parser.setEnvironment(binaryRoots, sourceRoots, encodings, includeRunningVMBootclasspath);
+            parser.setEnvironment(binaryRoots, sourceRoots, sourceEncodings, includeRunningVMBootclasspath);
         }
 		parser.setSource(src.toString().toCharArray());
 		parser.setKind(kind);
 		ASTNode node = parser.createAST(null);
+
+		bindToNode(node,resourceLoader,resource);
 		//check the parsed type is what was asked for as if there was an error
 		//parsing the parser can decide to change it's mind as to what it's returning
 				
@@ -197,6 +231,11 @@ public class JAstParser {
 //		}
 		return node;
 	}
+	
+    private static void bindToNode(ASTNode node, ResourceLoader resourceLoader, RootResource resource) {
+        ClassUtil.setResourceLoader(node, resourceLoader);
+        ClassUtil.setResource(node, resource);
+    }
 	
 	/**
 	 * Return the underlying ASTParser
@@ -237,13 +276,20 @@ public class JAstParser {
         }
 
 		public JAstParser build(){
+		    
+		    ResourceLoader loader = DefaultResourceLoader.with()
+		            .roots(roots)
+		            //TODO:should we determine this here? 
+		            .classLoader(ClassUtil.getClassLoaderForResolving())
+		            .build();
+		    
 			return new JAstParser(
 				toParser()
 				, checkParse
 				, recordModifications
 				, newHashMap(options)
 				, toSnippetRoot()
-				, roots
+				, loader
 			);
 		}
 

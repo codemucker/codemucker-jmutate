@@ -87,17 +87,26 @@ public class AJField extends ObjectMatcher<JField>{
 		return this;
 	}
 	
-	public <A extends Annotation> AJField annotation(final Class<A> annotationClass){
-		addMatcher(new AbstractNotNullMatcher<JField>() {
-			private final Matcher<JAnnotation> matcher = AJAnnotation.with().fullName(annotationClass);
-			
-			@Override
-			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
-				return found.getAnnotations().contains(matcher);
-			}
-		});
-		return this;
-	}
+    public <A extends Annotation> AJField annotation(final Class<A> annotationClass) {
+        annotation(AJAnnotation.with().fullName(annotationClass));
+        return this;
+    }
+
+    public AJField annotation(final Matcher<JAnnotation> matcher) {
+        addMatcher(new AbstractNotNullMatcher<JField>() {
+            @Override
+            public boolean matchesSafely(JField found, MatchDiagnostics diag) {
+                return found.getAnnotations().contains(matcher);
+            }
+
+            @Override
+            public void describeTo(Description desc) {
+                // super.describeTo(desc);
+                desc.value("with annotation", matcher);
+            }
+        });
+        return this;
+    }
 
 	public AJField access(final JAccess access){
 		addMatcher(new AbstractNotNullMatcher<JField>() {
