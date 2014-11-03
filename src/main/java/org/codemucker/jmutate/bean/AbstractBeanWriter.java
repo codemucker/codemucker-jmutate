@@ -7,9 +7,9 @@ import java.util.Map;
 import org.codemucker.jpattern.IsGenerated;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jpattern.PatternType;
-import org.codemucker.jtest.ClassNameUtil;
 import org.codemucker.jtest.bean.BeanDefinition;
 import org.codemucker.jtest.bean.PropertyDefinition;
+import org.codemucker.lang.ClassNameUtil;
 import org.codemucker.lang.MapBuilder;
 import org.codemucker.lang.annotation.NotThreadSafe;
 
@@ -51,8 +51,8 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter implements 
 	public AbstractBeanWriter(BeanBuilderOptions options, String fullClassName){
 		this.options = options;
 		this.fullClassName = fullClassName;
-		this.shortClassName = ClassNameUtil.extractShortClassNamePart(fullClassName);
-		this.pkgName = ClassNameUtil.extractPkgPart(fullClassName);
+		this.shortClassName = ClassNameUtil.extractSimpleClassNamePart(fullClassName);
+		this.pkgName = ClassNameUtil.extractPkgPartOrNull(fullClassName);
 	}
 	
 	public String getSourceFilePath(){
@@ -293,7 +293,8 @@ public abstract class AbstractBeanWriter extends AbstractClassWriter implements 
 		println(s, map);
 	}
 	
-	public  MapBuilder<String, Object> map(){
+	@Override
+    public  MapBuilder<String, Object> map(){
 		MapBuilder<String, Object> map = emptyMap();
 		map.put("this.pkgName", pkgName);
 		map.put("this.type", shortClassName);

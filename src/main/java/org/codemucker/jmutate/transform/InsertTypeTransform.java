@@ -62,7 +62,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 	 */
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.TYPE) PlacementStrategy strategy) {
-	    setPlacementStrategy(strategy);
+	    placementStrategy(strategy);
     }
 
 	/**

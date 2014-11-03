@@ -10,16 +10,13 @@ public class JSearchEngineTest {
 	public void smokeTest(){
 		JSearchEngine engine = JSearchEngine.with()
 			.defaults()
-			.searchRoots(Roots.with()
+			.scanRoots(Roots.with()
 				.mainSrcDir(true)
-				.testSrcDir(true)
-				//.setIncludeClasspath(true)
-				)
+				.testSrcDir(true))
 			.parser(JAstParser.with()
 				.resolveBindings(true)
 				.checkParse(true)
-				.roots(Roots.with()
-					.allDirs()))
+				.resourceLoader(Roots.with().all()))
 			.build();
 		
 		engine.find();

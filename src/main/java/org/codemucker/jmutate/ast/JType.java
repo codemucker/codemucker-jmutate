@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.PredicateToFindFilterAdapter;
+import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateContext;
@@ -23,8 +24,8 @@ import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.util.ClassUtil;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.MutateUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -110,6 +111,10 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
     public abstract List<ASTNode> getBodyDeclarations();
 	public abstract boolean isInnerClass();
 	public abstract boolean isTopLevelClass();
+    
+	public RootResource getResource(){
+        return MutateUtil.getResource(typeNode);
+    }
     
 	@Override
 	public ASTNode getAstNode(){
@@ -288,7 +293,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 * @param matcher
 	 * @return
 	 */
-	public boolean hasMethodsMatching(final Matcher<JMethod> matcher) {
+	public boolean hasMethodMatching(final Matcher<JMethod> matcher) {
 		final AtomicBoolean foundReturn = new AtomicBoolean();
 		ASTVisitor visitor = new BaseASTVisitor() {
 			boolean found = false;
@@ -544,7 +549,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 	
 	public boolean isSubClassOf(Class<?> superClass) {
-		String qualifiedName = JavaNameUtil.compiledNameToSourceName(superClass.getName());
+		String qualifiedName = NameUtil.compiledNameToSourceName(superClass.getName());
 		return isSubClassOf(superClass, qualifiedName);
 	}
 	
@@ -553,7 +558,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 	
 	public boolean isSubClassOf(Class<?> superClass,String genericSuperClassName) {
-		String rawSuperClassName = JavaNameUtil.removeGenericPart(genericSuperClassName);
+		String rawSuperClassName = NameUtil.removeGenericPart(genericSuperClassName);
 		FindResult<JType> allTypesInCu = getJCompilationUnit().findAllTypes();
 		//TODO:this can be done better. Really need to look up on each type
 		//and keep rack what has been tested already
@@ -568,12 +573,12 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 			return true;
 		}
 		//let's fall back to proper class loading
-		superClass = superClass==null?ClassUtil.loadClassOrNull(rawSuperClassName):superClass;
+		superClass = superClass==null?MutateUtil.loadClassOrNull(rawSuperClassName):superClass;
 		if( superClass != null)
 		{
 			//lets try loading this class directly. If it's not part of a snippet or code gen, then
 			//we might be successful
-			Class<?> thisClass = ClassUtil.loadClassOrNull(getFullName());
+			Class<?> thisClass = MutateUtil.loadClassOrNull(getFullName());
 			
 			if(thisClass != null && superClass != null){
 				return superClass.isAssignableFrom(thisClass);
@@ -584,10 +589,10 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 			Collection<Type> extendTypes = findImmediateSuperClassesAndInterfaceTypes();
 			//only try external class
 			for(Type t : extendTypes){
-				String fn = JavaNameUtil.resolveQualifiedName(t);
+				String fn = NameUtil.resolveQualifiedName(t);
 				if(!fullNameToType.containsKey(fn)){
 					//external class, lets try it
-					Class<?> external = ClassUtil.loadClassOrNull(fn);
+					Class<?> external = MutateUtil.loadClassOrNull(fn);
 					if( external != null && superClass.isAssignableFrom(external)){
 						return true;
 					}
@@ -602,8 +607,8 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		Collection<Type> extendTypes = findImmediateSuperClassesAndInterfaceTypes();
 		for (Type type : extendTypes) {
 			if(!type.isWildcardType()){
-				String fqn = JavaNameUtil.resolveQualifiedName(type);
-				String rawFqn = JavaNameUtil.removeGenericPart(fqn);
+				String fqn = NameUtil.resolveQualifiedName(type);
+				String rawFqn = NameUtil.removeGenericPart(fqn);
 				
 				if(rawFqn.equals(rawParentName)){
 					return true;
@@ -691,7 +696,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
         }
 		
 		public String getFullName(){
-			return JavaNameUtil.resolveQualifiedName(typeNode);
+			return NameUtil.resolveQualifiedName(typeNode);
 		}
 		
 		public String getSimpleName(){

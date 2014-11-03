@@ -2,6 +2,8 @@ package org.codemucker.jmutate.ast;
 
 import static org.codemucker.lang.Check.checkNotNull;
 
+import java.util.List;
+
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.SourceTemplate;
@@ -10,12 +12,17 @@ import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.transform.InsertTypeTransform;
+import org.codemucker.jmutate.util.NameUtil;
+import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.NameQualifiedType;
+import org.eclipse.jdt.core.dom.Type;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 
 public class JTypeMutator {
@@ -67,8 +74,8 @@ public class JTypeMutator {
 	public void addField(FieldDeclaration field){
 		ctxt.obtain(InsertFieldTransform.class)
 			.target(jType)
-			.setField(field)
-			.setPlacementStrategy(getStrategies().getFieldStrategy())
+			.field(field)
+			.placementStrategy(getStrategies().getFieldStrategy())
 			.transform();
 	}
 
@@ -91,7 +98,7 @@ public class JTypeMutator {
 		}
 		ctxt.obtain(InsertMethodTransform.class)
     		.target(jType)
-    		.setMethod(method)
+    		.method(method)
     		.transform();
 	}
 
@@ -106,7 +113,7 @@ public class JTypeMutator {
 		ctxt.obtain(InsertCtorTransform.class)
     		.target(jType)
     		.setCtor(ctor)
-    		.setPlacementStrategy(getStrategies().getCtorStrategy())
+    		.placementStrategy(getStrategies().getCtorStrategy())
     		.transform();
 	}
 	
@@ -121,9 +128,54 @@ public class JTypeMutator {
 		InsertTypeTransform.newTransform()
 			.target(jType)
 			.setType(type)
-			.setPlacementStrategy(getStrategies().getTypeStrategy())
+			.placementStrategy(getStrategies().getTypeStrategy())
 			.transform();
 	}
+	/**
+	 * Add an 'implements x' if this types doesn't already implement x
+	 * 
+	 * @param fullName
+	 */
+	public void addImplements(String fullName){
+	    if(jType.isClass()){
+	        TypeDeclaration type = jType.asTypeDecl();
+	        List<Type> types = type.superInterfaceTypes();
+	        for(Type t:types){
+	            if(NameUtil.resolveQualifiedName(t).equals(fullName)){
+	                return;//lets not add it more than once
+	            }
+	        }
+	        AST ast = jType.getAst();
+	        String pkgPart = ClassNameUtil.extractPkgPartOrNull(fullName);
+	        String classPart = ClassNameUtil.extractSimpleClassNamePart(fullName);
+	        Type newType;
+            if (pkgPart != null) {
+                newType = ast.newNameQualifiedType(ast.newName(pkgPart), ast.newSimpleName(classPart));
+            } else {
+                newType = ast.newSimpleType(ast.newSimpleName(classPart));
+            }
+            types.add(newType);
+        }
+    }
+	
+	/**
+	 * Ad a new import if it doesn't already exist
+	 */
+	public void addImport(String fullName){
+        List<ImportDeclaration> imports = jType.getCompilationUnit().imports();
+        for(ImportDeclaration dec:imports){
+            if(fullName.equals(dec.getName().getFullyQualifiedName())){
+                    return;
+            }
+        }
+        ImportDeclaration newImport = jType.getAst().newImportDeclaration();
+        newImport.setName(jType.getAst().newName(fullName));
+        imports.add(newImport);
+    }
+    
+    
+	
+	
 	
 	private SourceTemplate newSourceTemplate(){
 		return ctxt.obtain(SourceTemplate.class);

@@ -2,7 +2,6 @@ package org.codemucker.jmutate;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
@@ -10,9 +9,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
-import javax.lang.model.SourceVersion;
 import javax.tools.Diagnostic;
 import javax.tools.DiagnosticCollector;
 import javax.tools.FileObject;
@@ -28,13 +25,12 @@ import org.apache.log4j.Logger;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ast.JSourceFile;
-import org.codemucker.jtest.ProjectResolver;
 
 import com.google.inject.Inject;
 
-public class DefaultCompiler implements JCompiler {
+public class SystemCompiler implements JCompiler {
 
-    private static final Logger log = LogManager.getLogger(DefaultCompiler.class);
+    private static final Logger log = LogManager.getLogger(SystemCompiler.class);
     
     private static final String PATH_SEP = System.getProperty("path.separator");
     private static final String NL = System.getProperty("line.separator");
@@ -43,7 +39,7 @@ public class DefaultCompiler implements JCompiler {
     private final String targetVersion;
     
     @Inject
-    public DefaultCompiler(ResourceLoader resourceLoader,ProjectResolver project) {
+    public SystemCompiler(ResourceLoader resourceLoader,ProjectOptions project) {
         this.defaultResourceLoader = resourceLoader;
         this.sourceVersion = project.getSourceVersion();
         this.targetVersion = project.getTargetVersion();
@@ -77,18 +73,18 @@ public class DefaultCompiler implements JCompiler {
                 log.debug("compile resource " + resource);
                 log.debug("compile source version " + sourceVersion);
                 log.debug("compile target version " + targetVersion);
-                log.debug("compile classpath roots:");
+                log.trace("compile classpath roots:");
                 for(Root root:resourceLoader.getAllRoots()){
-                    log.debug("root " + root.getPathName());        
+                    log.trace("root " + root.getPathName());        
                 }
-                log.debug("source:\n------------------");
+                log.trace("source:\n------------------");
                 try {
                     String src = IOUtils.toString(resource.getInputStream(),"UTF-8");
-                    log.debug(src);
+                    log.trace(src);
                 } catch (IOException e) {
                     throw new JMutateException("Couldn't read src",e);
                 }
-                log.debug("\n---------------");
+                log.trace("\n---------------");
             }
             
             List<String> compilerOptions = new ArrayList<String>();
@@ -141,7 +137,7 @@ public class DefaultCompiler implements JCompiler {
                     errMsg.append(String.format("%nCompile output:%n%s", errOut.toString()));
                 }
                 String src = readSourcePrependLineNumbers(resource);
-                errMsg.append(String.format("%nsource=%n%s", src));
+                errMsg.append(String.format("%nsource=%n-------------%n%s%n-----------------", src));
                 for (Root root : resourceLoader.getAllRoots()) {
                     errMsg.append(String.format("%nUsing root %s", root));
                 }

@@ -7,10 +7,12 @@ import java.util.List;
 
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.util.MutateUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -47,6 +49,10 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 		return new JCompilationUnit(cu);
 	}
 	
+	public RootResource getResource(){
+        return MutateUtil.getResource(compilationUnit);
+    }
+    
 	public String getFullPackageName(){
 		PackageDeclaration pkg = compilationUnit.getPackage();
 		if( pkg == null){

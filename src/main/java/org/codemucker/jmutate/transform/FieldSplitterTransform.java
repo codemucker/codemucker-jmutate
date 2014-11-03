@@ -57,8 +57,8 @@ public class FieldSplitterTransform implements Transform {
 		
 		InsertFieldTransform inserter = ctxt.obtain(InsertFieldTransform.class)
 			.target(target)
-			.setPlacementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
-			.setClashStrategy(ClashStrategy.REPLACE);
+			.placementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
+			.clashStrategy(ClashStrategy.REPLACE);
 		
 		//copy the shared field info
 		JFieldBuilder fieldBuilder = ctxt.obtain(JFieldBuilder.class)

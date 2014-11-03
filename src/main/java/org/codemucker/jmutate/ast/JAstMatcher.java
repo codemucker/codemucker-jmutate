@@ -44,12 +44,6 @@ public class JAstMatcher extends ASTMatcher {
 			return new ASTMatcher(matchDocTags);
 		}
 		
-		public Builder copyOf(){
-			Builder copy = new Builder();
-			copy.matchDocTags = matchDocTags;
-			return copy;
-		}
-		
 		public Builder matchDocTags(boolean matchDocTags) {
         	this.matchDocTags = matchDocTags;
         	return this;

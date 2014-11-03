@@ -57,7 +57,7 @@ class ABuilderPattern extends AbstractMatcher<JType>{
                 } else {
                     parent = holder.builderType;
                 }
-                if(parent != null && !parent.hasMethodsMatching(AJMethod.with().name(builderStaticCreateMethod).numArgs(0).isStatic().returning(AType.that().isEqualTo(holder.builderType)))){
+                if(parent != null && !parent.hasMethodMatching(AJMethod.with().name(builderStaticCreateMethod).numArgs(0).isStatic().returning(AType.that().isEqualTo(holder.builderType)))){
                     Description desc = diag.newDescription();
                 
                     desc.text("expect to find a static builder factory method");

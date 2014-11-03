@@ -2,11 +2,13 @@ package org.codemucker.jmutate.util;
 
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ResourceLoader;
+import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
@@ -27,18 +29,32 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Contains all the mess for resolving names to qualified names and some utility functions
  */
-public class JavaNameUtil {
+public class NameUtil {
 	
-	public static String removeGenericPart(String shortOrQualifiedName){
-		int i = shortOrQualifiedName.indexOf('<');
+	private static final Collection<String> PRIMITIVES = ImmutableList.of(
+    			"boolean"
+    			,"short"
+    			, "char"
+    			, "byte"
+    			, "int"
+    			, "float"
+    			, "double"
+    			, "String"
+    			, "java.lang.String"
+    			, "long"
+    	);
+
+    public static String removeGenericPart(String shortOrFullName){
+		int i = shortOrFullName.indexOf('<');
 		if( i != -1){
-			shortOrQualifiedName = shortOrQualifiedName.substring(0,i);
+			shortOrFullName = shortOrFullName.substring(0,i);
 		}
-		return shortOrQualifiedName;
+		return shortOrFullName;
 	}
 	/**
 	 * @see {link {@link #resolveQualifiedName(Type, StringBuilder)}. This just returns this as a string
@@ -251,7 +267,7 @@ public class JavaNameUtil {
 	}
 	
 	private static ResourceLoader getLoaderFor(ASTNode node){
-	    return ClassUtil.getResourceLoader(node);
+	    return MutateUtil.getResourceLoader(node);
 	}
 	
 	private static String resolveQualifiedNameFromClassLoaderOrNull(SimpleName name) {
@@ -439,4 +455,79 @@ public class JavaNameUtil {
 	public static String compiledNameToSourceName(String className){
 		return className.replace('$', '.');
 	}
+	
+	/**
+	 * Convert a fully qualified name to a compiled name. Class name is deemed to be a dot '.' followed by an upper case letter, as in '.X'.
+	 * 
+	 * Examples:
+	 * 
+	 * <ul>
+	 *     <li>com.foo.Bar --&gt; com.foo.Bar
+     *     <li>com.Foo.Bar --&gt; com.Foo$Bar (foo does not start with uppercase, is package)
+     *     <li>com.foO.Bar --&gt; com.foO.Bar
+     *     <li>com.fOO.Bar --&gt; com.fOO.Bar (foo does not start with uppercase, is package)
+     *     <li>com.FOO.Bar --&gt; com.FOO$Bar (foo starts in uppercase, must be classname)
+     *     <li>com.Foo$Bar --&gt; com.Foo$Bar (already in compiled form, leave as)
+     *     <li>com.Foo.Bar$Bar --&gt; com.Foo.Bar$Bar (already is in compiled form, leave as)
+     *     <li>com.Foo$Bar$Bar --&gt; com.Foo$Bar$Bar (already is in compiled form, leave as)
+     *     
+	 * <ul>
+	 * @param className
+	 * @return
+	 */
+	public static String sourceNameToCompiledName(String className){
+        StringBuilder sb = new StringBuilder();
+        boolean inClass = false;
+        boolean lastIsDot = false;
+        for (int i = 0; i < className.length(); i++) {
+            char c = className.charAt(i);
+            if( c == '$'){
+                //already converted!
+                return className;
+            }
+            if (c == '.') {
+                if (inClass) {
+                    sb.append('$');
+                } else {
+                    sb.append('.');
+                }
+                lastIsDot = true;
+            } else {
+                if((i==0 || lastIsDot) && Character.isUpperCase(c)) {
+                    inClass = true;
+                }
+                lastIsDot = false;
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+    
+    /**
+     * Use short name if the type is a primitive, or it's package is one of the default
+     * packages imported
+     * @param fullTypeName
+     * @return
+     */
+    public static String toShortNameIfDefaultImport(String fullTypeName) {
+    	if(isPrimitive(fullTypeName) || fullTypeName.startsWith("java.lang.")){
+    		int idx = fullTypeName.lastIndexOf(".");
+    		if( idx != -1){
+    			return fullTypeName.substring(idx + 1);
+    		}
+    	}
+    	return fullTypeName;
+    }
+    
+    public static boolean isBoolean(final String shortOrFullTypeName) {
+        return "boolean".equals(shortOrFullTypeName) || "java.lang.Boolean".equals(shortOrFullTypeName) || "Boolean".equals(shortOrFullTypeName);
+    }
+    
+    public static boolean isPrimitive(final String shortOrFullTypeName) {
+    	return PRIMITIVES.contains(shortOrFullTypeName);
+    }
+
+    public static String insertBeforeClassName(String fqClassName, String shortClassNamePrefix) {
+        return ClassNameUtil.extractPkgPartOrNull(fqClassName) + "." + shortClassNamePrefix + ClassNameUtil.extractSimpleClassNamePart(fqClassName);
+    }
 }

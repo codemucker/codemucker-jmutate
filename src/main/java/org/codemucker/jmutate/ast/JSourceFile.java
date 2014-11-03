@@ -17,7 +17,7 @@ import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jtest.ClassNameUtil;
+import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -127,7 +127,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		return compilationUnitNode;
 	}
 	
-	public void visit(JFindVisitor visitor) {
+	public void visit(BaseSourceVisitor visitor) {
 		if (visitor.visit(this)) {
 			CompilationUnit cu = getCompilationUnitNode();
 			if (visitor.visit(cu)) {

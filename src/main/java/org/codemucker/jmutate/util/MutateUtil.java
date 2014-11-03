@@ -5,13 +5,15 @@ import org.codemucker.jmutate.ResourceLoader;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 /**
- * Provides some convenience methods
+ * Provides some convenience methods that don't seem to fit anywhere else
  * 
  */
-public class ClassUtil {
+public class MutateUtil  {
 
-    private static final String NODE_PROPERTY_RESOURCE_LOADER = ClassUtil.class.getSimpleName() + ":Loader";
-    private static final String NODE_PROPERTY_RESOURCE = ClassUtil.class.getSimpleName() + ":resource";
+    private static final String NODE_PROPERTY_RESOURCE_LOADER = MutateUtil.class.getSimpleName() + ":Loader";
+    private static final String NODE_PROPERTY_RESOURCE = MutateUtil.class.getSimpleName() + ":resource";
+
+    private static ClassLoader classLoader;
     
     public static ResourceLoader getResourceLoader(ASTNode node){
         return (ResourceLoader) node.getRoot().getProperty(NODE_PROPERTY_RESOURCE_LOADER);
@@ -38,21 +40,21 @@ public class ClassUtil {
 		}
 	}
 	
-	/*public static boolean canLoadClass(String className){
-		return canLoadClass(getClassLoaderForResolving(), className);
-	}*/
+	public static void setClassLoader(ClassLoader classloader){
+	    MutateUtil.classLoader = classloader;
+	}
 	
 	//ideally like to inject this in somehow. Worst case we do this via a static (yuck)
-	public static ClassLoader getClassLoaderForResolving(){
-		//TODO:possibly want one which doesn't cache the classes?
-		return Thread.currentThread().getContextClassLoader();
-	}
-	
+    public static ClassLoader getClassLoaderForResolving() {
+        ClassLoader cl = classLoader;
+        if (cl == null) {
+            // TODO:possibly want one which doesn't cache the classes?
+            cl = Thread.currentThread().getContextClassLoader();
+        }
+        return cl;
+    }
+
 	public static boolean canLoadClass(ClassLoader cl, String className){
-	    return canLoadClass(cl, className, false);
-	}
-	
-	public static boolean canLoadClass(ClassLoader cl, String className, boolean isAnnotation){
 		try {
             cl.loadClass(className);
 			return true;

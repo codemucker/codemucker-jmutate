@@ -62,7 +62,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	 */
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.FIELD) PlacementStrategy strategy) {
-	    setPlacementStrategy(strategy);
+	    placementStrategy(strategy);
     }
 	
 	/**
@@ -71,7 +71,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 	 * @param field
 	 * @return
 	 */
-	public InsertFieldTransform setField(FieldDeclaration field) {
+	public InsertFieldTransform field(FieldDeclaration field) {
     	field(JField.from(field));
     	return this;
 	}

@@ -2,7 +2,7 @@ package org.codemucker.jmutate.bean;
 
 import java.io.File;
 
-import org.codemucker.jtest.ProjectFinder;
+import org.codemucker.jtest.ProjectLayouts;
 
 
 @Deprecated
@@ -14,7 +14,7 @@ public class GenerationContext {
 	private File generationTestDir;
 
 	public GenerationContext() {
-		this(ProjectFinder.findProjectDir());
+		this(ProjectLayouts.findProjectDir());
 	}
 	
 	public GenerationContext(File rootDir) {

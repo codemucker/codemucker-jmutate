@@ -6,7 +6,7 @@ import java.util.Collection;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
-import org.codemucker.jmutate.JMutateFilter;
+import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JType;
@@ -73,9 +73,9 @@ public class BeanBuilderTransformTest {
 
 	private FindResult<JType> findTypesToTransform() {
 	    FindResult<JType> found = TestSourceHelper.newTestSourcesResolvingFinder()
-			.filter(JMutateFilter.with()
+			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
-				.includeType(AJType.with().name(TestBuilderBean.class))
+				.includesType(AJType.with().name(TestBuilderBean.class))
 			)	
 			.build()
 			.findTypes();

@@ -3,11 +3,10 @@ package org.codemucker.jmutate.builder;
 import static org.codemucker.lang.Check.checkNotNull;
 
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.ToSourceConverter;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
-import org.codemucker.jmutate.util.JavaNameUtil;
-import org.codemucker.jmutate.util.TypeUtil;
+import org.codemucker.jmutate.ast.ToSourceConverter;
+import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.Pattern;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -80,12 +79,12 @@ public class JFieldBuilder extends AbstractBuilder<JFieldBuilder,JField> {
 	}
 
 	public JFieldBuilder fieldType(Type type) {
-		fieldType(JavaNameUtil.resolveQualifiedName(type));
+		fieldType(NameUtil.resolveQualifiedName(type));
 		return this;
 	}
 	
 	public JFieldBuilder fieldType(String type) {
-		this.fieldType = TypeUtil.toShortNameIfDefaultImport(type);
+		this.fieldType = NameUtil.toShortNameIfDefaultImport(type);
 		return this;
 	}
 

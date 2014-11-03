@@ -15,25 +15,26 @@ import org.codemucker.jfind.DirectoryRoot;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
+import org.codemucker.jfind.Roots;
 import org.codemucker.jfind.matcher.AResource;
 import org.codemucker.jfind.matcher.ARoot;
+import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.DefaultMutateContext;
+import org.codemucker.jmutate.DefaultResourceLoader;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.JMutateFilter;
-import org.codemucker.jmutate.JMutateScanner;
+import org.codemucker.jmutate.SourceFilter;
+import org.codemucker.jmutate.SourceScanner;
+import org.codemucker.jmutate.ast.BaseSourceVisitor;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JAstParser;
-import org.codemucker.jmutate.ast.JCompilationUnit;
-import org.codemucker.jmutate.ast.JFindVisitor;
-import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.util.JavaNameUtil;
-import org.codemucker.jpattern.IsGenerated;
-import org.codemucker.jpattern.cqrs.GenerateCqrsRestServiceClient;
+import org.codemucker.jmutate.util.MutateUtil;
+import org.codemucker.jmutate.util.NameUtil;
+import org.codemucker.jpattern.DefaultGenerator;
 import org.codemucker.lang.IBuilder;
 import org.codemucker.lang.annotation.Optional;
 import org.codemucker.lang.annotation.Required;
@@ -48,35 +49,34 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 /**
  * I scan and filter the source code to find build annotations. I then pass this off to the appropriate generator
  */
 public class GeneratorRunner {
 
-    private static final Matcher<String> MATCH_CONTENT = AString.matchingAntPattern("**" + IsGenerated.class.getPackage().getName() + "**");
-    private static final Matcher<JAnnotation> GENERATION_ANNOTATIONS = AJAnnotation.with().fullName(AString.matchingAntPattern(IsGenerated.class.getPackage().getName() + ".*Generate*"));
+    private static final Matcher<String> MATCH_CONTENT = AString.matchingAntPattern("**Generate**");
+    private static final Matcher<JAnnotation> GENERATION_ANNOTATIONS = AJAnnotation.with()
+            .fullName(AString.matchingAntPattern("*.*Generate*"))
+            .annotatedWith(AnAnnotation.with().fullName(DefaultGenerator.class));
 
     private final Logger log = LogManager.getLogger(GeneratorRunner.class);
 
     /**
-     * The roots to scan
+     * The roots used to resolve classes and sources. The set of roots to scan
      */
     private final Iterable<Root> scanRoots;
     /**
      * Use to limit the roots scanned
      */
-    private final Matcher<Root> scanRootMatcher;
+    private final Matcher<Root> scanRootFilter;
     /**
      * The packages to limit the scan to, or empty if all.
      */
     private final String scanPackagesAntPattern;
-    /**
-     * The ast parser to use for loading the source code
-     */
-    private final JAstParser parser;
     
     //TODO:support generator precedence. What if generators expose the annotations they add to code so we can detect which generator has to run first?
     /**
@@ -101,24 +101,46 @@ public class GeneratorRunner {
 
     private final DefaultMutateContext ctxt;
     
+    /**
+     * If true and a generator is not explicitly registered for a generation annotation, then see if the annotation contains a default generator
+     */
+    private final boolean autoRegisterDefaultGenerators;
+    private final boolean scanSubtypes;
+    private final DefaultResourceLoader resourceLoader;
+    
+    
     public static Builder with() {
         return new Builder();
     }
 
-    public GeneratorRunner(Iterable<Root> sourceRoots, Matcher<Root> rootMatcher, Root generationRoot, String searchPkg, JAstParser parser,ClassLoader classLoader,Map<String, String> generators, boolean failOnParseError) {
+    public GeneratorRunner(Iterable<Root> roots, Iterable<Root> scanRoots, Matcher<Root> scanRootsFilter, boolean scanSubtypes,Root generationRoot, String searchPkg,Map<String, String> generators, boolean failOnParseError) {
         super();
-        this.scanRoots = sourceRoots;
-        this.scanRootMatcher = rootMatcher;
+        this.resourceLoader = DefaultResourceLoader.with()
+                .parentLoader(DefaultResourceLoader.with().classLoader(Thread.currentThread().getContextClassLoader()).build())
+                .roots(Roots.with()
+                    .roots(roots)
+                    .roots(scanRoots)
+                    .root(generationRoot)
+                    .build())
+               .build();
+        
+        this.scanRoots = scanRoots;
+        this.scanRootFilter = scanRootsFilter;
         this.scanPackagesAntPattern = searchPkg;
-        this.parser = parser;
-        this.generators = ImmutableMap.copyOf(generators);
-        this.generatorClassLoader = classLoader;
+        this.scanSubtypes = scanSubtypes;
+        
         this.failOnParseError = failOnParseError;
+        this.generators = Maps.newLinkedHashMap(generators);
+        this.generatorClassLoader = resourceLoader.getClassLoader();
+        this.autoRegisterDefaultGenerators = true;
         
         ctxt = DefaultMutateContext.with()
                 .defaults()
-                .parser(parser)//if not set, default used
-                .root(generationRoot)//if not set, one made up
+                .parser(JAstParser.with()
+                        .defaults()
+                        .resourceLoader(resourceLoader)
+                        .build())
+                .generationRoot(generationRoot)
                 .build();
         
         this.annotationCompiler = ctxt.obtain(JAnnotationCompiler.class);
@@ -128,19 +150,20 @@ public class GeneratorRunner {
      * Run the scan and generator and invocation
      */
     public void run() {
+        MutateUtil.setClassLoader(generatorClassLoader);
         if (log.isDebugEnabled()) {
 
             //log.debug("filtering roots to " + scanRootMatcher);
             log.debug("filtering packages " + scanPackagesAntPattern);
             log.debug("scanning roots: ");
             for (Root root : scanRoots) {
-                if(scanRootMatcher.matches(root)){
+                if(scanRootFilter.matches(root)){
                     log.debug(root);
                 }
             }
             log.debug("ignored roots: ");
             for (Root root : scanRoots) {
-                if(!scanRootMatcher.matches(root)){
+                if(!scanRootFilter.matches(root)){
                     log.debug(root);
                 }
             }
@@ -149,18 +172,24 @@ public class GeneratorRunner {
                 log.debug("@" + key + "-- handled by --> " + generators.get(key));
             }
         }
-        List<Annotation> generateAnnotations = findGenerationAnnotations();
-        //compile all the annotations at once instead of calling the compiler once for each annotation. The compiledgi
+        List<Annotation> generateAnnotations = scanForGenerationAnnotations();
+        if(generateAnnotations.size()==0){
+            log.info("no generation annotations found");
+            return;
+        }
+        //compile all the annotations at once instead of calling the compiler once for each annotation. The compiled
         //version will be cached on the ast node of each annotation
         annotationCompiler.compileAnnotations(generateAnnotations);
+        //group the found annotations by the generator they invoke
         Collection<GroupedAnnotations> groups = groupByAnnotationType(generateAnnotations);
-        //run the generators in order
+        //run the generators in order (of generator)
         for (GroupedAnnotations group : groups) {
             Generator<?> generator = getGeneratorFor(group.getAnnotationName());
             if (generator != null) {
                 invokeGenerator(generator,group);
             }
         }
+        MutateUtil.setClassLoader(null);
     }
 
     @SuppressWarnings("unchecked")
@@ -168,85 +197,84 @@ public class GeneratorRunner {
         for (Annotation optionAnnotation : nodesForThisGenerator.getCollectedNodes()) {
             java.lang.annotation.Annotation compiledOptionAnnotation = annotationCompiler.toCompiledAnnotation(optionAnnotation);
             ASTNode attachedTo = getOwningNodeFor(optionAnnotation);
-            JType type= findClosetTypeFor(attachedTo);
+            JType type= findNearestParentTypeFor(attachedTo);
             log.info("processing annotation '" + compiledOptionAnnotation.getClass().getName() + "' in '" + type.getFullName());
             
             generator.generate(attachedTo, compiledOptionAnnotation);
         }
     }
-
-    private static JType findClosetTypeFor(ASTNode node) {
-        while (node != null) {
-            if (JType.is(node)) {
-                return JType.from(node);
-            }
-            node = node.getParent();
-        }
-        return null;
-    }
-    
+  
     /**
      * FInd all the annotations which mark a request to generate some code
      * 
      * @return
      */
-    private List<Annotation> findGenerationAnnotations() {
+    private List<Annotation> scanForGenerationAnnotations() {
         final List<Annotation> found = new ArrayList<>();
         
-        final AResource resourceMatcher = AResource.with()
+        final AResource resourceFilter = AResource.with()
                 .packageName(AString
                         .matchingAntPattern(scanPackagesAntPattern))//limit search
-                   //     .stringContent(MATCH_CONTENT)//prevent parsing nodes we don't need to
+                        .stringContent(MATCH_CONTENT)//prevent parsing nodes we don't need to
                         ;
         if(log.isInfoEnabled()){
-             log.info("match resource " + resourceMatcher);
+             log.info("match resource " + resourceFilter);
             
         }
         //find all the code with generation annotations
-        JMutateScanner.with()
-                    .parser(parser)
-                    .failOnParseError(failOnParseError)
-                    .scanRoots(scanRoots)
-                    .filter(JMutateFilter.with()
-                        //    .includeRoot(rootMatcher)
-                            .includeResource(resourceMatcher)
-                            .includeType(AJType.with().annotation(GENERATION_ANNOTATIONS)))
-                    .build()
-                    .visit(new JFindVisitor() {
-                            @Override
-                            public boolean visit(Root node) {
-                                log.debug("visit root:" + node.getPathName());
-                                return true;
-                            }
-            
-                            @Override
-                            public boolean visit(SingleMemberAnnotation node) {
-                                return found(node);
-                            }
+        SourceFilter.Builder sourceFilter = SourceFilter.with()
+            .includesRoot(scanRootFilter)
+             .includesResource(resourceFilter)
+             .includesType(AJType.with().annotation(GENERATION_ANNOTATIONS));
         
-                            @Override
-                            public boolean visit(MarkerAnnotation node) {
-                                return found(node);
-                            }
+        if(!scanSubtypes){
+            sourceFilter.excludesType(AJType.that().isInnerClass());
+        }
+                     
+        SourceScanner scanner = ctxt.obtain(SourceScanner.Builder.class)
+                .failOnParseError(failOnParseError)
+                .parser(ctxt.getParser())
+                .scanRoots(scanRoots)
+                .filter(sourceFilter)
+                .build();
         
-                            @Override
-                            public boolean visit(NormalAnnotation node) {
-                                return found(node);
-                            }
-        
-                            private boolean found(Annotation node) {
-                                JAnnotation a = JAnnotation.from(node);
-                                // TODO:check instead if annotation is marked with it's
-                                // own 'generator' annotation?
-                              
-                                if (GENERATION_ANNOTATIONS.matches(a)) {
-                                    log("found generation annotation:" + a.getQualifiedName());
-                                    found.add(node);
-                                }
-                                return false;
-                            } 
-                        });
-        log("found " + found.size() +" code generation annotations");
+        scanner.visit(new BaseSourceVisitor() {
+                @Override
+                public boolean visit(Root node) {
+                    //log.debug("visit root:" + node.getPathName());
+                    return true;
+                }
+    
+                @Override
+                public boolean visit(SingleMemberAnnotation node) {
+                    return found(node);
+                }
+    
+                @Override
+                public boolean visit(MarkerAnnotation node) {
+                    return found(node);
+                }
+    
+                @Override
+                public boolean visit(NormalAnnotation node) {
+                    return found(node);
+                }
+    
+                private boolean found(Annotation node) {
+                    JAnnotation a = JAnnotation.from(node);
+                    // TODO:check instead if annotation is marked with it's
+                    // own 'generator' annotation?
+                  
+                    if (GENERATION_ANNOTATIONS.matches(a)) {
+                        log("found generation annotation:" + a.getQualifiedName());
+                        found.add(node);
+                    } else {
+                        //log("skipped annotation:" + a.getQualifiedName());
+                    }
+                    return false;
+                } 
+            });
+log("found " + found.size() +" code generation annotations");
         return found;
     }
     
@@ -277,12 +305,19 @@ public class GeneratorRunner {
     
     private Generator<?> getGeneratorFor(String annotationType){
         String generatorClassName = generators.get(annotationType);
-        if (generatorClassName == null) {
-            StringBuilder msg = new StringBuilder("No code generator registered for annotation '" + annotationType + "', have:[");
+        if (generatorClassName == null && autoRegisterDefaultGenerators) {
+            autoRegisterGeneratorFor(annotationType);
+            generatorClassName = generators.get(annotationType);
+        }
+        if(generatorClassName==null){
+            StringBuilder msg = new StringBuilder("No code generator currently registered for annotation '" + annotationType + "', have:[");
+            //print out what we do have registered
             for (String key : generators.keySet()) {
                 msg.append("\n").append(generators.get(key)).append(" for annotation ").append(key);
             }
             msg.append("]");
+            msg.append("\n auto register generators is " + autoRegisterDefaultGenerators);
+            
             log(msg.toString());
             if (throwErrorOnMissingGenerators) {
                 throw new JMutateException(msg.toString());
@@ -291,7 +326,7 @@ public class GeneratorRunner {
         
         Class<?> generatorClass;
         try {
-            generatorClass = generatorClassLoader.loadClass(generatorClassName);
+            generatorClass = generatorClassLoader.loadClass(NameUtil.sourceNameToCompiledName(generatorClassName));
         } catch (ClassNotFoundException e) {
             throw new JMutateException("Registered generator class %s for annotation %s does not exist", generatorClassName, annotationType);
         }
@@ -302,6 +337,21 @@ public class GeneratorRunner {
         Generator<?> gen = (Generator<?>) ctxt.obtain(generatorClass);
 
         return gen;
+    }
+
+    private void autoRegisterGeneratorFor(String annotationType) {
+        try {
+            Class<?> annotation = ctxt.getResourceLoader().loadClass(NameUtil.sourceNameToCompiledName(annotationType));
+            DefaultGenerator defGenAnon = annotation.getAnnotation(DefaultGenerator.class);
+            if(defGenAnon!=null){
+                log.info("auto registering generator '" + defGenAnon.value() + "' for annotation '" + annotationType + "'");
+                generators.put(annotationType, defGenAnon.value());
+            } else {
+                log.warn("skipping auto registering generator for annotation '" + annotationType + "' as no default supplied");    
+            }
+        } catch (ClassNotFoundException e) {
+            log.warn(String.format("couldn't load annotation class %s, using roots:%n%s",annotationType,Joiner.on("\n").join(ctxt.getResourceLoader().getAllRoots())), e);
+        }
     }
     
     private ASTNode getOwningNodeFor(Annotation annotation) {
@@ -316,6 +366,16 @@ public class GeneratorRunner {
         throw new JMutateException("Currently can't figure out correct parent for annotation:" + annotation);
     }
 
+    private static JType findNearestParentTypeFor(ASTNode node) {
+        while (node != null) {
+            if (JType.is(node)) {
+                return JType.from(node);
+            }
+            node = node.getParent();
+        }
+        return null;
+    }
+    
     private void log(String msg) {
         log.debug(msg);
     }
@@ -343,48 +403,85 @@ public class GeneratorRunner {
     
     public static class Builder implements IBuilder<GeneratorRunner> {
 
-        @Required
-        private Iterable<Root> rootsToScan;
-        @Required
-        private Root defaultGenerateTo;
         @Optional
-        private Matcher<Root> rootsMatcher;
+        private Iterable<Root> roots;
+        
+        @Optional
+        private Iterable<Root> scanRoots;
+        
+        @Optional
+        private Matcher<Root> scanRootsFilter;
+        
         @Optional
         private String scanPackages;
-        @Optional
-        private JAstParser parser;
-        @Optional
-        private ClassLoader classLoader;
+        
+        @Required
+        private Root defaultGenerateTo;
+        
         @Optional
         private boolean failOnParseError;
+        private boolean scanSubTypes = true;
         
         private final Map<String, String> generators = new HashMap<>();
         
         @Override
         public GeneratorRunner build() {
-            Preconditions.checkNotNull(rootsToScan, "expect the sources to be scanned to be set");
             Preconditions.checkNotNull(defaultGenerateTo, "expect a default output (generation) root to be set");
-
-            ClassLoader loader = this.classLoader != null ? this.classLoader : Thread.currentThread().getContextClassLoader();
-            String pkg = scanPackages == null ? "" : scanPackages;
-            Matcher<Root> rootMatcher = this.rootsMatcher != null ? this.rootsMatcher : ARoot.that().isDirectory().containsSrc().isNotType(RootType.GENERATED);
-            return new GeneratorRunner(rootsToScan, rootMatcher, defaultGenerateTo, pkg, parser, loader, generators, failOnParseError);
+            
+            Iterable<Root> roots = getRootsOrDefault();
+            Iterable<Root> scanRoots = getScanRootsOrDefault();
+            Matcher<Root> scanRootsFilter = this.scanRootsFilter != null ? this.scanRootsFilter : ARoot.that().isDirectory().isSrc().isNotType(RootType.GENERATED);//.isNotType(RootType.GENERATED);
+            String scanPkg = this.scanPackages == null ? "" : this.scanPackages;
+            
+            return new GeneratorRunner(roots,scanRoots, scanRootsFilter, scanSubTypes, defaultGenerateTo, scanPkg, generators, failOnParseError);
+        }
+        
+        private Iterable<Root> getRootsOrDefault(){
+            if(roots!= null){
+                return roots;
+            }
+            return Roots.with().all().build();
+        }
+        
+        private Iterable<Root> getScanRootsOrDefault(){
+            if(scanRoots!= null){
+                return scanRoots;
+            }
+            return Roots.with().srcDirsOnly().build();
         }
 
+        @Optional
         public Builder defaults(){
-            registerGenerator(GenerateCqrsRestServiceClient.class, GeneratorCqrsRestServiceClient.class);
             return this;
         }
 
-        @Required
-        public Builder sources(Iterable<Root> roots) {
-            this.rootsToScan = roots;
+        @Optional
+        public Builder roots(IBuilder<? extends Iterable<Root>> builder) {
+            roots(builder.build());
+            return this;
+        }
+        
+        @Optional
+        public Builder roots(Iterable<Root> roots) {
+            this.roots = roots;
+            return this;
+        }
+
+        @Optional
+        public Builder scanRoots(IBuilder<? extends Iterable<Root>> builder) {
+            scanRoots(builder.build());
+            return this;
+        }
+        
+        @Optional
+        public Builder scanRoots(Iterable<Root> roots) {
+            this.scanRoots = roots;
             return this;
         }
 
         @Optional
         public Builder scanRootMatching(Matcher<Root> matcher) {
-            this.rootsMatcher = matcher;
+            this.scanRootsFilter = matcher;
             return this;
         }
 
@@ -407,21 +504,9 @@ public class GeneratorRunner {
         }
 
         @Optional
-        public Builder parser(JAstParser parser) {
-            this.parser = parser;
-            return this;
-        }
-
-        @Optional
-        public Builder classLoader(ClassLoader classLoader) {
-            this.classLoader = classLoader;
-            return this;
-        }
-
-        @Optional
         @SuppressWarnings("rawtypes")
         public Builder registerGenerator(Class<? extends java.lang.annotation.Annotation> forAnnotation, Class<? extends Generator> generator) {
-            registerGenerator(JavaNameUtil.compiledNameToSourceName(forAnnotation), generator);
+            registerGenerator(NameUtil.compiledNameToSourceName(forAnnotation), generator);
             return this;
         }
         
@@ -442,6 +527,11 @@ public class GeneratorRunner {
         @Optional
         public Builder failOnParseError(boolean failOnError) {
             this.failOnParseError = failOnError;
+            return this;
+        }
+
+        public Builder scanSubTypes() {
+            this.scanSubTypes = true;
             return this;
         }
     }

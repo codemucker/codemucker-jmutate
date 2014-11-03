@@ -3,9 +3,10 @@ package org.codemucker.jmutate.bean;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.codemucker.jtest.ClassNameUtil;
 import org.codemucker.jtest.bean.BeanDefinition;
 import org.codemucker.jtest.bean.PropertyDefinition;
+import org.codemucker.lang.ClassNameUtil;
+import org.codemucker.lang.StringUtil;
 import org.junit.Test;
 
 
@@ -29,7 +30,7 @@ public class BeanBuilderGeneratorTest {
 		if (propertyType.isPrimitive()) {
 			name = "primitive" + ClassNameUtil.upperFirstChar(propertyType.getSimpleName());
 		} else {
-			name = ClassNameUtil.lowerFirstChar( propertyType.getSimpleName() );
+			name = StringUtil.lowerFirstChar( propertyType.getSimpleName() );
 		}
 		addProperty(def, name, propertyType);
 	}

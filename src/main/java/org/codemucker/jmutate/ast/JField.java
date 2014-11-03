@@ -6,12 +6,11 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
@@ -20,7 +19,8 @@ import com.google.common.base.Function;
 public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclaration> {
 
 	public static final Function<FieldDeclaration, JField> TRANSFORMER = new Function<FieldDeclaration, JField>() {
-		public JField apply(FieldDeclaration node){
+		@Override
+        public JField apply(FieldDeclaration node){
 			return JField.from(node);
 		}
 	};
@@ -107,7 +107,7 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 
 
 	public JAccess getAccess(){
-		return getJavaModifiers().asAccess();
+		return getJModifiers().asAccess();
 	}
 
 	public boolean isType(final JField field){
@@ -118,6 +118,10 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 		return fieldNode.getType().equals(type) ;
 	}
 
+	public String getFullTypeName(){
+        return NameUtil.resolveQualifiedName(getType());
+    }
+    
 	public Type getType(){
 		return fieldNode.getType();
 	}
@@ -127,7 +131,7 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 	 * @return
 	 */
 	public String getTypeSignature(){
-		return JavaNameUtil.resolveQualifiedName(fieldNode.getType());
+		return NameUtil.resolveQualifiedName(fieldNode.getType());
 	}
 
 	/**
@@ -157,11 +161,11 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 	}
 
 	public boolean isAccess(final JAccess access) {
-		return getJavaModifiers().asAccess().equals(access);
+		return getJModifiers().asAccess().equals(access);
 	}
 
 	@SuppressWarnings("unchecked")
-    public JModifier getJavaModifiers(){
+    public JModifier getJModifiers(){
 		return new JModifier(fieldNode.getAST(),fieldNode.modifiers());
 	}
 

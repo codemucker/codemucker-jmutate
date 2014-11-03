@@ -7,7 +7,7 @@ import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.Type;
 
 public class AType extends ObjectMatcher<Type>{
@@ -42,7 +42,7 @@ public class AType extends ObjectMatcher<Type>{
 		addMatcher(new AbstractNotNullMatcher<Type>() {
 			@Override
 			public boolean matchesSafely(Type found, MatchDiagnostics diag) {
-				return diag.tryMatch(this,JavaNameUtil.resolveQualifiedName(found),fullNameMatcher);
+				return diag.tryMatch(this,NameUtil.resolveQualifiedName(found),fullNameMatcher);
 			}
 			
 			@Override

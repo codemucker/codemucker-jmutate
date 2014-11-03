@@ -12,7 +12,7 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.Template;
 import org.codemucker.jmutate.bean.BeanGenerationException;
-import org.codemucker.jtest.ProjectFinder;
+import org.codemucker.jtest.ProjectLayouts;
 
 
 public class ResourceWriter {
@@ -28,7 +28,7 @@ public class ResourceWriter {
 	}
 
 	private static File findRootDir() {
-	    File dir = new File(ProjectFinder.findTargetDir(), "junit-test-generate/");
+	    File dir = new File(ProjectLayouts.findTargetDir(), "junit-test-generate/");
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}

@@ -6,9 +6,9 @@ import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.util.TypeUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.Pattern;
-import org.codemucker.jtest.ClassNameUtil;
+import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBuilder,JMethod> {
@@ -52,7 +52,7 @@ public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBui
 				.pl("\")");
 		}
 		template.p(access.toCode()).p(" ${fieldType} ${methodName}(){").pl();
-		boolean clone = cloneOnReturn && !TypeUtil.isPrimitive(fieldType); 
+		boolean clone = cloneOnReturn && !NameUtil.isPrimitive(fieldType); 
 		if(clone){
     		template.pl("return this.${fieldName}==null?null:this.${fieldName}.clone();");
 		} else {
@@ -79,7 +79,7 @@ public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBui
 	}
 
 	public JMethodGetterBuilder fieldType(String type) {
-		this.fieldType = TypeUtil.toShortNameIfDefaultImport(type);
+		this.fieldType = NameUtil.toShortNameIfDefaultImport(type);
 		return this;
 	}
 }

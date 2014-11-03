@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.JFindClass;
+import org.codemucker.jfind.ReflectedClass;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmatch.ObjectMatcher;
-import org.codemucker.jmutate.JMutateFilter;
-import org.codemucker.jmutate.JMutateScanner;
+import org.codemucker.jmutate.SourceFilter;
+import org.codemucker.jmutate.SourceScanner;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
 import org.codemucker.jmutate.ast.JAccess;
@@ -46,7 +46,7 @@ public class EnforcerExampleTest
 					})	
 				.toList();
 		
-		JFindClass astVisitor = new JFindClass(ASTVisitor.class);
+		ReflectedClass astVisitor = new ReflectedClass(ASTVisitor.class);
 		List<String> expectMethodSigs = astVisitor
 				.findMethodsMatching(AMethod.with().name(AString.equalToAny("visit", "endVisit")))
 				.transform(new Function<Method, String>() {
@@ -73,10 +73,10 @@ public class EnforcerExampleTest
 	@Test
 	public void ensureMatcherBuildersAreCorrectlyNamed()
 	{
-		FindResult<JType> matchers = JMutateScanner.with()
+		FindResult<JType> matchers = SourceScanner.with()
 			.scanRoots(Roots.with().mainSrcDir(true))
-			.filter(JMutateFilter.with()
-				.includeType(AJType.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
+			.filter(SourceFilter.with()
+				.includesType(AJType.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
 			.build()
 			.findTypes();
 		
@@ -114,15 +114,15 @@ public class EnforcerExampleTest
 
         public void invoke(){
 
-            FindResult<JType> foundBuilders = JMutateScanner.with()
+            FindResult<JType> foundBuilders = SourceScanner.with()
                     .scanRoots(Roots.with()
                         .mainSrcDir(true)
                         .testSrcDir(true))
-                    .filter(JMutateFilter.with()
-                        .includeType(AJType.with().simpleName("*Builder"))
-                        .includeType(AJType.that().isASubclassOf(IBuilder.class))
-                        .includeType(AJType.that().isASubclassOf(AbstractBuilder.class))
-                        .includeType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*"))))
+                    .filter(SourceFilter.with()
+                        .includesType(AJType.with().simpleName("*Builder"))
+                        .includesType(AJType.that().isASubclassOf(IBuilder.class))
+                        .includesType(AJType.that().isASubclassOf(AbstractBuilder.class))
+                        .includesType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*"))))
                     .build()
                     .findTypes();
             

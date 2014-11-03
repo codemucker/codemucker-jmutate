@@ -204,7 +204,7 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisito
 		for(String name:field.getNames()){
 			fieldDoc.field("name", name);
 		}
-		setModifiersFlags(fieldDoc, field.getJavaModifiers());
+		setModifiersFlags(fieldDoc, field.getJModifiers());
 
 		save(fieldDoc, field.getName());
 		

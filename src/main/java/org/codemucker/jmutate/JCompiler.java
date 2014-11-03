@@ -5,7 +5,7 @@ import org.codemucker.jmutate.ast.JSourceFile;
 
 import com.google.inject.ImplementedBy;
 
-@ImplementedBy(DefaultCompiler.class)
+@ImplementedBy(EclipseCompiler.class)
 public interface JCompiler {
 
     public static final String JAVA_SRC_EXTENSION = "java";

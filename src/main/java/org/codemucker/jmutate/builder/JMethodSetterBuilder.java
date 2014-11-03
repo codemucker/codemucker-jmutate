@@ -9,10 +9,9 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.util.JavaNameUtil;
-import org.codemucker.jmutate.util.TypeUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.Pattern;
-import org.codemucker.jtest.ClassNameUtil;
+import org.codemucker.lang.ClassNameUtil;
 import org.codemucker.lang.annotation.Optional;
 import org.codemucker.lang.annotation.Required;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -123,13 +122,13 @@ public final class JMethodSetterBuilder extends AbstractBuilder<JMethodSetterBui
 
 	@Required
 	public JMethodSetterBuilder fieldType(Type type) {
-		fieldType(JavaNameUtil.resolveQualifiedName(type));
+		fieldType(NameUtil.resolveQualifiedName(type));
 		return this;
 	}
 	
 	@Required
 	public JMethodSetterBuilder fieldType(String type) {
-		this.fieldType = TypeUtil.toShortNameIfDefaultImport(type);
+		this.fieldType = NameUtil.toShortNameIfDefaultImport(type);
 		return this;
 	}
 

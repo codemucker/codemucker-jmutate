@@ -30,7 +30,7 @@ public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTr
 	@Override
 	public abstract void transform();
 	
-	public S setTarget(AbstractTypeDeclaration target) {
+	public S target(AbstractTypeDeclaration target) {
     	target(JType.from(target));
     	return self();
     }
@@ -40,12 +40,12 @@ public abstract class AbstractNodeInsertTransform<S extends AbstractNodeInsertTr
     	return self();
     }
 
-	public S setClashStrategy(ClashStrategy strategy) {
+	public S clashStrategy(ClashStrategy strategy) {
     	this.clashStrategy = strategy;
     	return self();
     }
 
-	public S setPlacementStrategy(PlacementStrategy strategy) {
+	public S placementStrategy(PlacementStrategy strategy) {
     	this.placementStrategy = strategy;
     	return self();
     }

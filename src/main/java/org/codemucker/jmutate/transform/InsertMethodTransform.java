@@ -34,6 +34,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 			JMethod existingMethod = found.getFirst();
 			switch(getClashStrategy()){
 			case REPLACE:
+			    //todo:remember where this method is
 				existingMethod.getAstNode().delete();
 				insert = true;
 				break;
@@ -59,7 +60,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 	 */
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.METHOD) PlacementStrategy strategy) {
-	    setPlacementStrategy(strategy);
+	    placementStrategy(strategy);
     }
 
 	
@@ -68,7 +69,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Ins
 	 * @param method
 	 * @return
 	 */
-	public InsertMethodTransform setMethod(MethodDeclaration method) {
+	public InsertMethodTransform method(MethodDeclaration method) {
     	method(JMethod.from(method));
     	return this;
 	}

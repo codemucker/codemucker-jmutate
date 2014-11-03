@@ -10,7 +10,6 @@ import org.codemucker.jfind.matcher.AField;
 import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.ast.JSourceFile;
-import org.codemucker.jtest.MavenLayoutProjectResolver;
 import org.junit.Test;
 
 public class DefaultCompilerTest {
@@ -32,10 +31,21 @@ public class DefaultCompilerTest {
         JSourceFile source = t.asSourceFileSnippet().asMutator(ctxt).writeModificationsToDisk();
 
         ResourceLoader resourceLoader = ctxt.getParser().getResourceLoader();
-        DefaultCompiler compiler = new DefaultCompiler(resourceLoader, new MavenLayoutProjectResolver());
         
+        SystemCompiler compiler = new SystemCompiler(resourceLoader, new DefaultProjectOptions());
         Class<?> sourceClass = compiler.toCompiledClass(source.getResource());
+        assertCorrectCompile(sourceClass);   
         
+        SystemCompiler compilerEclipse = new SystemCompiler(resourceLoader, new DefaultProjectOptions());
+        Class<?> sourceClassEclipe = compilerEclipse.toCompiledClass(source.getResource());
+        assertCorrectCompile(sourceClassEclipe);   
+        
+        
+    }
+
+
+
+    private void assertCorrectCompile(Class<?> sourceClass) {
         Expect
             .that(sourceClass)
             .is(AClass.with()
@@ -47,8 +57,10 @@ public class DefaultCompilerTest {
         
         MyAnnotation a = sourceClass.getAnnotation(MyAnnotation.class);
         Expect.that(a).isNotNull();
-        Expect.that(a.foo()).isEqualTo("myvalue");   
+        Expect.that(a.foo()).isEqualTo("myvalue");
     }
+    
+    
     
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)

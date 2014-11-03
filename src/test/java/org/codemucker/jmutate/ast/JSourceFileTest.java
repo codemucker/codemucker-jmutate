@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jtest.ClassNameUtil;
 import org.codemucker.jtest.TestHelper;
+import org.codemucker.lang.ClassNameUtil;
 import org.junit.Test;
 
 
@@ -29,7 +29,7 @@ public class JSourceFileTest {
 
 	private JSourceFile newSourceFile(String path) {
 		String fqn = path.replace('/', '.');
-		String shortName = ClassNameUtil.extractShortClassNamePart(fqn);
+		String shortName = ClassNameUtil.extractSimpleClassNamePart(fqn);
 		SourceTemplate template = ctxt.newSourceTemplate();
 		template.println("public class " + shortName + "  {}");
 		return template.asResolvedSourceFileNamed(fqn);

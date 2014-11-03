@@ -28,8 +28,8 @@ public class JavaNameUtilTest {
 		t.pl("}");
 		
 		JField field = t.asResolvedSourceFileNamed("${pkg}.MyClass").getMainType().findFields().getFirst();
-		String expect = JavaNameUtil.compiledNameToSourceName(MyInterface.class);
-		assertEquals(expect, JavaNameUtil.resolveQualifiedName(field.getType()));
+		String expect = NameUtil.compiledNameToSourceName(MyInterface.class);
+		assertEquals(expect, NameUtil.resolveQualifiedName(field.getType()));
 	}
 	
 	@Test
@@ -47,8 +47,8 @@ public class JavaNameUtilTest {
 		t.pl("}");
 		
 		JField field = t.asResolvedSourceFileNamed("${pkg}.MyClass").getMainType().findFields().getFirst();
-		String expect = JavaNameUtil.compiledNameToSourceName(MyInterface.class);
-		assertEquals(expect, JavaNameUtil.resolveQualifiedName(field.getType()));
+		String expect = NameUtil.compiledNameToSourceName(MyInterface.class);
+		assertEquals(expect, NameUtil.resolveQualifiedName(field.getType()));
 	}
 	
 	/**
@@ -72,7 +72,7 @@ public class JavaNameUtilTest {
 		
 		String expectName = JavaNameUtilTest.class.getPackage().getName() + ".MyClass." + JavaNameUtilTest.class.getSimpleName();
 		//SimpleType parent = (SimpleType)subClass.asTypeDecl().getSuperclassType();
-		String actualName = JavaNameUtil.resolveQualifiedName(subClass.asTypeDecl().getSuperclassType());
+		String actualName = NameUtil.resolveQualifiedName(subClass.asTypeDecl().getSuperclassType());
 		
 		assertEquals(expectName, actualName);
 	}

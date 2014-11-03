@@ -17,12 +17,12 @@ import org.codemucker.jmutate.ast.JModifier;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.builder.JMethodSetterBuilder;
-import org.codemucker.jmutate.transform.FixImportsTransform;
+import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.transform.InsertTypeTransform;
 import org.codemucker.jmutate.transform.Transform;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.inject.Inject;
@@ -80,7 +80,7 @@ public class BeanBuilderTransform implements Transform {
 	    	.setSingleFields(fields)
 	    	.apply();
 	    
-	    ctxt.obtain(FixImportsTransform.class)
+	    ctxt.obtain(CleanImportsTransform.class)
 	    	.addMissingImports(true)
 	    	.nodeToClean(target)
 	    	.transform();
@@ -98,7 +98,7 @@ public class BeanBuilderTransform implements Transform {
 	    return target.findFieldsMatching(new AbstractNotNullMatcher<JField>() {
             @Override
             public boolean matchesSafely(final JField field, MatchDiagnostics diag) {
-                final JModifier mods = field.getJavaModifiers();
+                final JModifier mods = field.getJModifiers();
                 if( mods.isFinal() || mods.isStatic() || mods.isStrictFp()){
                     return false;
                 }
@@ -279,9 +279,9 @@ public class BeanBuilderTransform implements Transform {
 		        comma = true;
 		       // if( field.getType().isParameterizedType())
 				if (useQualifiedName) {
-					t.p(JavaNameUtil.resolveQualifiedName(field.getType()));
+					t.p(NameUtil.resolveQualifiedName(field.getType()));
 				} else {
-					t.p(JavaNameUtil.resolveQualifiedName(field.getType()));
+					t.p(NameUtil.resolveQualifiedName(field.getType()));
 				}
 				t.p(" ");
 		        t.p(field.getName());

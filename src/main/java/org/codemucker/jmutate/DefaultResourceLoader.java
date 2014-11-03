@@ -1,9 +1,12 @@
 package org.codemucker.jmutate;
 
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +15,6 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jmutate.util.ClassUtil;
 import org.codemucker.lang.IBuilder;
 import org.codemucker.lang.annotation.Optional;
 
@@ -106,6 +108,22 @@ public class DefaultResourceLoader implements ResourceLoader {
             return false;
         }
     }
+    
+    @Override
+    public Class<?> loadClass(String fullClassName) throws ClassNotFoundException {
+        if (parent != null) {
+            try {
+                Class<?> klass = parent.loadClass(fullClassName);
+                return klass;
+            } catch(ClassNotFoundException e){
+                
+            }
+        }
+       if(classLoader != null){
+            return classLoader.loadClass(fullClassName);
+       }
+       throw new ClassNotFoundException("Could not find class " + fullClassName);
+    }
 
     private boolean internalLookupCanLoadClassOrSource(String fullClassName) {
         String resourcePathClass =  toCompiledClassResourcePath(fullClassName);
@@ -117,7 +135,14 @@ public class DefaultResourceLoader implements ResourceLoader {
         }
         //last resort!
         if (classLoader != null) {
-            return ClassUtil.canLoadClass(classLoader, fullClassName);
+            try {
+                classLoader.loadClass(fullClassName);
+            	return true;
+            } catch (ClassNotFoundException e) {
+            	// do nothing. Just try next prefix
+            } catch (NoClassDefFoundError e) {
+            	// do nothing. Just try next prefix
+            }
         }
         return false;
     }
@@ -148,6 +173,11 @@ public class DefaultResourceLoader implements ResourceLoader {
         return sb.toString();
     }
     
+    @Override
+    public ClassLoader getClassLoader(){
+        return classLoader;
+    }
+    
     public static class Builder implements IBuilder<DefaultResourceLoader> {
         private ClassLoader classLoader;
         private ResourceLoader parent;
@@ -155,7 +185,20 @@ public class DefaultResourceLoader implements ResourceLoader {
         
         @Override
         public DefaultResourceLoader build() {
-            return new DefaultResourceLoader(additionalRoots, classLoader, parent);
+            ClassLoader cl = getClassLoaderOrDefault(parent);
+            return new DefaultResourceLoader(additionalRoots, cl, parent);
+        }
+        
+        private ClassLoader getClassLoaderOrDefault(ResourceLoader parent){
+            if (this.classLoader != null) {
+                return this.classLoader;
+            }
+            Set<URL> urls = new LinkedHashSet<>();
+            for (Root r : additionalRoots) {
+                urls.add(r.toURL());
+            }
+            ClassLoader newClassLoader = new URLClassLoader(urls.toArray(new URL[]{}), parent==null?null:parent.getClassLoader());
+            return newClassLoader; 
         }
 
         @Optional
@@ -181,8 +224,7 @@ public class DefaultResourceLoader implements ResourceLoader {
             this.additionalRoots.add(root);
             return this;
         }
-        
-        
+
     }
-    
+
 }

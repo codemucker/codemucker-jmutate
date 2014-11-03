@@ -67,7 +67,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Inser
 	 */
 	@Inject
     public void injectPlacementStrategy(@Named(ContextNames.CTOR) PlacementStrategy strategy) {
-	    setPlacementStrategy(strategy);
+	    placementStrategy(strategy);
     }
 
 	/**

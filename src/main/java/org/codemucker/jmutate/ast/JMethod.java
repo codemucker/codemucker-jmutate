@@ -8,7 +8,7 @@ import java.util.List;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.ArrayType;
@@ -133,7 +133,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 		if( isVoid()){
 			return "void";
 		}
-		return JavaNameUtil.resolveQualifiedNameElseShort(methodNode.getReturnType2());
+		return NameUtil.resolveQualifiedNameElseShort(methodNode.getReturnType2());
 	}
 
 	public boolean isVoid(){
@@ -209,11 +209,34 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 				sb.append(',');
 			}
 			comma = true;
-			JavaNameUtil.resolveQualifiedName(arg.getType(), sb);
+			NameUtil.resolveQualifiedName(arg.getType(), sb);
 		}
 		sb.append(")");
 	    return sb.toString();
     }
+	
+	public String toInterfaceMethodSignature() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getReturnTypeFullName());
+        sb.append(" ");
+        sb.append(getName());
+        sb.append("(");
+        @SuppressWarnings("unchecked")
+        List<SingleVariableDeclaration> args = methodNode.parameters();
+        boolean comma = false;
+        for( SingleVariableDeclaration arg:args){
+            if( comma){
+                sb.append(',');
+            }
+            comma = true;
+            NameUtil.resolveQualifiedName(arg.getType(), sb);
+            sb.append(" ");
+            sb.append(arg.getName().getIdentifier());
+        }
+        sb.append(");");
+        return sb.toString();
+    }
+    
 	
 	/**
 	 * Return the method signature including just the name and arguments, stripping out any 
@@ -259,7 +282,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 			sb.append(((PrimitiveType) t).getPrimitiveTypeCode().toString());
 		} else if (t.isSimpleType()) {
 			SimpleType st = (SimpleType) t;
-			String name = JavaNameUtil.resolveQualifiedNameElseShort(st.getName());
+			String name = NameUtil.resolveQualifiedNameElseShort(st.getName());
 			int startOfGenericPart = name.indexOf('<');
 			if( startOfGenericPart != -1){
 				name = name.substring(0, startOfGenericPart);
@@ -267,7 +290,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 			sb.append(name);
 		} else if (t.isQualifiedType()) {
 			QualifiedType qt = (QualifiedType) t;
-			sb.append(JavaNameUtil.resolveQualifiedName(qt.getName()));
+			sb.append(NameUtil.resolveQualifiedName(qt.getName()));
 		} else if (t.isArrayType()) {
 			Type elementType = ((ArrayType) t).getElementType();
 			int dimensions = ((ArrayType) t).getDimensions();

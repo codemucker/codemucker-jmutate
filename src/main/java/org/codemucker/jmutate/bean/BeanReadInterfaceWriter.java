@@ -1,7 +1,7 @@
 package org.codemucker.jmutate.bean;
 
+import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.IsGenerated;
-import org.codemucker.jtest.ClassNameUtil;
 import org.codemucker.jtest.bean.BeanDefinition;
 import org.codemucker.lang.annotation.NotThreadSafe;
 
@@ -18,7 +18,7 @@ public class BeanReadInterfaceWriter extends AbstractBeanWriter {
 	}
 	
 	public BeanReadInterfaceWriter(BeanBuilderOptions options, String beanClassName){
-		super(options, ClassNameUtil.insertBeforeClassName(beanClassName, "I"));
+		super(options, NameUtil.insertBeforeClassName(beanClassName, "I"));
 	}
 
 	@Override
@@ -31,7 +31,8 @@ public class BeanReadInterfaceWriter extends AbstractBeanWriter {
 		generateClassClose();	
 	}
 	
-	protected void generateInterfaceOpen() {
+	@Override
+    protected void generateInterfaceOpen() {
         if (options.isMarkPatternOnClass()) {
 			annotate(IsGenerated.class);
 		}

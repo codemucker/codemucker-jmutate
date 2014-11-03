@@ -1,8 +1,11 @@
 import com.acme.my.own.which.should.Stay;
+import com.mycompany.SuperBean;
 import static com.google.common.collect.Maps.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Bean {
+import java.util.Collection;
+
+public class Bean extends com.mycompany.SuperBean {
 		private java.lang.String myField;
 		private java.util.Map<java.lang.Integer, java.util.Collection<java.lang.String>> myMap;
 

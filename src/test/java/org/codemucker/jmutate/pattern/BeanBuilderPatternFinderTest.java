@@ -3,7 +3,7 @@ package org.codemucker.jmutate.pattern;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.JMutateFilter;
+import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
@@ -21,10 +21,10 @@ public class BeanBuilderPatternFinderTest {
 		//classes where most methods return itself - confidence 60%
 		//classes which contain a method starting with 'build' - confidence 70%
 		FindResult<JType> foundBuilders = TestSourceHelper.newAllSourcesResolvingFinder()
-			.filter(JMutateFilter.with()
+			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.includeType(AJType.with().fullName("*Builder"))
+				.includesType(AJType.with().fullName("*Builder"))
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)
 			.build()
@@ -53,11 +53,11 @@ public class BeanBuilderPatternFinderTest {
 				.numArgs(AnInt.greaterOrEqualTo(3));
 		
 		Iterable<JMethod> found = TestSourceHelper.newAllSourcesResolvingFinder()
-			.filter(JMutateFilter.with()
+			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.includeType(AJType.with().method(methodMatcher))
-				.includeMethods(methodMatcher)
+				.includesType(AJType.with().method(methodMatcher))
+				.includesMethods(methodMatcher)
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)	
 			.build()

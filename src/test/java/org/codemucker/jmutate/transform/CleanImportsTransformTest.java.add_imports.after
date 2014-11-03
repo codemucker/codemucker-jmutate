@@ -1,12 +1,14 @@
 import com.acme.my.own.which.should.Stay;
 import static com.google.common.collect.Maps.*;
 import static com.google.common.base.Preconditions.checkNotNull;
+import com.mycompany.MyBeanInterface;
+import com.mycompany.SuperBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 
-public class Bean {
+public class Bean extends SuperBean implements MyBeanInterface {
 		private String myField;
 		private Map<Integer, Collection<String>> myMap;
 

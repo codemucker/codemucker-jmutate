@@ -101,9 +101,9 @@ public class JSearchEngine implements Closeable {
 			return new JSearchEngine(dbDirectory,roots,parser);
 		}
 		
+		
 		public Builder defaults(){
 			useDefaultDBDirectory();
-			useDefaultParser();
 			return this;
 		}
 
@@ -121,7 +121,7 @@ public class JSearchEngine implements Closeable {
 			return this;
 		}
 
-		public Builder searchRoots(IBuilder<? extends Iterable<Root>> rootsBuilder){
+		public Builder scanRoots(IBuilder<? extends Iterable<Root>> rootsBuilder){
 			searchRoots(rootsBuilder.build());
 			return this;
 		}

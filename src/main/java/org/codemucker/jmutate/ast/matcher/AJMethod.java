@@ -16,7 +16,7 @@ import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifier;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.Type;
 
@@ -108,7 +108,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 	            @Override
 	            public boolean matchesSafely(Type found, MatchDiagnostics diag) {
 	                if (found != null && !(found.isPrimitiveType() && ((PrimitiveType) found).getPrimitiveTypeCode() == PrimitiveType.VOID)) {
-	                    diag.mismatched("expect void but was " + JavaNameUtil.resolveQualifiedNameElseShort(found));
+	                    diag.mismatched("expect void but was " + NameUtil.resolveQualifiedNameElseShort(found));
 	                    return false;
 	                }
 	                diag.matched("is void");

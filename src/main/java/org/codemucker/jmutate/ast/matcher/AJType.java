@@ -17,7 +17,7 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -125,7 +125,7 @@ public class AJType extends ObjectMatcher<JType> {
 	}
     
     public AJType packageName(final Class<?> classInPackage){
-    	String pkgName = JavaNameUtil.compiledNameToSourceName(classInPackage.getPackage().getName());
+    	String pkgName = NameUtil.compiledNameToSourceName(classInPackage.getPackage().getName());
     	packageName(pkgName);
     	return this;
     }
@@ -194,6 +194,11 @@ public class AJType extends ObjectMatcher<JType> {
 		return this;
 	}
 	
+	public AJType isNotAnonymous(){       
+        isAnonymous(false);
+        return this;
+    }
+	
 	public AJType isAnonymous(boolean b){
 		addMatcher(b?ANONYMOUS_MATCHER:not(ANONYMOUS_MATCHER));
 		return this;
@@ -203,6 +208,11 @@ public class AJType extends ObjectMatcher<JType> {
 		isInterface(true);
 		return this;
 	}
+	
+	public AJType isNotInterface(){
+        isInterface(false);
+        return this;
+    }
 	
 	public AJType isInterface(boolean b){
 		addMatcher(b?INTERFACE_MATCHER:not(INTERFACE_MATCHER));
@@ -224,8 +234,10 @@ public class AJType extends ObjectMatcher<JType> {
 		return this;
 	}
 	
-	public AJType isInnerClass(boolean b){
-		addMatcher(b?INNER_CLASS_MATCHER:not(INNER_CLASS_MATCHER));
+	public AJType isInnerClass(Boolean b){
+	    if( b != null){
+	        addMatcher(b?INNER_CLASS_MATCHER:not(INNER_CLASS_MATCHER));
+	    }
 		return this;
 	}
 
@@ -265,7 +277,7 @@ public class AJType extends ObjectMatcher<JType> {
 	}
 
 	public AJType name(final Class<?> matchingClassName){
-		String fullName = JavaNameUtil.compiledNameToSourceName(matchingClassName.getName());
+		String fullName = NameUtil.compiledNameToSourceName(matchingClassName.getName());
 		fullName(fullName);
 		return this;
 	}

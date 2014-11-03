@@ -15,7 +15,7 @@ import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.lang.annotation.NotThreadSafe;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -70,7 +70,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public SourceTemplate setVar(String name,Class<?> klass){
-		setVar(name,JavaNameUtil.compiledNameToSourceName(klass));
+		setVar(name,NameUtil.compiledNameToSourceName(klass));
 		return this;
 	}
 
@@ -82,7 +82,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public SourceTemplate p(Class<?> klass){
-		p(JavaNameUtil.compiledNameToSourceName(klass));
+		p(NameUtil.compiledNameToSourceName(klass));
 		return this;
 	}
 	
@@ -94,7 +94,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public SourceTemplate pl(Class<?> klass){
-		pl(JavaNameUtil.compiledNameToSourceName(klass));
+		pl(NameUtil.compiledNameToSourceName(klass));
 		return this;
 	}
 	
@@ -106,7 +106,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public SourceTemplate println(Class<?> klass){
-		println(JavaNameUtil.compiledNameToSourceName(klass));
+		println(NameUtil.compiledNameToSourceName(klass));
 		return this;
 	}
 	
@@ -169,7 +169,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	
 	
 	private FieldDeclaration asFieldNode(boolean resolve){
-		TypeDeclaration type = toTempWrappingType(false);
+		TypeDeclaration type = toTempWrappingType(false,false);
 		Assert.assertEquals("expected a single field", 1, type.getFields().length);
 		FieldDeclaration fieldNode = type.getFields()[0];
 		return fieldNode;
@@ -189,7 +189,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	
 	private MethodDeclaration asConstructorNode(boolean resolve){
 		//TODO:decide and sort out exception types to throw. Assertions or custom bean assertions?
-		TypeDeclaration type = toTempWrappingType(resolve);
+		TypeDeclaration type = toTempWrappingType(resolve,false);
 		Assert.assertEquals("Expected a single constructor", 1, type.getMethods().length);
 		MethodDeclaration method = type.getMethods()[0];
 		if (method.getReturnType2() != null) {
@@ -208,6 +208,9 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		return JMethod.from(asMethodNodeSnippet());
 	}
 	
+	public JMethod asJMethodInterfaceSnippet(){
+        return JMethod.from(asMethodNode(false,true));
+    }
 	/**
 	 * Try to parse the template text as a method and wrap as a JMethod
 	 * 
@@ -222,24 +225,24 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	 * @return
 	 */
 	public MethodDeclaration asMethodNodeSnippet(){
-		return asMethodNode(false);
+		return asMethodNode(false,false);
 	}
 	
 	public MethodDeclaration asResolvedMethodNode(){
-		return asMethodNode(true);
+		return asMethodNode(true,false);
 	}
 	
-	private MethodDeclaration asMethodNode(boolean resolve){
-		TypeDeclaration type = toTempWrappingType(resolve);
+	private MethodDeclaration asMethodNode(boolean resolve, boolean isInterface){
+		TypeDeclaration type = toTempWrappingType(resolve,isInterface);
 		Assert.assertEquals("Expected a single method", 1, type.getMethods().length);
 		MethodDeclaration method = type.getMethods()[0];
 		return method;
 	}
 	
-	private TypeDeclaration toTempWrappingType(boolean resolve) {
+	private TypeDeclaration toTempWrappingType(boolean resolve, boolean isInterface) {
 		String tmpTypeName = SourceTemplate.class.getSimpleName() + "__TmpWrapperType" + UUID.randomUUID().toString().replace('-', '_') + "__";
-		String src = "class " + tmpTypeName + "{" + NL + interpolateTemplate()  + NL +  "}";
-		//Disable resolving as we are making snippets to merge...
+		String src = (isInterface?"interface":"class") + " " + tmpTypeName + "{" + NL + interpolateTemplate()  + NL +  "}";
+        //Disable resolving as we are making snippets to merge...
 		RootResource resource = resolve?fqnToResource(tmpTypeName):null;
 		CompilationUnit cu = parser.parseCompilationUnit(src,resource);
 		List<?> types = cu.types();
@@ -298,14 +301,17 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	}
 	
 	public JSourceFile asSourceFileSnippet() {
-		CharSequence src = interpolateTemplate();
-		CompilationUnit cu = parser.parseCompilationUnit(src, null);//don't get compiler to resolve
-		JType mainType = JCompilationUnit.from(cu).findMainType();
-		String fqn = mainType.getFullName();
-		RootResource resource = fqnToResource(fqn);
-		return JSourceFile.fromSource(resource, src, cu);
+		return asSourceFileSnippet(snippetRoot);
 	}
 
+	public JSourceFile asSourceFileSnippet(Root root) {
+        CharSequence src = interpolateTemplate();
+        CompilationUnit cu = parser.parseCompilationUnit(src, null);//don't get compiler to resolve
+        JType mainType = JCompilationUnit.from(cu).findMainType();
+        String fqn = mainType.getFullName();
+        RootResource resource = fqnToResource(root,fqn);
+        return JSourceFile.fromSource(resource, src, cu);
+    }
 	/**
 	 * Try to parse the template text as a compilation unit
 	 * 
@@ -320,10 +326,14 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	}
 	
 	private RootResource fqnToResource(String fqn){
-	    return fqnToResource(fqn,JCompiler.JAVA_SRC_EXTENSION);
+        return fqnToResource(snippetRoot, fqn);
+    }
+	
+	private RootResource fqnToResource(Root root,String fqn){
+	    return fqnToResource(root, fqn,JCompiler.JAVA_SRC_EXTENSION);
 	}
 	
-	private RootResource fqnToResource(String fqn, String extension){
+	private RootResource fqnToResource(Root root, String fqn, String extension){
 		RootResource resource = null;
 		if( fqn != null){
 			String path  = expandFqnToRelativePath(fqn);

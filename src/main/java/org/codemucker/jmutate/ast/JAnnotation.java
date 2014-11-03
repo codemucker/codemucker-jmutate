@@ -2,18 +2,24 @@ package org.codemucker.jmutate.ast;
 
 import java.util.List;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.eclipse.jdt.core.dom.StringLiteral;
 
 public class JAnnotation implements AstNodeProvider<Annotation>{
 
+    private static final Logger log = LogManager.getLogger(JAnnotation.class);
+    
 	private final Annotation annotation;
 
 	public static boolean is(ASTNode node){
@@ -41,7 +47,7 @@ public class JAnnotation implements AstNodeProvider<Annotation>{
     }
 
 	public boolean isOfType(Class<? extends java.lang.annotation.Annotation> annotationClass) {
-		return isOfType(JavaNameUtil.compiledNameToSourceName(annotationClass));
+		return isOfType(NameUtil.compiledNameToSourceName(annotationClass));
 	}
 	
 	public boolean isOfType(String expectFqn) {
@@ -53,7 +59,7 @@ public class JAnnotation implements AstNodeProvider<Annotation>{
     }
     
 	public String getQualifiedName() {
-		return JavaNameUtil.resolveQualifiedName(annotation.getTypeName());
+		return NameUtil.resolveQualifiedName(annotation.getTypeName());
 	}
 
 	public String getValueForAttribute(String name){
@@ -62,29 +68,42 @@ public class JAnnotation implements AstNodeProvider<Annotation>{
 	
 	public String getValueForAttribute(String name,String defaultValue){
 		//TODO:handle nested annotations
-		SimpleName val = null;
+		String val = null;
 		if( annotation.isMarkerAnnotation()){
 			val = null;
 		}
 		if( annotation instanceof SingleMemberAnnotation){
 			if( "value".equals(name)){
-				val = (SimpleName)((SingleMemberAnnotation)annotation).getValue();
+			    val = extractExpressionValue(name, annotation, ((SingleMemberAnnotation)annotation).getValue());
 			}	
-		}
-		if( annotation instanceof NormalAnnotation){
+		} else if( annotation instanceof NormalAnnotation){
 			NormalAnnotation normal = (NormalAnnotation)annotation;
 			List<MemberValuePair> values = normal.values();
 			for( MemberValuePair pair:values){
-				if( name.equals(pair.getName().getIdentifier())){
-					val = (SimpleName)pair.getValue();
+				if(name.equals(pair.getName().getIdentifier())){
+				    val = extractExpressionValue(name, annotation, pair.getValue());
 					break;
 				}
 			}
 		}
 		
-		return val==null?defaultValue:val.getIdentifier();
+		return val==null?defaultValue:val;
+	}
+	
+	private String extractExpressionValue(String name, Annotation annotation, Expression exp){
+	    if(exp instanceof StringLiteral){
+            return ((StringLiteral)exp).getLiteralValue();
+        } else if(exp instanceof SimpleName){
+            return ((SimpleName)exp).getIdentifier();
+        } else {
+            log.warn("couldn't extract annotation value named '" + name + "' from node " + annotation);
+            //throw new JMutateException("couldn't extract annotation value named '" + name + "' from node " + annotation);
+            
+        }
+	    return null;
 	}
 
+    @Override
     public final boolean equals(Object obj) {
         if(obj ==null || !(obj instanceof JAnnotation)){
             return false;
@@ -92,10 +111,12 @@ public class JAnnotation implements AstNodeProvider<Annotation>{
         return annotation.equals(((JAnnotation)obj).annotation);
     }
 
+    @Override
     public final int hashCode() {
         return annotation.hashCode();
     }
 
+    @Override
     public final String toString() {
         return annotation.toString();
     }

@@ -16,7 +16,7 @@ import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jpattern.bean.Property;
-import org.codemucker.jtest.bean.ClassUtils;
+import org.codemucker.jtest.ReflectionUtils;
 
 
 public class RefactorTest {
@@ -126,7 +126,7 @@ public class RefactorTest {
 		return new AbstractNotNullMatcher<JMethod>(){
 			@Override
             public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-	            return ClassUtils.isReaderMethodFromName(found.getName());
+	            return ReflectionUtils.isReaderMethodFromName(found.getName());
             }
 		};
 	}
@@ -135,7 +135,7 @@ public class RefactorTest {
 		return new AbstractNotNullMatcher<JMethod>(){
 			@Override
             public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-	            return ClassUtils.isWriterMethodFromName(found.getName());
+	            return ReflectionUtils.isWriterMethodFromName(found.getName());
             }
 		};
 	}
@@ -165,7 +165,7 @@ public class RefactorTest {
 			names.add(name);
 		} else {
 			for(String fieldName:field.getNames()){
-				name = ClassUtils.extractPropertyNameFromMethod(fieldName);
+				name = ReflectionUtils.extractPropertyNameFromMethod(fieldName);
 				if( name != null ){
 					names.add(name);
 				}
@@ -177,18 +177,18 @@ public class RefactorTest {
 	private String extractPropertyName(JMethod method) {
 		String name = getAnonationValue(method, Property.class, "name");
 		if (name == null) {
-			name = ClassUtils.extractPropertyNameFromMethod(method.getName());
+			name = ReflectionUtils.extractPropertyNameFromMethod(method.getName());
 		}
 		return name;
 	}
 	
 	private boolean isSetterMethod(JMethod m){
-		return ClassUtils.isWriterMethodFromName(m.getName());
+		return ReflectionUtils.isWriterMethodFromName(m.getName());
 	}
 
 	private boolean isGetterMethod(JMethod m){
 		//or a builder method???
-		return ClassUtils.isReaderMethodFromName(m.getName());
+		return ReflectionUtils.isReaderMethodFromName(m.getName());
 	}
 
 	private <A extends Annotation> String getAnonationValue(AnnotationsProvider  annotatable, Class<A> anon, String attributeName){

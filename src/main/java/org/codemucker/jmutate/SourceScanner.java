@@ -1,7 +1,6 @@
 package org.codemucker.jmutate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -12,7 +11,7 @@ import org.apache.log4j.Logger;
 import org.codemucker.jfind.BaseRootVisitor;
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.JFindMatchListener;
+import org.codemucker.jfind.MatchListener;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.RootVisitor;
@@ -21,8 +20,9 @@ import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmatch.NullMatchContext;
+import org.codemucker.jmutate.ast.BaseSourceVisitor;
 import org.codemucker.jmutate.ast.JAstParser;
-import org.codemucker.jmutate.ast.JFindVisitor;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
@@ -40,12 +40,12 @@ import com.google.inject.Inject;
  * 
  * 
  */
-public class JMutateScanner {
+public class SourceScanner {
 
-    private static final Logger log = LogManager.getLogger(JMutateScanner.class);
+    private static final Logger log = LogManager.getLogger(SourceScanner.class);
     
 	private static final String  JAVA_EXTENSION = "java";
-	private static final JFindMatchListener<Object> DEFAULT_LISTENER = new JFindMatchListener<Object>() {
+	private static final MatchListener<Object> DEFAULT_LISTENER = new MatchListener<Object>() {
 		@Override
 		public void onMatched(Object obj) {
 		}
@@ -60,15 +60,15 @@ public class JMutateScanner {
 		}
 	};
 	
-	private final Collection<Root> roots;
-
+	private final Collection<Root> scanRoots;
 	private final Matcher<Root> rootMatcher;
 	private final Matcher<RootResource> resourceMatcher;
 	private final Matcher<JSourceFile> sourceMatcher;
 	private final Matcher<JType> typeMatcher;
 	private final Matcher<JMethod> methodMatcher;
 	
-	private final JFindMatchListener<Object> listener;
+    private final MatchListener<Object> listener;
+    private final MatchDiagnostics diagnostics = NullMatchContext.INSTANCE;
 
 	private final boolean failOnParseError;
 	
@@ -88,11 +88,11 @@ public class JMutateScanner {
 		return new Builder();
 	}
 
-	public JMutateScanner(
+	public SourceScanner(
 			JAstParser parser
 			, Iterable<Root> classPathRoots
 			, SourceMatcher matchers
-			, JFindMatchListener<Object> listener
+			, MatchListener<Object> listener
 			, boolean failOnParseError
 			) {
 		this(parser,
@@ -108,7 +108,7 @@ public class JMutateScanner {
 		);
 	}
 
-	public JMutateScanner(
+	public SourceScanner(
 			JAstParser parser
 			, Iterable<Root> roots
 			, Matcher<Object> objectFilter
@@ -117,14 +117,14 @@ public class JMutateScanner {
 			, Matcher<JSourceFile> sourceFilter
 			, Matcher<JType> typeFilter
 			, Matcher<JMethod> methodFilter
-			, JFindMatchListener<Object> listener
+			, MatchListener<Object> listener
 			, boolean failOnParseError
 			) {
 		
 		checkNotNull(roots, "expect class path roots");
 		
 		this.parser = checkNotNull(parser, "expect parser");
-		this.roots = ImmutableList.<Root>builder().addAll(roots).build();
+		this.scanRoots = ImmutableList.<Root>builder().addAll(roots).build();
 
 		this.rootMatcher = join(checkNotNull(rootFilter, "expect root filter"), objectFilter);
 		this.resourceMatcher = join(checkNotNull(resourceFilter, "expect resource filter"), objectFilter);
@@ -144,43 +144,47 @@ public class JMutateScanner {
 			}
 		};
 	}
-	public void visit(JFindVisitor visitor) {
+	
+	public void visit(BaseSourceVisitor visitor) {
 		for (JSourceFile srcFile : findSources()) {
 			srcFile.visit(visitor);
 		}
 	}
 	
 	public FindResult<JMethod> findMethods() {
-		return findTypes().transformToMany(typeToMethods()).filter(methodMatcher, listener);
+		return findTypes().transformToMany(typeToMethods()).filter(methodMatcher, listener, diagnostics);
 	}
 	
 	private Function<JType, Iterator<JMethod>> typeToMethods(){
 		return new Function<JType,Iterator<JMethod>>(){
-			public Iterator<JMethod> apply(JType type){
+			@Override
+            public Iterator<JMethod> apply(JType type){
 				return type.findMethods().iterator();
 			}
 		};
 	}
 
 	public FindResult<JType> findTypes() {
-		return findSources().transformToMany(sourceToTypes()).filter(typeMatcher, listener);
+		return findSources().transformToMany(sourceToTypes()).filter(typeMatcher, listener, diagnostics);
     }
 		
 	private Function<JSourceFile, Iterator<JType>> sourceToTypes(){
 		return new Function<JSourceFile,Iterator<JType>>(){
-			public Iterator<JType> apply(JSourceFile source){
+			@Override
+            public Iterator<JType> apply(JSourceFile source){
 				return source.findAllTypes().iterator();
 			}
 		};
 	}
 	
 	public FindResult<JSourceFile> findSources() {
-		return findResources().transform(resourceToSource()).filter(sourceMatcher, listener);
+		return findResources().transform(resourceToSource()).filter(sourceMatcher, listener, diagnostics);
 	}
 	
 	private Function<RootResource, JSourceFile> resourceToSource(){
 		return new Function<RootResource,JSourceFile>(){
-			public JSourceFile apply(RootResource resource){
+			@Override
+            public JSourceFile apply(RootResource resource){
 				if(resource.hasExtension(JAVA_EXTENSION)){
 				   try {
 				        return JSourceFile.fromResource(resource, parser);
@@ -198,16 +202,13 @@ public class JMutateScanner {
 		};
 	}
 
-
     private void onError(RootResource resource, JMutateParseException e) {
         try {
             listener.onError(resource, e);
-        } catch (Exception rethrownEx) {
-            if (rethrownEx instanceof RuntimeException) {
-                throw (RuntimeException) rethrownEx;
-            } else {
-                throw new JMutateException("Error parsing source", rethrownEx);
-            }
+        } catch (RuntimeException rethrown) {
+            throw rethrown;
+        } catch (Exception rethrown) {
+            throw new JMutateException("Error parsing source", rethrown);
         }
     }
 
@@ -216,7 +217,7 @@ public class JMutateScanner {
 		RootVisitor visitor = new BaseRootVisitor(){
 			@Override
 			public boolean visit(Root root) {
-				boolean visit = rootMatcher.matches(root);
+				boolean visit = rootMatcher.matches(root, diagnostics);
 				if(visit){
 					listener.onMatched(root);
 				} else {
@@ -226,7 +227,7 @@ public class JMutateScanner {
 			}
 			@Override
 			public boolean visit(RootResource resource) {
-				boolean visit = resourceMatcher.matches(resource);
+				boolean visit = resourceMatcher.matches(resource, diagnostics);
 				if(visit){
 					resources.add(resource);
 					listener.onMatched(resource);
@@ -237,7 +238,7 @@ public class JMutateScanner {
 			}
 		};
 
-		for(Root root:roots){
+		for(Root root:scanRoots){
 			root.accept(visitor);
 		}
 
@@ -245,12 +246,15 @@ public class JMutateScanner {
 	}
 	
 	public FindResult<Root> findRoots() {
-		return DefaultFindResult.from(roots).filter(rootMatcher);
+		return DefaultFindResult.from(scanRoots).filter(rootMatcher, listener, diagnostics);
 	}
 	
 	public static class Builder {
 		private JAstParser parser;
-		private List<Root> roots = newArrayList();
+		//used for resolving
+		private Roots.Builder roots;
+		//used for scanning
+        private Roots.Builder scanRoots;
 		
 		private Matcher<Object> objectMatcher;
 		private Matcher<Root> rootMatcher;
@@ -259,14 +263,17 @@ public class JMutateScanner {
 		private Matcher<JType> typeMatcher;
 		private Matcher<JMethod> methodMatcher;
 		
-		private JFindMatchListener<Object> listener;
+		private MatchListener<Object> listener;
         private boolean failOnParseError = true;
 		
-		public JMutateScanner build(){
-		    JAstParser parser = buildParser();
-			return new JMutateScanner(
-			     parser
-				, roots
+		public SourceScanner build(){
+		    Roots.Builder roots = getRootsOrDefault();
+		    Roots.Builder scanRoots = getScanRootsOrDefault();
+            JAstParser parser = getParserOrDefault(roots,scanRoots);
+            
+			return new SourceScanner(
+			    parser
+				, scanRoots.build()
 				, anyIfNull(objectMatcher)
 				, anyIfNull(rootMatcher)
 				, anyIfNull(resourceMatcher)
@@ -278,49 +285,65 @@ public class JMutateScanner {
 			);
 		}
 
+		private Roots.Builder getRootsOrDefault(){
+		    if(this.roots == null){
+		        return Roots.with().all().classpath(true);
+		    }
+		    return roots;
+		}
+		
+		private Roots.Builder getScanRootsOrDefault(){
+            if(this.scanRoots == null){
+                return Roots.with().srcDirsOnly();
+            }
+            return scanRoots;
+        }
+        
+		
 		private static <T> Matcher<T> anyIfNull(Matcher<T> matcher){
 			return Logical.anyIfNull(matcher);
 		}
 		
-        private JAstParser buildParser() {
+        private JAstParser getParserOrDefault(Roots.Builder roots,Roots.Builder scanRoots) {
             if (parser != null) {
                 return parser;
             }
             return JAstParser.with()
                     .defaults()
-                    .roots(roots)//path to all the code we're searching
-                    .addRoots(Roots.with().classpath(true))//include the current VM classpath (which we may not include in search)
+                    .resourceLoader(Roots.with()
+                        .roots(roots)
+                        .roots(scanRoots)
+                        .classpath(true)//include the current VM classpath (which we may not include in search)
+                     )
                     .build();
         }
 
-		public Builder scanRoots(Roots.Builder searchRoots) {
-        	scanRoots(searchRoots.build());
-        	return this;
+        public Builder roots(IBuilder<? extends Iterable<Root>> rootsBuilder) {
+            roots(rootsBuilder.build());
+            return this;
         }
-		
+        
+        public Builder roots(Iterable<Root> roots) {
+            this.roots = Roots.with().roots(roots);
+            return this;
+        }
+
 	 	public Builder scanRoots(IBuilder<? extends Iterable<Root>> rootsBuilder) {
-        	scanRoots(rootsBuilder.build());
+	 	   scanRoots(rootsBuilder.build());
         	return this;
         }
 	 	
 	 	public Builder scanRoots(Iterable<Root> roots) {
-	 		for(Root r:roots){
-	 			scanRoot(r);
-	 		}
-        	return this;
-        }
-	 	
-	 	public Builder scanRoot(Root root) {
-        	this.roots.add(root);
+	 		this.scanRoots = Roots.with().roots(roots);
         	return this;
         }
 
-	 	public Builder listener(JFindMatchListener<Object> listener) {
+	 	public Builder listener(MatchListener<Object> listener) {
         	this.listener = listener;
         	return this;
 		}
 	 	
-	 	public Builder filter(JMutateFilter.Builder filter) {
+	 	public Builder filter(SourceFilter.Builder filter) {
         	filter(filter.build());
         	return this;
 		}

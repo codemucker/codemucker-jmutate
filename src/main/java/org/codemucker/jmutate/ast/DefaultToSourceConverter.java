@@ -5,7 +5,6 @@ import static org.codemucker.lang.Check.checkNotNull;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.JMutateParseException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
@@ -19,6 +18,7 @@ import com.google.inject.Inject;
 public class DefaultToSourceConverter implements ToSourceConverter {
 	
     private final Logger log = LogManager.getLogger(DefaultToSourceConverter.class);
+    private static final String NL =  System.getProperty("line.seperator");
     
 	private CodeFormatter formatter;
 	
@@ -30,17 +30,15 @@ public class DefaultToSourceConverter implements ToSourceConverter {
 	@Override
 	public String toSource(ASTNode node) {
 		String src = JAstFlattener.asString(node);
-		String formatted = format(src, getKindForNode(node));
-	
-		return formatted;
+		return toFormattedSource(src, getKindForNode(node));
 	}
 
-	private String format(String src, int kind){
+	@Override
+    public String toFormattedSource(String src, Kind kind) {
 	    String formattedSource = src;
 	    
-	    String nl = System.getProperty("line.seperator");
 		int startIndentLevel = 0;
-		TextEdit edits  = formatter.format(kind, src, 0, src.length(), startIndentLevel, nl);
+		TextEdit edits  = formatter.format(kind.getCodeFormatterKind(), src, 0, src.length(), startIndentLevel, NL);
         if (edits == null) {
             String msg = String.format("Can not format the provided source, returning source as is. Source is %n%s", src);
             // throw new JMutateParseException(msg);
@@ -73,10 +71,12 @@ public class DefaultToSourceConverter implements ToSourceConverter {
     	return updatedSrc;
 	}
 	
-	private static int getKindForNode(ASTNode node){
+	private static Kind getKindForNode(ASTNode node){
 		if( node instanceof CompilationUnit){
-			return CodeFormatter.K_COMPILATION_UNIT;
+			return Kind.COMPILATION_UNIT;
 		}
-		return CodeFormatter.K_UNKNOWN;
+		return Kind.UNKNOWN;
 	}
+
+    
 }

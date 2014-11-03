@@ -4,7 +4,7 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 
 
-public class JFindVisitor extends BaseASTVisitor {
+public class BaseSourceVisitor extends BaseASTVisitor {
 
 	public boolean visit(Root root) {
 		return true;

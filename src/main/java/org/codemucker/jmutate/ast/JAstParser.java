@@ -1,7 +1,6 @@
 package org.codemucker.jmutate.ast;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.io.File;
@@ -17,14 +16,16 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.RootResource;
+import org.codemucker.jfind.Roots;
 import org.codemucker.jmutate.DefaultResourceLoader;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.JMutateParseException;
 import org.codemucker.jmutate.ResourceLoader;
-import org.codemucker.jmutate.util.ClassUtil;
+import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.lang.IBuilder;
 import org.codemucker.lang.annotation.NotThreadSafe;
 import org.codemucker.lang.annotation.Optional;
+import org.codemucker.lang.annotation.Required;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.AST;
@@ -35,6 +36,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -53,9 +55,9 @@ public class JAstParser {
     private final ResourceLoader resourceLoader;
     
     //cached for parser
-    private final String[] binaryRoots;
-    private final String[] sourceRoots;
-    private final String[] sourceEncodings;
+    private final String[] javacBinaryRoots;
+    private final String[] javacSourceRoots;
+    private final String[] javacSourceEncodings;
     
 	public static Builder with(){
 		return new Builder();
@@ -68,13 +70,12 @@ public class JAstParser {
     private static final String[] EMPTY = new String[]{};
     private static final String DEFAULT_SRC_ENCODING = "UTF-8";
     
-	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Root snippetRoot, /*Iterable<Root> resolveRoots,*/ResourceLoader resourceLoader) {
+	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Root snippetRoot, ResourceLoader resourceLoader) {
 	    super();
 	    this.parser = checkNotNull(parser,"expect parser");
 	    this.checkParse = checkParse;
 	    this.recordModifications = recordModifications;
 	    this.options = checkNotNull(options,"expect parser options");
-	    //this.resolveRoots = ImmutableList.copyOf(resolveRoots);
 	    this.resourceLoader = resourceLoader;
 	    
 		Collection<Root> roots = resourceLoader.getAllRoots();
@@ -95,21 +96,11 @@ public class JAstParser {
                 srcEncodings.add(DEFAULT_SRC_ENCODING);
             }
         }
-        this.binaryRoots = binaryRoots.toArray(EMPTY);
-        this.sourceRoots = srcRoots.toArray(EMPTY);
-        this.sourceEncodings = srcEncodings.toArray(EMPTY);
+        this.javacBinaryRoots = binaryRoots.toArray(EMPTY);
+        this.javacSourceRoots = srcRoots.toArray(EMPTY);
+        this.javacSourceEncodings = srcEncodings.toArray(EMPTY);
 	}
 
-	/**
-	 * Return an immutable list of roots used in resolving bindings
-	 * 
-	 * @return
-	 *//*
-	public List<Root> getRoots(){
-	    return resolveRoots;
-	}
-	*/
-	
 	public ResourceLoader getResourceLoader(){
 	    return resourceLoader;
 	}
@@ -131,8 +122,8 @@ public class JAstParser {
 				    String problemString = Joiner.on("\n").join(Lists.transform(errors, problemToStringFunc()));
 					String msg = String.format("Parsing error for resource %s,  full path %s, source %s\n,  problems are %s", resource==null?null:resource.getRelPath(), resource==null?null:resource.getFullPathInfo(), prependLineNumbers(src), problemString);
 					if(containsResolveError(errors)){
-					    msg += "\nsource roots:" + Joiner.on("\n").join(sourceRoots);
-					    msg += "\nbinary roots:" + Joiner.on("\n").join(binaryRoots);
+					    msg += "\nsource roots:" + Joiner.on("\n").join(javacSourceRoots);
+					    msg += "\nbinary roots:" + Joiner.on("\n").join(javacBinaryRoots);
 					}
 					throw new JMutateParseException(msg);
 				}
@@ -213,9 +204,9 @@ public class JAstParser {
 		}
 		Collection<Root> roots = resourceLoader.getAllRoots();
 		
-        if (binaryRoots.length > 0 || sourceRoots.length > 0) {
+        if (javacBinaryRoots.length > 0 || javacSourceRoots.length > 0) {
             boolean includeRunningVMBootclasspath = true;// if false can't find all the JDK classes?
-            parser.setEnvironment(binaryRoots, sourceRoots, sourceEncodings, includeRunningVMBootclasspath);
+            parser.setEnvironment(javacBinaryRoots, javacSourceRoots, javacSourceEncodings, includeRunningVMBootclasspath);
         }
 		parser.setSource(src.toString().toCharArray());
 		parser.setKind(kind);
@@ -233,8 +224,8 @@ public class JAstParser {
 	}
 	
     private static void bindToNode(ASTNode node, ResourceLoader resourceLoader, RootResource resource) {
-        ClassUtil.setResourceLoader(node, resourceLoader);
-        ClassUtil.setResource(node, resource);
+        MutateUtil.setResourceLoader(node, resourceLoader);
+        MutateUtil.setResource(node, resource);
     }
 	
 	/**
@@ -256,9 +247,11 @@ public class JAstParser {
 		private boolean resolveBindings = true;
 		@SuppressWarnings("unchecked")
         private Map<Object,Object> options = newHashMap(JavaCore.getOptions());
-		private List<Root> roots = newArrayList();
+		//private List<Root> roots = newArrayList();
+		
 		private Root snippetRoot;
 		private int astJSL = AST.JLS8;
+        private ResourceLoader resourceLoader;
 		
 		public Builder(){
 		    sourceAndTargetVersion(JavaCore.VERSION_1_8);
@@ -272,24 +265,20 @@ public class JAstParser {
         	compilerOption(JavaCore.COMPILER_PB_UNUSED_TYPE_ARGUMENTS_FOR_METHOD_INVOCATION, "ignore");
         	compilerOption(JavaCore.COMPILER_PB_UNUSED_IMPORT, "ignore");
 
+        	resourceLoader(Roots.with().all().classpath(true));
         	return this;
         }
 
-		public JAstParser build(){
-		    
-		    ResourceLoader loader = DefaultResourceLoader.with()
-		            .roots(roots)
-		            //TODO:should we determine this here? 
-		            .classLoader(ClassUtil.getClassLoaderForResolving())
-		            .build();
-		    
-			return new JAstParser(
+		@Override
+        public JAstParser build(){
+		    Preconditions.checkNotNull(resourceLoader,"no resource loader set");
+		    return new JAstParser(
 				toParser()
 				, checkParse
 				, recordModifications
 				, newHashMap(options)
 				, toSnippetRoot()
-				, loader
+				, resourceLoader
 			);
 		}
 
@@ -328,51 +317,69 @@ public class JAstParser {
         	return this;
         }
 		
-		/**
-		 * Add a root to use to use in resolving bindings
-		 * 
-		 * @param builder
-		 * @return
-		 */
-		public Builder addRoots(IBuilder<? extends Iterable<Root>> builder){
-			for(Root root:builder.build()){
-			    root(root);
-			}
-			return this;
-		}
-		
-	      /**
-         * Add a root to use to use in resolving bindings
-         * @param root
-         * @return
-         */
-        public Builder root(Root root){
-            this.roots.add(root);
-            return this;
-        }
-
-        /**
-         * Set all the roots to use in resolving bindings. Replaces existing roots.
-         * 
-         * @param builder
-         * @return
-         */
-        public Builder roots(IBuilder<? extends Iterable<Root>> builder){
-            roots(builder.build());
-            return this;
-        }
+//		/**
+//		 * Add a root to use to use in resolving bindings
+//		 * 
+//		 * @param builder
+//		 * @return
+//		 */
+//		public Builder addRoots(IBuilder<? extends Iterable<Root>> builder){
+//			for(Root root:builder.build()){
+//			    root(root);
+//			}
+//			return this;
+//		}
+//		
+//	      /**
+//         * Add a root to use to use in resolving bindings
+//         * @param root
+//         * @return
+//         */
+//        public Builder root(Root root){
+//            this.roots.add(root);
+//            return this;
+//        }
+//
+//        /**
+//         * Set all the roots to use in resolving bindings. Replaces existing roots.
+//         * 
+//         * @param builder
+//         * @return
+//         */
+//        public Builder roots(IBuilder<? extends Iterable<Root>> builder){
+//            roots(builder.build());
+//            return this;
+//        }
         
-		/**
-		 * Set all the roots to use in resolving bindings. Replaces existing roots.
-		 * 
-		 * @param roots
-		 * @return
-		 */
-		public Builder roots(Iterable<Root> roots){
-			this.roots = newArrayList(roots);
-			return this;
-		}
+//		/**
+//		 * Set all the roots to use in resolving bindings. Replaces existing roots.
+//		 * 
+//		 * @param roots
+//		 * @return
+//		 */
+//		public Builder roots(Iterable<Root> roots){
+//			this.roots = newArrayList(roots);
+//			return this;
+//		}
 
+		@Required
+		public Builder resourceLoader(IBuilder<? extends Iterable<Root>> builder) {
+            resourceLoader(builder.build());
+            return this;
+        }
+		
+		@Required
+		public Builder resourceLoader(Iterable<Root> roots) {
+		    resourceLoader(DefaultResourceLoader.with().roots(roots).build());
+            return this;
+        }
+		
+		@Required
+		public Builder resourceLoader(ResourceLoader resourceLoader) {
+            this.resourceLoader = resourceLoader;
+            return this;
+        }
+		
 		public Builder checkParse(boolean checkParse) {
 			this.checkParse = checkParse;
 			return this;

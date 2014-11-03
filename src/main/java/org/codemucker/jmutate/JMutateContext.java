@@ -1,10 +1,9 @@
 package org.codemucker.jmutate;
 
-import java.util.List;
-
 import org.codemucker.jfind.Root;
-import org.codemucker.jmutate.ast.ToSourceConverter;
 import org.codemucker.jmutate.ast.JAstParser;
+import org.codemucker.jmutate.ast.ToSourceConverter;
+import org.codemucker.jmutate.generate.JAnnotationCompiler;
 
 import com.google.inject.ImplementedBy;
 
@@ -48,14 +47,9 @@ public interface JMutateContext {
 	 */
 	JCompiler getCompiler();
 	
+	JAnnotationCompiler getAnnotationCompiler();
+    
 	ToSourceConverter getNodeToSourceConverter();
-	
-//	/**
-//	 * Return an immutable list of roots used by defaults. This is used for resolution.
-//	 * 
-//	 * @return
-//	 */
-//	List<Root> getDefaultRoots();
 	
 	/**
 	 * Where code is generated to by default

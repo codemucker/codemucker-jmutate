@@ -3,6 +3,8 @@
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -16,8 +18,8 @@ import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.ToSourceConverter;
-import org.codemucker.jmutate.util.ClassUtil;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.MutateUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
@@ -29,6 +31,7 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
@@ -100,7 +103,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
             typeNum++;
             String typeName = "Type" + typeNum;
             String comment = "/*";
-            RootResource resource = ClassUtil.getResource(node);
+            RootResource resource = MutateUtil.getResource(node);
             if(resource!=null){
                 comment += "from " + resource.getRoot().getPathName() + "=>" + resource.getRelPath();
             }
@@ -113,23 +116,23 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
             case INTERFACE:
                 t.pl(comment);
                 t.pl(anonSrc);
-                t.pl("public static interface ${type}{}","type",typeName);
+                t.pl("public interface ${type}{}","type",typeName);
                 extractor = Extractor.type(node,typeNum);
                 break;
             case TYPE:
                 t.pl(comment);
                 t.pl(anonSrc);
-                t.pl("public static class ${type}{}","type",typeName);
+                t.pl("public class ${type}{}","type",typeName);
                 extractor = Extractor.type(node,typeNum);
                 break;
             case ANON:
                 t.pl(comment);
                 t.pl(anonSrc);
-                t.pl("public static @interface ${type}{}","type",typeName);
+                t.pl("public @interface ${type}{}","type",typeName);
                 extractor = Extractor.type(node,typeNum);
                 break;
             case FIELD:
-                t.pl("public static class ${type}{","type",typeName);
+                t.pl("public class ${type}{","type",typeName);
                 t.pl(comment);
                 t.pl("  " + anonSrc);
                 t.pl("  String myField;");
@@ -137,7 +140,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 extractor = Extractor.field(node,typeNum,0);
                 break;
             case CTOR:
-                t.pl("public static class ${type}{","type",typeName);
+                t.pl("public class ${type}{","type",typeName);
                 t.pl(comment);
                 t.pl("  " + anonSrc);
                 t.pl("  ${type}(){}");
@@ -145,7 +148,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 extractor = Extractor.method(node,typeNum,0);
                 break;
             case METHOD:
-                t.pl("public static interface ${type}{","type",typeName);
+                t.pl("public interface ${type}{","type",typeName);
                 t.pl(comment);
                 t.pl("  " + anonSrc);
                 t.pl("  void someMethod(){}");
@@ -153,7 +156,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 extractor =  Extractor.method(node,typeNum,0);
                 break;
             case PARAM:
-                t.pl("public static interface ${type}{","type",typeName);
+                t.pl("public interface ${type}{","type",typeName);
                 t.pl(comment);
                 t.pl("  void someMethod(${anon} String myParam){}","anon",anonSrc);
                 t.pl("}");
@@ -170,10 +173,25 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
             try {
                 extractor.extractAndCacheAnnotation(tmpContainingClass);
             } catch (NoClassDefFoundError | IndexOutOfBoundsException | JMutateException e) {
-                String msg = String.format("Couldn't extract compiled annotation from tmp class %s compiled from source %n-----------%n%s%n-----------%n using extractor %s", tmpContainingClass.getName(), t.interpolateTemplate(), extractor);
+                Set<String> classpathEntries = toClassLoaderUrls(tmpContainingClass.getClassLoader());
+                String msg = String.format("Couldn't extract compiled annotation from tmp class %s compiled from source %n-----------%n%s%n-----------%n using extractor %s with classpath entries %n%s", tmpContainingClass.getName(), t.interpolateTemplate(), extractor, Joiner.on('\n').join(classpathEntries));
                 throw new JMutateCompileException(msg, e);
             }
         }
+    }
+    
+    private static Set<String>toClassLoaderUrls(ClassLoader classloader){
+        Set<String> urls = new TreeSet<>();//Sets.newLinkedHashSet();
+        while (classloader != null) {
+            if (classloader instanceof URLClassLoader) {
+                for (URL url : ((URLClassLoader) classloader).getURLs()) {
+                    urls.add(url.toExternalForm());
+                    // System.out.println("Roots:url=" + url.getPath());
+                }
+            }
+            classloader = classloader.getParent();
+        }
+        return urls;
     }
 
     private Collection<String> collectImports(org.eclipse.jdt.core.dom.Annotation... nodes) {
@@ -262,7 +280,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
         
         private void add(Name name){
             if(name.isSimpleName()){
-                imports.add(JavaNameUtil.resolveQualifiedName(name));
+                imports.add(NameUtil.resolveQualifiedName(name));
             }
         }
     }
@@ -344,44 +362,44 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
         }
         
         private static void extractInfo(Class<?> klass, StringBuilder msg, int depth) {
-            newlinePad(msg,depth);
+            newlineAndPad(msg,depth);
             msg.append("for type " + klass.getSimpleName());
 
-            newlinePad(msg,depth);
+            newlineAndPad(msg,depth);
             Annotation[] annons = klass.getDeclaredAnnotations();
             msg.append("found " + annons.length + " annotations");
 
-            newlinePad(msg,depth);
+            newlineAndPad(msg,depth);
             Field[] fields = klass.getDeclaredFields();
             msg.append("found " + fields.length + " fields");
             for (int i = 0; i < fields.length; i++) {
                 Field f = fields[i];
-                newlinePad(msg,depth +1);
-                msg.append("field" + i + " has " + f.getDeclaredAnnotations().length + " annotations");
+                newlineAndPad(msg,depth +1);
+                msg.append("field " + i + " has " + f.getDeclaredAnnotations().length + " annotations");
             }
 
-            newlinePad(msg,depth);
+            newlineAndPad(msg,depth);
             Method[] methods = klass.getDeclaredMethods();
             msg.append("found " + methods.length + " methods");
             for (int i = 0; i < methods.length; i++) {
                 Method m = methods[i];
-                newlinePad(msg,depth + 1);
+                newlineAndPad(msg,depth + 1);
                 msg.append("method " + i + " has " + m.getDeclaredAnnotations().length + " annotations");
             }
 
-            newlinePad(msg,depth);
+            newlineAndPad(msg,depth);
             Class<?>[] types = klass.getDeclaredClasses();
             msg.append("found " + types.length + " embedded classes");
             for (int i = 0; i < types.length; i++) {
-                Class<?> t = types[i];
-                extractInfo(t, msg, depth + 1);
+                Class<?> embeddedClass = types[i];
+                extractInfo(embeddedClass, msg, depth + 1);
             }
         }
         
-        private static void newlinePad(StringBuilder sb, int pad){
+        private static void newlineAndPad(StringBuilder sb, int pad){
             sb.append("\n");
             for(int i=0;i<pad;i++){
-                sb.append("   ");
+                sb.append("..");
             }
         }
         

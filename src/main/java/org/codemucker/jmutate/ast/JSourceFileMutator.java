@@ -9,12 +9,22 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.JMutateParseException;
+import org.codemucker.jmutate.ast.ToSourceConverter.Kind;
+import org.codemucker.jmutate.transform.CleanImportsTransform;
+import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
 public class JSourceFileMutator {
+    
+    private static final Logger log = LogManager.getLogger(JSourceFileMutator.class);
+    
 	private final JSourceFile source;
 	private final JMutateContext context;
 
@@ -53,22 +63,55 @@ public class JSourceFileMutator {
     /**
      * Write any modifications to the AST back to disk. May throw an exception if the resource is not modifiable
      */
-    public JSourceFile writeModificationsToDisk() {
-        if(!isInSyncWithResource()){
-            internalWriteChangesToFile();
-            //TODO:reload source?
+	public JSourceFile writeModificationsToDisk() {
+	    return writeModificationsToDisk(true);
+	}
+	
+	public JSourceFile writeModificationsToDisk(boolean compareAstNodes) {
+	    RootResource resource = source.getResource();
+	    if(!sourcesMatch(compareAstNodes)){
+            internalWriteChangesToFile(true);
+            //reload source, also resets modification count
             return JSourceFile.fromResource(source.getResource(), context.getParser());
+        } else {
+            log.debug("no ast changes to write to disk, source in sync, for " + resource);
         }
         return source;
     }
+	
+	private boolean sourcesMatch(boolean compareAstNodes){
+	    RootResource resource = source.getResource();
+	    if(isInSyncWithResource()){
+	        return true;
+	    }
+        if(compareAstNodes && resource.exists()){
+            try {
+                String existingOnDiskSrc= source.getResource().readAsString();
+                try {
+                    CompilationUnit existingOnDiskCu= context.getParser().parseCompilationUnit(existingOnDiskSrc, resource);
+                    ASTMatcher matcher = JAstMatcher.with().matchDocTags(false).buildNonAsserting();
+                    boolean theSame = matcher.match(getCompilationUnit(), existingOnDiskCu); 
+                    return theSame;
+                } catch(JMutateParseException e){
+                    log.debug("couldn't parse existing source, going to replace it");
+                    return false;
+                }
+            } catch (IOException e) {
+                log.debug("couldn't read existing source, going to replace it");
+            }
+        }
+        return false;
+	}
 
     public boolean isInSyncWithResource(){
         return source.isInSyncWithResource();
     }
     
-    private void internalWriteChangesToFile() {
-        
+    private void internalWriteChangesToFile(boolean formatSrc) {
         String src = source.getCurrentSource();
+        if(formatSrc){
+            src = context.getNodeToSourceConverter().toFormattedSource(src, Kind.COMPILATION_UNIT);
+        }
         OutputStream os = null;
         try {
             os = source.getResource().getOutputStream();
@@ -80,6 +123,7 @@ public class JSourceFileMutator {
         } finally {
             IOUtils.closeQuietly(os);
         }
+        log.debug("wrote changes to write to disk for source " + source.getResource());
     }
     
 }

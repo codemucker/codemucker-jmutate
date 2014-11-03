@@ -14,7 +14,7 @@ import org.codemucker.jmutate.builder.JMethodSetterBuilder;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.transform.Transform;
-import org.codemucker.jmutate.util.JavaNameUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.Type;
 
 import com.google.inject.Inject;
@@ -97,7 +97,7 @@ public class BeanPropertyTransform implements Transform {
 	}
 
 	public BeanPropertyTransform setPropertyType(Type propertyType) {
-		String typeAsString = JavaNameUtil.resolveQualifiedName(propertyType);
+		String typeAsString = NameUtil.resolveQualifiedName(propertyType);
 		setPropertyType(typeAsString);
 		return this;
 	}

@@ -52,7 +52,7 @@ public class InsertFieldTransformTest {
 		InsertFieldTransform.newTransform()
 			.target(after)
 			.field(field)
-			.setPlacementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
+			.placementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
 			.transform();
 	
 		JType expectType = ctxt.newSourceTemplate()

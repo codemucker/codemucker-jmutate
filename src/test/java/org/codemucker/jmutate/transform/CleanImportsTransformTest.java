@@ -15,7 +15,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.junit.Test;
 
 
-public class FixImportsTransformTest {
+public class CleanImportsTransformTest {
 
 	JMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 	
@@ -25,8 +25,8 @@ public class FixImportsTransformTest {
 		CompilationUnit expected = readTemplate("add_imports.after").asResolvedCompilationUnitNamed(null);
 		
 		//do the actual import clean
-		ctxt.obtain(FixImportsTransform.class)
-			.setNodeToClean(actual)
+		ctxt.obtain(CleanImportsTransform.class)
+			.nodeToClean(actual)
 			.transform();
 		
 		SourceAsserts.assertAstsMatch(expected, actual);
@@ -38,8 +38,8 @@ public class FixImportsTransformTest {
 		CompilationUnit expected = readTemplate("existing_imports_only.after").asResolvedCompilationUnitNamed(null);
 		
 		//do the actual import clean
-		ctxt.obtain(FixImportsTransform.class)
-			.setNodeToClean(actual)
+		ctxt.obtain(CleanImportsTransform.class)
+			.nodeToClean(actual)
 			.addMissingImports(false)
 			.transform();
 		

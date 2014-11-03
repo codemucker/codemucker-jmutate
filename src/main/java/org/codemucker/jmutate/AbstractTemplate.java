@@ -153,6 +153,16 @@ public abstract class AbstractTemplate<TSelf extends AbstractTemplate<TSelf>> im
         return self();
     }
 
+    public TSelf p(CharSequence template, Object...params) {
+        print(template,params);
+        return self();
+    }
+
+    public TSelf print(CharSequence template, Object...params) {
+        print(interpolateSnippet(template, params));
+        return self();
+    }
+    
     /**
      * Shorthand for {@link #print(char)}
      */

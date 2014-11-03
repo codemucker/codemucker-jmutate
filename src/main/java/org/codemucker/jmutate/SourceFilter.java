@@ -8,13 +8,13 @@ import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.JMutateScanner.SourceMatcher;
+import org.codemucker.jmutate.SourceScanner.SourceMatcher;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.lang.IBuilder;
 
-public class JMutateFilter implements SourceMatcher {
+public class SourceFilter implements SourceMatcher {
 
 	private final FindResult.Filter<Object> objectFilter;
 	private final FindResult.Filter<Root> rootFilter;
@@ -22,12 +22,16 @@ public class JMutateFilter implements SourceMatcher {
 	private final FindResult.Filter<JSourceFile> sourceFilter;
 	private final FindResult.Filter<JType> typeMatcher;
 	private final FindResult.Filter<JMethod> methodFilter;
-	
+
+    public static Builder that() {
+        return with();
+    }
+
     public static Builder with() {
         return new Builder();
     }
 
-	private JMutateFilter(
+	private SourceFilter(
 			FindResult.Filter<Object> objectFilter
 			, FindResult.Filter<Root> rootFilter
 			, FindResult.Filter<RootResource> resourceMatcher
@@ -114,8 +118,9 @@ public class JMutateFilter implements SourceMatcher {
 			//prevent instantiation outside of builder method
 		}
 		
-		public SourceMatcher build(){
-			return new JMutateFilter(
+		@Override
+        public SourceMatcher build(){
+			return new SourceFilter(
 				 ANY	
 				, toFilter(roots.build())
 				, toFilter(resources.build())
@@ -129,52 +134,52 @@ public class JMutateFilter implements SourceMatcher {
 			return MatcherToFindFilterAdapter.from(matcher);
 		}
 		
-		public Builder includeRoot(Matcher<Root> matcher) {
+		public Builder includesRoot(Matcher<Root> matcher) {
             roots.addInclude(matcher);
             return this;
         }
 		
-		public Builder includeResource(Matcher<RootResource> matcher) {
+		public Builder includesResource(Matcher<RootResource> matcher) {
 			resources.addInclude(matcher);
 			return this;
 		}
 	
-		public Builder excludeRoot(Matcher<Root> matcher) {
+		public Builder excludesRoot(Matcher<Root> matcher) {
             roots.addExclude(matcher);
             return this;
         }
         
-		public Builder excludeResource(Matcher<RootResource> matcher) {
+		public Builder excludesResource(Matcher<RootResource> matcher) {
 			resources.addExclude(matcher);
 			return this;
 		}
 	
-		public Builder includeSource(Matcher<JSourceFile> matcher) {
+		public Builder includesSource(Matcher<JSourceFile> matcher) {
 			sources.addInclude(matcher);
 			return this;
 		}
 	
-		public Builder excludeSource(Matcher<JSourceFile> matcher) {
+		public Builder excludesSource(Matcher<JSourceFile> matcher) {
 			sources.addExclude(matcher);
 			return this;
 		}
 		
-		public Builder includeType(Matcher<JType> matcher){
+		public Builder includesType(Matcher<JType> matcher){
 			types.addInclude(matcher);
 			return this;
 		}
 		
-		public Builder excludeType(Matcher<JType> matcher){
+		public Builder excludesType(Matcher<JType> matcher){
 			types.addExclude(matcher);
 			return this;
 		}
 		
-		public Builder includeMethods(Matcher<JMethod> matcher){
+		public Builder includesMethods(Matcher<JMethod> matcher){
 			methods.addInclude(matcher);
 			return this;
 		}
 		
-		public Builder excludeMethods(Matcher<JMethod> matcher){
+		public Builder excludesMethods(Matcher<JMethod> matcher){
 			methods.addExclude(matcher);
 			return this;
 		}
