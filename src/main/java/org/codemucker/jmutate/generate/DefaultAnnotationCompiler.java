@@ -125,7 +125,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 t.pl("public class ${type}{}","type",typeName);
                 extractor = Extractor.type(node,typeNum);
                 break;
-            case ANON:
+            case ANNOTATION:
                 t.pl(comment);
                 t.pl(anonSrc);
                 t.pl("public @interface ${type}{}","type",typeName);
@@ -215,7 +215,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
     }
 
     private static enum AttachedType {
-        FIELD, METHOD, TYPE, INTERFACE, CTOR, ANON, PARAM;
+        FIELD, METHOD, TYPE, INTERFACE, CTOR, ANNOTATION, PARAM;
     }
 
     private DefaultAnnotationCompiler.AttachedType getAttachedType(org.eclipse.jdt.core.dom.Annotation node) {
@@ -234,7 +234,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 }
                 return AttachedType.TYPE;
             } else if (parent instanceof org.eclipse.jdt.core.dom.Annotation) {
-                return AttachedType.ANON;
+                return AttachedType.ANNOTATION;
             } else if (parent instanceof SingleVariableDeclaration) {
                 return AttachedType.PARAM;
             }
