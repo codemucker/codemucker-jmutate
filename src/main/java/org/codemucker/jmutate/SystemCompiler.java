@@ -43,6 +43,10 @@ public class SystemCompiler implements JCompiler {
         this.defaultResourceLoader = resourceLoader;
         this.sourceVersion = project.getSourceVersion();
         this.targetVersion = project.getTargetVersion();
+        
+        if(ToolProvider.getSystemJavaCompiler() == null){
+        	throw new UnsupportedOperationException("the current java runtime  tool provider does not provide a compiler (javax.tools.ToolProvider.getSystemJavaCompiler() is null)");
+        }
     }
 
     @Override
