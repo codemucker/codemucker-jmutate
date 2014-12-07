@@ -142,10 +142,11 @@ public class EclipseCompiler implements JCompiler {
                 // Include all the dependencies in class path so we can compile,
                 // including the package root of the source file
                 List<URL> classloaderClasspath = new ArrayList<>();
+                
                 classloaderClasspath.add(resource.getRoot().toURL());
                 classloaderClasspath.addAll(convertToUrls(resourceLoader));
 
-                try (URLClassLoader classloader = new URLClassLoader(classloaderClasspath.toArray(new URL[] {}))) {
+                try (URLClassLoader classloader = new URLClassLoader(classloaderClasspath.toArray(new URL[] {}),resourceLoader.getClassLoader())) {
                     Class<?> compiledClass = classloader.loadClass(className);
                     loadDeclaredClasses(compiledClass);
                     return compiledClass;
