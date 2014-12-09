@@ -9,7 +9,7 @@ public enum ClashStrategy {
 	/**
 	 * Ignore the new node (don't add it)
 	 */
-	IGNORE,
+	SKIP,
 	/**
 	 * Throw an error
 	 */

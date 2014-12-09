@@ -144,7 +144,7 @@ public class EclipseCompiler implements JCompiler {
                 List<URL> classloaderClasspath = new ArrayList<>();
                 
                 classloaderClasspath.add(resource.getRoot().toURL());
-                classloaderClasspath.addAll(convertToUrls(resourceLoader));
+                //classloaderClasspath.addAll(convertToUrls(resourceLoader));
 
                 try (URLClassLoader classloader = new URLClassLoader(classloaderClasspath.toArray(new URL[] {}),resourceLoader.getClassLoader())) {
                     Class<?> compiledClass = classloader.loadClass(className);

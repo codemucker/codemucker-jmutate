@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.codemucker.jfind.DefaultFindResult;
+import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
@@ -37,12 +39,12 @@ public abstract class AbstractAnnotations implements Annotations {
 
     @Override
     public List<JAnnotation> getAllDirect() {
-        return find(MATCH_ANY, Depth.DIRECT);
+        return find(MATCH_ANY, Depth.DIRECT).toList();
     }
 
     @Override
     public List<JAnnotation> getAllIncludeNested() {
-        return find(MATCH_ANY, Depth.ANY);
+        return find(MATCH_ANY, Depth.ANY).toList();
     }
 
     @Override
@@ -104,12 +106,12 @@ public abstract class AbstractAnnotations implements Annotations {
     }
 
     @Override
-    public List<JAnnotation> find(Matcher<JAnnotation> matcher) {
+    public FindResult<JAnnotation> find(Matcher<JAnnotation> matcher) {
         return find(matcher, Depth.DIRECT);
     }
 
     @Override
-    public List<JAnnotation> find(final Matcher<JAnnotation> matcher, Depth depth) {
+    public FindResult<JAnnotation> find(final Matcher<JAnnotation> matcher, Depth depth) {
         final List<JAnnotation> found = new ArrayList<>();
         if (depth.max == Depth.DIRECT.max) {
             for (IExtendedModifier mod : getModifiers()) {
@@ -150,7 +152,7 @@ public abstract class AbstractAnnotations implements Annotations {
             };
             getAstNode().accept(visitor);
         }
-        return found;
+        return DefaultFindResult.from(found);
     }
 
 }

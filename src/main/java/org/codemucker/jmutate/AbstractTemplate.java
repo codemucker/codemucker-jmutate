@@ -69,6 +69,10 @@ public abstract class AbstractTemplate<TSelf extends AbstractTemplate<TSelf>> im
         this.vars.put(name, val);
         return self();
     }
+    
+	protected Map<String, Object> cloneVars() {
+		return new HashMap<>(this.vars);
+	}
 
     /**
      * Replace the entire template contents with the given sequence
@@ -113,11 +117,21 @@ public abstract class AbstractTemplate<TSelf extends AbstractTemplate<TSelf>> im
         return self();
     }
     
+    /**
+     * @see {@link #p(CharSequence, Object...)}
+     */
     public TSelf pl(CharSequence template, Object...params) {
         println(template,params);
         return self();
     }
 
+    /**
+     * Add the given char sequence, interpolating it with the provided parameters, then post fix with newline
+     * 
+     * @param template
+     * @param params a list of alternating name/value pairs. E.g.  "var1","val1", "var2", "val2"
+     * @return self
+     */
     public TSelf println(CharSequence template, Object...params) {
         println(interpolateSnippet(template, params));
         return self();
@@ -153,11 +167,21 @@ public abstract class AbstractTemplate<TSelf extends AbstractTemplate<TSelf>> im
         return self();
     }
 
+    /**
+     * @see {@link #p(CharSequence, Object...)}
+     */
     public TSelf p(CharSequence template, Object...params) {
         print(template,params);
         return self();
     }
 
+    /**
+     * Add the given char sequence, interpolating it with the provided parameters.
+     * 
+     * @param template
+     * @param params a list of alternating name/value pairs. E.g.  "var1","val1", "var2", "val2"
+     * @return self
+     */
     public TSelf print(CharSequence template, Object...params) {
         print(interpolateSnippet(template, params));
         return self();

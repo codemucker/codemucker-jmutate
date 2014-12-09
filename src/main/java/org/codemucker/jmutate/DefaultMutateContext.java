@@ -144,10 +144,16 @@ public class DefaultMutateContext implements JMutateContext {
         }
 
         @Provides
-        public ClashStrategy provideDefaultClashStrategy() {
+        public ClashStrategyResolver provideDefaultClashStrategyResolver() {
+            return new ClashStrategyResolver.Fixed(provideDefaultClashStrategy());
+        }
+
+        @Provides
+        public ClashStrategy  provideDefaultClashStrategy() {
             return ClashStrategy.ERROR;
         }
 
+        
         @Named(ContextNames.MARK_GENERATED)
         @Provides
         public boolean provideDefaultMarkGenerated() {

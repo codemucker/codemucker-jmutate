@@ -158,24 +158,10 @@ public class JTypeMutator {
         }
     }
 	
-	/**
-	 * Ad a new import if it doesn't already exist
-	 */
 	public void addImport(String fullName){
-        List<ImportDeclaration> imports = jType.getCompilationUnit().imports();
-        for(ImportDeclaration dec:imports){
-            if(fullName.equals(dec.getName().getFullyQualifiedName())){
-                    return;
-            }
-        }
-        ImportDeclaration newImport = jType.getAst().newImportDeclaration();
-        newImport.setName(jType.getAst().newName(fullName));
-        imports.add(newImport);
+		jType.getJCompilationUnit().addImport(fullName);
+
     }
-    
-    
-	
-	
 	
 	private SourceTemplate newSourceTemplate(){
 		return ctxt.obtain(SourceTemplate.class);

@@ -44,7 +44,7 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
                 try {
                     Class<?> annotationClass = classLoader.loadClass(fullCompiledName);
                     for (Annotation a : annotationClass.getAnnotations()) {
-                        System.out.println("annotation " + a.getClass().getName()  + " on " + fullCompiledName + " loaded");
+                        //System.out.println("annotation " + a.getClass().getName()  + " on " + fullCompiledName + " loaded");
                         
                         if (diag.tryMatch(this, a, anonMatcher)) {    
                             cachedClassNameToMatch.put(fullCompiledName, true);

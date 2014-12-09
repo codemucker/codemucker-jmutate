@@ -22,13 +22,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.codemucker.jmatch.ObjectMatcher;
+import org.codemucker.jmutate.ClashStrategy;
 import org.codemucker.jpattern.DefaultGenerator;
 import org.codemucker.jpattern.Dependency;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Target(ElementType.TYPE)
-@DefaultGenerator("org.codemucker.jmutate.generator.matcher.MatcherGenerator")
+@DefaultGenerator("org.codemucker.jmutate.generate.matcher.MatcherGenerator")
 public @interface GenerateMatchers {
 
     /**
@@ -40,7 +41,7 @@ public @interface GenerateMatchers {
     /**
      * The package to generate the matchers in. If empty use the same package as the pojo one
      */
-    String matcherPackage() default "";
+    String generateToPackage() default "";
     
     /**
      * The class to extend the matchers from. Default is empty to use the default.
@@ -66,12 +67,12 @@ public @interface GenerateMatchers {
     /**
      * The packages to search for pojos. Defaults to search all. Ant pattern matching.
      */
-    String[] pojoPackages() default {};
+    String pojoPackages() default "";
 
     /**
-     * The pattern for finding the pojos. By default is empty and matches everything (in the packages and dependencies set to be scanned). Ant pattern matching.
+     * The pattern for finding the pojos. By default matches everything (in the packages and dependencies set to be scanned). Logical ant expression pattern matching.
      */
-    String[] pojoNames() default {};
+    String pojoNames() default "!Abstract*";
     
     /**
      * If true also scan source files (not just compiled dependencies). Default is true.
@@ -82,5 +83,10 @@ public @interface GenerateMatchers {
      * If true also scan binary dependencies for pojos to generate matchers for. Default is true.
      */
     boolean scanDependencies() default true;
+    
+    boolean debugShowMatches() default false;
+    boolean debugShowIgnores() default false;
+    
+    ClashStrategy clashStrategy() default ClashStrategy.SKIP;
     
 }

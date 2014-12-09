@@ -50,6 +50,17 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		this.snippetRoot = checkNotNull(snippetRoot, "expect snippet root");
 	}
 	
+	public SourceTemplate child(){
+		SourceTemplate child = new SourceTemplate(parser,snippetRoot);
+		child.setVars(cloneVars());
+		return child;
+	}
+	
+	public SourceTemplate add(SourceTemplate child) {
+		p(child.interpolateTemplate());
+		return this;
+	}
+	
 	/**
 	 * @see {@link #setVar(String, Class)}}
 	 * 
@@ -348,14 +359,14 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	}
 
 	private static String fqnToRelPathAndClean(String fqn){
-		if( fqn.endsWith(".java")){
+		if(fqn.endsWith(".java")){
 			fqn = fqn.substring(0, fqn.length() - 5);
 		}
 		String relPath = fqn.replace('.','/');
 		checkValidRelPath(relPath);
-		if(relPath.startsWith("/")){
-			relPath = relPath.substring(1,relPath.length());
-		}
+//		if(relPath.startsWith("/")){
+//			relPath = relPath.substring(1,relPath.length());
+//		}
 		return relPath;
 	}
 	
@@ -373,4 +384,5 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		}
 		return relPath;
 	}
+
 }

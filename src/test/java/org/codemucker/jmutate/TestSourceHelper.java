@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.Roots;
-import org.codemucker.jfind.matcher.AResource;
+import org.codemucker.jfind.matcher.ARootResource;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
 
@@ -16,10 +16,9 @@ public class TestSourceHelper {
 	 * @return the found source file, or throw an exception if no source found
 	 */
 	public static JSourceFile findSourceForClass(Class<?> classToFindSourceFor){
-		String filePath = classToFindSourceFor.getName().replace('.', '/') + ".java";
 		SourceScanner finder = newAllSourcesResolvingFinder()
 			.filter(SourceFilter.with()
-				.includesResource(AResource.with().path(filePath)))
+				.includesResource(ARootResource.with().className(classToFindSourceFor)))
 			.build();
 		FindResult<JSourceFile> sources = finder.findSources();
 		

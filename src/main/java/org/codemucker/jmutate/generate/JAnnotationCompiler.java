@@ -4,6 +4,9 @@ import java.lang.annotation.Annotation;
 
 import com.google.inject.ImplementedBy;
 
+/**
+ * Converts annotations in source form to compiled form
+ */
 @ImplementedBy(DefaultAnnotationCompiler.class)
 public interface JAnnotationCompiler {
     /**

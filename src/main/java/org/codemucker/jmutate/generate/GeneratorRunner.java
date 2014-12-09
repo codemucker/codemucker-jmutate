@@ -16,7 +16,7 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
-import org.codemucker.jfind.matcher.AResource;
+import org.codemucker.jfind.matcher.ARootResource;
 import org.codemucker.jfind.matcher.ARoot;
 import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
@@ -212,7 +212,7 @@ public class GeneratorRunner {
     private List<Annotation> scanForGenerationAnnotations() {
         final List<Annotation> found = new ArrayList<>();
         
-        final AResource resourceFilter = AResource.with()
+        final ARootResource resourceFilter = ARootResource.with()
                 .packageName(AString
                         .matchingAntPattern(scanPackagesAntPattern))//limit search
                         .stringContent(MATCH_CONTENT)//prevent parsing nodes we don't need to

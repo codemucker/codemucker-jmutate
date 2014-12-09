@@ -13,10 +13,12 @@ import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.MutateUtil;
+import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 
 import com.google.common.collect.Lists;
@@ -121,4 +123,22 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 	public CompilationUnit getAstNode() {
 		return compilationUnit;
 	}
+
+	/**
+	 * Ad a new import if it doesn't already exist
+	 * 
+	 * TODO:support wildcard import
+	 */
+	public void addImport(String fullName){
+        List<ImportDeclaration> imports = compilationUnit.imports();
+        for(ImportDeclaration dec:imports){
+            if(fullName.equals(dec.getName().getFullyQualifiedName())){
+                    return;
+            }
+        }
+        AST ast = compilationUnit.getAST();
+        ImportDeclaration newImport = ast.newImportDeclaration();
+        newImport.setName(ast.newName(fullName));
+        imports.add(newImport);
+    }
 }

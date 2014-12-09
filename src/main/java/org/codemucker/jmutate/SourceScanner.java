@@ -55,8 +55,8 @@ public class SourceScanner {
 		}
 
 		@Override
-		public void onError(Object record, Exception e) throws Exception {
-		    log.warn(String.format("Error processing '%s'", record),e);
+		public void onError(Object record, Throwable t) throws Throwable {
+		    log.warn(String.format("Error processing '%s'", record),t);
 		}
 	};
 	
@@ -207,7 +207,7 @@ public class SourceScanner {
             listener.onError(resource, e);
         } catch (RuntimeException rethrown) {
             throw rethrown;
-        } catch (Exception rethrown) {
+        } catch (Throwable rethrown) {
             throw new JMutateException("Error parsing source", rethrown);
         }
     }

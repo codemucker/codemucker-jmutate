@@ -3,6 +3,7 @@ package org.codemucker.jmutate.ast;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
+import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.Matcher;
 
 public interface Annotations {
@@ -23,7 +24,7 @@ public interface Annotations {
 
     public JAnnotation get(Matcher<JAnnotation> matcher, Depth depth);
 
-    public List<JAnnotation> find(Matcher<JAnnotation> matcher);
+    public FindResult<JAnnotation> find(Matcher<JAnnotation> matcher);
 
-    public List<JAnnotation> find(Matcher<JAnnotation> matcher, Depth depth);
+    public FindResult<JAnnotation> find(Matcher<JAnnotation> matcher, Depth depth);
 }

@@ -73,7 +73,7 @@ public class CleanImportsTransform implements Transform {
 		Map<String,String> classNamesByShortNameToConvert = toClassNamesByShortName(imports);
 		
 		if(addMissingImports){
-			//find additiona l imports to add and then convert
+			//find additional imports to add and then convert
 			
 			Map<String,String> importsToAdd = toFullNamesKeyedByShortName(findAllClassNamesIn(node));
 			importsToAdd.keySet().removeAll(toShortNames(imports));

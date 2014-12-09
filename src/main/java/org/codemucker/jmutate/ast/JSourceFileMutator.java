@@ -41,6 +41,10 @@ public class JSourceFileMutator {
 		return source.getCompilationUnitNode();
 	}
 
+	public JCompilationUnit getJCompilationUnit() {
+		return JCompilationUnit.from(source.getCompilationUnitNode());
+	}
+
 	/**
 	 * Return the type declared in this file with the same name as the name of the file.
 	 */

@@ -83,7 +83,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
      * @param nodes
      */
     private void internalCompileAnnotations(org.eclipse.jdt.core.dom.Annotation... nodes) {
-        Collection<Extractor> extractors = new ArrayList<>();
+        Collection<CompiledAnnotationExtractor> extractors = new ArrayList<>();
         
         SourceTemplate t = ctxt.newTempSourceTemplate();
         t.var("pkg", tmpPackageName);
@@ -111,25 +111,25 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
             
             String anonSrc = getSrcWithFullyQualifiedName(node);
             
-            Extractor extractor;
-            switch (getAttachedType(node)) {
+            CompiledAnnotationExtractor extractor;
+            switch (getAnnotationType(node)) {
             case INTERFACE:
                 t.pl(comment);
                 t.pl(anonSrc);
                 t.pl("public interface ${type}{}","type",typeName);
-                extractor = Extractor.type(node,typeNum);
+                extractor = CompiledAnnotationExtractor.type(node,typeNum);
                 break;
             case TYPE:
                 t.pl(comment);
                 t.pl(anonSrc);
                 t.pl("public class ${type}{}","type",typeName);
-                extractor = Extractor.type(node,typeNum);
+                extractor = CompiledAnnotationExtractor.type(node,typeNum);
                 break;
             case ANNOTATION:
                 t.pl(comment);
                 t.pl(anonSrc);
                 t.pl("public @interface ${type}{}","type",typeName);
-                extractor = Extractor.type(node,typeNum);
+                extractor = CompiledAnnotationExtractor.type(node,typeNum);
                 break;
             case FIELD:
                 t.pl("public class ${type}{","type",typeName);
@@ -137,7 +137,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 t.pl("  " + anonSrc);
                 t.pl("  String myField;");
                 t.pl("}");
-                extractor = Extractor.field(node,typeNum,0);
+                extractor = CompiledAnnotationExtractor.field(node,typeNum,0);
                 break;
             case CTOR:
                 t.pl("public class ${type}{","type",typeName);
@@ -145,7 +145,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 t.pl("  " + anonSrc);
                 t.pl("  ${type}(){}");
                 t.pl("}");
-                extractor = Extractor.method(node,typeNum,0);
+                extractor = CompiledAnnotationExtractor.method(node,typeNum,0);
                 break;
             case METHOD:
                 t.pl("public interface ${type}{","type",typeName);
@@ -153,14 +153,14 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 t.pl("  " + anonSrc);
                 t.pl("  void someMethod(){}");
                 t.pl("}");
-                extractor =  Extractor.method(node,typeNum,0);
+                extractor =  CompiledAnnotationExtractor.method(node,typeNum,0);
                 break;
             case PARAM:
                 t.pl("public interface ${type}{","type",typeName);
                 t.pl(comment);
                 t.pl("  void someMethod(${anon} String myParam){}","anon",anonSrc);
                 t.pl("}");
-                extractor = Extractor.methodParam(node,typeNum,0,0);
+                extractor = CompiledAnnotationExtractor.methodParam(node,typeNum,0,0);
                 break;
             default:
                 throw new JMutateException("Don't yet support compiling annotation:" + node);
@@ -169,7 +169,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
         }
         t.pl("}");
         Class<?> tmpContainingClass = toCompiledClass(t);
-        for (Extractor extractor : extractors) {
+        for (CompiledAnnotationExtractor extractor : extractors) {
             try {
                 extractor.extractAndCacheAnnotation(tmpContainingClass);
             } catch (NoClassDefFoundError | IndexOutOfBoundsException | JMutateException e) {
@@ -180,7 +180,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
         }
     }
     
-    private static Set<String>toClassLoaderUrls(ClassLoader classloader){
+    private static Set<String> toClassLoaderUrls(ClassLoader classloader){
         Set<String> urls = new TreeSet<>();//Sets.newLinkedHashSet();
         while (classloader != null) {
             if (classloader instanceof URLClassLoader) {
@@ -209,34 +209,33 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
     
     private Class<?> toCompiledClass(SourceTemplate template){
         JSourceFile  f = template.asSourceFileSnippet().asMutator(ctxt).writeModificationsToDisk();
-        Class<?> klass = ctxt.getCompiler().toCompiledClass(f);
-        klass.getDeclaredClasses();
-        return klass;
+        Class<?> compiledClass = ctxt.getCompiler().toCompiledClass(f);
+        return compiledClass;
     }
 
-    private static enum AttachedType {
+    private static enum AnnotationType {
         FIELD, METHOD, TYPE, INTERFACE, CTOR, ANNOTATION, PARAM;
     }
 
-    private DefaultAnnotationCompiler.AttachedType getAttachedType(org.eclipse.jdt.core.dom.Annotation node) {
+    private DefaultAnnotationCompiler.AnnotationType getAnnotationType(org.eclipse.jdt.core.dom.Annotation node) {
         ASTNode parent = node.getParent();
         while (parent != null) {
             if (parent instanceof FieldDeclaration) {
-                return AttachedType.FIELD;
+                return AnnotationType.FIELD;
             } else if (parent instanceof MethodDeclaration) {
                 if (((MethodDeclaration) parent).isConstructor()) {
-                    return AttachedType.CTOR;
+                    return AnnotationType.CTOR;
                 }
-                return AttachedType.METHOD;
+                return AnnotationType.METHOD;
             } else if (parent instanceof TypeDeclaration) {
                 if (((TypeDeclaration) parent).isInterface()) {
-                    return AttachedType.INTERFACE;
+                    return AnnotationType.INTERFACE;
                 }
-                return AttachedType.TYPE;
+                return AnnotationType.TYPE;
             } else if (parent instanceof org.eclipse.jdt.core.dom.Annotation) {
-                return AttachedType.ANNOTATION;
+                return AnnotationType.ANNOTATION;
             } else if (parent instanceof SingleVariableDeclaration) {
-                return AttachedType.PARAM;
+                return AnnotationType.PARAM;
             }
 
             parent = parent.getParent();
@@ -288,7 +287,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
     /**
      * Extracts the compiled annotation from a class
      */
-    private static class Extractor {
+    private static class CompiledAnnotationExtractor {
         /**
          * The index of the type holding the annotation
          */
@@ -307,23 +306,23 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
          */
         final org.eclipse.jdt.core.dom.Annotation astNode;
 
-        public static Extractor type(org.eclipse.jdt.core.dom.Annotation node, int typeNum) {
-            return new Extractor(node, typeNum, -1, -1);
+        public static CompiledAnnotationExtractor type(org.eclipse.jdt.core.dom.Annotation node, int typeNum) {
+            return new CompiledAnnotationExtractor(node, typeNum, -1, -1);
         }
 
-        public static Extractor method(org.eclipse.jdt.core.dom.Annotation node, int typeNum, int methodNum) {
-            return new Extractor(node, typeNum, methodNum, -1);
+        public static CompiledAnnotationExtractor method(org.eclipse.jdt.core.dom.Annotation node, int typeNum, int methodNum) {
+            return new CompiledAnnotationExtractor(node, typeNum, methodNum, -1);
         }
 
-        public static Extractor field(org.eclipse.jdt.core.dom.Annotation node, int typeNum, int fieldNum) {
-            return new Extractor(node, typeNum, 0, fieldNum);
+        public static CompiledAnnotationExtractor field(org.eclipse.jdt.core.dom.Annotation node, int typeNum, int fieldNum) {
+            return new CompiledAnnotationExtractor(node, typeNum, 0, fieldNum);
         }
 
-        public static Extractor methodParam(org.eclipse.jdt.core.dom.Annotation node, int typeNum, int methodNum, int paramNum) {
-            return new Extractor(node, typeNum, 0, paramNum);
+        public static CompiledAnnotationExtractor methodParam(org.eclipse.jdt.core.dom.Annotation node, int typeNum, int methodNum, int paramNum) {
+            return new CompiledAnnotationExtractor(node, typeNum, 0, paramNum);
         }
 
-        private Extractor(org.eclipse.jdt.core.dom.Annotation node, int typeNum, int methodNum, int fieldNum) {
+        private CompiledAnnotationExtractor(org.eclipse.jdt.core.dom.Annotation node, int typeNum, int methodNum, int fieldNum) {
             super();
             this.typeIndex = typeNum;
             this.methodIndex = methodNum;

@@ -9,12 +9,13 @@ import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeTransform>{
+public class InsertTypeTransform extends AbstractNodeInsertTransform<ASTNode,InsertTypeTransform>{
 	
 	private JType type;
 	
@@ -29,32 +30,33 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<InsertTypeT
 		
 		JType target = getTarget();
 		
-	    //TODO:detect if it exists?
-		boolean insert = true;
 		List<JType> found = target.findNestedTypesMatching(AJType.with().fullName(type.getSimpleName())).toList();
 		if( !found.isEmpty()){
-			insert = false;
 			JType existingType = found.get(0);
-			switch(getClashStrategy()){
+			switch(getClashStrategyResolver().resolveClash(existingType.getAstNode(),type.getAstNode())){
 			case REPLACE:
+				insert(type.getAstNode(),existingType.getAstNode());
 				existingType.getAstNode().delete();
-				insert = true;
-				break;
-			case IGNORE:
-				break;
+				return;
+			case SKIP:
+				return;
 			case ERROR:
 				throw new JMutateException("Existing type %s, not replacing with %s", existingType.getAstNode(), type);
 			default:
-				throw new JMutateException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), getClashStrategy());
+				throw new JMutateException("Existing type %s, unsupported clash strategy %s", existingType.getAstNode(), getClashStrategyResolver());
 			}
 		}
-		if(insert){
-			new NodeInserter()
-				.nodeToInsert(type.getAstNode())
-				.target(target)
-				.placementStrategy(getPlacementStrategy())
-				.insert();
-		}
+		insert(type.getAstNode(),null);
+	}
+	
+	private void insert(ASTNode type, ASTNode beforeNode){
+		PlacementStrategy placement = new PlacementStrategySameLocation(getPlacementStrategy(),beforeNode);
+		
+		new NodeInserter()
+			.nodeToInsert(type)
+			.target(getTarget())
+			.placementStrategy(placement)
+			.insert();
 	}
 	
 	/**

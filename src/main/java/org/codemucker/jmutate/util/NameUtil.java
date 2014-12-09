@@ -30,6 +30,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * Contains all the mess for resolving names to qualified names and some utility functions
@@ -48,6 +49,19 @@ public class NameUtil {
     			, "java.lang.String"
     			, "long"
     	);
+	
+	private static final ImmutableMap<String,String> PRIMITIVE_TO_OBJECT_TYPE = ImmutableMap.<String,String>builder()
+			.put("boolean", "java.lang.Boolean")
+			.put("byte", "java.lang.Byte")
+			.put("short", "java.lang.Short")
+			.put("char", "java.lang.Character")
+			.put("int", "java.lang.Integer")
+			.put("float", "java.lang.Float")
+			.put("double", "java.lang.Double")
+			.put("String", "java.lang.String")
+			.put("java.lang.String", "java.lang.String")
+			.put("long", "java.lang.Long")
+			.build();
 
     public static String removeGenericPart(String shortOrFullName){
 		int i = shortOrFullName.indexOf('<');
@@ -525,6 +539,16 @@ public class NameUtil {
     
     public static boolean isPrimitive(final String shortOrFullTypeName) {
     	return PRIMITIVES.contains(shortOrFullTypeName);
+    }
+    
+    /**
+     * Convert the primitive type to the object version. E.g. boolean --&gt;java.lang.Boolean
+     * @param shortOrFullTypeName
+     * @return
+     */
+    public static String primitiveToObjectType(final String shortOrFullTypeName){
+    	String objectType = PRIMITIVE_TO_OBJECT_TYPE.get(shortOrFullTypeName);
+    	return objectType==null?shortOrFullTypeName:objectType;
     }
 
     public static String insertBeforeClassName(String fqClassName, String shortClassNamePrefix) {

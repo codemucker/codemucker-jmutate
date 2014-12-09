@@ -8,12 +8,13 @@ import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.matcher.AJField;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-public final class InsertFieldTransform extends AbstractNodeInsertTransform<InsertFieldTransform>{
+public final class InsertFieldTransform extends AbstractNodeInsertTransform<FieldDeclaration,InsertFieldTransform>{
 
 	private JField field;
 	
@@ -26,36 +27,38 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Inse
 		checkFieldsSet();
 		checkState(field != null,"missing field");
 		
-	    boolean insert = true;
 		for( String fieldName:field.getNames()){
 			//TODO:unwrap single field decl with multiple field (all same type/assignment)
 			FindResult<JField> found = getTarget().findFieldsMatching(AJField.with().name(fieldName));
 			if(!found.isEmpty()){
-				insert = false;
 				JField existingField = found.getFirst();
-				switch(getClashStrategy()){
+				switch(getClashStrategyResolver().resolveClash(existingField.getAstNode(), field.getAstNode())){
 					case REPLACE:
+						insert(field.getAstNode(), existingField.getAstNode());
 						existingField.getAstNode().delete();
-						insert = true;
-						break;
-					case IGNORE:
-						break;
+						return;
+					case SKIP:
+						return;
 					case ERROR:
 						throw new JMutateException("Existing field %s, not replacing with %s", existingField.getAstNode(), field);
 					default:
-						throw new JMutateException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), getClashStrategy());
+						throw new JMutateException("Existing field %s, unsupported clash strategy %s", existingField.getAstNode(), getClashStrategyResolver());
 				}
 			}
 		}
-		if( insert){
-			new NodeInserter()
-                .target(getTarget())
-                .nodeToInsert(field.getAstNode())
-                //TODO:allow to override this? want to make this a non greedy class!
-                .placementStrategy(getPlacementStrategy())
-                .insert();
-		}
+		insert(field.getAstNode(),null);
 	}
+	
+	private void insert(FieldDeclaration field, ASTNode beforeNode){
+		PlacementStrategy placement = new PlacementStrategySameLocation(getPlacementStrategy(),beforeNode);
+		
+		new NodeInserter()
+			.nodeToInsert(field)
+			.target(getTarget())
+			.placementStrategy(placement)
+			.insert();
+	}
+
 
 	/**
 	 * Used by the DI container to set the default

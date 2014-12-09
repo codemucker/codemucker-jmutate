@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
@@ -69,7 +70,7 @@ public class JAnnotation implements AstNodeProvider<Annotation>{
 	public String getValueForAttribute(String name,String defaultValue){
 		//TODO:handle nested annotations
 		String val = null;
-		if( annotation.isMarkerAnnotation()){
+		if(annotation.isMarkerAnnotation()){
 			val = null;
 		}
 		if( annotation instanceof SingleMemberAnnotation){
@@ -93,10 +94,12 @@ public class JAnnotation implements AstNodeProvider<Annotation>{
 	private String extractExpressionValue(String name, Annotation annotation, Expression exp){
 	    if(exp instanceof StringLiteral){
             return ((StringLiteral)exp).getLiteralValue();
-        } else if(exp instanceof SimpleName){
+	    } else if(exp instanceof SimpleName){
             return ((SimpleName)exp).getIdentifier();
+	    } else if(exp instanceof QualifiedName){
+            return ((QualifiedName)exp).getFullyQualifiedName();
         } else {
-            log.warn("couldn't extract annotation value named '" + name + "' from node " + annotation);
+            log.warn("couldn't extract annotation value named '" + name + "' from expression " + exp.getClass() + ", node " + annotation);
             //throw new JMutateException("couldn't extract annotation value named '" + name + "' from node " + annotation);
             
         }

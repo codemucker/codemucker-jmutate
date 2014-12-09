@@ -60,7 +60,7 @@ public class SourceScannerTest {
 				}
 				
 				@Override
-				public void onError(Object record, Exception e) throws Exception {					
+				public void onError(Object record, Throwable t) throws Throwable {					
 				}
 
 				@Override

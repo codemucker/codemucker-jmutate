@@ -8,7 +8,7 @@ import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
 import org.junit.Test;
 
-public class JavaNameUtilTest {
+public class NameUtilTest {
 
 	DefaultMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 	
@@ -18,8 +18,8 @@ public class JavaNameUtilTest {
 	@Test
 	public void resolveQualifiedName_onInterfacesDeclaredInSamePackageMembers(){
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.var("pkg", JavaNameUtilTest.class.getPackage().getName());
-		t.var("declaringClass", JavaNameUtilTest.class.getName());
+		t.var("pkg", NameUtilTest.class.getPackage().getName());
+		t.var("declaringClass", NameUtilTest.class.getName());
 		t.pl("package ${pkg};");
 		t.pl("import ${declaringClass}.MyInterface;");
 		
@@ -36,8 +36,8 @@ public class JavaNameUtilTest {
 	public void resolveQualifiedName_handleStarImports(){
 		//TODO:what about when it's not a compiled class but a generated source file?
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.var("pkg", JavaNameUtilTest.class.getPackage().getName());
-		t.var("declaringClass", JavaNameUtilTest.class.getName());
+		t.var("pkg", NameUtilTest.class.getPackage().getName());
+		t.var("declaringClass", NameUtilTest.class.getName());
 		t.pl("package ${pkg};");
 		t.pl("import java.util.*;");
 		t.pl("import ${declaringClass}.*;");
@@ -59,8 +59,8 @@ public class JavaNameUtilTest {
 	@Test
 	public void resolveQualifiedName_forNameReferencingTypeInSameCompilationUnitWhereSameSimpleNameClassExistsInPackage(){
 		SourceTemplate t = ctxt.newSourceTemplate();
-		t.var("pkg", JavaNameUtilTest.class.getPackage().getName());
-		t.var("clashingClassName", JavaNameUtilTest.class.getSimpleName());
+		t.var("pkg", NameUtilTest.class.getPackage().getName());
+		t.var("clashingClassName", NameUtilTest.class.getSimpleName());
 		
 		t.pl("package ${pkg};");
 		t.pl("class MyClass {");
@@ -70,7 +70,7 @@ public class JavaNameUtilTest {
 		
 		JType subClass = t.asResolvedSourceFileNamed("${pkg}.MyClass").getTypeWithName("SubClass");
 		
-		String expectName = JavaNameUtilTest.class.getPackage().getName() + ".MyClass." + JavaNameUtilTest.class.getSimpleName();
+		String expectName = NameUtilTest.class.getPackage().getName() + ".MyClass." + NameUtilTest.class.getSimpleName();
 		//SimpleType parent = (SimpleType)subClass.asTypeDecl().getSuperclassType();
 		String actualName = NameUtil.resolveQualifiedName(subClass.asTypeDecl().getSuperclassType());
 		
