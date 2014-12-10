@@ -9,6 +9,7 @@ import java.util.List;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.lang.ClassNameUtil;
+import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
@@ -131,7 +132,11 @@ public class NameUtil {
 			return true;
 		} else if (t.isArrayType()) {
 			ArrayType at = (ArrayType) t;
-			resolveQualifiedName(at.getComponentType(), sb);
+			if( at.getAST().apiLevel() < AST.JLS8){
+				resolveQualifiedName(at.getComponentType(), sb);
+			} else {
+				resolveQualifiedName(at.getElementType(), sb);
+			}
 			sb.append("[]");
 			return true;
 		} else if(t.isParameterizedType()){
