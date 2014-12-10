@@ -22,8 +22,8 @@ public class SourceScannerTest {
 	@Test
 	public void testFindClassesWithMethodMatch() throws Exception {
 		SourceScanner scanner = TestSourceHelper.newAllSourcesResolvingFinder()
-			.filter(SourceFilter.that()
-				.includesType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
+			.filter(SourceFilter.where()
+				.typeMatches(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
 			)
 			.build();
 		JType type = scanner.findTypes().getFirst();
@@ -35,7 +35,7 @@ public class SourceScannerTest {
 	public void testFindClassesExtending() throws Exception {
 		SourceScanner scanner = TestSourceHelper.newAllSourcesResolvingFinder()
 			.filter(SourceFilter.with()
-				.includesType(AJType.with().isASubclassOf(MyClass.class)))
+				.typeMatches(AJType.with().isASubclassOf(MyClass.class)))
 			.build();
 
 		Expect
@@ -52,7 +52,7 @@ public class SourceScannerTest {
 	public void testFindClassesWithAnnotations() throws Exception {
 		SourceScanner finder = TestSourceHelper.newAllSourcesResolvingFinder()
 			.filter(SourceFilter.with()
-				.includesType(AJType.with().annotation(MyAnnotation.class))
+				.typeMatches(AJType.with().annotation(MyAnnotation.class))
 			)
 			.listener(new MatchListener<Object>() {
 				@Override

@@ -16,8 +16,8 @@ import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
-import org.codemucker.jfind.matcher.ARootResource;
 import org.codemucker.jfind.matcher.ARoot;
+import org.codemucker.jfind.matcher.ARootResource;
 import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Matcher;
@@ -198,7 +198,7 @@ public class GeneratorRunner {
             java.lang.annotation.Annotation compiledOptionAnnotation = annotationCompiler.toCompiledAnnotation(optionAnnotation);
             ASTNode attachedTo = getOwningNodeFor(optionAnnotation);
             JType type= findNearestParentTypeFor(attachedTo);
-            log.info("processing annotation '" + compiledOptionAnnotation.getClass().getName() + "' in '" + type.getFullName());
+            log.debug("processing annotation '" + compiledOptionAnnotation.getClass().getName() + "' in '" + type.getFullName());
             
             generator.generate(attachedTo, compiledOptionAnnotation);
         }
@@ -217,19 +217,15 @@ public class GeneratorRunner {
                         .matchingAntPattern(scanPackagesAntPattern))//limit search
                         .stringContent(MATCH_CONTENT)//prevent parsing nodes we don't need to
                         ;
-        if(log.isInfoEnabled()){
-             log.info("match resource " + resourceFilter);
+        if(log.isDebugEnabled()){
+             log.debug("match resource " + resourceFilter);
             
         }
         //find all the code with generation annotations
         SourceFilter.Builder sourceFilter = SourceFilter.with()
-            .includesRoot(scanRootFilter)
-             .includesResource(resourceFilter)
-             .includesType(AJType.with().annotation(GENERATION_ANNOTATIONS));
-        
-        if(!scanSubtypes){
-            sourceFilter.excludesType(AJType.that().isInnerClass());
-        }
+            .rootMatches(scanRootFilter)
+             .resourceMatches(resourceFilter)
+             .typeMatches(AJType.with().annotation(GENERATION_ANNOTATIONS).expression(scanSubtypes?null:"notInnerClass"));
                      
         SourceScanner scanner = ctxt.obtain(SourceScanner.Builder.class)
                 .failOnParseError(failOnParseError)

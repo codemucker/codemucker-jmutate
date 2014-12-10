@@ -94,8 +94,13 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
 	public void generate(JType optionsDeclaredInNode, GenerateMatchers options) {
 		ClashStrategy methodClashDefaultStrategy = getOr(options.clashStrategy(),ClashStrategy.SKIP);
 		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
-		
-		PojoScanner scanner = new PojoScanner(ctxt,optionsDeclaredInNode, options);
+
+		PojoScanner scanner = new PojoScanner(
+				ctxt.getResourceLoader(), 
+				options.pojoDependencies(), 
+				options.pojoNames(),
+				options.pojoTypes());
+	    
 		AllMatchersModel models = createModel(optionsDeclaredInNode,options, scanner);
 		generateMatchers(optionsDeclaredInNode, options, models);
 	}
@@ -118,7 +123,7 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
             }
         }
         
-        if(options.scanDependencies() && options.pojoDependencies().length > 0){
+        if(options.scanDependencies()){
             FindResult<Class<?>> requestTypes = pojoScanner.scanForReflectedClasses();
             // add the appropriate methods and types for each request bean
             for (Class<?> requestType : requestTypes) {

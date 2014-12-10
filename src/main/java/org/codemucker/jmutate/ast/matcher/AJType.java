@@ -3,7 +3,15 @@ package org.codemucker.jmutate.ast.matcher;
 import static org.codemucker.jmatch.Logical.not;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
 
+import org.codemucker.jfind.matcher.AClass;
+import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractMatcher;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
@@ -12,6 +20,8 @@ import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
+import org.codemucker.jmatch.expression.AbstractMatchBuilderCallback;
+import org.codemucker.jmatch.expression.ExpressionParser;
 import org.codemucker.jmutate.ast.Depth;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
@@ -119,6 +129,40 @@ public class AJType extends ObjectMatcher<JType> {
     	super(JType.class);
 	}
 
+	  /**
+     * Converts a logical expression using {@link ExpressionParser}} into a matcher. The names in the expression are converted into no arg 
+     * method calls on this matcher as in X,isX ==&gt; isX()  (case insensitive) 
+     * 
+     *  <p>
+     * E.g.
+     *  <ul>
+     *  <li> 
+     *  <li>Abstract==&gt; isAbstract()
+     *  <li>IsAstract ==&gt; isAbstract()
+     *  <li>Anonymous,isAnonymous==&gt; isAnonymous()
+     *  
+     *  </ul>
+     *  </p>
+     * @return
+     */
+    public AJType expression(String expression){
+		if (!isBlank(expression)) {
+			Matcher<JType> matcher = ExpressionParser.parse(expression,new JTypeMatchBuilderCallback());
+	    	if( matcher instanceof AJType){ //make the matching are bit faster by directly running the matchers directly
+	    		for(Matcher<JType> m:((AJType)matcher).getMatchers()){
+	    			addMatcher(m);
+	    		}
+	    	} else {
+	    		addMatcher(matcher);
+	    	}
+		}
+    	return this;
+    }
+    
+    private boolean isBlank(String s){
+    	return s==null || s.trim().length() == 0;
+    }
+    
     public AJType type(Predicate<JType> predicate){
 		predicate(predicate);
 		return this;
@@ -131,22 +175,20 @@ public class AJType extends ObjectMatcher<JType> {
     }
     
     public AJType packageName(final String pkgName){
+		packageName(AString.equalTo(pkgName));
+    	return this;
+    }
+    
+    public AJType packageName(final Matcher<String> matcher){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
-			private final Matcher<String> pkgNameMatcher = AString.equalTo(pkgName);
-			
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
-				String pkgName = found.getPackageName();
-				if (pkgName != null) {
-					return diag.tryMatch(this,found.getPackageName(), pkgNameMatcher);
-				}
-				return false;
+				return diag.tryMatch(this,found.getPackageName(), matcher);
 			}
 
 			@Override
 			public void describeTo(Description desc) {
-				//super.describeTo(desc);
-				desc.value("package name matching", pkgNameMatcher);
+				desc.value("package name", matcher);
 			}
 		});
     	return this;
@@ -189,6 +231,13 @@ public class AJType extends ObjectMatcher<JType> {
 		return this;
 	}
 	
+	public AJType isPublicConcreteClass() {
+	    isNotAnonymous();
+	    isNotInterface();
+	    isNotInnerClass();
+	    return this;
+    }
+	
 	public AJType isAnonymous(){		
 		isAnonymous(true);
 		return this;
@@ -226,6 +275,11 @@ public class AJType extends ObjectMatcher<JType> {
 	
 	public AJType isAnnotation(boolean b){
 		addMatcher(b?ANNOTATION_MATCHER:not(ANNOTATION_MATCHER));
+		return this;
+	}
+	
+	public AJType isNotInnerClass(){
+		isInnerClass(false);
 		return this;
 	}
 	
@@ -382,4 +436,44 @@ public class AJType extends ObjectMatcher<JType> {
         return this;
     }
     
+    private static class JTypeMatchBuilderCallback extends AbstractMatchBuilderCallback<JType>{
+
+    	private static final Object[] NO_ARGS = new Object[]{};
+    	
+    	private static Map<String, Method> methodMap = new TreeMap<>();
+    	
+    	private static Matcher<Method> methodMatcher  = AMethod.that().isPublic().isNotAbstract().numArgs(0).isNotVoidReturn().name("is*");
+    	
+    	static {
+    		for(Method m : AJType.class.getDeclaredMethods()){
+    			if(methodMatcher.matches(m)){
+    				methodMap.put(m.getName().toLowerCase(),m);
+    				if(m.getName().startsWith("is")){
+    					methodMap.put(m.getName().substring(2).toLowerCase(),m);
+    				}
+    			}
+    		}
+    	}
+
+		@Override
+		protected Matcher<JType> newMatcher(String expression) {
+			// TODO Auto-generated method stub
+			AJType matcher = AJType.with();
+			String key = expression.trim().toLowerCase();
+			Method m = methodMap.get(key);
+			if( m==null){
+				throw new NoSuchElementException("Could not find method '" + expression.trim() + " on " + AJType.class.getName() + ",options are " + Arrays.toString(methodMap.keySet().toArray()) + "");
+			}
+			try {
+				m.invoke(matcher, NO_ARGS);
+			} catch (IllegalAccessException | IllegalArgumentException e) {
+				//should never be thrown
+				throw new ExpressionParser.ParseException("Error calling " + AJType.class.getName() + "." + m.getName() + "() from expression '" + expression + "'",e);
+			}catch (InvocationTargetException e) {
+				//should never be thrown
+				throw new ExpressionParser.ParseException("Error calling " + AJType.class.getName() + "." + m.getName() + "() from expression '" + expression + "'",e.getTargetException());
+			}
+			return matcher;
+		}
+    }
 }

@@ -18,7 +18,7 @@ public class TestSourceHelper {
 	public static JSourceFile findSourceForClass(Class<?> classToFindSourceFor){
 		SourceScanner finder = newAllSourcesResolvingFinder()
 			.filter(SourceFilter.with()
-				.includesResource(ARootResource.with().className(classToFindSourceFor)))
+				.resourceMatches(ARootResource.with().className(classToFindSourceFor)))
 			.build();
 		FindResult<JSourceFile> sources = finder.findSources();
 		

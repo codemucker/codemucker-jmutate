@@ -1,69 +1,59 @@
 package org.codemucker.jmutate.generate.matcher;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jfind.BaseMatchListener;
 import org.codemucker.jfind.ClassFilter;
-import org.codemucker.jfind.ClassResource;
 import org.codemucker.jfind.ClassScanner;
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jfind.MatchListener;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.matcher.AClass;
 import org.codemucker.jfind.matcher.ARoot;
 import org.codemucker.jfind.matcher.ARootResource;
 import org.codemucker.jmatch.AString;
-import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceScanner;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jpattern.Dependency;
 
 import com.google.common.base.Strings;
 
-class PojoScanner {
+public class PojoScanner {
     
-    private final Logger log = LogManager.getLogger(PojoScanner.class);
-    private final JMutateContext ctxt;
-    private ARoot scanRootMatcher;
-    private Matcher<String> scanPackageMatcher;
-    private Matcher<String> scanForClassNameMatcher;
+    private static final Logger log = LogManager.getLogger(PojoScanner.class);
     
-    public PojoScanner(JMutateContext ctxt,JType node, GenerateMatchers options) {
-        super();
-        this.ctxt = ctxt;
-        log.info("for " + node.getFullName());
-        log.info("  looking for pojo's in:");
-        log.info("      dependencies ('pojoDependencies'): " + (options.pojoDependencies().length==0?"<any>" :toString(options.pojoDependencies())));
-        log.info("      packages ('pojoPackages'): " + (options.pojoPackages().isEmpty()?"<any>":options.pojoPackages()));
-        log.info("      matching ('pojoNames'): " + (options.pojoNames().isEmpty()?"<any>":options.pojoNames()));
-        
-        log.info("  generating to: " + ctxt.getDefaultGenerationRoot());
-        
-        scanRootMatcher = createRootMatcher(options);
-        scanPackageMatcher = createPackageMatcher(options);
-        scanForClassNameMatcher = createClassNameMatcher(options);
-        
-
-        log.info("      pojoPackageMatcher : " + scanPackageMatcher);
-        log.info("      pojoNameMatcher : " + scanForClassNameMatcher);
+    private final ResourceLoader resourceLoader;
+    private final Matcher<Root> scanRootMatcher;
+    private final Matcher<String> scanForClassNameMatcher;
+    private final Matcher<Class<?>> scanForClasses;
+    private final Matcher<JType> scanForTypes;
+    
+    public PojoScanner(ResourceLoader resourceLoader,String dependenciesExpression,String pojoNameExpression, String pojoClassExpression) {
+        this.resourceLoader = resourceLoader;
+        this.scanRootMatcher = ARoot.with().dependenciesExpression(dependenciesExpression);
+        this.scanForClassNameMatcher = AString.matchingExpression(pojoNameExpression);
+        this.scanForClasses = AClass.with().fullName(scanForClassNameMatcher).expression(pojoClassExpression);
+        this.scanForTypes= AJType.with().fullName(scanForClassNameMatcher).expression(pojoClassExpression);
         
         if(log.isDebugEnabled()){
+	        log.debug("  looking for classes in:");
+	        log.debug("      pojoDependencies: " + (Strings.isNullOrEmpty(dependenciesExpression)?"<any>":dependenciesExpression));
+	        log.debug("      pojoNames: " + (Strings.isNullOrEmpty(pojoNameExpression)?"<any>":pojoNameExpression));
+	        log.debug("      pojoClassExpression: " + (Strings.isNullOrEmpty(pojoClassExpression)?"<any>":pojoClassExpression));
+	        
+	        log.debug("      pojoNameMatcher : " + scanForClassNameMatcher);
+	        log.debug("      pojoClassMatcher : " + scanForClasses);
+	        log.debug("      pojoTypeMatcher : " + scanForTypes);
+
             log.debug("scanning for pojos in roots:");
-            for(Root root:ctxt.getResourceLoader().getAllRoots()){
+            for(Root root:resourceLoader.getAllRoots()){
                 if(scanRootMatcher.matches(root)){
                     log.debug("INCLUDE " + root);
                 }
             }
             //log.debug("ignored roots:");
-            for(Root root:ctxt.getResourceLoader().getAllRoots()){
+            for(Root root:resourceLoader.getAllRoots()){
                 if(!scanRootMatcher.matches(root)){
                 	log.debug("EXCLUDE " + root);
                 }
@@ -74,16 +64,13 @@ class PojoScanner {
     public FindResult<Class<?>> scanForReflectedClasses(){
         log.debug("scanning for compiled pojos");
         FindResult<Class<?>> results = ClassScanner.with()
-                .scanRoots(ctxt.getResourceLoader().getAllRoots())
-                .classLoader(ctxt.getResourceLoader().getClassLoader())
-                .filter(ClassFilter.with()
+                .scanRoots(resourceLoader.getAllRoots())
+                .classLoader(resourceLoader.getClassLoader())
+                .filter(ClassFilter.where()
                         .rootMatches(scanRootMatcher)
-                        .resourceMatches(ARootResource.with()
-                               .packageName(scanPackageMatcher)
-                               .className(scanForClassNameMatcher))
-                        .classMatches(AClass.that().isNotInterface().isNotAbstract().isNotAnonymous()))
-                 .listener(newMatcheListener()
-                ).build()
+                        .resourceMatches(ARootResource.with().className(scanForClassNameMatcher))
+                        .classMatches(scanForClasses))
+                .build()
                 .findClasses();
         
         log.debug("found: " + results.toList().size() + " compiled pojos");
@@ -93,111 +80,15 @@ class PojoScanner {
     public FindResult<JType> scanSources() {
     	log.debug("scanning for source pojos");
     	FindResult<JType> results = SourceScanner.with()
-                .scanRoots(ctxt.getResourceLoader().getAllRoots())
-                .filter(SourceFilter.that()
-                        .includesRoot(scanRootMatcher)
-                        .includesResource(ARootResource.with()
-                                .packageName(scanPackageMatcher)
-                                .className(scanForClassNameMatcher))
-                        .includesType(AJType.that().isNotInterface().isNotAbstract().isNotAnonymous()))
-                        .listener(newMatcheListener())
+                .scanRoots(resourceLoader.getAllRoots())
+                .filter(SourceFilter.where()
+                        .rootMatches(scanRootMatcher)
+                        .resourceMatches(ARootResource.with().className(scanForClassNameMatcher))
+                        .typeMatches(scanForTypes))
                 .build()
                 .findTypes();
         
         log.debug("found: " + results.toList().size() + " source pojos");
         return results;
     }
-
-	private MatchListener<Object> newMatcheListener() {
-		return new BaseMatchListener<Object>() {
-
-			@Override
-			protected void onMatched(org.codemucker.jfind.RootResource resource) {
-				if (log.isDebugEnabled()) {
-					log.debug("FOUND resource " + resource.getRelPath());
-					// log.debug("ignored:className=" + className + ", root=" +
-					// resource.getRoot() + ",resource=" + resource);
-				}
-			};
-
-			@Override
-			protected void onIgnored(org.codemucker.jfind.RootResource resource) {
-				if (log.isDebugEnabled()) {
-					log.debug("IGNORE resource " + resource.getRelPath());
-					// log.debug("ignored:className=" + className + ", root=" +
-					// resource.getRoot() + ",resource=" + resource);
-				}
-			};
-
-			@Override
-			public void onMatched(ClassResource resource) {
-				if (log.isDebugEnabled()) {
-					log.debug("FOUND class resource " + resource);
-				}
-			}
-
-			@Override
-			public void onIgnored(ClassResource resource) {
-				if (log.isDebugEnabled()) {
-					log.debug("IGNORE class resource " + resource);
-					// log.debug("ignored:className=" + className + ", root=" +
-					// resource.getRoot() + ",resource=" + resource);
-				}
-			}
-
-			@Override
-			protected void onMatched(Class<?> record) {
-				log.debug("FOUND class " + record.getName());
-			}
-
-			@Override
-			protected void onIgnored(Class<?> record) {
-				log.debug("IGNORE class " + record.getName());
-			}
-			
-		};
-	}
-
-    private static String toString(Dependency[] dependencies){
-        if(dependencies == null || dependencies.length==0){
-            return null;
-        }
-        StringBuilder sb = new StringBuilder();
-        for(Dependency d:dependencies){
-            if(sb.length()>0){
-                sb.append(",");
-            }
-            sb.append("(").append(d.group().length()==0?"*":d.group()).append(":").append(d.artifact().length()==0?"*":d.artifact()).append(")");
-        }
-        return sb.toString();
-    }
-    
-    private static Matcher<String> createClassNameMatcher(GenerateMatchers options) {
-        Matcher<String> matcher = Logical.not(AString.matchingAntPattern("Abstract*"));
-        String expression = options.pojoNames();
-        if (!Strings.isNullOrEmpty(expression)) {
-        	matcher = AString.matchingExpression(expression);
-        }
-        return matcher;
-    }
-    
-    private static Matcher<String> createPackageMatcher(GenerateMatchers options) {
-        Matcher<String> matcher = AString.equalToAnything();
-        String expression = options.pojoPackages();
-        if (!Strings.isNullOrEmpty(expression)) {
-        	matcher = AString.matchingExpression(expression);
-        }
-        return matcher;
-    }
-    
-    private static ARoot createRootMatcher(GenerateMatchers options) {
-        ARoot scanRootMatcher = ARoot.with();
-        Dependency[] limitToDeps = options.pojoDependencies();
-        for (Dependency dep : limitToDeps) {
-            scanRootMatcher.dependency(dep.group(), dep.artifact());
-        }
-        return scanRootMatcher;
-    }
-
-    
 }

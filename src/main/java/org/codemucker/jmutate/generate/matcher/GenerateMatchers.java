@@ -24,7 +24,6 @@ import java.lang.annotation.Target;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmutate.ClashStrategy;
 import org.codemucker.jpattern.DefaultGenerator;
-import org.codemucker.jpattern.Dependency;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -62,17 +61,14 @@ public @interface GenerateMatchers {
     /**
      * If set filter the dependencies scanned for pojos
      */
-    Dependency[] pojoDependencies() default {};
+    String pojoDependencies() default "";
 
-    /**
-     * The packages to search for pojos. Defaults to search all. Ant pattern matching.
-     */
-    String pojoPackages() default "";
-
+    String pojoTypes() default "PublicConcreteClass";
+    
     /**
      * The pattern for finding the pojos. By default matches everything (in the packages and dependencies set to be scanned). Logical ant expression pattern matching.
      */
-    String pojoNames() default "!Abstract*";
+    String pojoNames() default "!(java.* || javax.* || *Abstract*)";
     
     /**
      * If true also scan source files (not just compiled dependencies). Default is true.

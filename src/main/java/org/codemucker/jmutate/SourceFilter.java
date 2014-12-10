@@ -23,7 +23,7 @@ public class SourceFilter implements SourceMatcher {
 	private final FindResult.Filter<JType> typeMatcher;
 	private final FindResult.Filter<JMethod> methodFilter;
 
-    public static Builder that() {
+    public static Builder where() {
         return with();
     }
 
@@ -133,56 +133,32 @@ public class SourceFilter implements SourceMatcher {
 		private <T> FindResult.Filter<T> toFilter(Matcher<T> matcher){
 			return MatcherToFindFilterAdapter.from(matcher);
 		}
-		
-		public Builder includesRoot(Matcher<Root> matcher) {
+
+		public Builder rootMatches(Matcher<Root> matcher) {
             roots.addInclude(matcher);
             return this;
         }
 		
-		public Builder includesResource(Matcher<RootResource> matcher) {
+		public Builder resourceMatches(Matcher<RootResource> matcher) {
 			resources.addInclude(matcher);
 			return this;
 		}
-	
-		public Builder excludesRoot(Matcher<Root> matcher) {
-            roots.addExclude(matcher);
-            return this;
-        }
-        
-		public Builder excludesResource(Matcher<RootResource> matcher) {
-			resources.addExclude(matcher);
-			return this;
-		}
-	
+		
 		public Builder includesSource(Matcher<JSourceFile> matcher) {
 			sources.addInclude(matcher);
 			return this;
 		}
-	
-		public Builder excludesSource(Matcher<JSourceFile> matcher) {
-			sources.addExclude(matcher);
-			return this;
-		}
-		
-		public Builder includesType(Matcher<JType> matcher){
+
+		public Builder typeMatches(Matcher<JType> matcher){
 			types.addInclude(matcher);
 			return this;
 		}
 		
-		public Builder excludesType(Matcher<JType> matcher){
-			types.addExclude(matcher);
-			return this;
-		}
-		
-		public Builder includesMethods(Matcher<JMethod> matcher){
+		public Builder methodMatches(Matcher<JMethod> matcher){
 			methods.addInclude(matcher);
 			return this;
 		}
-		
-		public Builder excludesMethods(Matcher<JMethod> matcher){
-			methods.addExclude(matcher);
-			return this;
-		}
+	
 	}
 	
 }

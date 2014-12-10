@@ -76,7 +76,7 @@ public class EnforcerExampleTest
 		FindResult<JType> matchers = SourceScanner.with()
 			.scanRoots(Roots.with().mainSrcDir(true))
 			.filter(SourceFilter.with()
-				.includesType(AJType.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
+				.typeMatches(AJType.that().isASubclassOf(ObjectMatcher.class).isNotAbstract()))
 			.build()
 			.findTypes();
 		
@@ -119,10 +119,10 @@ public class EnforcerExampleTest
                         .mainSrcDir(true)
                         .testSrcDir(true))
                     .filter(SourceFilter.with()
-                        .includesType(AJType.with().simpleName("*Builder"))
-                        .includesType(AJType.that().isASubclassOf(IBuilder.class))
-                        .includesType(AJType.that().isASubclassOf(AbstractBuilder.class))
-                        .includesType(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*"))))
+                        .typeMatches(AJType.with().simpleName("*Builder"))
+                        .typeMatches(AJType.that().isASubclassOf(IBuilder.class))
+                        .typeMatches(AJType.that().isASubclassOf(AbstractBuilder.class))
+                        .typeMatches(AJType.with().method(AJMethod.with().nameMatchingAntPattern("build*"))))
                     .build()
                     .findTypes();
             

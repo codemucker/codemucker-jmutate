@@ -24,7 +24,7 @@ public class BeanBuilderPatternFinderTest {
 			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.includesType(AJType.with().fullName("*Builder"))
+				.typeMatches(AJType.with().fullName("*Builder"))
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)
 			.build()
@@ -56,8 +56,8 @@ public class BeanBuilderPatternFinderTest {
 			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
-				.includesType(AJType.with().method(methodMatcher))
-				.includesMethods(methodMatcher)
+				.typeMatches(AJType.with().method(methodMatcher))
+				.methodMatches(methodMatcher)
 				//.addIncludeTypesWithMethods(JMethodMatchers.withMethodNamed("build*"))
 			)	
 			.build()
