@@ -26,7 +26,7 @@ public class JAnnotationTest {
 	
 	public static class TestBean {
 		
-		@IsGenerated(generator="meh")
+		@IsGenerated(by="meh")
 		public void myMethod(){
 			
 		}

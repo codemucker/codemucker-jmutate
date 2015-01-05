@@ -88,7 +88,7 @@ public class CodeGenMetaGenerator {
 		JAnnotation anon = annotations.find(AJAnnotation.with().fullName(IsGenerated.class)).getFirstOrNull();
 		
 		if(anon != null){
-			String generator = anon.getValueForAttribute("generator", null);
+			String generator = anon.getValueForAttribute("by", null);
 			//String hash = anon.getValueForAttribute("sha1", null);
 			
 			if(generator != null && ( generator.equalsIgnoreCase(getFullConstantFieldPath()) || generator.contains(this.generator.getName()))){
@@ -100,9 +100,9 @@ public class CodeGenMetaGenerator {
 	
     public void addGeneratedMarkers(SourceTemplate template) {
     	createClassIfNotExists();
-        template.var("generator", getFullConstantFieldPath());
-        template.pl("@" + javax.annotation.Generated.class.getName() + "(${generator})");
-        template.pl("@" + IsGenerated.class.getName() + "(generator${generator})");
+        template.var("by", getFullConstantFieldPath());
+        template.pl("@" + javax.annotation.Generated.class.getName() + "(${by})");
+        template.pl("@" + IsGenerated.class.getName() + "(by=${by})");
     }
     
     public void addGeneratedMarkers(FieldDeclaration field){
@@ -123,7 +123,7 @@ public class CodeGenMetaGenerator {
 		NormalAnnotation a = ast.newNormalAnnotation();
 		a.setTypeName(ast.newName(IsGenerated.class.getName()));
 		QualifiedName gen = ast.newQualifiedName(ast.newName(CODE_GEN_INFO_CLASS_FULLNAME), ast.newSimpleName(getConstantFieldName()));
-		addValue(a,"generator",gen);
+		addValue(a,"by",gen);
 		//addValue(a,"sha1","1234");
 		modifiers.add(0,a);
     }
