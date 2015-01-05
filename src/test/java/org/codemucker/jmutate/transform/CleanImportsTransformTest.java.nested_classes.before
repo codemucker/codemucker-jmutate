@@ -1,0 +1,22 @@
+package org.codemucker.jmutate.transform;
+
+public class Foo {
+
+	Alice a;
+	static class Bar {
+		
+		Foo.Alice outer;
+		org.codemucker.jmutate.transform.Foo.Alice outer2 = new org.codemucker.jmutate.transform.Foo.Alice();
+		
+		Alice inner1;
+		Bar.Alice inner2;
+		
+		static class Alice {
+			
+		}
+	}
+	
+	static class Alice {
+		
+	}
+}

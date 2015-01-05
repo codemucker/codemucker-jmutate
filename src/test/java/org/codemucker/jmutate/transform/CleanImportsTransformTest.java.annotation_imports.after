@@ -1,0 +1,10 @@
+package org.codemucker.jmutate.transform;
+
+import com.mycompany.MyAnnotation;
+import com.mycompany.MyAnnotation2;
+import org.codemucker.jmutate.transform.test.Bar;
+
+@MyAnnotation(Bar.FOOD)
+@MyAnnotation2(someValue=Bar.FOOD,someClass=Bar.class)
+public class Bean {
+}

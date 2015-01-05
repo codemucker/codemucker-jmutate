@@ -59,14 +59,14 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisito
 		
 		rootDoc.reset();
 		rootDoc.setClassName("Root");
-		rootDoc.field("path", root.getPathName());
+		rootDoc.field("path", root.getFullPath());
 
 		return true;
 	}
 
 	@Override
 	public void endVisit(Root root) {
-		save(rootDoc, root.getPathName());
+		save(rootDoc, root.getFullPath());
 		currentRoot = null;
 	}
 
@@ -101,7 +101,7 @@ public class JSearchIndexingVisitor extends BaseASTVisitor implements RootVisito
 		sourceDoc.reset();
 		sourceDoc.addOwner(resourceDoc);
 		sourceDoc.setClassName("Source");
-		sourceDoc.field("root", currentRoot.getPathName());	
+		sourceDoc.field("root", currentRoot.getFullPath());	
 		sourceDoc.field("resource", currentResource.getRelPath());
 		sourceDoc.field("classname", source.getClassnameBasedOnPath());
 	

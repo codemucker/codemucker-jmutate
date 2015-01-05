@@ -51,7 +51,7 @@ public class EclipseCompiler implements JCompiler {
     @Override
     public Class<?> toCompiledClass(JSourceFile source, ResourceLoader resourceLoader) {
         if (!source.isInSyncWithResource()) {
-            throw new JMutateException("Source file " + source.getResource().getFullPathInfo() + " has modifications which need to be written to disk first");
+            throw new JMutateException("Source file " + source.getResource().getFullPath() + " has modifications which need to be written to disk first");
         }
         return toCompiledClass(source.getResource(), resourceLoader);
     }   
@@ -66,7 +66,7 @@ public class EclipseCompiler implements JCompiler {
                 log.debug("compile target version " + targetVersion);
                 log.trace("compile classpath roots:");
                 for(Root root:resourceLoader.getAllRoots()){
-                    log.trace("root " + root.getPathName());        
+                    log.trace("root " + root.getFullPath());        
                 }
                 log.trace("source:\n------------------");
                 try {
@@ -77,14 +77,14 @@ public class EclipseCompiler implements JCompiler {
                 }
                 log.trace("\n---------------");
             }
-            File pathToSource = new File(resource.getRoot().getPathName(), resource.getRelPath());
+            File pathToSource = new File(resource.getRoot().getFullPath(), resource.getRelPath());
             List<String> compilerOptions = new ArrayList<String>();
             compilerOptions.add("-verbose");
             compilerOptions.add(pathToSource.getAbsolutePath());
             compilerOptions.add("-sourcepath");
-            compilerOptions.add(resource.getRoot().getPathName());
+            compilerOptions.add(resource.getRoot().getFullPath());
             compilerOptions.add("-d");
-            compilerOptions.add(resource.getRoot().getPathName());
+            compilerOptions.add(resource.getRoot().getFullPath());
             compilerOptions.add("-classpath");
             compilerOptions.add(convertToClasspath(resourceLoader));
             
@@ -237,7 +237,7 @@ public class EclipseCompiler implements JCompiler {
             if (classpath.length() > 0) {
                 classpath.append(PATH_SEP);
             }
-            classpath.append(root.getPathName());
+            classpath.append(root.getFullPath());
         }
         return classpath.toString();
     }

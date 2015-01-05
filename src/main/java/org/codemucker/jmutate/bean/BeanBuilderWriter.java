@@ -1,8 +1,8 @@
 package org.codemucker.jmutate.bean;
 
-import org.codemucker.jpattern.IsGenerated;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jpattern.PatternType;
+import org.codemucker.jpattern.generate.IsGenerated;
 import org.codemucker.jtest.bean.BeanDefinition;
 import org.codemucker.jtest.bean.PropertyDefinition;
 import org.codemucker.lang.MapBuilder;

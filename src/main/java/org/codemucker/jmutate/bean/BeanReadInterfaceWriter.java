@@ -1,7 +1,7 @@
 package org.codemucker.jmutate.bean;
 
 import org.codemucker.jmutate.util.NameUtil;
-import org.codemucker.jpattern.IsGenerated;
+import org.codemucker.jpattern.generate.IsGenerated;
 import org.codemucker.jtest.bean.BeanDefinition;
 import org.codemucker.lang.annotation.NotThreadSafe;
 

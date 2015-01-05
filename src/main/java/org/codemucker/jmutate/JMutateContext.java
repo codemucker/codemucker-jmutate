@@ -1,9 +1,13 @@
 package org.codemucker.jmutate;
 
 import org.codemucker.jfind.Root;
+import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ast.JAstParser;
+import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.ToSourceConverter;
 import org.codemucker.jmutate.generate.JAnnotationCompiler;
+import org.codemucker.jtest.ProjectLayout;
+import org.eclipse.jdt.core.dom.ASTNode;
 
 import com.google.inject.ImplementedBy;
 
@@ -57,10 +61,30 @@ public interface JMutateContext {
 	 */
 	Root getDefaultGenerationRoot();
 	
+	ProjectLayout getProjectLayout();
+	
 	/**
 	 * Return the resource loader used for resolving resources and classnames
 	 * @return
 	 */
 	ResourceLoader getResourceLoader();
 
+	void trackChanges(ASTNode node);
+
+	/**
+	 * Register the given source as being modified or created
+	 * 
+	 * @param source
+	 */
+	void trackChanges(JSourceFile source);
+
+
+	/**
+	 * Load the given the resource as a source file. If there is a source which has been modified with the same resource path, return this
+	 * @param resource
+	 * @return
+	 */
+	JSourceFile getOrLoadSource(RootResource resource);
+
+		
 }

@@ -12,7 +12,7 @@ import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.SourceAsserts;
-import org.codemucker.jpattern.builder.GenerateBuilder;
+import org.codemucker.jpattern.generate.GenerateBuilder;
 import org.junit.Test;
 
 

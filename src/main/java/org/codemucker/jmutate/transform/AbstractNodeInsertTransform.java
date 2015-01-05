@@ -3,9 +3,9 @@ package org.codemucker.jmutate.transform;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.codemucker.jmutate.ClashStrategyResolver;
-import org.codemucker.jmutate.ClashStrategy;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jpattern.generate.ClashStrategy;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 
 import com.google.inject.Inject;

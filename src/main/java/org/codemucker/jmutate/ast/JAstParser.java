@@ -49,7 +49,8 @@ public class JAstParser {
 	private static final int LINE_NUM_PADDING = 4; 
 	
 	private final ASTParser parser;
-	private final boolean checkParse;
+	private final boolean failOnParseErrors;
+	
 	private final boolean recordModifications;
 	private final Map<?,?> options;
     private final ResourceLoader resourceLoader;
@@ -70,10 +71,10 @@ public class JAstParser {
     private static final String[] EMPTY = new String[]{};
     private static final String DEFAULT_SRC_ENCODING = "UTF-8";
     
-	private JAstParser(ASTParser parser, boolean checkParse, boolean recordModifications, Map<Object,Object> options, Root snippetRoot, ResourceLoader resourceLoader) {
+	private JAstParser(ASTParser parser, boolean failOnParseErrors, boolean recordModifications, Map<Object,Object> options, Root snippetRoot, ResourceLoader resourceLoader) {
 	    super();
 	    this.parser = checkNotNull(parser,"expect parser");
-	    this.checkParse = checkParse;
+	    this.failOnParseErrors = failOnParseErrors;
 	    this.recordModifications = recordModifications;
 	    this.options = checkNotNull(options,"expect parser options");
 	    this.resourceLoader = resourceLoader;
@@ -83,16 +84,16 @@ public class JAstParser {
 		List<String> srcRoots = new ArrayList<>(15);
 		List<String> srcEncodings = new ArrayList<>(15);
         
-        srcRoots.add(snippetRoot.getPathName());
+        srcRoots.add(snippetRoot.getFullPath());
         srcEncodings.add(DEFAULT_SRC_ENCODING);
 
         for (Root root : roots) {
             if (root.getContentType() == RootContentType.BINARY || root.getContentType() == RootContentType.MIXED) {
-                binaryRoots.add(root.getPathName());
+                binaryRoots.add(root.getFullPath());
             }
             //we don't want to compile dependency sources
             if (root.getType() != RootType.DEPENDENCY && (root.getContentType() == RootContentType.SRC || root.getContentType() == RootContentType.MIXED)) {
-                srcRoots.add(root.getPathName());
+                srcRoots.add(root.getFullPath());
                 srcEncodings.add(DEFAULT_SRC_ENCODING);
             }
         }
@@ -108,19 +109,27 @@ public class JAstParser {
 	 * Parse the given source as a compilation unit
 	 * 
 	 * @param src
+	 * @param resource optional resource which points to this source. Can be null, in which case there will be no source file associated with the node 
 	 * @return
 	 */
 	public CompilationUnit parseCompilationUnit(CharSequence src,RootResource resource) {
-		CompilationUnit cu = (CompilationUnit) parseNode(src, ASTParser.K_COMPILATION_UNIT, resource);
-		bindToNode(cu,resourceLoader,resource);
+		Preconditions.checkNotNull(src, "expect non null source");
+		//Preconditions.checkNotNull(resource, "expect non null resource");
 		
-		if (checkParse){
+		CompilationUnit cu = (CompilationUnit) parseNode(src, ASTParser.K_COMPILATION_UNIT, resource);
+		if (resource != null) {
+			JSourceFile source = new JSourceFile(resource, cu, src.toString(), resource.getLastModified());
+			bindToNode(cu,resourceLoader,source);
+		}
+		bindToNode(cu,getResourceLoader());
+		
+		if (failOnParseErrors){
 			IProblem[] problems = cu.getProblems();
 			if (problems.length > 0) {
 				List<IProblem> errors = extractErrors(problems);
 				if( !errors.isEmpty()){		
 				    String problemString = Joiner.on("\n").join(Lists.transform(errors, problemToStringFunc()));
-					String msg = String.format("Parsing error for resource %s,  full path %s, source %s\n,  problems are %s", resource==null?null:resource.getRelPath(), resource==null?null:resource.getFullPathInfo(), prependLineNumbers(src), problemString);
+					String msg = String.format("Parsing error for resource %s,  full path %s, source %s\n,  problems are %s", resource==null?null:resource.getRelPath(), resource==null?null:resource.getFullPath(), prependLineNumbers(src), problemString);
 					if(containsResolveError(errors)){
 					    msg += "\nsource roots:" + Joiner.on("\n").join(javacSourceRoots);
 					    msg += "\nbinary roots:" + Joiner.on("\n").join(javacBinaryRoots);
@@ -202,7 +211,6 @@ public class JAstParser {
 		if( resource != null ){
 			parser.setUnitName(resource.getRelPath());
 		}
-		Collection<Root> roots = resourceLoader.getAllRoots();
 		
         if (javacBinaryRoots.length > 0 || javacSourceRoots.length > 0) {
             boolean includeRunningVMBootclasspath = true;// if false can't find all the JDK classes?
@@ -212,7 +220,7 @@ public class JAstParser {
 		parser.setKind(kind);
 		ASTNode node = parser.createAST(null);
 
-		bindToNode(node,resourceLoader,resource);
+		bindToNode(node,resourceLoader);
 		//check the parsed type is what was asked for as if there was an error
 		//parsing the parser can decide to change it's mind as to what it's returning
 				
@@ -223,10 +231,15 @@ public class JAstParser {
 		return node;
 	}
 	
-    private static void bindToNode(ASTNode node, ResourceLoader resourceLoader, RootResource resource) {
-        MutateUtil.setResourceLoader(node, resourceLoader);
-        MutateUtil.setResource(node, resource);
+	private static void bindToNode(ASTNode node, ResourceLoader resourceLoader) {
+    	MutateUtil.setResourceLoader(node, resourceLoader);
     }
+	
+	private static void bindToNode(ASTNode node, ResourceLoader resourceLoader, JSourceFile source) {
+		MutateUtil.setResourceLoader(node, resourceLoader);
+		MutateUtil.setSource(node, source);
+    }
+    
 	
 	/**
 	 * Return the underlying ASTParser

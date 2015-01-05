@@ -2,7 +2,7 @@ import com.acme.my.own.which.should.Stay;
 import static com.google.common.collect.Maps.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Bean extends com.mycompany.SuperBean implements com.mycompany.MyBeanInterface {
+public class Bean extends com.mycompany.SuperBean implements org.codemucker.jmutate.transform.test.MyBeanInterface {
 		private java.lang.String myField;
 		private java.util.Map<java.lang.Integer, java.util.Collection<java.lang.String>> myMap;
 

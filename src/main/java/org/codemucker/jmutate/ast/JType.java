@@ -106,6 +106,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 	
 	public abstract String getFullName();
+	//TODO:rename to 'shortName'? to avoi ambiguity with dom SimpleName?
 	public abstract String getSimpleName();
 	public abstract JModifier getModifiers();
     public abstract List<ASTNode> getBodyDeclarations();
@@ -113,9 +114,13 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	public abstract boolean isTopLevelClass();
     
 	public RootResource getResource(){
-        return MutateUtil.getResource(typeNode);
+        return getSource().getResource();
     }
-    
+	
+	public JSourceFile  getSource(){
+        return MutateUtil.getSource(typeNode);
+    }
+	
 	@Override
 	public ASTNode getAstNode(){
 		return typeNode;
@@ -169,6 +174,15 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 * Find a child type with the given simple name, or throw an exception if no child type with that name
 	 */
 	public JType getChildTypeWithName(String simpleName){
+		JType found = getChildTypeWithNameOrNull(simpleName);
+		if(found!=null){
+			return found;
+		}
+		Collection<String> names = extractTypeNames(asTypeDecl().getTypes());
+		throw new JMutateException("Can't find type named %s in %s. Found %s", simpleName, this, Arrays.toString(names.toArray()));
+	}
+
+	public JType getChildTypeWithNameOrNull(String simpleName){
 		if (!isClass()) {
 			throw new JMutateException("Type '%s' is not a class so can't search for type named '%s'",getSimpleName(), simpleName);
 		}
@@ -178,10 +192,9 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 				return JType.from(type);
 			}
 		}
-		Collection<String> names = extractTypeNames(types);
-		throw new JMutateException("Can't find type named %s in %s. Found %s", simpleName, this, Arrays.toString(names.toArray()));
+		return null;
 	}
-
+	
 	private static Collection<String> extractTypeNames(TypeDeclaration[] types){
 		Collection<String> names = newArrayList();
 		for( AbstractTypeDeclaration type:types){
@@ -426,6 +439,18 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		return pkg.getName().getFullyQualifiedName();
 	}
 
+	public int getNumEnclosingClasses() {
+		int count = 0;
+		ASTNode node = getAstNode().getParent();
+		while(node != null){
+			if(is(node)){
+				count++;
+			}
+			node = node.getParent();
+		}
+		return count;
+	}
+	
 	public boolean isAccess(JAccess access) {
 		return getModifiers().asAccess().equals(access);
 	}

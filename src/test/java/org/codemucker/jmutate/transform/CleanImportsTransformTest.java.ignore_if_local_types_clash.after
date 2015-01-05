@@ -1,0 +1,6 @@
+package org.codemucker.jmutate.transform; 
+
+public class Bean {
+	private String dontShortenAsLocalClash = org.codemucker.jmutate.transform.test.Clash.FOO;
+
+}

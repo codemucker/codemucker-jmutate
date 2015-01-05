@@ -1,6 +1,7 @@
 package org.codemucker.jmutate.generate;
 
 import java.io.File;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,12 +30,14 @@ import org.codemucker.jmutate.SourceScanner;
 import org.codemucker.jmutate.ast.BaseSourceVisitor;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JAstParser;
+import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
-import org.codemucker.jpattern.DefaultGenerator;
+import org.codemucker.jpattern.generate.ClashStrategy;
+import org.codemucker.jpattern.generate.GeneratorOptions;
 import org.codemucker.lang.IBuilder;
 import org.codemucker.lang.annotation.Optional;
 import org.codemucker.lang.annotation.Required;
@@ -61,7 +64,7 @@ public class GeneratorRunner {
     private static final Matcher<String> MATCH_CONTENT = AString.matchingAntPattern("**Generate**");
     private static final Matcher<JAnnotation> GENERATION_ANNOTATIONS = AJAnnotation.with()
             .fullName(AString.matchingAntPattern("*.*Generate*"))
-            .annotatedWith(AnAnnotation.with().fullName(DefaultGenerator.class));
+            .annotatedWith(AnAnnotation.with().fullName(GeneratorOptions.class));
 
     private final Logger log = LogManager.getLogger(GeneratorRunner.class);
 
@@ -113,7 +116,7 @@ public class GeneratorRunner {
         return new Builder();
     }
 
-    public GeneratorRunner(Iterable<Root> roots, Iterable<Root> scanRoots, Matcher<Root> scanRootsFilter, boolean scanSubtypes,Root generationRoot, String searchPkg,Map<String, String> generators, boolean failOnParseError) {
+    public GeneratorRunner(Iterable<Root> roots, Iterable<Root> scanRoots, Matcher<Root> scanRootsFilter, boolean scanSubtypes,Root generationRoot, String searchPkg,Map<String, String> generators, boolean failOnParseError,ClashStrategy defaultClashStrategy) {
         super();
         this.resourceLoader = DefaultResourceLoader.with()
                 .parentLoader(DefaultResourceLoader.with().classLoader(Thread.currentThread().getContextClassLoader()).build())
@@ -141,6 +144,7 @@ public class GeneratorRunner {
                         .resourceLoader(resourceLoader)
                         .build())
                 .generationRoot(generationRoot)
+                .defaultClashStrategy(defaultClashStrategy)
                 .build();
         
         this.annotationCompiler = ctxt.obtain(JAnnotationCompiler.class);
@@ -184,7 +188,7 @@ public class GeneratorRunner {
         Collection<GroupedAnnotations> groups = groupByAnnotationType(generateAnnotations);
         //run the generators in order (of generator)
         for (GroupedAnnotations group : groups) {
-            Generator<?> generator = getGeneratorFor(group.getAnnotationName());
+            CodeGenerator<?> generator = getGeneratorFor(group.getAnnotationName());
             if (generator != null) {
                 invokeGenerator(generator,group);
             }
@@ -193,14 +197,21 @@ public class GeneratorRunner {
     }
 
     @SuppressWarnings("unchecked")
-    private void invokeGenerator(Generator generator, GroupedAnnotations nodesForThisGenerator) {
+    private void invokeGenerator(CodeGenerator generator, GroupedAnnotations nodesForThisGenerator) {
         for (Annotation optionAnnotation : nodesForThisGenerator.getCollectedNodes()) {
             java.lang.annotation.Annotation compiledOptionAnnotation = annotationCompiler.toCompiledAnnotation(optionAnnotation);
             ASTNode attachedTo = getOwningNodeFor(optionAnnotation);
             JType type= findNearestParentTypeFor(attachedTo);
-            log.debug("processing annotation '" + compiledOptionAnnotation.getClass().getName() + "' in '" + type.getFullName());
-            
-            generator.generate(attachedTo, compiledOptionAnnotation);
+            log.debug("processing annotation '" + compiledOptionAnnotation.toString() + "' in '" + type.getFullName());
+
+            try {
+            	generator.generate(attachedTo, compiledOptionAnnotation);
+            } catch(Exception e){
+            	if(compiledOptionAnnotation instanceof Proxy){
+            		Proxy p = (Proxy)compiledOptionAnnotation;
+            	}
+            	throw new JMutateException("error processing node : " + attachedTo,e);
+            }
         }
     }
   
@@ -222,25 +233,31 @@ public class GeneratorRunner {
             
         }
         //find all the code with generation annotations
-        SourceFilter.Builder sourceFilter = SourceFilter.with()
-            .rootMatches(scanRootFilter)
-             .resourceMatches(resourceFilter)
-             .typeMatches(AJType.with().annotation(GENERATION_ANNOTATIONS).expression(scanSubtypes?null:"notInnerClass"));
-                     
         SourceScanner scanner = ctxt.obtain(SourceScanner.Builder.class)
                 .failOnParseError(failOnParseError)
                 .parser(ctxt.getParser())
                 .scanRoots(scanRoots)
-                .filter(sourceFilter)
+                .filter(SourceFilter.with()
+                        .rootMatches(scanRootFilter)
+                        .resourceMatches(resourceFilter)
+                        .typeMatches(AJType.with().annotation(GENERATION_ANNOTATIONS).expression(scanSubtypes?null:"notInnerClass")))
                 .build();
         
         scanner.visit(new BaseSourceVisitor() {
-                @Override
+                
+        	@Override
+            public boolean visit(JSourceFile node) {
+                //log.debug("visit root:" + node.getPathName());
+                return true;
+            }
+        	
+        	@Override
                 public boolean visit(Root node) {
                     //log.debug("visit root:" + node.getPathName());
                     return true;
                 }
     
+                
                 @Override
                 public boolean visit(SingleMemberAnnotation node) {
                     return found(node);
@@ -299,7 +316,7 @@ log("found " + found.size() +" code generation annotations");
         return nodesByAnnotationName.values();
     }
     
-    private Generator<?> getGeneratorFor(String annotationType){
+    private CodeGenerator<?> getGeneratorFor(String annotationType){
         String generatorClassName = generators.get(annotationType);
         if (generatorClassName == null && autoRegisterDefaultGenerators) {
             autoRegisterGeneratorFor(annotationType);
@@ -326,11 +343,11 @@ log("found " + found.size() +" code generation annotations");
         } catch (ClassNotFoundException e) {
             throw new JMutateException("Registered generator class %s for annotation %s does not exist", generatorClassName, annotationType);
         }
-        if (!Generator.class.isAssignableFrom(generatorClass)) {
+        if (!CodeGenerator.class.isAssignableFrom(generatorClass)) {
             throw new JMutateException("Registered generator class %s for annotation %s does not implement %s", generatorClassName, annotationType,
-                    Generator.class.getName());
+                    CodeGenerator.class.getName());
         }
-        Generator<?> gen = (Generator<?>) ctxt.obtain(generatorClass);
+        CodeGenerator<?> gen = (CodeGenerator<?>) ctxt.obtain(generatorClass);
 
         return gen;
     }
@@ -338,10 +355,10 @@ log("found " + found.size() +" code generation annotations");
     private void autoRegisterGeneratorFor(String annotationType) {
         try {
             Class<?> annotation = ctxt.getResourceLoader().loadClass(NameUtil.sourceNameToCompiledName(annotationType));
-            DefaultGenerator defGenAnon = annotation.getAnnotation(DefaultGenerator.class);
+            GeneratorOptions defGenAnon = annotation.getAnnotation(GeneratorOptions.class);
             if(defGenAnon!=null){
-                log.info("auto registering generator '" + defGenAnon.value() + "' for annotation '" + annotationType + "'");
-                generators.put(annotationType, defGenAnon.value());
+                log.info("auto registering generator '" + defGenAnon.defaultGenerator() + "' for annotation '" + annotationType + "'");
+                generators.put(annotationType, defGenAnon.defaultGenerator());
             } else {
                 log.warn("skipping auto registering generator for annotation '" + annotationType + "' as no default supplied");    
             }
@@ -416,9 +433,14 @@ log("found " + found.size() +" code generation annotations");
         
         @Optional
         private boolean failOnParseError;
+        
+        @Optional
         private boolean scanSubTypes = true;
         
-        private final Map<String, String> generators = new HashMap<>();
+        @Optional
+        private ClashStrategy defaultClashStrategy = ClashStrategy.SKIP;
+        
+		private final Map<String, String> generators = new HashMap<>();
         
         @Override
         public GeneratorRunner build() {
@@ -429,7 +451,7 @@ log("found " + found.size() +" code generation annotations");
             Matcher<Root> scanRootsFilter = this.scanRootsFilter != null ? this.scanRootsFilter : ARoot.that().isDirectory().isSrc().isNotType(RootType.GENERATED);//.isNotType(RootType.GENERATED);
             String scanPkg = this.scanPackages == null ? "" : this.scanPackages;
             
-            return new GeneratorRunner(roots,scanRoots, scanRootsFilter, scanSubTypes, defaultGenerateTo, scanPkg, generators, failOnParseError);
+            return new GeneratorRunner(roots,scanRoots, scanRootsFilter, scanSubTypes, defaultGenerateTo, scanPkg, generators, failOnParseError,defaultClashStrategy);
         }
         
         private Iterable<Root> getRootsOrDefault(){
@@ -501,20 +523,19 @@ log("found " + found.size() +" code generation annotations");
 
         @Optional
         @SuppressWarnings("rawtypes")
-        public Builder registerGenerator(Class<? extends java.lang.annotation.Annotation> forAnnotation, Class<? extends Generator> generator) {
+        public Builder registerGenerator(Class<? extends java.lang.annotation.Annotation> forAnnotation, Class<? extends CodeGenerator> generator) {
             registerGenerator(NameUtil.compiledNameToSourceName(forAnnotation), generator);
             return this;
         }
         
         @Optional
         @SuppressWarnings("rawtypes")
-        public Builder registerGenerator(String forAnnotationClass,Class<? extends Generator> generator){
+        public Builder registerGenerator(String forAnnotationClass,Class<? extends CodeGenerator> generator){
             generators.put(forAnnotationClass, generator.getName());
             return this;
         }
         
         @Optional
-        @SuppressWarnings("rawtypes")
         public Builder registerGenerator(String forAnnotation,String generatorClass){
             generators.put(forAnnotation, generatorClass);
             return this;
@@ -526,9 +547,17 @@ log("found " + found.size() +" code generation annotations");
             return this;
         }
 
+        @Optional
         public Builder scanSubTypes() {
             this.scanSubTypes = true;
             return this;
         }
+        
+        @Optional
+        public Builder defaultClashStrategy(ClashStrategy defaultClashStrategy) {
+			this.defaultClashStrategy = defaultClashStrategy;
+			return this;
+        }
+
     }
 }

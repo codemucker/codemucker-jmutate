@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.generate.matcher;
+package org.codemucker.jmutate.generate;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;

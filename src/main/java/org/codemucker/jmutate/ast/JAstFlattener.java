@@ -283,6 +283,195 @@ public class JAstFlattener extends ASTVisitor {
     private List superInterfaces(TypeDeclaration node) {
         return node.superInterfaces();
     }
+    
+	public boolean visitNode(ASTNode node) {
+		if (node instanceof org.eclipse.jdt.core.dom.AnnotationTypeDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.AnnotationTypeDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.AnnotationTypeMemberDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.AnonymousClassDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.AnonymousClassDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ArrayAccess) {
+			return visit((org.eclipse.jdt.core.dom.ArrayAccess) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ArrayCreation) {
+			return visit((org.eclipse.jdt.core.dom.ArrayCreation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ArrayInitializer) {
+			return visit((org.eclipse.jdt.core.dom.ArrayInitializer) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ArrayType) {
+			return visit((org.eclipse.jdt.core.dom.ArrayType) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.AssertStatement) {
+			return visit((org.eclipse.jdt.core.dom.AssertStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.Assignment) {
+			return visit((org.eclipse.jdt.core.dom.Assignment) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.Block) {
+			return visit((org.eclipse.jdt.core.dom.Block) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.BlockComment) {
+			return visit((org.eclipse.jdt.core.dom.BlockComment) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.BooleanLiteral) {
+			return visit((org.eclipse.jdt.core.dom.BooleanLiteral) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.BreakStatement) {
+			return visit((org.eclipse.jdt.core.dom.BreakStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.CastExpression) {
+			return visit((org.eclipse.jdt.core.dom.CastExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.CatchClause) {
+			return visit((org.eclipse.jdt.core.dom.CatchClause) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.CharacterLiteral) {
+			return visit((org.eclipse.jdt.core.dom.CharacterLiteral) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ClassInstanceCreation) {
+			return visit((org.eclipse.jdt.core.dom.ClassInstanceCreation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.CompilationUnit) {
+			return visit((org.eclipse.jdt.core.dom.CompilationUnit) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ConditionalExpression) {
+			return visit((org.eclipse.jdt.core.dom.ConditionalExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ConstructorInvocation) {
+			return visit((org.eclipse.jdt.core.dom.ConstructorInvocation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ContinueStatement) {
+			return visit((org.eclipse.jdt.core.dom.ContinueStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.CreationReference) {
+			return visit((org.eclipse.jdt.core.dom.CreationReference) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.Dimension) {
+			return visit((org.eclipse.jdt.core.dom.Dimension) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.DoStatement) {
+			return visit((org.eclipse.jdt.core.dom.DoStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.EmptyStatement) {
+			return visit((org.eclipse.jdt.core.dom.EmptyStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.EnhancedForStatement) {
+			return visit((org.eclipse.jdt.core.dom.EnhancedForStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.EnumConstantDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.EnumConstantDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.EnumDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.EnumDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ExpressionMethodReference) {
+			return visit((org.eclipse.jdt.core.dom.ExpressionMethodReference) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ExpressionStatement) {
+			return visit((org.eclipse.jdt.core.dom.ExpressionStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.FieldAccess) {
+			return visit((org.eclipse.jdt.core.dom.FieldAccess) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.FieldDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.FieldDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ForStatement) {
+			return visit((org.eclipse.jdt.core.dom.ForStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.IfStatement) {
+			return visit((org.eclipse.jdt.core.dom.IfStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ImportDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.ImportDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.InfixExpression) {
+			return visit((org.eclipse.jdt.core.dom.InfixExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.Initializer) {
+			return visit((org.eclipse.jdt.core.dom.Initializer) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.InstanceofExpression) {
+			return visit((org.eclipse.jdt.core.dom.InstanceofExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.IntersectionType) {
+			return visit((org.eclipse.jdt.core.dom.IntersectionType) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.Javadoc) {
+			return visit((org.eclipse.jdt.core.dom.Javadoc) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.LabeledStatement) {
+			return visit((org.eclipse.jdt.core.dom.LabeledStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.LambdaExpression) {
+			return visit((org.eclipse.jdt.core.dom.LambdaExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.LineComment) {
+			return visit((org.eclipse.jdt.core.dom.LineComment) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.MarkerAnnotation) {
+			return visit((org.eclipse.jdt.core.dom.MarkerAnnotation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.MemberRef) {
+			return visit((org.eclipse.jdt.core.dom.MemberRef) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.MemberValuePair) {
+			return visit((org.eclipse.jdt.core.dom.MemberValuePair) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.MethodDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.MethodDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.MethodInvocation) {
+			return visit((org.eclipse.jdt.core.dom.MethodInvocation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.MethodRef) {
+			return visit((org.eclipse.jdt.core.dom.MethodRef) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.MethodRefParameter) {
+			return visit((org.eclipse.jdt.core.dom.MethodRefParameter) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.Modifier) {
+			return visit((org.eclipse.jdt.core.dom.Modifier) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.NameQualifiedType) {
+			return visit((org.eclipse.jdt.core.dom.NameQualifiedType) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.NormalAnnotation) {
+			return visit((org.eclipse.jdt.core.dom.NormalAnnotation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.NullLiteral) {
+			return visit((org.eclipse.jdt.core.dom.NullLiteral) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.NumberLiteral) {
+			return visit((org.eclipse.jdt.core.dom.NumberLiteral) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.PackageDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.PackageDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ParameterizedType) {
+			return visit((org.eclipse.jdt.core.dom.ParameterizedType) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ParenthesizedExpression) {
+			return visit((org.eclipse.jdt.core.dom.ParenthesizedExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.PostfixExpression) {
+			return visit((org.eclipse.jdt.core.dom.PostfixExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.PrefixExpression) {
+			return visit((org.eclipse.jdt.core.dom.PrefixExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.PrimitiveType) {
+			return visit((org.eclipse.jdt.core.dom.PrimitiveType) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.QualifiedName) {
+			return visit((org.eclipse.jdt.core.dom.QualifiedName) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.QualifiedType) {
+			return visit((org.eclipse.jdt.core.dom.QualifiedType) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ReturnStatement) {
+			return visit((org.eclipse.jdt.core.dom.ReturnStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SimpleName) {
+			return visit((org.eclipse.jdt.core.dom.SimpleName) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SimpleType) {
+			return visit((org.eclipse.jdt.core.dom.SimpleType) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SingleMemberAnnotation) {
+			return visit((org.eclipse.jdt.core.dom.SingleMemberAnnotation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SingleVariableDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.SingleVariableDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.StringLiteral) {
+			return visit((org.eclipse.jdt.core.dom.StringLiteral) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SuperConstructorInvocation) {
+			return visit((org.eclipse.jdt.core.dom.SuperConstructorInvocation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SuperFieldAccess) {
+			return visit((org.eclipse.jdt.core.dom.SuperFieldAccess) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SuperMethodInvocation) {
+			return visit((org.eclipse.jdt.core.dom.SuperMethodInvocation) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SuperMethodReference) {
+			return visit((org.eclipse.jdt.core.dom.SuperMethodReference) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SwitchCase) {
+			return visit((org.eclipse.jdt.core.dom.SwitchCase) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SwitchStatement) {
+			return visit((org.eclipse.jdt.core.dom.SwitchStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.SynchronizedStatement) {
+			return visit((org.eclipse.jdt.core.dom.SynchronizedStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.TagElement) {
+			return visit((org.eclipse.jdt.core.dom.TagElement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.TextElement) {
+			return visit((org.eclipse.jdt.core.dom.TextElement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ThisExpression) {
+			return visit((org.eclipse.jdt.core.dom.ThisExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.ThrowStatement) {
+			return visit((org.eclipse.jdt.core.dom.ThrowStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.TryStatement) {
+			return visit((org.eclipse.jdt.core.dom.TryStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.TypeDeclaration) {
+			return visit((org.eclipse.jdt.core.dom.TypeDeclaration) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.TypeDeclarationStatement) {
+			return visit((org.eclipse.jdt.core.dom.TypeDeclarationStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.TypeLiteral) {
+			return visit((org.eclipse.jdt.core.dom.TypeLiteral) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.TypeMethodReference) {
+			return visit((org.eclipse.jdt.core.dom.TypeMethodReference) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.TypeParameter) {
+			return visit((org.eclipse.jdt.core.dom.TypeParameter) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.UnionType) {
+			return visit((org.eclipse.jdt.core.dom.UnionType) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.VariableDeclarationExpression) {
+			return visit((org.eclipse.jdt.core.dom.VariableDeclarationExpression) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.VariableDeclarationFragment) {
+			return visit((org.eclipse.jdt.core.dom.VariableDeclarationFragment) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.VariableDeclarationStatement) {
+			return visit((org.eclipse.jdt.core.dom.VariableDeclarationStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.WhileStatement) {
+			return visit((org.eclipse.jdt.core.dom.WhileStatement) node);
+		} else if (node instanceof org.eclipse.jdt.core.dom.WildcardType) {
+			return visit((org.eclipse.jdt.core.dom.WildcardType) node);
+		}
+		return false;
+	}
 
     /**
      * Delegate to the relevant visit(<concrete-annotation-type>) method

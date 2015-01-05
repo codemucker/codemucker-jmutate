@@ -3,12 +3,12 @@ package org.codemucker.jmutate.transform;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.codemucker.jfind.FindResult;
-import org.codemucker.jmutate.ClashStrategy;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
+import org.codemucker.jpattern.generate.ClashStrategy;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 

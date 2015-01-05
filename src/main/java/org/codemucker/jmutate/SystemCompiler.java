@@ -62,7 +62,7 @@ public class SystemCompiler implements JCompiler {
     @Override
     public Class<?> toCompiledClass(JSourceFile source, ResourceLoader resourceLoader) {
         if (!source.isInSyncWithResource()) {
-            throw new JMutateException("Source file " + source.getResource().getFullPathInfo() + " has modifications which need to be written to disk first");
+            throw new JMutateException("Source file " + source.getResource().getFullPath() + " has modifications which need to be written to disk first");
         }
         return toCompiledClass(source.getResource(), resourceLoader);
     }   
@@ -79,7 +79,7 @@ public class SystemCompiler implements JCompiler {
                 log.debug("compile target version " + targetVersion);
                 log.trace("compile classpath roots:");
                 for(Root root:resourceLoader.getAllRoots()){
-                    log.trace("root " + root.getPathName());        
+                    log.trace("root " + root.getFullPath());        
                 }
                 log.trace("source:\n------------------");
                 try {
@@ -105,7 +105,7 @@ public class SystemCompiler implements JCompiler {
             //compilerOptions.add("-verbose");
 
             //TODO:bootstrap classpath
-            File pathToSource = new File(resource.getRoot().getPathName(), resource.getRelPath());
+            File pathToSource = new File(resource.getRoot().getFullPath(), resource.getRelPath());
             StringWriter errOut = new StringWriter();
             Iterable<? extends JavaFileObject> filesToCompile = fileManager.getJavaFileObjectsFromFiles(Arrays.asList(pathToSource.getAbsoluteFile()));
             JavaCompiler.CompilationTask compileTask = compiler.getTask(errOut, fileManager, diagnostics, compilerOptions, null, filesToCompile);
@@ -227,7 +227,7 @@ public class SystemCompiler implements JCompiler {
             if (classpath.length() > 0) {
                 classpath.append(PATH_SEP);
             }
-            classpath.append(root.getPathName());
+            classpath.append(root.getFullPath());
         }
         return classpath.toString();
     }

@@ -1,0 +1,7 @@
+package com.mycompany; 
+
+public class Bean {
+	private com.mycompany.Something field1;
+	private Class<com.mycompany.Something> field2;
+
+}

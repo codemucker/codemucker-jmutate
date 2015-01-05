@@ -15,6 +15,7 @@ import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractMatcher;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
@@ -320,6 +321,16 @@ public class AJType extends ObjectMatcher<JType> {
 		return this;
 	}
 	
+	public AJType numEnclosingClasses(int depth){
+		numEnclosingClasses(AnInt.equalTo(depth));
+		return this;
+	}
+	
+	public AJType numEnclosingClasses(Matcher<Integer> matcher){
+		addMatcher(new DepthMatcher(matcher));
+		return this;
+	}
+	
 	public AJType access(final JAccess access){
 		addMatcher(new AbstractNotNullMatcher<JType>() {
 			@Override
@@ -475,5 +486,26 @@ public class AJType extends ObjectMatcher<JType> {
 			}
 			return matcher;
 		}
+    }
+    
+    private static class DepthMatcher extends AbstractMatcher<JType> {
+
+    	private final Matcher<Integer> matcher;
+    	
+		public DepthMatcher(Matcher<Integer> matcher) {
+			super();
+			this.matcher = matcher;
+		}
+
+		@Override
+		protected boolean matchesSafely(JType actual, MatchDiagnostics diag) {
+			return diag.tryMatch(this, actual.getNumEnclosingClasses(), matcher);
+		}
+		
+		@Override
+		public void describeTo(Description desc) {
+			desc.text("num enclosing classes",matcher);
+		}
+    	
     }
 }

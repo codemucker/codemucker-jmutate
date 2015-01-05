@@ -6,6 +6,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Expression;

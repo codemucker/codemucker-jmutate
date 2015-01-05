@@ -67,12 +67,16 @@ public class AJField extends ObjectMatcher<JField>{
 	}
 	
 	public AJField name(final String antPattern){
+		name(AString.matchingAntPattern(antPattern));
+		return this;
+	}
+	
+	public AJField name(final Matcher<String> matcher){
 		addMatcher(new AbstractMatcher<JField>(AllowNulls.NO) {
-			private final Matcher<String> nameMatcher = AString.matchingAntPattern(antPattern);		
 			@Override
 			public boolean matchesSafely(JField found, MatchDiagnostics diag) {
 				for (String name : found.getNames()) {
-					if (nameMatcher.matches(name)) {
+					if (matcher.matches(name)) {
 						return true;
 					}
 				}
@@ -81,7 +85,7 @@ public class AJField extends ObjectMatcher<JField>{
 			
 			@Override
 			public void describeTo(Description desc) {
-				desc.value("name", nameMatcher);
+				desc.value("name", matcher);
 			}
 		});
 		return this;

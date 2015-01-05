@@ -7,7 +7,7 @@ import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.ASTNode;
 
-public abstract class AbstractGenerator<T extends Annotation> implements Generator<T> {
+public abstract class AbstractCodeGenerator<T extends Annotation> implements CodeGenerator<T> {
 
     @Override
     public final void generate(ASTNode node, T options) {

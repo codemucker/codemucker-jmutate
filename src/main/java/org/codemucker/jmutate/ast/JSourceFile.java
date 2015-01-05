@@ -40,7 +40,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	private final long originalTimestamp;
 	private final long originalAstModificationCount;
     
-	private JSourceFile(RootResource resource, CompilationUnit cu, CharSequence sourceCode, long originalTimestamp) {
+	public JSourceFile(RootResource resource, CompilationUnit cu, CharSequence sourceCode, long originalTimestamp) {
 		this.resource = checkNotNull("resource", resource);
 		this.sourceCode = sourceCode;
 		this.compilationUnitNode = cu;
@@ -182,17 +182,24 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	 * Look through just the top level types for this file for a type with the given name
 	 */
 	public JType getTopTypeWithName(String simpleName){
+		JType type = getTopTypeWithNameOrNull(simpleName);
+		if (type != null) {
+			return type;
+		}
+		Collection<String> names = extractTopTypeNames(getTopTypes());
+		throw new JMutateException("Can't find top level type named '%s' in resource '%s'. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
+	}
+	
+	public JType getTopTypeWithNameOrNull(String simpleName){
 		List<AbstractTypeDeclaration> types = getTopTypes();
 		for( AbstractTypeDeclaration type:types){
 			if(simpleName.equals(type.getName().getFullyQualifiedName())){ //fqn is actually just the shortname
 				return JType.from(type);
 			}
 		}
-		Collection<String> names = extractTopTypeNames(types);
-		throw new JMutateException("Can't find top level type named '%s' in resource '%s'. Found %s", simpleName, resource.getRelPath(), Arrays.toString(names.toArray()));
+		return null;
 	}
 	
-
 	public JType getTypeWithName(Class<?> type) {
 		return getTypeWithName(type.getSimpleName());
 	}

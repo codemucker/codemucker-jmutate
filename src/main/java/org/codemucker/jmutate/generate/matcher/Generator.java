@@ -17,10 +17,8 @@ import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.PropertyMatcher;
-import org.codemucker.jmutate.ClashStrategy;
 import org.codemucker.jmutate.ClashStrategyResolver;
 import org.codemucker.jmutate.JMutateContext;
-import org.codemucker.jmutate.JMutateInfo;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
@@ -31,44 +29,36 @@ import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
-import org.codemucker.jmutate.generate.AbstractGenerator;
+import org.codemucker.jmutate.generate.AbstractCodeGenerator;
+import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
+import org.codemucker.jmutate.generate.PojoScanner;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
-import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.util.NameUtil;
-import org.codemucker.jpattern.IsGenerated;
+import org.codemucker.jpattern.generate.ClashStrategy;
+import org.codemucker.jpattern.generate.GeneratorMatchers;
 import org.codemucker.lang.BeanNameUtil;
-import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.QualifiedName;
-import org.eclipse.jdt.core.dom.StringLiteral;
 
 import com.google.inject.Inject;
 
 /**
  * Generates the matchers for pojos
  */
-public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
+public class Generator extends AbstractCodeGenerator<GeneratorMatchers> {
 
-    private final Logger log = LogManager.getLogger(MatcherGenerator.class);
+    private static final Logger log = LogManager.getLogger(Generator.class);
 
-    private static final String CODE_GEN_INFO_CLASS_PKG = "org.codemucker.jmutate.generate.matcher.generated";
-    private static final String CODE_GEN_INFO_CLASS_NAME = "CodeGeneration";
-    private static final String CODE_GEN_INFO_CLASS_FULLNAME = CODE_GEN_INFO_CLASS_PKG + "." + CODE_GEN_INFO_CLASS_NAME;
-    
     static final String VOWELS_UPPER = "AEIOU";
     
-    private static final String THIS_GEN_NAME = MatcherGenerator.class.getSimpleName();
-	
     private final Matcher<Annotation> reflectedAnnotationIgnore = AnAnnotation.with().fullName(AString.matchingAntPattern("*.Ignore"));
     private final Matcher<JAnnotation> sourceAnnotationIgnore = AJAnnotation.with().fullName(AString.matchingAntPattern("*.Ignore"));
     
     private final JMutateContext ctxt;
     private ClashStrategyResolver methodClashResolver;
+
+	private final CodeGenMetaGenerator genInfo;
     
 	private static Map<String, String> MATCHER_BY_TYPE = new HashMap<String, String>();
 
@@ -86,12 +76,13 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
 	}
 
     @Inject
-    public MatcherGenerator(JMutateContext ctxt) {
+    public Generator(JMutateContext ctxt) {
         this.ctxt = ctxt;
+        this.genInfo = new CodeGenMetaGenerator(ctxt,getClass());
     }
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, GenerateMatchers options) {
+	public void generate(JType optionsDeclaredInNode, GeneratorMatchers options) {
 		ClashStrategy methodClashDefaultStrategy = getOr(options.clashStrategy(),ClashStrategy.SKIP);
 		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
 
@@ -111,24 +102,24 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
         }
         return val;
     }
-	private AllMatchersModel createModel(JType optionsDeclaredInNode,GenerateMatchers options, PojoScanner pojoScanner) {
+	private AllMatchersModel createModel(JType optionsDeclaredInNode,GeneratorMatchers options, PojoScanner pojoScanner) {
 		AllMatchersModel models = new AllMatchersModel(optionsDeclaredInNode, options);
         if(options.scanSources() ){
-            FindResult<JType> requestTypes = pojoScanner.scanSources();
+            FindResult<JType> pojos = pojoScanner.scanSources();
             // add the appropriate methods and types for each request bean
-            for (JType requestType : requestTypes) {
-                MatcherModel requestModel = new MatcherModel(models, requestType);
-                extractFields(requestModel, requestType);
+            for (JType pojo : pojos) {
+                MatcherModel requestModel = new MatcherModel(models, pojo);
+                extractFields(requestModel, pojo);
                 models.addMatcher(requestModel);
             }
         }
         
         if(options.scanDependencies()){
-            FindResult<Class<?>> requestTypes = pojoScanner.scanForReflectedClasses();
+            FindResult<Class<?>> pojos = pojoScanner.scanForReflectedClasses();
             // add the appropriate methods and types for each request bean
-            for (Class<?> requestType : requestTypes) {
-                MatcherModel requestModel = new MatcherModel(models, requestType);
-                extractFields(requestModel, requestType);
+            for (Class<?> pojo : pojos) {
+                MatcherModel requestModel = new MatcherModel(models, pojo);
+                extractFields(requestModel, pojo);
                 models.addMatcher(requestModel);
             }
         }
@@ -137,27 +128,29 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
 		return models;
 	}
 
-	private void generateMatchers(JType optionsDeclaredInNode,GenerateMatchers options, AllMatchersModel models) {
-		createGenInfoIfNotExists();
-
+	private void generateMatchers(JType optionsDeclaredInNode,GeneratorMatchers options, AllMatchersModel models) {
 		for (MatcherModel model : models.matchers) {
+			boolean markGenerated = model.markGenerated;
 			JSourceFile source = newOrExistingMatcherSourceFile(model);
+			if(source.getResource().exists() && !model.keepInSync){
+				continue;//skip this generation
+			}
 			JType matcher = source.getMainType();
-			SourceTemplate template = ctxt.newSourceTemplate().var("selfType", model.matcherTypeSimple);
+			SourceTemplate baseTemplate = ctxt.newSourceTemplate().var("selfType", model.matcherTypeSimple);
 
 			// custom user builder factory methods
 			for (String name : model.staticBuilderMethodNames) {
-				addMethod(matcher,template.child().pl("public static ${selfType} " + name + " (){ return with(); }").asMethodNodeSnippet());
+				addMethod(matcher,baseTemplate.child().pl("public static ${selfType} " + name + " (){ return with(); }").asMethodNodeSnippet(),markGenerated);
 			}
 
 			// standard builder factory method
-			addMethod(matcher,template.child().pl("public static ${selfType} with(){ return new ${selfType}(); }").asMethodNodeSnippet());
+			addMethod(matcher,baseTemplate.child().pl("public static ${selfType} with(){ return new ${selfType}(); }").asMethodNodeSnippet(),markGenerated);
 
 			for (PropertyModel property : model.properties.values()) {
 				//add default equals matchers for known types
 				String equalMatcherSnippet = MATCHER_BY_TYPE.get(property.propertyTypeAsObject);
 				if (equalMatcherSnippet != null) {
-					SourceTemplate equalsMethod = template
+					SourceTemplate equalsMethod = baseTemplate
 						.child()
 						.var("p.name", property.propertyName)
 						.var("p.type", property.propertyTypeAsObject)
@@ -167,10 +160,10 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
 						.pl("		${p.name}(${matcher}(val)); ")
 						.pl("		return this;")
 						.pl("}");
-					addMethod(matcher, equalsMethod.asMethodNodeSnippet());
+					addMethod(matcher, equalsMethod.asMethodNodeSnippet(),markGenerated);
 				}
 				//add the matcher method
-				SourceTemplate matcherMethod = template
+				SourceTemplate matcherMethod = baseTemplate
 					.child()
 					.var("p.name", property.propertyName)
 					.var("p.type", property.propertyTypeAsObject)
@@ -183,7 +176,7 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
 					.pl("}")
 					.singleToDoubleQuotes();
 					
-				addMethod(matcher, matcherMethod.asMethodNodeSnippet());
+				addMethod(matcher, matcherMethod.asMethodNodeSnippet(),markGenerated);
 			}
 			
 			writeToDiskIfChanged(source);
@@ -210,20 +203,15 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
     	//add default ctor
         SourceTemplate ctor= ctxt.newSourceTemplate();
         ctor.pl("public " + model.matcherTypeSimple + "(){super(" + model.pojoTypeFull + ".class);}");
-        addMethod(source.getMainType(),ctor.asConstructorNodeSnippet());
+        addMethod(source.getMainType(),ctor.asConstructorNodeSnippet(),model.markGenerated);
     	
     	return source;
     }
 
-	private void addMethod(JType matcher, MethodDeclaration m) {
-		AST ast = m.getAST();
-		NormalAnnotation a = ast.newNormalAnnotation();
-		a.setTypeName(ast.newName(IsGenerated.class.getName()));
-		QualifiedName gen = ast.newQualifiedName(ast.newName(CODE_GEN_INFO_CLASS_FULLNAME), ast.newSimpleName(THIS_GEN_NAME));
-		addValue(a,"generator",gen);
-		//addValue(a,"sha1","1234");
-		m.modifiers().add(0,a);
-		
+	private void addMethod(JType matcher, MethodDeclaration m, boolean markGenerated) {
+		if(markGenerated){
+			genInfo.addGeneratedMarkers(m);
+		}
 		ctxt
 			.obtain(InsertMethodTransform.class)
 			.clashStrategy(methodClashResolver)
@@ -233,36 +221,7 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
 			.transform();
 	}
 
-	private static void addValue(NormalAnnotation a,String name,String value){	
-		StringLiteral lit = a.getAST().newStringLiteral();
-		lit.setLiteralValue(value);
-		addValue(a, name, lit);
-	}
-	
-	private static void addValue(NormalAnnotation a,String name, Expression value){	
-		MemberValuePair existing = null;
-		for (Object v : a.values()) {
-			if (v instanceof MemberValuePair) {
-				MemberValuePair p = (MemberValuePair) v;
-				if (name.equals(p.getName())) {
-					existing = p;
-					break;
-				}
-			}
-		}
-		if (existing != null) {
-			existing.delete();
-		}
-		
-		AST ast = a.getAST();
-		MemberValuePair pair = ast.newMemberValuePair();
-		pair.setName(ast.newSimpleName(name));
-		
-		pair.setValue(value);
-		a.values().add(pair);
-	}
-	
-    private void extractFields(MatcherModel model, Class<?> requestType) {
+	private void extractFields(MatcherModel model, Class<?> requestType) {
         ReflectedClass requestBean = ReflectedClass.from(requestType);
         FindResult<Field> fields = requestBean.findFieldsMatching(AField.that().isNotStatic().isNotNative());
         log.trace("found " + fields.toList().size() + " fields");
@@ -316,32 +275,7 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
     }
 
     private void addGeneratedMarkers(SourceTemplate template) {
-        String genInfo = CODE_GEN_INFO_CLASS_FULLNAME + "." + THIS_GEN_NAME;
-        template.var("generator", genInfo);
-        template.pl("@" + javax.annotation.Generated.class.getName() + "(${generator})");
-        template.pl("@" + IsGenerated.class.getName() + "(generator=${generator})");
-    }
-
-    private void createGenInfoIfNotExists() {
-        RootResource resource = ctxt.getDefaultGenerationRoot().getResource(CODE_GEN_INFO_CLASS_FULLNAME + ".java");
-        JSourceFile source;
-        if (resource.exists()) {
-        	source = JSourceFile.fromResource(resource, ctxt.getParser());
-        } else {
-           source = ctxt.newSourceTemplate()
-                .var("pkg", CODE_GEN_INFO_CLASS_PKG)
-                .var("className", CODE_GEN_INFO_CLASS_NAME)
-                .pl("package ${pkg};")
-                .pl("public class ${className} {}")
-                .asSourceFileSnippet();
-        }
-        JField field = ctxt.newSourceTemplate()
-                .pl("public static final String " + THIS_GEN_NAME + "=\"" + JMutateInfo.all + " " + getClass().getName() + "\";")
-                .asJFieldSnippet();
-
-        ctxt.obtain(InsertFieldTransform.class).target(source.getMainType()).field(field).clashStrategy(ClashStrategy.REPLACE).transform();
-
-        writeToDiskIfChanged(source);
+    	genInfo.addGeneratedMarkers(template);
     }
 
     private void writeToDiskIfChanged(JSourceFile source) {
@@ -374,17 +308,8 @@ public class MatcherGenerator extends AbstractGenerator<GenerateMatchers> {
 
 		@Override
 		public ClashStrategy resolveClash(ASTNode existingNode,ASTNode newNode) {
-	
-			JAnnotation anon = JMethod.from(existingNode).getAnnotations().find(AJAnnotation.with().fullName(IsGenerated.class)).getFirstOrNull();
-			
-			if(anon != null){
-				String generator = anon.getValueForAttribute("generator", null);
-				String hash = anon.getValueForAttribute("sha1", null);
-				
-				//TODO:match qualified name
-				if(generator != null && generator.endsWith(THIS_GEN_NAME)){
-					return ClashStrategy.REPLACE;
-				}
+			if(genInfo.isManagedByThis(JMethod.from(existingNode).getAnnotations())){
+				return ClashStrategy.REPLACE;
 			}
 			return fallbackStrategy;
 		}

@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class JMutateInfo {
+public class JMutateAppInfo {
 
     public static final String name;
     public static final String groupId;
@@ -14,7 +14,7 @@ public class JMutateInfo {
     public static final String all;
 
     static {
-        try (InputStream is = JMutateInfo.class.getResourceAsStream("/application.properties")) {
+        try (InputStream is = JMutateAppInfo.class.getResourceAsStream("/application.properties")) {
             if(is == null){
                 throw new RuntimeException("could not load app.properties");
             }
@@ -26,7 +26,7 @@ public class JMutateInfo {
             version = p.getProperty("build.version");
             timestamp = p.getProperty("build.timestamp");
 
-            all = name + " (" + groupId + ":" + artifactId + ":" + version + ":" + timestamp + ")";
+            all = "project=" + name + ";dependency=" + groupId + ":" + artifactId + ":" + version + ";build=" + timestamp + "";
         } catch (IOException e) {
             throw new RuntimeException("couldn't read application.properties", e);
         }

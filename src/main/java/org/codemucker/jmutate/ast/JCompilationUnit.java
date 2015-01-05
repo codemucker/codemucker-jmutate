@@ -10,7 +10,6 @@ import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.eclipse.jdt.core.dom.AST;
@@ -52,9 +51,13 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 	}
 	
 	public RootResource getResource(){
-        return MutateUtil.getResource(compilationUnit);
+        return getSource().getResource();
     }
-    
+	
+	public JSourceFile  getSource(){
+        return MutateUtil.getSource(compilationUnit);
+    }
+	
 	public String getFullPackageName(){
 		PackageDeclaration pkg = compilationUnit.getPackage();
 		if( pkg == null){

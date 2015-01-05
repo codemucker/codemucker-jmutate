@@ -4,7 +4,7 @@ import java.lang.annotation.Annotation;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 
-public interface Generator<TGenerateOptions extends Annotation> {
+public interface CodeGenerator<TGenerateOptions extends Annotation> {
 
     /**
      * Perform the generation on the given node, using the extracted generation options

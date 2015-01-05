@@ -6,7 +6,7 @@ import static org.codemucker.jmatch.Assert.isEqualTo;
 import java.util.List;
 
 import org.codemucker.jmutate.TestSourceHelper;
-import org.codemucker.jpattern.IsGenerated;
+import org.codemucker.jpattern.generate.IsGenerated;
 import org.junit.Test;
 
 public class JAnnotationTest {

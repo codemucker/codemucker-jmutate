@@ -1,0 +1,9 @@
+package org.codemucker.jmutate.transform; 
+
+@com.mycompany.MyAnnotation(org.codemucker.jmutate.transform.test.Bar.FOOD)
+@com.mycompany.MyAnnotation2(
+	someValue=org.codemucker.jmutate.transform.test.Bar.FOOD,
+	someClass=org.codemucker.jmutate.transform.test.Bar.class
+)
+public class Bean {
+}

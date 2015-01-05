@@ -1,5 +1,5 @@
 package com.bertvanbrakel.codegen.bean;
-import org.codemucker.jpattern.IsGenerated;
+import org.codemucker.jpattern.generate.IsGenerated;
 import org.codemucker.jpattern.Pattern;
 import org.codemucker.jpattern.PatternType;
 @IsGenerated

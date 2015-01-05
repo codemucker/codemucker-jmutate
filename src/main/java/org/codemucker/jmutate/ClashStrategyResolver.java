@@ -1,5 +1,6 @@
 package org.codemucker.jmutate;
 
+import org.codemucker.jpattern.generate.ClashStrategy;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 public interface ClashStrategyResolver{

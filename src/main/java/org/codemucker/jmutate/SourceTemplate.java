@@ -348,7 +348,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		RootResource resource = null;
 		if( fqn != null){
 			String path  = expandFqnToRelativePath(fqn);
-			resource = new RootResource(snippetRoot, path + "." + extension);
+			resource = new RootResource(root, path + "." + extension);
 		}
 		return resource;
 	}

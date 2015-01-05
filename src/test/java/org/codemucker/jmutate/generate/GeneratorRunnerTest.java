@@ -13,7 +13,7 @@ import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jpattern.DefaultGenerator;
+import org.codemucker.jpattern.generate.GeneratorOptions;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.junit.Assert;
 import org.junit.Test;
@@ -49,13 +49,13 @@ public class GeneratorRunnerTest {
     }
     
     @Retention(RetentionPolicy.RUNTIME)
-    @DefaultGenerator("org.codemucker.jmutate.generate.GeneratorRunnerTest.MyCodeGenerator")
+    @GeneratorOptions(defaultGenerator="org.codemucker.jmutate.generate.GeneratorRunnerTest.MyCodeGenerator")
     public static @interface GenerateMyStuff {
         String foo();
         String bar() default "someDefault";
     }
     
-    public static class MyCodeGenerator extends AbstractGenerator<GenerateMyStuff> {
+    public static class MyCodeGenerator extends AbstractCodeGenerator<GenerateMyStuff> {
         
         public static final List<JType> nodesInvoked = new ArrayList<>();
 

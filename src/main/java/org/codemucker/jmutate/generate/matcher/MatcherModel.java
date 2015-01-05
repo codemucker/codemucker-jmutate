@@ -21,6 +21,8 @@ public class MatcherModel {
 	public final String matcherTypeFull;
 	public final String matcherTypeSimple;
     public final String pkg;
+    public final boolean keepInSync;
+    public final boolean markGenerated;
     
     final Set<String> staticBuilderMethodNames;
     
@@ -32,6 +34,8 @@ public class MatcherModel {
     	this.matcherTypeFull = toMatcherName(pkg,NameUtil.compiledNameToSourceName(pojoType));
         this.matcherTypeSimple = ClassNameUtil.extractSimpleClassNamePart(matcherTypeFull);
         this.staticBuilderMethodNames = Sets.newHashSet(parent.options.builderMethodNames());
+        this.keepInSync = parent.options.keepInSync();
+        this.markGenerated = parent.options.markGenerated(); 
     }
     
     public MatcherModel(AllMatchersModel parent, JType pojoType) {
@@ -40,6 +44,8 @@ public class MatcherModel {
     	this.matcherTypeFull = toMatcherName(pkg,pojoType.getFullName());
         this.matcherTypeSimple = ClassNameUtil.extractSimpleClassNamePart(matcherTypeFull);
         this.staticBuilderMethodNames = Sets.newHashSet(parent.options.builderMethodNames());
+        this.keepInSync = parent.options.keepInSync();
+        this.markGenerated = parent.options.markGenerated();
     }
     
     private String extractPkgName(AllMatchersModel parent,String pojoFullName){
@@ -49,7 +55,7 @@ public class MatcherModel {
     private static String toMatcherName(String pkg,String fullPojoName){
     	String className = ClassNameUtil.extractSimpleClassNamePart(fullPojoName);
     	
-    	if (MatcherGenerator.VOWELS_UPPER.indexOf(className.charAt(0)) != -1) {
+    	if (Generator.VOWELS_UPPER.indexOf(className.charAt(0)) != -1) {
 			className = "An" + className;
 		} else {
 			className = "A" + className;

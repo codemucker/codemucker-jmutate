@@ -1,0 +1,22 @@
+package com.mycompany; 
+import com.acme.my.own.which.should.Stay;
+import static com.google.common.collect.Maps.*;
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.mycompany.MyBeanInterface.MyInnerClass;
+import com.mycompany.MyBeanInterface;
+
+public class Bean extends MyBeanInterface<MyInnerClass> {
+	private String myField;
+
+	
+	public String getMyField() {
+		return myField;
+	}
+
+	public void setMyField(String myField) {
+		this.myField = myField;
+	}
+
+	public static class MyInnerClass {}
+		
+}

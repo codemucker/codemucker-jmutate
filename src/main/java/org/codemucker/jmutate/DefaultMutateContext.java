@@ -4,22 +4,32 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.codemucker.jfind.DirectoryRoot;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
+import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.DefaultToSourceConverter;
 import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JAstParser;
+import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.ToSourceConverter;
+import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
 import org.codemucker.jmutate.generate.JAnnotationCompiler;
+import org.codemucker.jmutate.util.MutateUtil;
+import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.codemucker.jtest.ProjectLayout;
 import org.codemucker.lang.PathUtil;
 import org.codemucker.lang.annotation.Optional;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
 import org.eclipse.jdt.internal.formatter.DefaultCodeFormatter;
@@ -36,6 +46,8 @@ import com.google.inject.name.Named;
 @Singleton
 public class DefaultMutateContext implements JMutateContext {
 
+    private static final Logger log = LogManager.getLogger(DefaultMutateContext.class);
+
     private final ProjectLayout projectLayout;
     private final ProjectOptions projectOptons;
     private final ResourceLoader resourceLoader;
@@ -51,6 +63,10 @@ public class DefaultMutateContext implements JMutateContext {
 	 */
 	private final boolean markGenerated;
 	
+	private Map<String	, ResourceTracker> sourceTrackers = new HashMap<>();
+	
+	private final ClashStrategy defaultClashStrategy;
+	
 	//internally created
     private final Injector injector;
     //private final ClassLoader classLoader;
@@ -59,7 +75,7 @@ public class DefaultMutateContext implements JMutateContext {
 		return new Builder();
 	}
 	
-	private DefaultMutateContext(ProjectLayout layout, ProjectOptions options, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategies strategyProvider) {
+	private DefaultMutateContext(ProjectLayout layout, ProjectOptions options, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategies strategyProvider, ClashStrategy defaultClashStrategy) {
         super();
         this.projectLayout = layout;
         this.projectOptons = options;
@@ -69,6 +85,7 @@ public class DefaultMutateContext implements JMutateContext {
         this.markGenerated = markGenerated;
         this.strategyProvider = strategyProvider;
         this.resourceLoader = parser.getResourceLoader();
+        this.defaultClashStrategy = defaultClashStrategy;
         
         injector = Guice.createInjector(Stage.PRODUCTION, new DefaultMutationModule());
     }
@@ -91,7 +108,46 @@ public class DefaultMutateContext implements JMutateContext {
             throw new JMutateException("Couldn't create a snippet root",e);     
         }
 	 }
+
+	@Override
+	public void trackChanges(ASTNode node) {
+		JSourceFile source = MutateUtil.getSource(node);
+		if( source != null){
+			trackChanges(source);
+		}
+	}
+
+	@Override
+	public void trackChanges(JSourceFile source) {
+		log.debug("tracking changes for " + source.getResource().getFullPath());
+		getOrCreateTracker(source.getResource()).addSource(source);
+	}
+
+	@Override
+	public JSourceFile getOrLoadSource(RootResource resource) {
+		ResourceTracker tracker = getOrCreateTracker(resource);
+		JSourceFile source = tracker.getSource(resource);
+		if(source == null){
+			source = JSourceFile.fromResource(resource, getParser());
+			tracker.addSource(source);
+			log.debug("now tracking changes for " + source.getResource().getFullPath());
+		} else {
+			log.debug("already tracking change for " + source.getResource().getFullPath());
+		}
+		return source;
+	}
 	
+	private ResourceTracker getOrCreateTracker(RootResource resource){
+		Root root = resource.getRoot();
+		String key = root.getFullPath();
+		ResourceTracker tracker = sourceTrackers.get(key);
+		if(tracker == null){
+			tracker = new ResourceTracker(key);
+			sourceTrackers.put(key,tracker);
+		}
+		return tracker;
+	}
+		
 	@Override
     public JAstParser getParser() {
 	    return obtain(JAstParser.class);
@@ -116,6 +172,11 @@ public class DefaultMutateContext implements JMutateContext {
 	public Root getDefaultGenerationRoot() {
 	    return generationRoot;	    
 	};
+	
+	@Override
+	public ProjectLayout getProjectLayout() {
+		return projectLayout;
+	}
 	
 	@Override
 	public ResourceLoader getResourceLoader() {
@@ -150,7 +211,7 @@ public class DefaultMutateContext implements JMutateContext {
 
         @Provides
         public ClashStrategy  provideDefaultClashStrategy() {
-            return ClashStrategy.ERROR;
+            return defaultClashStrategy;
         }
 
         
@@ -239,6 +300,27 @@ public class DefaultMutateContext implements JMutateContext {
             return projectLayout;
         }
     }
+    
+    static class ResourceTracker {
+    	private final String rootPath;
+    	private final Map<String, JSourceFile> sources = new HashMap<>();
+    	
+		public ResourceTracker(String rootPath) {
+			super();
+			this.rootPath = rootPath;
+		}
+		
+		public JSourceFile getSource(RootResource resource){
+			String key = resource.getRelPath();
+			JSourceFile source = sources.get(key);
+			return source;
+		}
+		
+		public void addSource(JSourceFile source){
+			String key = source.getResource().getRelPath();
+			sources.put(key, source);
+		}
+    }
 	
 	public static class Builder {
 	
@@ -250,6 +332,7 @@ public class DefaultMutateContext implements JMutateContext {
 		private ProjectLayout projectLayout;
 		private ProjectOptions projectOptions;
 		private PlacementStrategies placementStrategy;
+		private ClashStrategy defaultClashStrategy = ClashStrategy.ERROR;
 		
 		private Builder(){
 		}
@@ -264,10 +347,10 @@ public class DefaultMutateContext implements JMutateContext {
             ResourceLoader resourceLoader = getResourceLoaderOrDefault(generateTo, layout);
             JAstParser parser = getParserOrDefault(resourceLoader);
             DefaultCodeFormatterOptions formatter = getFormatterOptionsOrDefault();
-            PlacementStrategies strategy = getPlacementStrategyOrDefault();
+            PlacementStrategies defaultPlacementStrategy = getPlacementStrategyOrDefault();
             ProjectOptions options = getProjectOptionsOrDefault();
             
-            return new DefaultMutateContext(layout, options, generateTo, parser, markGenerated, formatter,strategy);
+            return new DefaultMutateContext(layout, options, generateTo, parser, markGenerated, formatter,defaultPlacementStrategy,defaultClashStrategy);
         }
 		
         private JAstParser getParserOrDefault(ResourceLoader loader) {
@@ -371,7 +454,7 @@ public class DefaultMutateContext implements JMutateContext {
         }
 
         @Optional
-        public Builder placementStrategy(PlacementStrategies strategy) {
+        public Builder defaultPlacementStrategy(PlacementStrategies strategy) {
             this.placementStrategy = strategy;
             return this;
         }
@@ -381,6 +464,11 @@ public class DefaultMutateContext implements JMutateContext {
             this.projectLayout = project;
             return this;
         }
-	}
 
+        @Optional
+		public Builder defaultClashStrategy(ClashStrategy defaultClashStrategy) {
+			this.defaultClashStrategy = defaultClashStrategy;
+			return this;
+        }  
+	}//builder
 }

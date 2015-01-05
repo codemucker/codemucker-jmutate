@@ -7,6 +7,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -71,7 +72,16 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
 
     @Override
     public void compileAnnotations(Iterable<org.eclipse.jdt.core.dom.Annotation> astNodes) {
-        internalCompileAnnotations(Lists.newArrayList(astNodes).toArray(EMPTY));
+    	//split into smaller chunks to remove failing compilations??
+    	List<org.eclipse.jdt.core.dom.Annotation> copy = Lists.newArrayList(astNodes);
+    	while(!copy.isEmpty()){
+    		List<org.eclipse.jdt.core.dom.Annotation> chunk = new ArrayList<>(10);
+    		for(int i = 0; !copy.isEmpty() && i < 10;i++){
+    			chunk.add(copy.remove(copy.size() -1));
+    		}
+    	     internalCompileAnnotations(chunk.toArray(EMPTY));		
+    	}
+   //     internalCompileAnnotations(Lists.newArrayList(astNodes).toArray(EMPTY));
     }
     
     /**
@@ -103,9 +113,9 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
             typeNum++;
             String typeName = "Type" + typeNum;
             String comment = "/*";
-            RootResource resource = MutateUtil.getResource(node);
+            RootResource resource = MutateUtil.getSource(node).getResource();
             if(resource!=null){
-                comment += "from " + resource.getRoot().getPathName() + "=>" + resource.getRelPath();
+                comment += "from " + resource.getRoot().getFullPath() + "=>" + resource.getRelPath();
             }
             comment +="*/";
             

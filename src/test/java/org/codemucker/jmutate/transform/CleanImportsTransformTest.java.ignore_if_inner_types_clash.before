@@ -1,0 +1,13 @@
+package com.mycompany; 
+
+public class Bean {
+	private String dontShortenAsLocalClash1 = org.codemucker.jmutate.transform.test.Bar.FOOD;
+	private org.codemucker.jmutate.transform.test.Bar dontShortenAsLocalClash2;
+	private Class<org.codemucker.jmutate.transform.test.Bar> dontShortenAsLocalClash3 = org.codemucker.jmutate.transform.test.Bar.class;
+	
+
+	private static class Bar {
+	
+	}
+
+}

@@ -16,7 +16,6 @@ import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.JMutateParseException;
 import org.codemucker.jmutate.ast.ToSourceConverter.Kind;
-import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
