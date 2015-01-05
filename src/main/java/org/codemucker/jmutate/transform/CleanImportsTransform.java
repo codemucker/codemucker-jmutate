@@ -452,7 +452,15 @@ public class CleanImportsTransform implements Transform {
         }
 
 		private void collectFullName(String fullName) {
-			collectReplacement(new Replacement(fullName));
+			collectReplacement(new Replacement(stripGenerics(fullName)));
+		}
+		
+		private static String stripGenerics(String fullName) {
+			int idx = fullName.indexOf('<');
+			if (idx != -1) {
+				return fullName.substring(0, idx);
+			}
+			return fullName;
 		}
 		
 		private void collectReplacement(Replacement replacement) {
