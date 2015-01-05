@@ -36,7 +36,7 @@ import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.ClashStrategy;
-import org.codemucker.jpattern.generate.GeneratorMatchers;
+import org.codemucker.jpattern.generate.GenerateMatchers;
 import org.codemucker.lang.BeanNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -46,7 +46,7 @@ import com.google.inject.Inject;
 /**
  * Generates the matchers for pojos
  */
-public class Generator extends AbstractCodeGenerator<GeneratorMatchers> {
+public class Generator extends AbstractCodeGenerator<GenerateMatchers> {
 
     private static final Logger log = LogManager.getLogger(Generator.class);
 
@@ -82,7 +82,7 @@ public class Generator extends AbstractCodeGenerator<GeneratorMatchers> {
     }
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, GeneratorMatchers options) {
+	public void generate(JType optionsDeclaredInNode, GenerateMatchers options) {
 		ClashStrategy methodClashDefaultStrategy = getOr(options.clashStrategy(),ClashStrategy.SKIP);
 		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
 
@@ -102,7 +102,7 @@ public class Generator extends AbstractCodeGenerator<GeneratorMatchers> {
         }
         return val;
     }
-	private AllMatchersModel createModel(JType optionsDeclaredInNode,GeneratorMatchers options, PojoScanner pojoScanner) {
+	private AllMatchersModel createModel(JType optionsDeclaredInNode,GenerateMatchers options, PojoScanner pojoScanner) {
 		AllMatchersModel models = new AllMatchersModel(optionsDeclaredInNode, options);
         if(options.scanSources() ){
             FindResult<JType> pojos = pojoScanner.scanSources();
@@ -128,7 +128,7 @@ public class Generator extends AbstractCodeGenerator<GeneratorMatchers> {
 		return models;
 	}
 
-	private void generateMatchers(JType optionsDeclaredInNode,GeneratorMatchers options, AllMatchersModel models) {
+	private void generateMatchers(JType optionsDeclaredInNode,GenerateMatchers options, AllMatchersModel models) {
 		for (MatcherModel model : models.matchers) {
 			boolean markGenerated = model.markGenerated;
 			JSourceFile source = newOrExistingMatcherSourceFile(model);
