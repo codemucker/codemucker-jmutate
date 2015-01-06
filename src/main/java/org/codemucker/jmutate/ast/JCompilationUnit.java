@@ -31,10 +31,20 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
 		this.compilationUnit = cu;
 	}
 	
-	
 	public static boolean is(ASTNode node){
         return node instanceof CompilationUnit;
     }
+	
+	public static CompilationUnit findCompilationUnit(ASTNode node){
+		ASTNode parent = node;
+		while( parent != null){
+			if( parent instanceof CompilationUnit){
+				return (CompilationUnit)parent;
+			}
+			parent = parent.getParent();			
+		}
+		throw new JMutateException("Couldn't find compilation unit. Unexpected");
+	}
 	
 	public static JCompilationUnit from(ASTNode node){
 	    if(!is(node)){

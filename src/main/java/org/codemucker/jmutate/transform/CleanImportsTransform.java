@@ -25,6 +25,7 @@ import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.ArrayType;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
@@ -348,6 +349,23 @@ public class CleanImportsTransform implements Transform {
         };
         
         @Override
+        public boolean visit(ArrayType node) {
+        	Type type ;
+        	if(node.getAST().apiLevel() < AST.JLS8){
+        		type = node.getComponentType();
+        	} else {
+        		type = node.getElementType();
+        	}
+        	
+        	String fullName = NameUtil.resolveQualifiedName(type);
+    		if( fullName!= null){
+    			collectFullName(fullName);
+    		}
+        	
+        	return super.visit(node);
+        }
+        
+        @Override
         public boolean visit(VariableDeclarationFragment node) {
         	Expression expression = node.getInitializer();
         	collectExpression(expression);
@@ -426,7 +444,6 @@ public class CleanImportsTransform implements Transform {
         	}
         }
         
-		
 		private void collectExpression(Expression expression) {
 			if(expression instanceof QualifiedName){
 				//could be a type expression or a field access
@@ -452,7 +469,9 @@ public class CleanImportsTransform implements Transform {
         }
 
 		private void collectFullName(String fullName) {
-			collectReplacement(new Replacement(stripGenerics(fullName)));
+			if(fullName.indexOf('.') != -1){//ignore primitives
+				collectReplacement(new Replacement(stripGenerics(fullName)));
+			}
 		}
 		
 		private static String stripGenerics(String fullName) {
@@ -510,18 +529,34 @@ public class CleanImportsTransform implements Transform {
         }
 
 		@Override
+        public boolean visit(ArrayType node) {
+        	if(node.getAST().apiLevel() < AST.JLS8){
+        		Type newType = newShortTypeOrNull(node.getComponentType());
+    			if(newType != null){
+    				node.setComponentType(newType);
+    			}
+        	} else {
+        		Type newType = newShortTypeOrNull(node.getElementType());
+    			if(newType != null){
+    				node.setElementType(newType);
+    			}
+        	}
+        	return super.visit(node);
+        }
+        
+		
+		@Override
 		public boolean visit(FieldAccess node) {
 			Expression newExpression = newShortExpessionOrNull(node.getExpression());
 			if(newExpression != null){
 				node.setExpression(newExpression);
 			}
-			// TODO Auto-generated method stub
 			return super.visit(node);
 		}
 		
 		@Override
 		public boolean visit(TypeLiteral node) {
-			Type newType = newShortTypeOrNull(node);
+			Type newType = newShortTypeOrNull(node.getType());
 			if(newType != null){
 				node.setType(newType);
 			}
@@ -607,7 +642,7 @@ public class CleanImportsTransform implements Transform {
 				}
 			} else if (expression instanceof TypeLiteral){
 				TypeLiteral tl = (TypeLiteral)expression;
-				Type newType = newShortTypeOrNull(tl);
+				Type newType = newShortTypeOrNull(tl.getType());
 				if(newType != null){
 					tl.setType(newType);
 				}
@@ -620,11 +655,11 @@ public class CleanImportsTransform implements Transform {
 			return replacement;
 		}
 		
-		private Type newShortTypeOrNull(TypeLiteral tl){
-			String fullName = NameUtil.resolveQualifiedNameOrNull(tl.getType());
+		private Type newShortTypeOrNull(Type type){
+			String fullName = NameUtil.resolveQualifiedNameOrNull(type);
 			Replacement replace = getReplacementOrNull(fullName);
 			if(replace != null){
-				AST ast = tl.getAST();
+				AST ast = type.getAST();
 				return ast.newSimpleType(ast.newName(replace.shortName));	
 			}
 			return null;

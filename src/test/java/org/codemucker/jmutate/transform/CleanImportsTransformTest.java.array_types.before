@@ -1,0 +1,25 @@
+package com.mycompany; 
+
+public class Bean {
+	
+	private java.lang.String[] myField = org.codemucker.jmutate.transform.TestFieldNameBean.FOO;
+	private byte[] myField2;
+	private com.acme.FooBar[] myField3;
+	
+	public java.lang.String[] getMyField() {
+		return myField;
+	}
+
+	public void setMyField(java.lang.String[] myField) {
+		this.myField = myField;
+	}	
+	
+	public byte[] getMyField2() {
+		return myField2;
+	}
+	
+	
+	public com.acme.FooBar[] getMyField3() {
+		return myField3;
+	}
+}

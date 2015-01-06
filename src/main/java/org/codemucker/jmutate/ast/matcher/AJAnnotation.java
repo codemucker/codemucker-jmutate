@@ -52,9 +52,11 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
                         }
                     }
                 } catch (ClassNotFoundException e) {
-                    System.out.println("couldn't load annotation " + fullCompiledName + ",ignoring");
-                    e.printStackTrace();
-                    diag.mismatched("couldn't load annotation " + fullCompiledName + ",ignoring");
+                	
+//                    System.out.println("couldn't load annotation " + fullCompiledName + " for " + found.getJCompilationUnit().getResource().getFullPath() + ",ignoring");
+//                    e.printStackTrace();
+//                    
+                    diag.mismatched("couldn't load annotation " + fullCompiledName + " for " + found.getJCompilationUnit().getResource().getFullPath() + ",ignoring");
                 }
                 cachedClassNameToMatch.put(fullCompiledName, false);
                 return false;

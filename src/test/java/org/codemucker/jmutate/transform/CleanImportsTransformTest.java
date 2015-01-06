@@ -47,6 +47,11 @@ public class CleanImportsTransformTest {
 	}
 	
 	@Test
+	public void array_types(){
+		testTransform("array_types");
+	}
+	
+	@Test
 	public void ignore_if_local_types_clash(){
 		testTransform("ignore_if_local_types_clash");
 	}

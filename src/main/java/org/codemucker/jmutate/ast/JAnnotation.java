@@ -6,9 +6,11 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
@@ -104,6 +106,14 @@ public class JAnnotation implements AstNodeProvider<Annotation>{
             
         }
 	    return null;
+	}
+
+	public JCompilationUnit getJCompilationUnit(){
+		return JCompilationUnit.from(getCompilationUnit());
+	}
+	
+	public CompilationUnit getCompilationUnit(){
+		return JCompilationUnit.findCompilationUnit(annotation);
 	}
 
     @Override

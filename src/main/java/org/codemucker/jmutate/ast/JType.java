@@ -404,14 +404,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 	
 	public CompilationUnit getCompilationUnit(){
-		ASTNode parent = typeNode;
-		while( parent != null){
-			if( parent instanceof CompilationUnit){
-				return (CompilationUnit)parent;
-			}
-			parent = parent.getParent();			
-		}
-		throw new JMutateException("Couldn't find compilation unit. Unexpected");
+		return JCompilationUnit.findCompilationUnit(typeNode);
 	}
 
 	/**
