@@ -51,6 +51,24 @@ public class NameUtilTest {
 		assertEquals(expect, NameUtil.resolveQualifiedName(field.getType()));
 	}
 	
+	@Test
+	public void resolveQualifiedName_handleStarGenericType(){
+		SourceTemplate t = ctxt.newSourceTemplate();
+		t.var("pkg", NameUtilTest.class.getPackage().getName());
+		t.var("declaringClass", NameUtilTest.class.getName());
+		t.pl("package ${pkg};");
+		t.pl("import java.util.*;");
+		t.pl("import ${declaringClass}.*;");
+		
+		t.pl("class MyClass<TData> {");
+		t.pl("public TData myField;");
+		t.pl("}");
+		
+		JField field = t.asResolvedSourceFileNamed("${pkg}.MyClass").getMainType().findFields().getFirst();
+		String expect = "TData";
+		assertEquals(expect, NameUtil.resolveQualifiedName(field.getType()));
+	}
+	
 	/**
 	 * Bug resolving the correct fqdn for a type declared in a compilation unit where there were both a class in the same
 	 * package which was also referenced in imports, and the compilation unit contained a class with the same name. This caused

@@ -169,9 +169,11 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 						.pl("@java.lang.Override")
 						.pl("public boolean equals(final Object obj){")
 						.pl("if (this == obj) return true;")
-						.pl("if (!super.equals(obj) || getClass() != obj.getClass()) return false;")
-						.pl("${b.name} other = (${b.name}) obj;");
-			
+						.pl("if (!super.equals(obj) || getClass() != obj.getClass()) return false;");
+				
+				if(!model.properties.isEmpty()){
+					equals.pl("${b.name} other = (${b.name}) obj;");
+				}
 			
 				for (PropertyModel property : model.properties.values()) {
 					SourceTemplate  t = equals
@@ -199,16 +201,19 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 			{
 				int startingPrime = pickStartingPrimeForClass(model.pojoTypeFull);
 				SourceTemplate hashcode = baseTemplate
-						.child()
-						.var("b.name", model.pojoTypeSimple)
-						.var("prime", startingPrime)
-						.pl("@java.lang.Override")
-						.pl("public int hashCode(){")
-						.pl("final int prime = ${prime};")
-						.pl("int result = super.hashCode();");
+					.child()
+					.var("b.name", model.pojoTypeSimple)
+					.var("prime", startingPrime)
+					.pl("@java.lang.Override")
+					.pl("public int hashCode(){");
+					
+				if(!model.properties.isEmpty()){
+					hashcode.pl("final int prime = ${prime};");
+				}
+				hashcode.pl("int result = super.hashCode();");
 				
 				for (PropertyModel property : model.properties.values()) {
-					SourceTemplate  t = hashcode
+					SourceTemplate t = hashcode
 						.child()
 						.var("p.name",property.propertyName);
 					if(property.isPrimitive && !property.isString){
