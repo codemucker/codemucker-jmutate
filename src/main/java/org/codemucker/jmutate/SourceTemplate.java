@@ -186,6 +186,10 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		return fieldNode;
 	}
 	
+	public JMethod asConstructorSnippet(){
+		return JMethod.from(asConstructorNode(false));
+	}
+	
 	/**
 	 * Parse the current template as a constructor checking to ensure this is a syntactically valid constructor.
 	 * @return
@@ -193,6 +197,7 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 	public MethodDeclaration asConstructorNodeSnippet(){
 		return asConstructorNode(false);
 	}
+	
 	
 	public MethodDeclaration asResolvedConstructorNode(){
 		return asConstructorNode(true);

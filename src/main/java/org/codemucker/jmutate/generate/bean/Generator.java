@@ -102,6 +102,13 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 		SourceTemplate baseTemplate = ctxt.newSourceTemplate();
 		boolean markGenerated = model.markGenerated;
 		
+		if(model.generateNoArgCtor){
+			JMethod ctor = baseTemplate
+				.child()
+				.pl("public " + model.pojoTypeSimple + "(){}")
+				.asConstructorSnippet();
+			addMethod(bean, ctor.getAstNode(), markGenerated);
+		}
 		//static property names
 		if(model.generateStaticPropertyNameFields){
 			for (PropertyModel property : model.properties.values()) {
@@ -120,6 +127,7 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 				field.getJModifiers().setAccess(model.fieldAccess);
 			}
 			
+			//getter
 			if(property.propertyGetterName != null){
 				SourceTemplate getter = baseTemplate
 					.child()
@@ -135,6 +143,7 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 				addMethod(bean, getter.asMethodNodeSnippet(),markGenerated);
 			}
 			
+			//setter
 			if(property.propertySetterName != null){
 				SourceTemplate setter = baseTemplate
 						.child()

@@ -24,9 +24,10 @@ public class BeanModel {
 	public final boolean generateHashCodeEquals;
 	public final boolean makeReadonly;
 	public final boolean generateStaticPropertyNameFields;
-	
-    final Map<String, PropertyModel> properties = new LinkedHashMap<>();
+	public final boolean generateNoArgCtor;
     
+    final Map<String, PropertyModel> properties = new LinkedHashMap<>();
+	
     public BeanModel(JType pojoType,GenerateBean options) {
     	this.pojoTypeSimple = pojoType.getSimpleName();
     	this.pojoTypeFull = pojoType.getFullName();
@@ -36,7 +37,7 @@ public class BeanModel {
     	this.generateHashCodeEquals = options.generateHashCodeAndEqualsMethod();
     	this.makeReadonly = options.readonlyProperties();
     	this.generateStaticPropertyNameFields = options.generateStaticPropertyNameFields();
-    	
+    	this.generateNoArgCtor = options.generateNoArgCtor();
     }
     
 	private static JAccess toJAccess(Access access) {
