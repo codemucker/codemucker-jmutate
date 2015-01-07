@@ -13,6 +13,7 @@ import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jpattern.generate.Access;
 import org.codemucker.jpattern.generate.GeneratorOptions;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.junit.Assert;
@@ -22,7 +23,6 @@ import org.junit.Test;
 public class GeneratorRunnerTest {
 
     @Test
-    //@Ignore("need to fix to extract compiled annotation and auto detect generation annotations")
     public void smokeTest() throws Exception {
         String pkg = GeneratorRunnerTest.class.getPackage().getName();
         File generateTo =  new MavenProjectLayout().newTmpSubDir("GenRoot");
@@ -44,7 +44,7 @@ public class GeneratorRunnerTest {
         
     }
     
-    @GenerateMyStuff(foo="myfoo")
+    @GenerateMyStuff(foo="myfoo",ensureWeImportTypesWhenCompilingAnnon=Access.PRIVATE)
     public static class ICauseGeneratorToBeInvoked {
     }
     
@@ -53,6 +53,7 @@ public class GeneratorRunnerTest {
     public static @interface GenerateMyStuff {
         String foo();
         String bar() default "someDefault";
+        Access ensureWeImportTypesWhenCompilingAnnon() default Access.PUBLIC;
     }
     
     public static class MyCodeGenerator extends AbstractCodeGenerator<GenerateMyStuff> {

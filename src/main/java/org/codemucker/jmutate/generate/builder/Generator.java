@@ -104,6 +104,7 @@ public class Generator extends AbstractCodeGenerator<GenerateBuilder> {
 			if(builder == null){
 				mainType.asMutator(ctxt).addType("public static class " + model.builderTypeSimple + " {}");
 				builder = mainType.getChildTypeWithName(model.builderTypeSimple);				
+				genInfo.addGeneratedMarkers(builder.asAbstractTypeDecl());
 			}
 		}
 		

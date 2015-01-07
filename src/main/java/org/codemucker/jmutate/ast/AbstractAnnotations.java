@@ -18,7 +18,7 @@ public abstract class AbstractAnnotations implements Annotations {
 
     private static final Matcher<JAnnotation> MATCH_ANY = Logical.<JAnnotation> any();
 
-    protected abstract ASTNode getAstNode();
+    public abstract ASTNode getAstNode();
 
     protected abstract List<IExtendedModifier> getModifiers();
 

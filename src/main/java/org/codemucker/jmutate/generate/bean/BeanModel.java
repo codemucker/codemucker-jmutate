@@ -25,7 +25,8 @@ public class BeanModel {
 	public final boolean makeReadonly;
 	public final boolean generateStaticPropertyNameFields;
 	public final boolean generateNoArgCtor;
-    
+	public final boolean generateToString;
+	
     final Map<String, PropertyModel> properties = new LinkedHashMap<>();
 	
     public BeanModel(JType pojoType,GenerateBean options) {
@@ -35,6 +36,7 @@ public class BeanModel {
     	this.markGenerated = options.markGenerated();
     	this.fieldAccess = toJAccess(options.fieldAccess());
     	this.generateHashCodeEquals = options.generateHashCodeAndEqualsMethod();
+    	this.generateToString = options.generateToString();
     	this.makeReadonly = options.readonlyProperties();
     	this.generateStaticPropertyNameFields = options.generateStaticPropertyNameFields();
     	this.generateNoArgCtor = options.generateNoArgCtor();

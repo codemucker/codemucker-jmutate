@@ -5,8 +5,9 @@ import java.util.List;
 
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.Matcher;
+import org.eclipse.jdt.core.dom.ASTNode;
 
-public interface Annotations {
+public interface Annotations extends AstNodeProvider<ASTNode> {
 
     public <A extends Annotation> boolean contains(Class<A> annotationClass);
 

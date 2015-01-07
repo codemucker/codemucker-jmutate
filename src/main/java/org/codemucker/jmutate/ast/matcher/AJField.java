@@ -112,6 +112,16 @@ public class AJField extends ObjectMatcher<JField>{
         return this;
     }
 
+    public AJField isPublic(){
+		access(JAccess.PUBLIC);
+		return this;
+	}
+    
+    public AJField isPrivate(){
+		access(JAccess.PRIVATE);
+		return this;
+	}
+    
 	public AJField access(final JAccess access){
 		addMatcher(new AbstractNotNullMatcher<JField>() {
 			@Override
@@ -124,6 +134,26 @@ public class AJField extends ObjectMatcher<JField>{
 			    desc.text("access " + access.name());
 			}
 		});
+		return this;
+	}
+	
+	public AJField isStatic(){
+		isStatic(true);
+		return this;
+	}
+	
+	public AJField isStatic(boolean b){
+		modifiers(AJModifier.that().isStatic(b));
+		return this;
+	}
+	
+	public AJField isFinal(){
+		isFinal(true);
+		return this;
+	}
+	
+	public AJField isFinal(boolean b){
+		modifiers(AJModifier.that().isFinal(b));
 		return this;
 	}
 	

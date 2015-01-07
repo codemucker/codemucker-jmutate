@@ -29,7 +29,7 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 
 	private final AbstractAnnotations annotable = new AbstractAnnotations(){
         @Override
-        protected ASTNode getAstNode() {
+        public ASTNode getAstNode() {
             return fieldNode;
         }
 
@@ -68,7 +68,27 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 	public boolean hasName(final String name){
 		return getNames().contains(name);
 	}
+	
+	public boolean isStatic(){
+		return isStatic(true);
+	}
 
+	public boolean isStatic(boolean b){
+		return getJModifiers().isStatic(b);
+	}
+	
+	public boolean isFinal(){
+		return isFinal(true);
+	}
+
+	public boolean isFinal(boolean b){
+		return getJModifiers().isFinal(b);
+	}
+	
+	public boolean isTransient(boolean b){
+		return getJModifiers().isTransient(b);
+	}
+	
 	public List<SingleJField> asSingleFields(){
 		final List<SingleJField> singles = newArrayList();
 		final BaseASTVisitor visitor = new BaseASTVisitor(){

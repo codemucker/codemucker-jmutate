@@ -1,7 +1,9 @@
 package org.codemucker.jmutate.generate;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -12,6 +14,7 @@ import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.JMutateAppInfo;
 import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.Annotations;
 import org.codemucker.jmutate.ast.JAnnotation;
@@ -20,21 +23,29 @@ import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
+import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
+import org.codemucker.jmutate.util.MutateUtil;
+import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.IsGenerated;
 import org.codemucker.lang.annotation.NotThreadSafe;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.StringLiteral;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 @NotThreadSafe
 public class CodeGenMetaGenerator {
@@ -45,10 +56,12 @@ public class CodeGenMetaGenerator {
     
     private static final Logger log = LogManager.getLogger(CodeGenMetaGenerator.class);
 
+    private static final String PROP_BY = "by";//on the IsGenerated class
 	private final JMutateContext ctxt;
 	private final Class<? extends CodeGenerator<?>> generator;
 	private boolean exists;
 	private final String constantField;
+	private final Map<String,Boolean> cachedFieldValueMatchResults = new HashMap<>();
 	
 	public CodeGenMetaGenerator(JMutateContext ctxt,Class<? extends CodeGenerator<?>> generator){
 		this.ctxt = ctxt;
@@ -86,34 +99,97 @@ public class CodeGenMetaGenerator {
 	
 	public boolean isManagedByThis(Annotations annotations){
 		JAnnotation anon = annotations.find(AJAnnotation.with().fullName(IsGenerated.class)).getFirstOrNull();
-		
 		if(anon != null){
-			String generator = anon.getValueForAttribute("by", null);
-			//String hash = anon.getValueForAttribute("sha1", null);
-			
-			if(generator != null && ( generator.equalsIgnoreCase(getFullConstantFieldPath()) || generator.contains(this.generator.getName()))){
-				return true;
+			Expression attributeExp = anon.getExpressionForAttributeOrNull(PROP_BY);
+			if(attributeExp instanceof StringLiteral){
+				String generator = ((StringLiteral)attributeExp).getLiteralValue();
+				return isGeneratorMatch(generator);
+			} else if(attributeExp instanceof QualifiedName){ //lets see if the referenced generator points to a static field we can read the value of
+				QualifiedName qn = (QualifiedName)attributeExp;
+				String fullName = qn.getFullyQualifiedName();
+				
+				Boolean match = cachedFieldValueMatchResults.get(fullName); 
+				if(match != null){
+					return match;
+				}
+				String fieldValue = resolveFieldValue(annotations, qn);
+				match = isGeneratorMatch(fieldValue);
+				cachedFieldValueMatchResults.put(fullName, match);
+				return match;
+			} else if(attributeExp instanceof FieldAccess){ //lets see if the referenced generator points to a static field we can read the value of
+				FieldAccess fa = (FieldAccess)attributeExp;
+				Expression exp = fa.getExpression();
+				if(exp instanceof Name){
+					Name name = (Name)exp;
+					String className = NameUtil.resolveQualifiedName(name);
+					String fieldName  = fa.getName().toString();
+					String fullName = className + "." + fieldName;
+					Boolean match = cachedFieldValueMatchResults.get(fullName); 
+					if(match != null){
+						return match;
+					}
+					String fieldValue = resolveFieldValue(annotations, className, fieldName);
+					match = isGeneratorMatch(fieldValue);
+					cachedFieldValueMatchResults.put(fullName, match);
+					return match;
+				}
 			}
+			//String hash = anon.getValueForAttribute("sha1", null);
 		}
 		return false;
 	}
+
+	private String resolveFieldValue(Annotations annotations, QualifiedName qn) {
+		String className = NameUtil.resolveQualifiedName(qn.getQualifier());
+		String fieldName = qn.getName().toString();
+		return resolveFieldValue(annotations, className,fieldName);
+	}
+	
+	private String resolveFieldValue(Annotations annotations,String className, String fieldName){
+		String fieldValue = null;
+		ResourceLoader loader = MutateUtil.getResourceLoader(annotations.getAstNode());
+		if(loader.canLoadClassOrSource(className)){
+			RootResource file = loader.getResource(className.replace('.', '/') + ".java");
+			if(file.exists()){
+				//read generator field value
+				JSourceFile source = JSourceFile.fromResource(file, ctxt.getParser());
+				JField field = source.getMainType().findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();
+				if(field != null){
+					List<VariableDeclarationFragment> frags = field.getAstNode().fragments();
+					if(frags.size() == 1){
+						VariableDeclarationFragment val = frags.get(0);
+						Expression varExp = val.getInitializer();
+						if(varExp instanceof StringLiteral){
+							fieldValue = ((StringLiteral)varExp).getLiteralValue();
+						}
+					}
+				}
+			}
+		}
+		return fieldValue;
+	}
+	
+	private static void log(String msg){
+		log.debug(msg);
+		//System.out.println(CodeGenMetaGenerator.class.getName() + " : " + msg);
+	}
+
+	private boolean isGeneratorMatch(String generator) {
+		if(generator != null && (generator.equalsIgnoreCase(getFullConstantFieldPath()) || generator.contains(this.generator.getName()))){
+			return true;
+		}
+		return false;
+	}
+	
 	
     public void addGeneratedMarkers(SourceTemplate template) {
     	createClassIfNotExists();
         template.var("by", getFullConstantFieldPath());
         template.pl("@" + javax.annotation.Generated.class.getName() + "(${by})");
-        template.pl("@" + IsGenerated.class.getName() + "(by=${by})");
+        template.pl("@" + IsGenerated.class.getName() + "(" + PROP_BY + "=${by})");
     }
     
-    public void addGeneratedMarkers(FieldDeclaration field){
-    	addGeneratedMarkers(field.modifiers(),field.getAST());
-    }
-    
-    public void addGeneratedMarkers(MethodDeclaration method){
-		addGeneratedMarkers(method.modifiers(),method.getAST());
-    }
-    
-    public void addGeneratedMarkers(AbstractTypeDeclaration type){
+    public void addGeneratedMarkers(BodyDeclaration type){
 		addGeneratedMarkers(type.modifiers(),type.getAST());
     }
     
@@ -123,7 +199,7 @@ public class CodeGenMetaGenerator {
 		NormalAnnotation a = ast.newNormalAnnotation();
 		a.setTypeName(ast.newName(IsGenerated.class.getName()));
 		QualifiedName gen = ast.newQualifiedName(ast.newName(CODE_GEN_INFO_CLASS_FULLNAME), ast.newSimpleName(getConstantFieldName()));
-		addValue(a,"by",gen);
+		addValue(a,PROP_BY,gen);
 		//addValue(a,"sha1","1234");
 		modifiers.add(0,a);
     }

@@ -692,7 +692,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		
 		private final AbstractAnnotations annotable = new AbstractAnnotations() {
 	        @Override
-	        protected ASTNode getAstNode() {
+	        public ASTNode getAstNode() {
 	            return typeNode;
 	        }
 
@@ -768,7 +768,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		
         private final AbstractAnnotations annotable = new AbstractAnnotations() {
             @Override
-            protected ASTNode getAstNode() {
+            public ASTNode getAstNode() {
                 return typeNode;
             }
 

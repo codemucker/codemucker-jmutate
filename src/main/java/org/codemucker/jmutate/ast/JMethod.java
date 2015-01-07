@@ -37,7 +37,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 
     private final AbstractAnnotations annotable = new AbstractAnnotations() {
         @Override
-        protected ASTNode getAstNode() {
+        public ASTNode getAstNode() {
             return methodNode;
         }
 
@@ -186,7 +186,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 	    SingleVariableDeclaration var;
 	    
         @Override
-        protected ASTNode getAstNode() {
+        public ASTNode getAstNode() {
             return var;
         }
 

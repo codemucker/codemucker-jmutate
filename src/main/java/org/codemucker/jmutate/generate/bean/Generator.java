@@ -1,10 +1,7 @@
 package org.codemucker.jmutate.generate.bean;
 
-import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -14,14 +11,12 @@ import org.codemucker.jfind.ReflectedField;
 import org.codemucker.jfind.matcher.AField;
 import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
-import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.expression.ExpressionParser;
 import org.codemucker.jmatch.expression.StringMatcherBuilderCallback;
 import org.codemucker.jmutate.ClashStrategyResolver;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
@@ -36,10 +31,8 @@ import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.util.NameUtil;
-import org.codemucker.jpattern.generate.Access;
 import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.GenerateBean;
-import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -157,9 +150,38 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 						.pl("}");
 						
 					addMethod(bean, setter.asMethodNodeSnippet(),markGenerated);
+					
 			}
 		}
 		
+		//toString
+		if(model.generateToString){
+			StringBuilder sb = new StringBuilder();
+			if(model.properties.isEmpty()){
+				sb.append("\"").append(model.pojoTypeSimple).append(" []\";");
+					
+			} else {
+				sb.append("\"").append(model.pojoTypeSimple).append(" [");
+				boolean comma = false;
+				for (PropertyModel property : model.properties.values()) {
+					if(comma){
+						sb.append(" + \",");
+					}
+					sb.append(property.propertyName ).append("=\" + ").append(property.propertyName);
+					comma = true;
+				}
+				sb.append(" + \"]\";");
+			}
+			
+			SourceTemplate toString = baseTemplate
+				.child()
+				.pl("@java.lang.Override")
+				.pl("public String toString(){")
+				.pl("return " + sb.toString())
+				.pl("}");
+			addMethod(bean, toString.asMethodNodeSnippet(),markGenerated);
+		}
+
 		if(model.generateHashCodeEquals){
 			//equals
 			{

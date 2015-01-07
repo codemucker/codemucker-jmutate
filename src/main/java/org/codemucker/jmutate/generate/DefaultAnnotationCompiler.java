@@ -7,7 +7,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -17,12 +19,15 @@ import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.BaseASTVisitor;
+import org.codemucker.jmutate.ast.JCompilationUnit;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.ToSourceConverter;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
@@ -61,49 +66,78 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
     }
 
     @Override
-    public Annotation toCompiledAnnotation(org.eclipse.jdt.core.dom.Annotation astAnonNode) {
-        Annotation compiledAnon = (Annotation) astAnonNode.getProperty(KEY);
+    public Annotation toCompiledAnnotation(org.eclipse.jdt.core.dom.Annotation node) {
+        Annotation compiledAnon = (Annotation) node.getProperty(KEY);
         if (compiledAnon == null) {
-            internalCompileAnnotations(astAnonNode);
-            compiledAnon = (Annotation) astAnonNode.getProperty(KEY);
+            internalCompileAnnotations(JCompilationUnit.findCompilationUnit(node), node);
+            compiledAnon = (Annotation) node.getProperty(KEY);
         }
         return compiledAnon;
     }
 
     @Override
-    public void compileAnnotations(Iterable<org.eclipse.jdt.core.dom.Annotation> astNodes) {
-    	//split into smaller chunks to remove failing compilations??
-    	List<org.eclipse.jdt.core.dom.Annotation> copy = Lists.newArrayList(astNodes);
-    	while(!copy.isEmpty()){
-    		List<org.eclipse.jdt.core.dom.Annotation> chunk = new ArrayList<>(10);
-    		for(int i = 0; !copy.isEmpty() && i < 10;i++){
-    			chunk.add(copy.remove(copy.size() -1));
+    public void compileAnnotations(Iterable<org.eclipse.jdt.core.dom.Annotation> nodes) {
+    	//clump by compilation unit
+    	Map<CompilationUnit, List<org.eclipse.jdt.core.dom.Annotation>> byCompilationUnit = new HashMap<>();
+    	
+    	for(org.eclipse.jdt.core.dom.Annotation a:nodes){
+    		CompilationUnit cu = JCompilationUnit.findCompilationUnit(a);
+    		List<org.eclipse.jdt.core.dom.Annotation> list = byCompilationUnit.get(cu);
+    		if(list == null){
+    			list = new ArrayList<>();
+    			byCompilationUnit.put(cu, list);
     		}
-    	     internalCompileAnnotations(chunk.toArray(EMPTY));		
+    		list.add(a);
     	}
-   //     internalCompileAnnotations(Lists.newArrayList(astNodes).toArray(EMPTY));
+    	
+    	for(Map.Entry<CompilationUnit, List<org.eclipse.jdt.core.dom.Annotation>> entry:byCompilationUnit.entrySet()){
+    		internalCompileAnnotations(entry.getKey(), entry.getValue().toArray(EMPTY));
+    	}
+//    	
+//    	//split into smaller chunks to compile at a time else it appears annotations are not loaded
+//    	List<org.eclipse.jdt.core.dom.Annotation> list = Lists.newArrayList(astNodes);
+//    	final int maxNum = 15;
+//    	for(int start = 0; start < list.size();){
+//			int end = start + maxNum;
+//			if(end > list.size()){
+//				end = list.size();
+//			}
+//			//compile chunk
+//			org.eclipse.jdt.core.dom.Annotation[] chunk = list.subList(start, end).toArray(EMPTY);
+//			internalCompileAnnotations(chunk);
+//			start = end;
+//		}
     }
+    
     
     /**
      * Generates a new source file with all the provided annotations embedded at the correct location (type annotations on types, method annotations on methods etc)
      * and then compiles this source file. Once compiled the annotations are pulled out from the compiled class and cached in the corresponding ast node from where
      * it originally came from
      * 
-     * <p>A single source file is created with all the given annotations so we don't need to incoke the compiler multiple times</p>
+     * <p>A single source file is created with all the given annotations so we don't need to invoke the compiler multiple times</p>
      * @param nodes
      */
-    private void internalCompileAnnotations(org.eclipse.jdt.core.dom.Annotation... nodes) {
+    private void internalCompileAnnotations(CompilationUnit owningCompilationUnit, org.eclipse.jdt.core.dom.Annotation... nodes) {
         Collection<CompiledAnnotationExtractor> extractors = new ArrayList<>();
         
         SourceTemplate t = ctxt.newTempSourceTemplate();
         t.var("pkg", tmpPackageName);
         t.pl("package ${pkg};");
         
-        //add imports to ensure nested annotations also appear. TODO:clone annotation ast and convert to fully qualified names to prevent name clashes
+        //TODO:simplify all by cloning annotation ast and convert to fully qualified names to prevent name clashes
+        
+        //ensure any references to outside classes are also included
+        for(ImportDeclaration imprt:(List<ImportDeclaration>)owningCompilationUnit.imports()){
+        	t.pl(imprt.toString());
+        }
+        
+        //add imports to ensure nested annotations also appear.
         Collection<String> imports = collectImports(nodes);
         for (String imprt : imports) {
             t.pl("import " + imprt + ";");
-        }
+        }  
+        
         //ensure each time we generate a source file we don't clash with a previous invocation
         uniqueSourceCount++;
         t.pl("public class TmpCompiledAnnotations" + uniqueSourceCount +"{");

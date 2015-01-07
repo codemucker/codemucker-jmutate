@@ -2,6 +2,8 @@ package org.codemucker.jmutate.ast;
 
 import java.util.List;
 
+import javax.print.DocFlavor.STRING;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jmatch.AString;
@@ -65,33 +67,43 @@ public class JAnnotation implements AstNodeProvider<Annotation>{
 		return NameUtil.resolveQualifiedName(annotation.getTypeName());
 	}
 
-	public String getValueForAttribute(String name){
-		return getValueForAttribute(name,"");
+	public String getValueAsStringForAttribute(String name){
+		return getValueAsStringForAttribute(name,"");
 	}
 	
-	public String getValueForAttribute(String name,String defaultValue){
-		//TODO:handle nested annotations
+	public String getValueAsStringForAttribute(String name,String defaultValue){
 		String val = null;
+		Expression exp = getExpressionForAttributeOrNull(name);
+		if(exp != null){
+			val = extractExpressionValue(name,annotation,exp);
+		}
+		return val==null?defaultValue:val;
+	}
+	
+	public Expression getExpressionForAttributeOrNull(String name){
+		//TODO:handle nested annotations
+		Expression val = null;
 		if(annotation.isMarkerAnnotation()){
 			val = null;
 		}
-		if( annotation instanceof SingleMemberAnnotation){
+		if(annotation instanceof SingleMemberAnnotation){
 			if( "value".equals(name)){
-			    val = extractExpressionValue(name, annotation, ((SingleMemberAnnotation)annotation).getValue());
+			    val = ((SingleMemberAnnotation)annotation).getValue();
 			}	
 		} else if( annotation instanceof NormalAnnotation){
 			NormalAnnotation normal = (NormalAnnotation)annotation;
 			List<MemberValuePair> values = normal.values();
 			for( MemberValuePair pair:values){
 				if(name.equals(pair.getName().getIdentifier())){
-				    val = extractExpressionValue(name, annotation, pair.getValue());
+				    val = pair.getValue();
 					break;
 				}
 			}
 		}
 		
-		return val==null?defaultValue:val;
+		return val;
 	}
+	
 	
 	private String extractExpressionValue(String name, Annotation annotation, Expression exp){
 	    if(exp instanceof StringLiteral){
