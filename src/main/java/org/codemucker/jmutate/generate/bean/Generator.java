@@ -195,23 +195,22 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 				
 				if(!model.properties.isEmpty()){
 					equals.pl("${b.name} other = (${b.name}) obj;");
-				}
-			
-				for (PropertyModel property : model.properties.values()) {
-					SourceTemplate  t = equals
-						.child()
-						.var("p.name",property.propertyName);
-					
-					if(property.isPrimitive && !property.isString){
-						t.pl("if (${p.name} != other.${p.name}) return false;");
-					} else {
-						t.pl("if(${p.name} == null) {")
-						.pl("	if (other.${p.name} != null)")
-						.pl("		return false;")
-						.pl("} else if (!${p.name}.equals(other.${p.name}))")
-						.pl("	return false;");
+					for (PropertyModel property : model.properties.values()) {
+						SourceTemplate  t = equals
+							.child()
+							.var("p.name",property.propertyName);
+						
+						if(property.isPrimitive && !property.isString){
+							t.pl("if (${p.name} != other.${p.name}) return false;");
+						} else {
+							t.pl("if(${p.name} == null) {")
+							.pl("	if (other.${p.name} != null)")
+							.pl("		return false;")
+							.pl("} else if (!${p.name}.equals(other.${p.name}))")
+							.pl("	return false;");
+						}
+						equals.add(t);
 					}
-					equals.add(t);
 				}
 				equals.pl("	return true;");
 				equals.pl("}");
@@ -229,36 +228,38 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 					.pl("@java.lang.Override")
 					.pl("public int hashCode(){");
 					
-				if(!model.properties.isEmpty()){
+				if(model.properties.isEmpty()){
+					hashcode.pl("return super.hashCode();");
+				} else {
 					hashcode.pl("final int prime = ${prime};");
-				}
-				hashcode.pl("int result = super.hashCode();");
-				
-				for (PropertyModel property : model.properties.values()) {
-					SourceTemplate t = hashcode
-						.child()
-						.var("p.name",property.propertyName);
-					if(property.isPrimitive && !property.isString){
-						//from the book 'Effective Java'
-						if("boolean".equals(property.propertyType)){
-							t.pl("result = prime * result + (${p.name} ? 1:0);");
-						} else if("byte".equals(property.propertyType) || "char".equals(property.propertyType) || "int".equals(property.propertyType)){
-							t.pl("result = prime * result + ${p.name};");
-						} else if("long".equals(property.propertyType)){
-							t.pl("result = prime * result + (int) (${p.name} ^ (${p.name} >>> 32));");
-						} else if("float".equals(property.propertyType)){
-							t.pl("result = prime * result + java.lang.Float.floatToIntBits(${p.name});");
-						} else if("double".equals(property.propertyType)){
-							t.pl("result = prime * result + java.lang.Double.doubleToLongBits(${p.name});");
-						} else  {
-							t.pl("result = prime * result + ${p.name}.hashCode();");			
+					hashcode.pl("int result = super.hashCode();");
+					for (PropertyModel property : model.properties.values()) {
+						SourceTemplate t = hashcode
+							.child()
+							.var("p.name",property.propertyName);
+						if(property.isPrimitive && !property.isString){
+							//from the book 'Effective Java'
+							if("boolean".equals(property.propertyType)){
+								t.pl("result = prime * result + (${p.name} ? 1:0);");
+							} else if("byte".equals(property.propertyType) || "char".equals(property.propertyType) || "int".equals(property.propertyType)){
+								t.pl("result = prime * result + ${p.name};");
+							} else if("long".equals(property.propertyType)){
+								t.pl("result = prime * result + (int) (${p.name} ^ (${p.name} >>> 32));");
+							} else if("float".equals(property.propertyType)){
+								t.pl("result = prime * result + java.lang.Float.floatToIntBits(${p.name});");
+							} else if("double".equals(property.propertyType)){
+								t.pl("result = prime * result + java.lang.Double.doubleToLongBits(${p.name});");
+							} else  {
+								t.pl("result = prime * result + ${p.name}.hashCode();");			
+							}
+						} else {
+							t.pl("result = prime * result + ((${p.name} == null) ? 0 : ${p.name}.hashCode());");
 						}
-					} else {
-						t.pl("result = prime * result + ((${p.name} == null) ? 0 : ${p.name}.hashCode());");
+						hashcode.add(t);
 					}
-					hashcode.add(t);
+					hashcode.pl("return result;");
 				}
-				hashcode.pl("	return result;");
+				
 				hashcode.pl("}");
 				
 				addMethod(bean, hashcode.asMethodNodeSnippet(),markGenerated);
