@@ -46,9 +46,9 @@ import com.google.inject.Inject;
 /**
  * Generates per class builders
  */
-public class Generator extends AbstractCodeGenerator<GenerateBuilder> {
+public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 
-    private final Logger log = LogManager.getLogger(Generator.class);
+    private final Logger log = LogManager.getLogger(BuilderGenerator.class);
 
     static final String VOWELS_UPPER = "AEIOU";
 	
@@ -61,7 +61,7 @@ public class Generator extends AbstractCodeGenerator<GenerateBuilder> {
 	private final CodeGenMetaGenerator genInfo;
 
     @Inject
-    public Generator(JMutateContext ctxt) {
+    public BuilderGenerator(JMutateContext ctxt) {
         this.ctxt = ctxt;
         this.genInfo = new CodeGenMetaGenerator(ctxt,getClass());
     }

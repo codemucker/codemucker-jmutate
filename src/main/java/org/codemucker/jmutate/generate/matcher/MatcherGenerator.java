@@ -46,9 +46,9 @@ import com.google.inject.Inject;
 /**
  * Generates the matchers for pojos
  */
-public class Generator extends AbstractCodeGenerator<GenerateMatchers> {
+public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
 
-    private static final Logger log = LogManager.getLogger(Generator.class);
+    private static final Logger log = LogManager.getLogger(MatcherGenerator.class);
 
     static final String VOWELS_UPPER = "AEIOU";
     
@@ -76,7 +76,7 @@ public class Generator extends AbstractCodeGenerator<GenerateMatchers> {
 	}
 
     @Inject
-    public Generator(JMutateContext ctxt) {
+    public MatcherGenerator(JMutateContext ctxt) {
         this.ctxt = ctxt;
         this.genInfo = new CodeGenMetaGenerator(ctxt,getClass());
     }
@@ -124,7 +124,7 @@ public class Generator extends AbstractCodeGenerator<GenerateMatchers> {
             }
         }
         
-        log.info("found " + models.matchers.size() + " matchers to generate ");
+        log.info("found " + models.matchers.size() + " matchers to generate from source and compiled classes");
 		return models;
 	}
 

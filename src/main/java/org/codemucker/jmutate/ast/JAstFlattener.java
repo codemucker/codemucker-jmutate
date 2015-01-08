@@ -88,11 +88,21 @@ public class JAstFlattener extends ASTVisitor {
         this.buffer = sb;
     }
 
+    protected StringBuilder getBuffer(){
+    	return buffer;
+    }
+    
     @Override
     public String toString() {
         return buffer.toString();
     }
 
+    /**
+     * Convenience method to quickly convert the given node back into source form. Internally
+     * just call {@link ASTNode#accept(ASTVisitor)} using this flattener and returns {@link #getResult()}
+     * @param node
+     * @return
+     */
     public static String asString(ASTNode node) {
         org.eclipse.core.runtime.Assert.isTrue(node.getAST().apiLevel() >= AST.JLS3);
 

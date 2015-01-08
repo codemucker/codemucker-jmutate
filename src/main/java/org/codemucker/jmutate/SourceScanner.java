@@ -147,7 +147,7 @@ public class SourceScanner {
 	
 	public void visit(BaseSourceVisitor visitor) {
 		for (JSourceFile srcFile : findSources()) {
-			srcFile.visit(visitor);
+			srcFile.accept(visitor);
 		}
 	}
 	

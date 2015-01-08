@@ -127,7 +127,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		return compilationUnitNode;
 	}
 	
-	public void visit(BaseSourceVisitor visitor) {
+	public void accept(BaseSourceVisitor visitor) {
 		if (visitor.visit(this)) {
 			CompilationUnit cu = getCompilationUnitNode();
 			if (visitor.visit(cu)) {

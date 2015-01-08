@@ -44,9 +44,9 @@ import com.google.inject.Inject;
  * Generates property getters/setters for a bean, along with various bean
  * bindings if required
  */
-public class Generator extends AbstractCodeGenerator<GenerateBean> {
+public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 
-	private final Logger log = LogManager.getLogger(Generator.class);
+	private final Logger log = LogManager.getLogger(BeanGenerator.class);
 
 	private static final int[] FIRST_PRIMES = new int[]{31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367,373,379,383,389,397,401,409,419,421,431,433,439,443,449,457,461,463,467,479,487,491,499,503,509,521,523,541,547,557,563,569,571,577,587,593,599,601,607,613,617,619,631,641,643,647,653,659,661,673,677,683,691,701,709,719,727,733,739,743,751,757,761,769,773,787,797,809,811,821,823,827,829,839,853,857,859,863,877,881,883,887,907,911,919,929,937,941,947,953,967,971,977,983,991,997,1009,1013};
 	
@@ -58,13 +58,17 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 	private ClashStrategyResolver methodClashResolver;
 
 	@Inject
-	public Generator(JMutateContext ctxt) {
+	public BeanGenerator(JMutateContext ctxt) {
 		this.ctxt = ctxt;
 		this.generatorMeta = new CodeGenMetaGenerator(ctxt, getClass());
 	}
 
 	@Override
 	public void generate(JType optionsDeclaredInNode, GenerateBean options) {
+		if(optionsDeclaredInNode.isInterface()){
+			log.warn("the " + GenerateBean.class.getName() + " generation annotation on an interface is not supported");
+			return;
+		}
 		ClashStrategy methodClashDefaultStrategy = getOr(options.clashStrategy(), ClashStrategy.SKIP);
 		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
 		Matcher<String> fieldMatcher = fieldMatcher(options.fieldNames());
@@ -157,11 +161,16 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 		//toString
 		if(model.generateToString){
 			StringBuilder sb = new StringBuilder();
+			String label = model.pojoTypeSimple;
+			JType t = bean;
+			while(!t.isTopLevelClass()){
+				t = t.getParentJType();
+				label = t.getSimpleName() + "." + label;
+			}
+			sb.append("\" [");
 			if(model.properties.isEmpty()){
-				sb.append("\"").append(model.pojoTypeSimple).append(" []\";");
-					
+				sb.append("]\"");
 			} else {
-				sb.append("\"").append(model.pojoTypeSimple).append(" [");
 				boolean comma = false;
 				for (PropertyModel property : model.properties.values()) {
 					if(comma){
@@ -170,14 +179,15 @@ public class Generator extends AbstractCodeGenerator<GenerateBean> {
 					sb.append(property.propertyName ).append("=\" + ").append(property.propertyName);
 					comma = true;
 				}
-				sb.append(" + \"]\";");
+				sb.append(" + \"]\"");
 			}
 			
 			SourceTemplate toString = baseTemplate
 				.child()
+				.var("label", label)
 				.pl("@java.lang.Override")
 				.pl("public String toString(){")
-				.pl("return " + sb.toString())
+				.pl("return \"${label}@\" + System.identityHashCode(this) + " + sb.toString() + ";")
 				.pl("}");
 			addMethod(bean, toString.asMethodNodeSnippet(),markGenerated);
 		}

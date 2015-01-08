@@ -30,6 +30,7 @@ import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.IsGenerated;
+import org.codemucker.lang.ClassNameUtil;
 import org.codemucker.lang.annotation.NotThreadSafe;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -70,19 +71,19 @@ public class CodeGenMetaGenerator {
 	}
 	
 	private String extractGenName(String name) {
-		String[] parts = name.split("\\.");
-		int i = parts.length - 2;
-		if (i < 0) {
-			i = 0;
-		}
-		String genName = "";
-		for (; i < parts.length; i++) {
-			if(genName.length() > 0){
-				genName += "_";
+		String className = ClassNameUtil.extractSimpleClassNamePart(name);
+		StringBuilder sb = new StringBuilder();
+		boolean previousCharUpper = false;
+		for(int i = 0; i < className.length();i++){
+			char c = className.charAt(i);
+			boolean isUpper = Character.isUpperCase(c);
+			if(isUpper && i > 0 && !previousCharUpper){
+				sb.append("_");
 			}
-			genName += parts[i].toUpperCase();
+			sb.append(Character.toUpperCase(c));
+			previousCharUpper = isUpper;
 		}
-		return genName;
+		return sb.toString();
 	}
 
 	public boolean isManagedByThis(AbstractTypeDeclaration type){

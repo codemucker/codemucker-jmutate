@@ -29,7 +29,9 @@ public abstract class AbstractAnnotations implements Annotations {
 
     @Override
     public boolean contains(Matcher<JAnnotation> matcher) {
-        return get(matcher) != null;
+        boolean match = get(matcher) != null;
+    
+        return match;
     }
 
     @Override

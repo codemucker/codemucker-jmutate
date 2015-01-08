@@ -213,7 +213,7 @@ public class NameUtil {
 		return fqdn;
 	}
 	
-	private static String resolveQualifiedNameOrNull(Name name) {
+	public static String resolveQualifiedNameOrNull(Name name) {
 		if (name.isQualifiedName()) {
 			return compiledNameToSourceName(name.getFullyQualifiedName());
 		} else {

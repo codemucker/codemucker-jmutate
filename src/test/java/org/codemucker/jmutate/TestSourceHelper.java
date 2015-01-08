@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jfind.matcher.ARootResource;
+import org.codemucker.jmatch.AString;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
 
@@ -16,9 +17,14 @@ public class TestSourceHelper {
 	 * @return the found source file, or throw an exception if no source found
 	 */
 	public static JSourceFile findSourceForClass(Class<?> classToFindSourceFor){
+		String baseClassName = classToFindSourceFor.getName();
+		int startInner = baseClassName.indexOf('$');
+		if(startInner != -1){
+			baseClassName = baseClassName.substring(0,startInner);
+		}
 		SourceScanner finder = newAllSourcesResolvingFinder()
 			.filter(SourceFilter.with()
-				.resourceMatches(ARootResource.with().className(classToFindSourceFor)))
+				.resourceMatches(ARootResource.with().className(AString.equalTo(baseClassName))))
 			.build();
 		FindResult<JSourceFile> sources = finder.findSources();
 		

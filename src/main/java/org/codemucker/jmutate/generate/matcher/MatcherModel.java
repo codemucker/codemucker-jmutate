@@ -55,7 +55,7 @@ public class MatcherModel {
     private static String toMatcherName(String pkg,String fullPojoName){
     	String className = ClassNameUtil.extractSimpleClassNamePart(fullPojoName);
     	
-    	if (Generator.VOWELS_UPPER.indexOf(className.charAt(0)) != -1) {
+    	if (MatcherGenerator.VOWELS_UPPER.indexOf(className.charAt(0)) != -1) {
 			className = "An" + className;
 		} else {
 			className = "A" + className;

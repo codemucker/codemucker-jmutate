@@ -6,7 +6,7 @@ import org.codemucker.jpattern.generate.GenerateBean;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class CodeGenInfoTest {
+public class CodeGenMetaGeneratorTest {
 
 	private JMutateContext ctxt = DefaultMutateContext.with().defaults()
 			.build();
@@ -15,8 +15,8 @@ public class CodeGenInfoTest {
 	public void ensureFieldNameCorrrectlyGenerated() {
 		CodeGenMetaGenerator info = new CodeGenMetaGenerator(ctxt, MyCodeGenerator.class);
 
-		Assert.assertEquals("GENERATE_CODEGENINFOTEST$MYCODEGENERATOR",info.getConstantFieldName());
-		Assert.assertEquals("org.codemucker.jmutate.generate.CodeGenMeta.GENERATE_CODEGENINFOTEST$MYCODEGENERATOR",info.getFullConstantFieldPath());
+		Assert.assertEquals("CODE_GEN_META_GENERATOR_TEST$_MY_CODE_GENERATOR",info.getConstantFieldName());
+		Assert.assertEquals("org.codemucker.jmutate.generate.CodeGenMeta.CODE_GEN_META_GENERATOR_TEST$_MY_CODE_GENERATOR",info.getFullConstantFieldPath());
 	}
 
 	private static class MyCodeGenerator extends

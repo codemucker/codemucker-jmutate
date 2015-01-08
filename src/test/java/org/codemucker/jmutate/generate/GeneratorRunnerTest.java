@@ -1,67 +1,99 @@
 package org.codemucker.jmutate.generate;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.codemucker.jfind.DirectoryRoot;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
+import org.codemucker.jmatch.AString;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.Access;
-import org.codemucker.jpattern.generate.GeneratorOptions;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class GeneratorRunnerTest {
 
     @Test
-    public void smokeTest() throws Exception {
+    public void generatorInvoked() throws Exception {
         String pkg = GeneratorRunnerTest.class.getPackage().getName();
         File generateTo =  new MavenProjectLayout().newTmpSubDir("GenRoot");
         
-        Logger logger = org.apache.log4j.LogManager.getLogger(GeneratorRunner.class.getPackage().getName());
-        logger.setLevel(Level.DEBUG);
-        
+//        Logger logger = org.apache.log4j.LogManager.getLogger(GeneratorRunner.class.getPackage().getName());
+//        logger.setLevel(Level.DEBUG);
+//        
+        MyCodeGeneratorOne.nodesInvoked.clear();
         GeneratorRunner runner = GeneratorRunner.with()
                 .defaults()
                 .scanRoots(Roots.with().srcDirsOnly())
                 .scanPackages(pkg)
                 .failOnParseError(true)
+                .matchGenerator(AString.contains(MyCodeGeneratorOne.class.getSimpleName()))
                 .defaultGenerateTo(new DirectoryRoot(generateTo,RootType.GENERATED,RootContentType.SRC))
                 .build();
         
         runner.run();
         
-        Assert.assertEquals(1,MyCodeGenerator.nodesInvoked.size());
-        
+        Assert.assertEquals(1,MyCodeGeneratorOne.nodesInvoked.size());
+        Assert.assertEquals(NameUtil.compiledNameToSourceName(BeanOne.class.getName()),MyCodeGeneratorOne.nodesInvoked.get(0).getFullName());
     }
     
-    @GenerateMyStuff(foo="myfoo",ensureWeImportTypesWhenCompilingAnnon=Access.PRIVATE)
-    public static class ICauseGeneratorToBeInvoked {
+    @GenerateOne(foo="myfoo",ensureWeImportTypesWhenCompilingAnnon=Access.PRIVATE)
+    public static class BeanOne {
     }
     
-    @Retention(RetentionPolicy.RUNTIME)
-    @GeneratorOptions(defaultGenerator="org.codemucker.jmutate.generate.GeneratorRunnerTest.MyCodeGenerator")
-    public static @interface GenerateMyStuff {
-        String foo();
-        String bar() default "someDefault";
-        Access ensureWeImportTypesWhenCompilingAnnon() default Access.PUBLIC;
-    }
-    
-    public static class MyCodeGenerator extends AbstractCodeGenerator<GenerateMyStuff> {
+    public static class MyCodeGeneratorOne extends AbstractCodeGenerator<GenerateOne> {
         
         public static final List<JType> nodesInvoked = new ArrayList<>();
 
         @Override
-        protected void generate(JType applyToNode, GenerateMyStuff options) {
+        protected void generate(JType applyToNode, GenerateOne options) {
+            nodesInvoked.add(applyToNode);
+        }
+    }
+    
+    
+    @Test
+    public void generatorTemplateInvoked() throws Exception {
+        String pkg = GeneratorRunnerTest.class.getPackage().getName();
+        File generateTo =  new MavenProjectLayout().newTmpSubDir("GenRoot");
+        
+//        Logger logger = org.apache.log4j.LogManager.getLogger(GeneratorRunner.class.getPackage().getName());
+//        logger.setLevel(Level.DEBUG);
+//        
+        MyCodeGeneratorTwo.nodesInvoked.clear();
+        GeneratorRunner runner = GeneratorRunner.with()
+                .defaults()
+                .scanRoots(Roots.with().srcDirsOnly())
+                .scanPackages(pkg)
+                .failOnParseError(true)
+                .matchGenerator(AString.contains("MyCodeGeneratorTwo"))
+               // .matchAnnotations(AString.matchingExpression("(!*IsGeneratorTemplate)"))
+                .defaultGenerateTo(new DirectoryRoot(generateTo,RootType.GENERATED,RootContentType.SRC))
+                .build();
+        
+        runner.run();
+        
+        Assert.assertEquals(1,MyCodeGeneratorTwo.nodesInvoked.size());
+        Assert.assertEquals(NameUtil.compiledNameToSourceName(BeanTwo.class.getName()),MyCodeGeneratorTwo.nodesInvoked.get(0).getFullName());
+    }
+    
+    
+    @GenerateMyTemplate
+    public static class BeanTwo {
+    	
+    }
+    
+    public static class MyCodeGeneratorTwo extends AbstractCodeGenerator<GenerateTwo> {
+        
+        public static final List<JType> nodesInvoked = new ArrayList<>();
+
+        @Override
+        protected void generate(JType applyToNode, GenerateTwo options) {
             nodesInvoked.add(applyToNode);
         }
     }

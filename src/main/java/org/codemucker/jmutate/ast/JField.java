@@ -6,8 +6,10 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
@@ -60,6 +62,17 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 		this.fieldNode = fieldNode;
 	}
 
+	public AbstractTypeDeclaration getEnclosingType(){
+		ASTNode node = getAstNode();
+		while( node != null ){
+			if(node instanceof AbstractTypeDeclaration){
+				return (AbstractTypeDeclaration)node;
+			}
+			node = node.getParent();
+		}
+		throw new JMutateException("Couldn't find parent type. Unexpected");
+	}
+	
 	@Override
 	public FieldDeclaration getAstNode(){
 		return fieldNode;
