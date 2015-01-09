@@ -346,4 +346,19 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		});
 		return this;
 	}
+	
+	public AJMethod nameAndArgSignature(final Matcher<String> matcher) {
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
+			@Override
+			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+				return diag.tryMatch(this, found.getClashDetectionSignature(), matcher);
+			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("with signature:", matcher);
+            }
+		});
+		return this;
+	}
 }

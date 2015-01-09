@@ -7,9 +7,13 @@ import java.util.Map;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.Access;
 import org.codemucker.jpattern.generate.GenerateBean;
+import org.codemucker.lang.BeanNameUtil;
 import org.codemucker.lang.ClassNameUtil;
+
+import com.google.common.base.Strings;
 
 /**
  * Holds the details about an individual pojo matcher
@@ -19,27 +23,40 @@ public class BeanModel {
 	public final String pojoPkg;
 	public final String pojoTypeSimple;
 	public final String pojoTypeFull;
+	public final String pojoTypeRaw;
+	public final String pojoTypeSimpleRaw;
+	public final String pojoTypeGenericPart;
+	
 	public final boolean markGenerated;
 	public final JAccess fieldAccess;
 	public final boolean generateHashCodeEquals;
+	public final boolean generateCloneMethod;
 	public final boolean makeReadonly;
 	public final boolean generateStaticPropertyNameFields;
 	public final boolean generateNoArgCtor;
 	public final boolean generateToString;
+	public final boolean generateAddRemoveMethodsForIndexedProperties;
 	
-    final Map<String, PropertyModel> properties = new LinkedHashMap<>();
+    final Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
 	
     public BeanModel(JType pojoType,GenerateBean options) {
-    	this.pojoTypeSimple = pojoType.getSimpleName();
-    	this.pojoTypeFull = pojoType.getFullName();
+    	
+    	this.pojoTypeFull = pojoType.getFullGenericName();
+    	this.pojoTypeRaw = NameUtil.removeGenericOrArrayPart(pojoTypeFull);
+    	this.pojoTypeGenericPart= Strings.nullToEmpty(NameUtil.extractGenericPartOrNull(pojoTypeFull));
+    	this.pojoTypeSimpleRaw = pojoType.getSimpleName();
+    	this.pojoTypeSimple = pojoType.getSimpleName() + pojoTypeGenericPart;
+    	
     	this.pojoPkg = ClassNameUtil.extractPkgPartOrNull(pojoTypeFull);    
     	this.markGenerated = options.markGenerated();
     	this.fieldAccess = toJAccess(options.fieldAccess());
     	this.generateHashCodeEquals = options.generateHashCodeAndEqualsMethod();
+    	this.generateAddRemoveMethodsForIndexedProperties = options.generateAddRemoveMethodsForIndexProperties();
     	this.generateToString = options.generateToString();
     	this.makeReadonly = options.readonlyProperties();
     	this.generateStaticPropertyNameFields = options.generateStaticPropertyNameFields();
     	this.generateNoArgCtor = options.generateNoArgCtor();
+    	this.generateCloneMethod = options.generateCloneMethod();
     }
     
 	private static JAccess toJAccess(Access access) {
@@ -57,7 +74,7 @@ public class BeanModel {
 		}
 	}
 
-    void addField(PropertyModel field){
+    void addField(BeanPropertyModel field){
         if (hasNamedField(field.propertyName)) {
             throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, pojoTypeFull);
         }
@@ -68,11 +85,11 @@ public class BeanModel {
         return properties.containsKey(name);
     }
     
-    PropertyModel getNamedField(String name){
+    BeanPropertyModel getNamedField(String name){
         return properties.get(name);
     }
     
-    Collection<PropertyModel> getFields(){
+    Collection<BeanPropertyModel> getFields(){
         return properties.values();
     }
 }

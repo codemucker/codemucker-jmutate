@@ -125,6 +125,9 @@ public class DefaultMutateContext implements JMutateContext {
 
 	@Override
 	public JSourceFile getOrLoadSource(RootResource resource) {
+		if(resource == null){
+			return null;
+		}
 		ResourceTracker tracker = getOrCreateTracker(resource);
 		JSourceFile source = tracker.getSource(resource);
 		if(source == null){

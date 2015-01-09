@@ -64,13 +64,25 @@ public class NameUtil {
 			.put("long", "java.lang.Long")
 			.build();
 
-    public static String removeGenericPart(String shortOrFullName){
+    public static String removeGenericOrArrayPart(String shortOrFullName){
 		int i = shortOrFullName.indexOf('<');
+		if(i == -1){
+			i = shortOrFullName.indexOf('[');	
+		}
 		if( i != -1){
 			shortOrFullName = shortOrFullName.substring(0,i);
 		}
 		return shortOrFullName;
 	}
+    
+    public static String extractGenericPartOrNull(String shortOrFullName){
+		int i = shortOrFullName.indexOf('<');
+		if( i != -1){
+			return shortOrFullName.substring(i);
+		}
+		return null;
+	}
+    
 	/**
 	 * @see {link {@link #resolveQualifiedName(Type, StringBuilder)}. This just returns this as a string
 	 * @param t

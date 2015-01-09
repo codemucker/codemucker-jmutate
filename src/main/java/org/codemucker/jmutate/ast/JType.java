@@ -13,10 +13,13 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import javax.print.DocFlavor.STRING;
+
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.PredicateToFindFilterAdapter;
 import org.codemucker.jfind.RootResource;
+import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateContext;
@@ -96,6 +99,31 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		return new AnonynousClassJType(node);
 	}
 
+	/**
+	 * Find the source for the given type. Handles innder classes too
+	 * @param fullName the compiled class name
+	 * @param ctxt
+	 * @return
+	 */
+	public static JType fromClassNameOrNull(String fullName,JMutateContext ctxt){
+		//TODO:move this into a central indexer where it can cache these results
+		int inner = fullName.indexOf('$');
+		String sourcePath;
+		if(inner !=-1){
+			sourcePath = fullName.substring(0,inner);
+		} else {
+			sourcePath = fullName;
+		}
+		sourcePath = sourcePath.replace('.', '/') + ".java";
+		
+		RootResource resource = ctxt.getResourceLoader().getResource(sourcePath);
+		JSourceFile source = ctxt.getOrLoadSource(resource);
+		if( source != null){
+			source.getMainType().findTypesMatching(AJType.with().fullName(AString.equalTo(NameUtil.compiledNameToSourceName(fullName)))).getFirstOrNull();
+		}
+		return null;
+	}
+	
 	public static boolean is(ASTNode node){
 	    return node instanceof AbstractTypeDeclaration || node instanceof AnonymousClassDeclaration || node instanceof AnnotationTypeDeclaration;
 	}
@@ -566,6 +594,32 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		return null;
 	}
 	
+	/**
+	 * Return the full name along with the generic parts (if any)
+	 * 
+	 * 
+	 * @return
+	 */
+	public String getFullGenericName(){
+		List<TypeParameter> types = this.findGenericTypes().toList();
+		if(!types.isEmpty()){
+			StringBuilder sb = new StringBuilder(getFullName());
+			sb.append("<");
+			boolean comma = false;
+			for(TypeParameter t :types){
+				if(comma){
+					sb.append(",");
+				}
+				sb.append(NameUtil.resolveQualifiedNameElseShort(t.getName()));
+				comma=true;
+			}
+			sb.append(">");
+			return sb.toString();
+		} else {
+			return getFullName();
+		}
+	}
+	
 	public boolean isSubClassOf(Class<?> superClass) {
 		String qualifiedName = NameUtil.compiledNameToSourceName(superClass.getName());
 		return isSubClassOf(superClass, qualifiedName);
@@ -576,7 +630,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 	
 	public boolean isSubClassOf(Class<?> superClass,String genericSuperClassName) {
-		String rawSuperClassName = NameUtil.removeGenericPart(genericSuperClassName);
+		String rawSuperClassName = NameUtil.removeGenericOrArrayPart(genericSuperClassName);
 		FindResult<JType> allTypesInCu = getJCompilationUnit().findAllTypes();
 		//TODO:this can be done better. Really need to look up on each type
 		//and keep rack what has been tested already
@@ -626,7 +680,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		for (Type type : extendTypes) {
 			if(!type.isWildcardType()){
 				String fqn = NameUtil.resolveQualifiedName(type);
-				String rawFqn = NameUtil.removeGenericPart(fqn);
+				String rawFqn = NameUtil.removeGenericOrArrayPart(fqn);
 				
 				if(rawFqn.equals(rawParentName)){
 					return true;

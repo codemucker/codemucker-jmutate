@@ -167,7 +167,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
 					.child()
 					.var("p.name", property.propertyName)
 					.var("p.type", property.propertyTypeAsObject)
-					.var("p.type_raw", NameUtil.removeGenericPart(property.propertyTypeAsObject))
+					.var("p.type_raw", NameUtil.removeGenericOrArrayPart(property.propertyTypeAsObject))
 					.var("matcher", equalMatcherSnippet)
 					
 					.pl("public ${selfType} ${p.name}(final org.codemucker.jmatch.Matcher<? super ${p.type}> matcher){")

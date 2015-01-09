@@ -97,21 +97,25 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		JSourceFile source = optionsDeclaredInNode.getSource();
 		JType mainType = source.getMainType();
 		JType builder;
-		if(mainType.getSimpleName().equals(model.builderTypeSimple)){
+		if(mainType.getSimpleName().equals(model.builderTypeSimpleRaw)){
 			builder = mainType;
 		}else{
-			builder = mainType.getChildTypeWithNameOrNull(model.builderTypeSimple);
+			builder = mainType.getChildTypeWithNameOrNull(model.builderTypeSimpleRaw);
 			if(builder == null){
 				mainType.asMutator(ctxt).addType("public static class " + model.builderTypeSimple + " {}");
-				builder = mainType.getChildTypeWithName(model.builderTypeSimple);				
+				builder = mainType.getChildTypeWithName(model.builderTypeSimpleRaw);				
 				genInfo.addGeneratedMarkers(builder.asAbstractTypeDecl());
 			}
 		}
 		
-		SourceTemplate baseTemplate = ctxt.newSourceTemplate().var("selfType", model.builderTypeSimple);
+		SourceTemplate baseTemplate = ctxt.newSourceTemplate()
+				.var("selfType", model.builderTypeSimple)
+				.var("genericPart", model.pojoTypeGenericPart);
 		//factory method
-		for (String name : model.staticBuilderMethodNames) {
-			addMethod(mainType,baseTemplate.child().pl("public static ${selfType} " + name + " (){ return new ${selfType}(); }").asMethodNodeSnippet(),markGenerated);
+		if(model.generateStaticBuilderMethod){
+			for (String name : model.staticBuilderMethodNames) {
+				addMethod(mainType,baseTemplate.child().pl("public static ${genericPart} ${selfType} " + name + " (){ return new ${selfType}(); }").asMethodNodeSnippet(),markGenerated);
+			}
 		}
 		//TODO:builder ctor
 		//TODO:builder clone/from method
@@ -132,7 +136,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				.child()
 				.var("p.name", property.propertyName)
 				.var("p.type", property.propertyTypeAsObject)
-				.var("p.type_raw", NameUtil.removeGenericPart(property.propertyTypeAsObject))
+				.var("p.type_raw", NameUtil.removeGenericOrArrayPart(property.propertyTypeAsObject))
 				
 				.pl("public ${selfType} ${p.name}(final ${p.type} val){")
 				.pl("		this.${p.name} = val;")
@@ -142,32 +146,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			addMethod(builder, setterMethod.asMethodNodeSnippet(),markGenerated);
 		}
 		
-		//bean all arg ctor
-		{
-			SourceTemplate beanCtor = baseTemplate
-					.child()
-					.var("b.name", model.pojoTypeSimple)
-					.pl("private ${b.name} (");
-			
-			boolean comma = false;
-			//args
-			for (PropertyModel property : model.properties.values()) {
-				if(comma){
-					beanCtor.p(",");
-				}
-				beanCtor.p(property.propertyType + " " + property.propertyName);
-				comma = true;
-			}
-			
-			beanCtor.pl("){");
-			//field assignments
-			for (PropertyModel property : model.properties.values()) {
-				beanCtor.pl("this." + property.propertyName + "=" + property.propertyName + ";");
-				comma = true;
-			}
-			beanCtor.pl("}");
-			addMethod(mainType, beanCtor.asConstructorNodeSnippet(),markGenerated);
-		}
+		genrateAllArgCtor(mainType, model, baseTemplate, markGenerated);
 		//build method
 		{
 			SourceTemplate buildMethod = baseTemplate
@@ -192,6 +171,36 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		}
 		
 		writeToDiskIfChanged(source);
+	}
+
+	private void genrateAllArgCtor(JType mainType, BuilderModel model,
+			SourceTemplate baseTemplate, boolean markGenerated) {
+		//bean all arg ctor
+		{
+			SourceTemplate beanCtor = baseTemplate
+					.child()
+					.var("b.name", model.pojoTypeSimpleRaw)
+					.pl("private ${b.name} (");
+			
+			boolean comma = false;
+			//args
+			for (PropertyModel property : model.properties.values()) {
+				if(comma){
+					beanCtor.p(",");
+				}
+				beanCtor.p(property.propertyType + " " + property.propertyName);
+				comma = true;
+			}
+			
+			beanCtor.pl("){");
+			//field assignments
+			for (PropertyModel property : model.properties.values()) {
+				beanCtor.pl("this." + property.propertyName + "=" + property.propertyName + ";");
+				comma = true;
+			}
+			beanCtor.pl("}");
+			addMethod(mainType, beanCtor.asConstructorNodeSnippet(),markGenerated);
+		}
 	}
 
 	private void addField(JType type, FieldDeclaration f, boolean markGenerated) {
@@ -228,7 +237,6 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
                 log("ignoring field:" + f.getName());
                 continue;
             }
-            PropertyModel property = new PropertyModel(model, f.getName(), f.getGenericType().getTypeName());
 
             String getterName = BeanNameUtil.toGetterName(field.getName(), field.getType());
             String getter = getterName + "()";
@@ -239,7 +247,8 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
                 }
                 getter = field.getName();// direct field access
             }
-            property.propertyGetter = getter;
+            //property.propertyGetter = getter;
+            PropertyModel property = new PropertyModel(model, f.getName(), f.getGenericType().getTypeName());
             
             model.addField(property);
         }
@@ -254,7 +263,6 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
                 log("ignoring field:" + field.getName());
                 continue;
             }
-            PropertyModel property = new PropertyModel(model, field.getName(), field.getFullTypeName());
             String getterName = BeanNameUtil.toGetterName(field.getName(), NameUtil.isBoolean(field.getFullTypeName()));
             String getter = getterName + "()";
             if (!pojoType.hasMethodMatching(AJMethod.with().name(getterName).numArgs(0))) {
@@ -265,7 +273,9 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
                 }
                 getter = field.getName();// direct field access
             }
-            property.propertyGetter = getter;
+            //property.propertyGetter = getter;
+            PropertyModel property = new PropertyModel(model, field.getName(), field.getFullTypeName());
+            
             
             model.addField(property);
         }
