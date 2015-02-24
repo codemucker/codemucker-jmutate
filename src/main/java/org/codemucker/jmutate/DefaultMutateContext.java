@@ -21,7 +21,6 @@ import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.ToSourceConverter;
-import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
 import org.codemucker.jmutate.generate.JAnnotationCompiler;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jpattern.generate.ClashStrategy;
@@ -51,7 +50,7 @@ public class DefaultMutateContext implements JMutateContext {
     private final ProjectLayout projectLayout;
     private final ProjectOptions projectOptons;
     private final ResourceLoader resourceLoader;
-    private final PlacementStrategies strategyProvider;
+    private final PlacementStrategy placementStrategy;
 	/**
 	 * Where by default any generated code is output to
 	 */
@@ -75,7 +74,7 @@ public class DefaultMutateContext implements JMutateContext {
 		return new Builder();
 	}
 	
-	private DefaultMutateContext(ProjectLayout layout, ProjectOptions options, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategies strategyProvider, ClashStrategy defaultClashStrategy) {
+	private DefaultMutateContext(ProjectLayout layout, ProjectOptions options, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategy placementStrategy, ClashStrategy defaultClashStrategy) {
         super();
         this.projectLayout = layout;
         this.projectOptons = options;
@@ -83,7 +82,7 @@ public class DefaultMutateContext implements JMutateContext {
         this.generationRoot = generationRoot;
         this.parser = parser;
         this.markGenerated = markGenerated;
-        this.strategyProvider = strategyProvider;
+        this.placementStrategy = placementStrategy;
         this.resourceLoader = parser.getResourceLoader();
         this.defaultClashStrategy = defaultClashStrategy;
         
@@ -242,36 +241,8 @@ public class DefaultMutateContext implements JMutateContext {
 
         @Provides
         @Singleton
-        public PlacementStrategies provideDefaultStrategies() {
-            return strategyProvider;
-        }
-
-        @Provides
-        @Singleton
-        @Named(ContextNames.FIELD)
-        public PlacementStrategy provideDefaultFieldPlacement() {
-            return strategyProvider.getFieldStrategy();
-        }
-
-        @Provides
-        @Singleton
-        @Named(ContextNames.CTOR)
-        public PlacementStrategy provideDefaultCtorPlacement() {
-            return strategyProvider.getCtorStrategy();
-        }
-
-        @Provides
-        @Singleton
-        @Named(ContextNames.METHOD)
-        public PlacementStrategy provideDefaultMethodPlacement() {
-            return strategyProvider.getMethodStrategy();
-        }
-
-        @Provides
-        @Singleton
-        @Named(ContextNames.TYPE)
-        public PlacementStrategy provideDefaultTypePlacement() {
-            return strategyProvider.getTypeStrategy();
+        public PlacementStrategy providePlacementStrategy() {
+            return placementStrategy;
         }
 
         @Provides
@@ -334,8 +305,8 @@ public class DefaultMutateContext implements JMutateContext {
 		private Root generateRoot;
 		private ProjectLayout projectLayout;
 		private ProjectOptions projectOptions;
-		private PlacementStrategies placementStrategy;
-		private ClashStrategy defaultClashStrategy = ClashStrategy.ERROR;
+		private PlacementStrategy placementStrategy;
+		private ClashStrategy clashStrategy = ClashStrategy.ERROR;
 		
 		private Builder(){
 		}
@@ -350,10 +321,10 @@ public class DefaultMutateContext implements JMutateContext {
             ResourceLoader resourceLoader = getResourceLoaderOrDefault(generateTo, layout);
             JAstParser parser = getParserOrDefault(resourceLoader);
             DefaultCodeFormatterOptions formatter = getFormatterOptionsOrDefault();
-            PlacementStrategies defaultPlacementStrategy = getPlacementStrategyOrDefault();
+            PlacementStrategy placementStrategy = getPlacementStrategyOrDefault();
             ProjectOptions options = getProjectOptionsOrDefault();
             
-            return new DefaultMutateContext(layout, options, generateTo, parser, markGenerated, formatter,defaultPlacementStrategy,defaultClashStrategy);
+            return new DefaultMutateContext(layout, options, generateTo, parser, markGenerated, formatter, placementStrategy, clashStrategy);
         }
 		
         private JAstParser getParserOrDefault(ResourceLoader loader) {
@@ -408,12 +379,12 @@ public class DefaultMutateContext implements JMutateContext {
             }
 	    }
 	    
-	    private PlacementStrategies getPlacementStrategyOrDefault(){
+	    private PlacementStrategy getPlacementStrategyOrDefault(){
 	        return placementStrategy==null?newDefaultPlacementStrategy():placementStrategy;
 	    }
 	    
-	    private PlacementStrategies newDefaultPlacementStrategy(){
-            return PlacementStrategies.with().defaults().build();
+	    private PlacementStrategy newDefaultPlacementStrategy(){
+            return ConfigurablePlacementStrategy.with().defaults().build();
         }
         
 	    private ProjectLayout getProjectLayoutOrDefault(){
@@ -457,7 +428,7 @@ public class DefaultMutateContext implements JMutateContext {
         }
 
         @Optional
-        public Builder defaultPlacementStrategy(PlacementStrategies strategy) {
+        public Builder placementStrategy(ConfigurablePlacementStrategy strategy) {
             this.placementStrategy = strategy;
             return this;
         }
@@ -469,8 +440,8 @@ public class DefaultMutateContext implements JMutateContext {
         }
 
         @Optional
-		public Builder defaultClashStrategy(ClashStrategy defaultClashStrategy) {
-			this.defaultClashStrategy = defaultClashStrategy;
+		public Builder clashStrategy(ClashStrategy defaultClashStrategy) {
+			this.clashStrategy = defaultClashStrategy;
 			return this;
         }  
 	}//builder

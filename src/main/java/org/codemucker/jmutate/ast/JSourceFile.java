@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.codemucker.jfind.DefaultFindResult;
+import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
@@ -215,6 +217,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 			}
 		};
 		List<JType> found = internalFindTypesMatching(matcher);
+		
 		if (found.size() > 1) {
 			throw new JMutateException("Invalid source file, found more than one type with name '%s'", simpleName);
 		}
@@ -224,12 +227,12 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		throw new JMutateException("Could not find type with name '%s' in %s", simpleName, this);
 	}
 
-	public List<JType> findAllTypes(){
-		return internalFindTypesMatching(AJType.any());
+	public FindResult<JType> findAllTypes(){
+		return DefaultFindResult.from(internalFindTypesMatching(AJType.any()));
 	}
 	
-	public List<JType> findTypesMatching(Matcher<JType> matcher){
-		return internalFindTypesMatching(matcher);
+	public FindResult<JType> findTypesMatching(Matcher<JType> matcher){
+		return DefaultFindResult.from(internalFindTypesMatching(matcher));
 	}
 	
 	private List<JType> internalFindTypesMatching(final Matcher<JType> matcher){

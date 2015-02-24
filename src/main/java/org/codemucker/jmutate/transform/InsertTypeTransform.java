@@ -63,7 +63,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<ASTNode,Ins
 	 * Used by the DI container to set the default
 	 */
 	@Inject
-    public void injectPlacementStrategy(@Named(ContextNames.TYPE) PlacementStrategy strategy) {
+    public void injectPlacementStrategy(PlacementStrategy strategy) {
 	    placementStrategy(strategy);
     }
 

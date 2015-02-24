@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkState;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
-import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jpattern.generate.ClashStrategy;
@@ -13,7 +12,6 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 public final class InsertCtorTransform extends AbstractNodeInsertTransform<MethodDeclaration,InsertCtorTransform> {
 	
@@ -72,7 +70,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Metho
 	 * Used by the DI container to set the default
 	 */
 	@Inject
-    public void injectPlacementStrategy(@Named(ContextNames.CTOR) PlacementStrategy strategy) {
+    public void injectPlacementStrategy(PlacementStrategy strategy) {
 	    placementStrategy(strategy);
     }
 

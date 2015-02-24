@@ -5,14 +5,12 @@ import static com.google.common.base.Preconditions.checkState;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
-import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
 public final class InsertFieldTransform extends AbstractNodeInsertTransform<FieldDeclaration,InsertFieldTransform>{
 
@@ -64,7 +62,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Fiel
 	 * Used by the DI container to set the default
 	 */
 	@Inject
-    public void injectPlacementStrategy(@Named(ContextNames.FIELD) PlacementStrategy strategy) {
+    public void injectPlacementStrategy(PlacementStrategy strategy) {
 	    placementStrategy(strategy);
     }
 	

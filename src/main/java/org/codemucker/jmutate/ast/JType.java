@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,6 +41,7 @@ import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.Type;
@@ -47,6 +49,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeParameter;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 /**
@@ -132,6 +135,59 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		checkNotNull("type", type);
 		this.typeNode = type;
 	}
+	
+
+	/**
+	 * Return the full name along with the generic parts (if any)
+	 * 
+	 * 
+	 * @return
+	 */
+	public String getFullGenericName(){
+		List<TypeParameter> types = this.findGenericTypes().toList();
+		if(!types.isEmpty()){
+			StringBuilder sb = new StringBuilder(getFullName());
+			sb.append("<");
+			boolean comma = false;
+			for(TypeParameter t :types){
+				if(comma){
+					sb.append(",");
+				}
+				sb.append(NameUtil.resolveQualifiedNameElseShort(t.getName()));
+				comma=true;
+			}
+			sb.append(">");
+			return sb.toString();
+		} else {
+			return getFullName();
+		}
+	}
+	
+	public String getTypeBoundsExpressionOrNull(){
+		
+		ASTNode node = getAstNode();
+		if( node instanceof TypeDeclaration){
+			TypeDeclaration t = (TypeDeclaration)node;
+			List<TypeParameter> typeParams = t.typeParameters();
+			if(!typeParams.isEmpty()){
+				StringBuilder sb = new StringBuilder();
+				JAstFlattener flattener = new JAstFlattener(sb);
+				sb.append("<");
+				boolean comma = false;
+				for(TypeParameter p:typeParams){
+					if(comma){
+						sb.append(',');
+					}
+					p.accept(flattener);
+					comma = true;
+				}
+				sb.append(">");
+				return sb.toString();
+			}
+		}
+		return null;
+	}
+	
 	
 	public abstract String getFullName();
 	//TODO:rename to 'shortName'? to avoi ambiguity with dom SimpleName?
@@ -592,32 +648,6 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 			}
 		}
 		return null;
-	}
-	
-	/**
-	 * Return the full name along with the generic parts (if any)
-	 * 
-	 * 
-	 * @return
-	 */
-	public String getFullGenericName(){
-		List<TypeParameter> types = this.findGenericTypes().toList();
-		if(!types.isEmpty()){
-			StringBuilder sb = new StringBuilder(getFullName());
-			sb.append("<");
-			boolean comma = false;
-			for(TypeParameter t :types){
-				if(comma){
-					sb.append(",");
-				}
-				sb.append(NameUtil.resolveQualifiedNameElseShort(t.getName()));
-				comma=true;
-			}
-			sb.append(">");
-			return sb.toString();
-		} else {
-			return getFullName();
-		}
 	}
 	
 	public boolean isSubClassOf(Class<?> superClass) {

@@ -8,6 +8,7 @@ import org.codemucker.jfind.matcher.ARootResource;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
+import org.codemucker.jmutate.ast.JType;
 
 public class TestSourceHelper {
 
@@ -16,6 +17,26 @@ public class TestSourceHelper {
 	 * @param classToFindSourceFor the class to find the source for
 	 * @return the found source file, or throw an exception if no source found
 	 */
+	/**
+	 * Find the source file for the given compiled class
+	 * @param classToFindSourceFor the class to find the source for
+	 * @return the found source file, or throw an exception if no source found
+	 */
+	public static JType findTypeNodeForClass(Class<?> classToFindSourceFor){
+		JSourceFile source = findSourceForClass(classToFindSourceFor);
+		
+		int startInner = classToFindSourceFor.getName().indexOf('$');
+		if(startInner == -1){
+			return source.getMainType();
+		}
+		String[] innerNames = classToFindSourceFor.getName().substring(startInner + 1).split("\\.");
+		JType type  = source.getMainType();
+		for(int i = 1; i < innerNames.length;i++){
+			type = type.getChildTypeWithName(innerNames[i]);	
+		}
+		return type;
+	}
+	
 	public static JSourceFile findSourceForClass(Class<?> classToFindSourceFor){
 		String baseClassName = classToFindSourceFor.getName();
 		int startInner = baseClassName.indexOf('$');
@@ -33,6 +54,8 @@ public class TestSourceHelper {
 		assertEquals("expected a single match",1,sources.toList().size());
 		return sources.getFirst();
 	}
+	
+	
 	/**
 	 * Look in all source locations including tests
 	 * @return

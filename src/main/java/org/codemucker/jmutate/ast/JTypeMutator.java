@@ -6,8 +6,9 @@ import java.util.List;
 
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.PlacementStrategies;
+import org.codemucker.jmutate.ConfigurablePlacementStrategy;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
@@ -75,7 +76,6 @@ public class JTypeMutator {
 		ctxt.obtain(InsertFieldTransform.class)
 			.target(jType)
 			.field(field)
-			.placementStrategy(getStrategies().getFieldStrategy())
 			.transform();
 	}
 
@@ -113,7 +113,6 @@ public class JTypeMutator {
 		ctxt.obtain(InsertCtorTransform.class)
     		.target(jType)
     		.setCtor(ctor)
-    		.placementStrategy(getStrategies().getCtorStrategy())
     		.transform();
 	}
 	
@@ -128,7 +127,6 @@ public class JTypeMutator {
 		InsertTypeTransform.newTransform()
 			.target(jType)
 			.setType(type)
-			.placementStrategy(getStrategies().getTypeStrategy())
 			.transform();
 	}
 	/**
@@ -167,7 +165,4 @@ public class JTypeMutator {
 		return ctxt.obtain(SourceTemplate.class);
 	}
 	
-	private PlacementStrategies getStrategies(){
-		return ctxt.obtain(PlacementStrategies.class);
-	}
 }

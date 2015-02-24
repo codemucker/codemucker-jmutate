@@ -17,8 +17,8 @@ package org.codemucker.jmutate.transform;
 
 import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.PlacementStrategies;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.builder.JFieldBuilder;
@@ -52,7 +52,7 @@ public class InsertFieldTransformTest {
 		InsertFieldTransform.newTransform()
 			.target(after)
 			.field(field)
-			.placementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
+			.placementStrategy(ctxt.obtain(PlacementStrategy.class))
 			.transform();
 	
 		JType expectType = ctxt.newSourceTemplate()

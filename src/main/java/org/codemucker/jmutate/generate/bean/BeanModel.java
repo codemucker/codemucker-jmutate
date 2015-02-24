@@ -7,26 +7,15 @@ import java.util.Map;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.util.NameUtil;
+import org.codemucker.jmutate.ast.TypeInfo;
 import org.codemucker.jpattern.generate.Access;
 import org.codemucker.jpattern.generate.GenerateBean;
-import org.codemucker.lang.BeanNameUtil;
-import org.codemucker.lang.ClassNameUtil;
-
-import com.google.common.base.Strings;
 
 /**
  * Holds the details about an individual pojo matcher
  */
 public class BeanModel {   
 
-	public final String pojoPkg;
-	public final String pojoTypeSimple;
-	public final String pojoTypeFull;
-	public final String pojoTypeRaw;
-	public final String pojoTypeSimpleRaw;
-	public final String pojoTypeGenericPart;
-	
 	public final boolean markGenerated;
 	public final JAccess fieldAccess;
 	public final boolean generateHashCodeEquals;
@@ -37,17 +26,12 @@ public class BeanModel {
 	public final boolean generateToString;
 	public final boolean generateAddRemoveMethodsForIndexedProperties;
 	
+	public final TypeInfo type;
     final Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
 	
     public BeanModel(JType pojoType,GenerateBean options) {
-    	
-    	this.pojoTypeFull = pojoType.getFullGenericName();
-    	this.pojoTypeRaw = NameUtil.removeGenericOrArrayPart(pojoTypeFull);
-    	this.pojoTypeGenericPart= Strings.nullToEmpty(NameUtil.extractGenericPartOrNull(pojoTypeFull));
-    	this.pojoTypeSimpleRaw = pojoType.getSimpleName();
-    	this.pojoTypeSimple = pojoType.getSimpleName() + pojoTypeGenericPart;
-    	
-    	this.pojoPkg = ClassNameUtil.extractPkgPartOrNull(pojoTypeFull);    
+    	this.type = TypeInfo.newFromFullNameAndTypeBounds(pojoType.getFullGenericName(), pojoType.getTypeBoundsExpressionOrNull());
+
     	this.markGenerated = options.markGenerated();
     	this.fieldAccess = toJAccess(options.fieldAccess());
     	this.generateHashCodeEquals = options.generateHashCodeAndEqualsMethod();
@@ -76,7 +60,7 @@ public class BeanModel {
 
     void addField(BeanPropertyModel field){
         if (hasNamedField(field.propertyName)) {
-            throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, pojoTypeFull);
+            throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, type.fullName);
         }
         properties.put(field.propertyName, field);
     }

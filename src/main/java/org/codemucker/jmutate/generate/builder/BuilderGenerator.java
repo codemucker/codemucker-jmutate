@@ -2,6 +2,7 @@ package org.codemucker.jmutate.generate.builder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.List;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -40,6 +41,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
@@ -95,38 +97,80 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		boolean markGenerated = model.markGenerated;
 		
 		JSourceFile source = optionsDeclaredInNode.getSource();
-		JType mainType = source.getMainType();
+		JType pojo = source.getMainType();
 		JType builder;
-		if(mainType.getSimpleName().equals(model.builderTypeSimpleRaw)){
-			builder = mainType;
-		}else{
-			builder = mainType.getChildTypeWithNameOrNull(model.builderTypeSimpleRaw);
+		
+		String self = "this";
+		String selfType = model.builderTypeSimple;
+		String builderTypeBounds = model.type.typeBoundsOrNull;
+		
+		boolean isAbstract = model.isPojoAbstract;
+		
+		if(isAbstract){
+			if(model.type.typeBoundsOrNull==null){
+				selfType = model.builderTypeSimpleRaw + "<TSelf>";
+				builderTypeBounds = "<TSelf extends " + model.builderTypeSimpleRaw + "<TSelf>>";		
+			} else {
+				String typeBounds = model.type.typeBoundsOrNull;
+				typeBounds = typeBounds.substring(1, typeBounds.length()-1);//remove trailing/leading '<>'
+				selfType = model.builderTypeSimpleRaw + "<TSelf," + model.type.typeBoundsNamesOrNull + ">";
+				builderTypeBounds = "<TSelf extends " + model.builderTypeSimpleRaw + "<TSelf," + model.type.typeBoundsNamesOrNull + ">," + typeBounds+ ">";
+			}
+			self = "self()";
+		}
+
+
+		log.debug("bean.name:" + model.type.fullName);
+		log.debug("bean.name.raw:" + model.type.fullNameRaw);
+		
+		log.debug("model.type.typeBoundsOrNull:" + model.type.typeBoundsOrNull);
+		log.debug("model.builderTypeSimpleRaw:" + model.builderTypeSimpleRaw);
+		log.debug("builderTypeBounds:" + builderTypeBounds);
+		
+		if(pojo.getSimpleName().equals(model.builderTypeSimpleRaw)){
+			builder = pojo;
+		} else{
+			builder = pojo.getChildTypeWithNameOrNull(model.builderTypeSimpleRaw);
 			if(builder == null){
-				mainType.asMutator(ctxt).addType("public static class " + model.builderTypeSimple + " {}");
-				builder = mainType.getChildTypeWithName(model.builderTypeSimpleRaw);				
+				SourceTemplate t = ctxt.newSourceTemplate()
+					.var("self", self)
+					.var("selfType", selfType)
+					.var("typeBounds", model.type.typeBoundsOrNull)
+					.var("type", model.builderTypeSimpleRaw + Strings.nullToEmpty(builderTypeBounds))
+					.var("modifier", (isAbstract ?"abstract":""))
+					.pl("public static ${modifier} class ${type} { }")
+				;
+				
+				pojo.asMutator(ctxt).addType(t.asResolvedTypeNodeNamed(null));
+				builder = pojo.getChildTypeWithName(model.builderTypeSimpleRaw);
 				genInfo.addGeneratedMarkers(builder.asAbstractTypeDecl());
 			}
 		}
-		
-		SourceTemplate baseTemplate = ctxt.newSourceTemplate()
-				.var("selfType", model.builderTypeSimple)
-				.var("genericPart", model.pojoTypeGenericPart);
-		//factory method
-		if(model.generateStaticBuilderMethod){
-			for (String name : model.staticBuilderMethodNames) {
-				addMethod(mainType,baseTemplate.child().pl("public static ${genericPart} ${selfType} " + name + " (){ return new ${selfType}(); }").asMethodNodeSnippet(),markGenerated);
-			}
-		}
+		//generate the with() method and aliases
+		generateStaticBuilderCreateMethods(model, pojo);
 		//TODO:builder ctor
 		//TODO:builder clone/from method
 		
 		//builder property setters
+		
+		//add the self() method
+		if(!"this".equals(self)){
+			SourceTemplate selfMethod = ctxt.newSourceTemplate()
+				.var("selfType", selfType)
+				.pl("protected ${selfType} self(){ return (${selfType})this; }");		
+			
+			addMethod(builder, selfMethod.asMethodNodeSnippet(),markGenerated);	
+		}
+		SourceTemplate baseTemplate = ctxt.newSourceTemplate()
+			.var("selfType", selfType)
+			.var("self", self);
+		
 		for (PropertyModel property : model.properties.values()) {
 			//add the field
 			SourceTemplate field = baseTemplate
 				.child()
 				.var("p.name", property.propertyName)
-				.var("p.type", property.propertyTypeAsObject)
+				.var("p.type", property.type.fullName)
 				.pl("private ${p.type} ${p.name};");
 				
 				addField(builder, field.asFieldNodeSnippet(),markGenerated);
@@ -135,28 +179,48 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			SourceTemplate setterMethod = baseTemplate
 				.child()
 				.var("p.name", property.propertyName)
-				.var("p.type", property.propertyTypeAsObject)
-				.var("p.type_raw", NameUtil.removeGenericOrArrayPart(property.propertyTypeAsObject))
+				.var("p.type", property.type.fullName)
+				.var("p.type_raw", property.type.fullNameRaw)
 				
 				.pl("public ${selfType} ${p.name}(final ${p.type} val){")
-				.pl("		this.${p.name} = val;")
-				.pl("		return this;")
+				.pl("	this.${p.name} = val;")
+				.pl("	return ${self};")
 				.pl("}");
 				
 			addMethod(builder, setterMethod.asMethodNodeSnippet(),markGenerated);
 		}
 		
-		genrateAllArgCtor(mainType, model, baseTemplate, markGenerated);
-		//build method
-		{
-			SourceTemplate buildMethod = baseTemplate
-					.child()
-					.var("b.name", model.pojoTypeSimple)
-					.var("buildName", model.buildMethodName)
-					
-					.pl("public ${b.name} ${buildName}(){")
-					.p("	return new ${b.name}(");
-				
+		generateAllArgCtor(pojo, model);
+		generateBuildMethod(builder, model);
+		
+		writeToDiskIfChanged(source);
+	}
+
+	
+	private void generateStaticBuilderCreateMethods(BuilderModel model,JType beanType) {
+		if(model.generateStaticBuilderMethod && !model.isPojoAbstract){
+			
+			SourceTemplate t = ctxt
+					.newSourceTemplate()
+					.var("selfType", model.builderTypeSimple)
+					.var("typeBounds", model.type.typeBoundsOrEmpty)
+					;
+		
+			for (String name : model.staticBuilderMethodNames) {
+				addMethod(beanType,t.child().pl("public static ${typeBounds} ${selfType} " + name + " (){ return new ${selfType}(); }").asMethodNodeSnippet(),model.markGenerated);
+			}
+		}
+	}
+
+	private void generateBuildMethod(JType builder,BuilderModel model) {
+		if(!model.isPojoAbstract){
+			SourceTemplate buildMethod = ctxt
+				.newSourceTemplate()
+				.var("b.type", model.type.simpleName)
+				.var("buildName", model.buildMethodName)	
+				.pl("public ${b.type} ${buildName}(){")
+				.p("	return new ${b.type}(");
+			
 			boolean comma = false;
 			for (PropertyModel property : model.properties.values()) {
 				if(comma){
@@ -167,19 +231,15 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			}
 			buildMethod.pl(");");
 			buildMethod.pl("}");
-			addMethod(builder, buildMethod.asMethodNodeSnippet(),markGenerated);
+			addMethod(builder, buildMethod.asMethodNodeSnippet(),model.markGenerated);
 		}
-		
-		writeToDiskIfChanged(source);
 	}
 
-	private void genrateAllArgCtor(JType mainType, BuilderModel model,
-			SourceTemplate baseTemplate, boolean markGenerated) {
-		//bean all arg ctor
-		{
-			SourceTemplate beanCtor = baseTemplate
-					.child()
-					.var("b.name", model.pojoTypeSimpleRaw)
+	private void generateAllArgCtor(JType beanType, BuilderModel model) {
+		if(!beanType.isAbstract()){
+			SourceTemplate beanCtor = ctxt
+					.newSourceTemplate()
+					.var("b.name", model.type.simpleNameRaw)
 					.pl("private ${b.name} (");
 			
 			boolean comma = false;
@@ -188,7 +248,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				if(comma){
 					beanCtor.p(",");
 				}
-				beanCtor.p(property.propertyType + " " + property.propertyName);
+				beanCtor.p(property.type.fullName + " " + property.propertyName);
 				comma = true;
 			}
 			
@@ -199,7 +259,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				comma = true;
 			}
 			beanCtor.pl("}");
-			addMethod(mainType, beanCtor.asConstructorNodeSnippet(),markGenerated);
+			addMethod(beanType, beanCtor.asConstructorNodeSnippet(),model.markGenerated);
 		}
 	}
 

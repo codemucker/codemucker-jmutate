@@ -76,7 +76,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		
 		BeanModel model = new BeanModel(optionsDeclaredInNode,options);
 		extractFields(model, optionsDeclaredInNode, fieldMatcher);
-		log.debug("found " + model.properties.size() + " bean properties for "  + model.pojoTypeRaw);
+		log.debug("found " + model.properties.size() + " bean properties for "  + model.type.fullNameRaw);
 		// TODO:enable builder creation for 3rd party compiled classes
 		generateBeanProperties(optionsDeclaredInNode, model);
 	}
@@ -121,7 +121,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		if(model.generateNoArgCtor){
 			JMethod ctor = ctxt
 				.newSourceTemplate()
-				.pl("public " + model.pojoTypeSimpleRaw + "(){}")
+				.pl("public " + model.type.simpleNameRaw + "(){}")
 				.asConstructorSnippet();
 			addMethod(bean, ctor.getAstNode(), model.markGenerated);
 		}
@@ -144,30 +144,33 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		if(model.generateCloneMethod && !bean.isAbstract()){
 			SourceTemplate clone = ctxt
 				.newSourceTemplate()
-				.var("b.type", model.pojoTypeSimple)
-				.pl("public static ${b.type} newInstanceOf(${b.type} bean){");
-			clone.pl("if(bean == null){ return null;}");	
-			clone.pl("final ${b.type} clone = new ${b.type}();");
+				.var("b.type", model.type.simpleName)
+				.var("b.genericPart", model.type.genericPartOrEmpty)
+				
+				.pl("public static ${b.genericPart} ${b.type} newInstanceOf(${b.type} bean){")
+				.pl("if(bean == null){ return null;}")
+				.pl("final ${b.type} clone = new ${b.type}();");
+			
 			for (BeanPropertyModel property : model.properties.values()) {
 				SourceTemplate t = clone
 					.child()
 					.var("p.name",property.propertyName)
-					.var("p.type",property.propertyType)
+					.var("p.type",property.type.fullName)
 					.var("p.concreteType",property.propertyConcreteType)
-					.var("p.rawType",property.propertyTypeRaw)
-					.var("p.genericPart",property.propertyTypeGenericPart)
+					.var("p.rawType",property.type.fullNameRaw)
+					.var("p.genericPart",property.type.genericPartOrEmpty)
 					
 					;
-				if(property.isPrimitive){
+				if(property.type.isPrimitive){
 					t.pl("	clone.${p.name} = bean.${p.name};");
-				} else if(property.isArray){
+				} else if(property.type.isArray){
 					t.pl("	if(bean.${p.name} == null){");
 					t.pl("		clone.${p.name} = null;");
 					t.pl("	} else {");
 					t.pl("		clone.${p.name} = new ${p.rawType}[bean.${p.name}].length;");
 					t.pl("		System.arraycopy(bean.${p.name},0,clone.${p.name},0,bean.${p.name}.length);");
 					t.pl("	}");				
-				} else if(property.isIndexed){
+				} else if(property.type.isIndexed){
 					t.pl("	clone.${p.name} = bean.${p.name} == null?null:new ${p.concreteType}${p.genericPart}(bean.${p.name});");
 				} else {
 			//		if(hasClassGotMethod(property.propertyTypeRaw, AString.matchingAntPattern("*newInstanceOf"))){
@@ -212,7 +215,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	
 	private void generateHashCode(JType bean, BeanModel model) {
 		if(model.generateHashCodeEquals && !model.properties.isEmpty()){
-			int startingPrime = pickStartingPrimeForClass(model.pojoTypeFull);
+			int startingPrime = pickStartingPrimeForClass(model.type.fullName);
 			SourceTemplate hashcode = ctxt
 				.newSourceTemplate()
 				.var("prime", startingPrime)
@@ -228,17 +231,17 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 					SourceTemplate t = hashcode
 						.child()
 						.var("p.name",property.propertyName);
-					if(property.isPrimitive && !property.isString){
+					if(property.type.isPrimitive && !property.type.isString){
 						//from the book 'Effective Java'
-						if("boolean".equals(property.propertyType)){
+						if(property.type.is("boolean")){
 							t.pl("result = prime * result + (${p.name} ? 1:0);");
-						} else if("byte".equals(property.propertyType) || "char".equals(property.propertyType) || "int".equals(property.propertyType)){
+						} else if(property.type.is("byte") || property.type.is("char") || property.type.is("int")){
 							t.pl("result = prime * result + ${p.name};");
-						} else if("long".equals(property.propertyType)){
+						} else if(property.type.is("long")){
 							t.pl("result = prime * result + (int) (${p.name} ^ (${p.name} >>> 32));");
-						} else if("float".equals(property.propertyType)){
+						} else if(property.type.is("float")){
 							t.pl("result = prime * result + java.lang.Float.floatToIntBits(${p.name});");
-						} else if("double".equals(property.propertyType)){
+						} else if(property.type.is("double")){
 							t.pl("result = prime * result + java.lang.Double.doubleToLongBits(${p.name});");
 						} else  {
 							t.pl("result = prime * result + ${p.name}.hashCode();");			
@@ -262,7 +265,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			
 			SourceTemplate equals = ctxt
 					.newSourceTemplate()
-					.var("b.type", model.pojoTypeSimple)
+					.var("b.type", model.type.simpleName)
 					.pl("@java.lang.Override")
 					.pl("public boolean equals(final Object obj){")
 					.pl("if (this == obj) return true;")
@@ -275,7 +278,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 						.child()
 						.var("p.name",property.propertyName);
 					
-					if(property.isPrimitive && !property.isString){
+					if(property.type.isPrimitive && !property.type.isString){
 						t.pl("if (${p.name} != other.${p.name}) return false;");
 					} else {
 						t.pl("if(${p.name} == null) {")
@@ -298,7 +301,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	private void generateToString(JType bean, BeanModel model) {
 		if(model.generateToString){
 			StringBuilder sb = new StringBuilder();
-			String label = model.pojoTypeSimpleRaw;
+			String label = model.type.simpleNameRaw;
 			JType t = bean;
 			while(!t.isTopLevelClass()){
 				t = t.getParentJType();
@@ -339,16 +342,16 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	}
 
 	private void generateMapAddRemove(JType bean, BeanModel model,BeanPropertyModel property) {
-		if(property.isMap && model.generateAddRemoveMethodsForIndexedProperties){
+		if(property.type.isMap && model.generateAddRemoveMethodsForIndexedProperties){
 			SourceTemplate add = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.addName", property.propertyAddName)
-				.var("p.type", property.propertyTypeAsObject)
+				.var("p.type", property.type.objectTypeFullName)
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.genericPart", property.propertyTypeGenericPart==null?"":property.propertyTypeGenericPart)
-				.var("p.keyType", property.propertyIndexedKeyType)
-				.var("p.valueType", property.propertyIndexedValueType)
+				.var("p.genericPart", property.type.genericPartOrEmpty)
+				.var("p.keyType", property.type.indexedKeyTypeNameOrNull)
+				.var("p.valueType", property.type.indexedValueTypeNameOrNull)
 					
 				.pl("public void ${p.addName}(final ${p.keyType} key,final ${p.valueType} val){")
 				.pl("	if(this.${p.name} == null){ this.${p.name} = new ${p.newType}${p.genericPart}(); }")
@@ -361,9 +364,9 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.removeName", property.propertyRemoveName)
-				.var("p.type", property.propertyTypeAsObject)
+				.var("p.type", property.type.objectTypeFullName)
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.keyType", property.propertyIndexedKeyType)
+				.var("p.keyType", property.type.indexedKeyTypeNameOrNull)
 				
 				.pl("public void ${p.removeName}(final ${p.keyType} key){")
 				.pl("	if(this.${p.name} != null){ ")
@@ -377,15 +380,15 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	}
 
 	private void generateCollectionAddRemove(JType bean, BeanModel model,BeanPropertyModel property) {
-		if(property.isCollection && model.generateAddRemoveMethodsForIndexedProperties){
+		if(property.type.isCollection && model.generateAddRemoveMethodsForIndexedProperties){
 			SourceTemplate add = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.addName", property.propertyAddName)
-				.var("p.type", property.propertyTypeAsObject)
+				.var("p.type", property.type.objectTypeFullName)
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.genericPart", property.propertyTypeGenericPart==null?"":property.propertyTypeGenericPart)
-				.var("p.valueType", property.propertyIndexedValueType)
+				.var("p.genericPart", property.type.genericPartOrEmpty)
+				.var("p.valueType", property.type.indexedValueTypeNameOrNull)
 				
 				.pl("public void ${p.addName}(final ${p.valueType} val){")
 				.pl("	if(this.${p.name} == null){ ")
@@ -400,9 +403,9 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.removeName", property.propertyRemoveName)
-				.var("p.type", property.propertyTypeAsObject)
+				.var("p.type", property.type.objectTypeFullName)
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.valueType", property.propertyIndexedValueType)
+				.var("p.valueType", property.type.indexedValueTypeNameOrNull)
 				
 				.pl("public void ${p.removeName}(final ${p.valueType} val){")
 				.pl("	if(this.${p.name} != null){ ")
@@ -421,7 +424,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.setterName", property.propertySetterName)
-				.var("p.type", property.propertyTypeAsObject)
+				.var("p.type", property.type.objectTypeFullName)
 				
 				.pl("public void ${p.setterName}(final ${p.type} val){")
 				.pl("		this.${p.name} = val;")
@@ -438,7 +441,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.getterName", property.propertyGetterName)
-				.var("p.type", property.propertyTypeAsObject)
+				.var("p.type", property.type.objectTypeFullName)
 				
 				.pl("public ${p.type} ${p.getterName}(){")
 				.pl("		return ${p.name};")

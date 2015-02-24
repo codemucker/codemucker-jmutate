@@ -559,6 +559,15 @@ public class JTypeTest {
 	}
 	
 	@Test
+	public void getTypeBoundsExpressionOrNull(){
+		Assert.assertEquals(null, ctxt.newSourceTemplate().pl("class MyClass {}").asResolvedJTypeNamed("MyClass").getTypeBoundsExpressionOrNull());	
+		Assert.assertEquals("<T>", ctxt.newSourceTemplate().pl("class MyClass<T> {}").asResolvedJTypeNamed("MyClass").getTypeBoundsExpressionOrNull());	
+		Assert.assertEquals("<T,X>", ctxt.newSourceTemplate().pl("class MyClass<T,X> {}").asResolvedJTypeNamed("MyClass").getTypeBoundsExpressionOrNull());	
+		Assert.assertEquals("<T extends Y>", ctxt.newSourceTemplate().pl("class MyClass<T extends Y> {}").asResolvedJTypeNamed("MyClass").getTypeBoundsExpressionOrNull());	
+		Assert.assertEquals("<T extends MyClass<?,S,Z>,S,Z>", ctxt.newSourceTemplate().pl("class MyClass<T extends MyClass<?,S,Z>,S,Z> {}").asResolvedJTypeNamed("MyClass").getTypeBoundsExpressionOrNull());	
+	}
+	
+	@Test
     public void testFindAnnotations(){
         SourceTemplate t = ctxt.newSourceTemplate();
         t.v("a1", MyAnnotation1.class);

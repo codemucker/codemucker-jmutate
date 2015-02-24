@@ -155,7 +155,7 @@ public class GeneratorRunner {
                         .resourceLoader(resourceLoader)
                         .build())
                 .generationRoot(generationRoot)
-                .defaultClashStrategy(defaultClashStrategy)
+                .clashStrategy(defaultClashStrategy)
                 .build();
         
         this.annotationCompiler = ctxt.obtain(JAnnotationCompiler.class);

@@ -10,19 +10,17 @@ class PlacementStrategySameLocation implements PlacementStrategy {
 	private final PlacementStrategy fallbackStrategy;
 	private final ASTNode afterNode;
 	
-	public PlacementStrategySameLocation(PlacementStrategy fallbackStrategy,
-			ASTNode afterNode) {
+	public PlacementStrategySameLocation(PlacementStrategy fallbackStrategy,ASTNode afterNode) {
 		super();
 		this.fallbackStrategy = fallbackStrategy;
 		this.afterNode = afterNode;
 	}
 
 	@Override
-	public int findIndexToPlaceInto(ASTNode nodeToInsert,
-			List<ASTNode> nodes) {
+	public int findIndexToPlaceInto(ASTNode nodeToInsert, List<ASTNode> nodes) {
 		if(afterNode != null){
 			for(int i = 0; i < nodes.size();i++){
-				if( nodes.get(i)== afterNode){
+				if(nodes.get(i)== afterNode){
 					return i+1;
 				}
 			}

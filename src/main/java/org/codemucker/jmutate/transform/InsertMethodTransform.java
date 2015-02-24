@@ -27,13 +27,13 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Met
 		checkFieldsSet();
 		checkState(method != null, "missing method");
 		
-	    FindResult<JMethod> found = getTarget().findMethodsMatching(AJMethod.with().nameAndArgSignature(method));
-		if(!found.isEmpty()){
-			JMethod existingMethod = found.getFirst();
+	    FindResult<JMethod> foundWithSameSig = getTarget().findMethodsMatching(AJMethod.with().nameAndArgSignature(method));
+		if(!foundWithSameSig.isEmpty()){
+			JMethod existingMethod = foundWithSameSig.getFirst();
 			switch(getClashStrategyResolver().resolveClash(existingMethod.getAstNode(), method.getAstNode())){
 			case REPLACE:
 			    //put in same location as existing
-				insert(method.getAstNode(), existingMethod.getAstNode());
+				insertAfter(method.getAstNode(), existingMethod.getAstNode());
 				existingMethod.getAstNode().delete();
 				return;
 			case SKIP:
@@ -44,12 +44,17 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Met
 				throw new JMutateException("Existing method:\n %s\n, unsupported clash strategy %s", existingMethod.getAstNode(), getClashStrategyResolver());
 			}
 		}
-		
-		insert(method.getAstNode(), null);
+		//find methods with same name and insert afterwards. Handles existing ctors as well as methods
+		FindResult<JMethod> foundWithName = getTarget().findMethodsMatching(AJMethod.with().name(method.getName()));
+		if(!foundWithName.isEmpty()){
+			insertAfter(method.getAstNode(), foundWithName.getFirst().getAstNode());
+		} else {
+			insertAfter(method.getAstNode(), null);
+		}
 	}
 
-	private void insert(MethodDeclaration m, ASTNode beforeNode){
-		PlacementStrategy placement = new PlacementStrategySameLocation(getPlacementStrategy(),beforeNode);
+	private void insertAfter(MethodDeclaration newMethod, ASTNode afterNode){
+		PlacementStrategy placement = new PlacementStrategySameLocation(getPlacementStrategy(),afterNode);
 		
 		new NodeInserter()
 			.nodeToInsert(method.getAstNode())
@@ -62,10 +67,9 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Met
 	 * Used by the DI container to set the default
 	 */
 	@Inject
-    public void injectPlacementStrategy(@Named(ContextNames.METHOD) PlacementStrategy strategy) {
+    public void injectPlacementStrategy(PlacementStrategy strategy) {
 	    placementStrategy(strategy);
     }
-
 	
 	/**
 	 * The method to transform

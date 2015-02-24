@@ -65,6 +65,9 @@ public class NameUtil {
 			.build();
 
     public static String removeGenericOrArrayPart(String shortOrFullName){
+    	if(shortOrFullName==null){
+    		return null;
+    	}
 		int i = shortOrFullName.indexOf('<');
 		if(i == -1){
 			i = shortOrFullName.indexOf('[');	
@@ -76,6 +79,9 @@ public class NameUtil {
 	}
     
     public static String extractGenericPartOrNull(String shortOrFullName){
+    	if(shortOrFullName==null){
+    		return null;
+    	}
 		int i = shortOrFullName.indexOf('<');
 		if( i != -1){
 			return shortOrFullName.substring(i);

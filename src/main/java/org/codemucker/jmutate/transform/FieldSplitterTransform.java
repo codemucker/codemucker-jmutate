@@ -3,7 +3,6 @@ package org.codemucker.jmutate.transform;
 import static org.codemucker.lang.Check.checkNotNull;
 
 import org.codemucker.jmutate.JMutateContext;
-import org.codemucker.jmutate.PlacementStrategies;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JField.SingleJField;
 import org.codemucker.jmutate.ast.JType;
@@ -57,7 +56,6 @@ public class FieldSplitterTransform implements Transform {
 		
 		InsertFieldTransform inserter = ctxt.obtain(InsertFieldTransform.class)
 			.target(target)
-			.placementStrategy(ctxt.obtain(PlacementStrategies.class).getFieldStrategy())
 			.clashStrategy(ClashStrategy.REPLACE);
 		
 		//copy the shared field info
