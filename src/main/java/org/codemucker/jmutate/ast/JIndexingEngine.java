@@ -18,7 +18,7 @@ import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.iterator.ORecordIteratorClass;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 
-public class JSearchEngine implements Closeable {
+public class JIndexingEngine implements Closeable {
 
 	private final ODatabaseDocumentTx db;
 	private final JAstParser parser;
@@ -27,7 +27,7 @@ public class JSearchEngine implements Closeable {
 		return new Builder();
 	}
 	
-	private JSearchEngine(File dbDirectoy, List<Root> roots, JAstParser parser){
+	private JIndexingEngine(File dbDirectoy, List<Root> roots, JAstParser parser){
 		Preconditions.checkNotNull(dbDirectoy,"expect indexing db directory");
 		Preconditions.checkNotNull(roots,"expect roots");
 		Preconditions.checkNotNull(parser, "expect parser");
@@ -94,11 +94,11 @@ public class JSearchEngine implements Closeable {
 		private JAstParser parser;
 		private List<Root> roots = Lists.newArrayList();
 		
-		public JSearchEngine build(){
+		public JIndexingEngine build(){
 			Preconditions.checkNotNull(dbDirectory, "expect a database directory to be set (or use defaults)");
 			Preconditions.checkNotNull(parser, "expect a parser to be set (or use defaults)");
 			
-			return new JSearchEngine(dbDirectory,roots,parser);
+			return new JIndexingEngine(dbDirectory,roots,parser);
 		}
 		
 		

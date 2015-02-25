@@ -201,7 +201,9 @@ public class GeneratorRunner {
         for (GroupedAnnotations group : groups) {
             CodeGenerator<?> generator = getGeneratorFor(group.getAnnotationName());
             if (generator != null) {
+            	generator.beforeRun();
                 invokeGenerator(generator,group);
+                generator.afterRun();
             }
         }
         MutateUtil.setClassLoader(null);

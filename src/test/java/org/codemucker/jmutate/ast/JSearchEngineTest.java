@@ -8,7 +8,7 @@ public class JSearchEngineTest {
 
 	@Test
 	public void smokeTest(){
-		JSearchEngine engine = JSearchEngine.with()
+		JIndexingEngine engine = JIndexingEngine.with()
 			.defaults()
 			.scanRoots(Roots.with()
 				.mainSrcDir(true)

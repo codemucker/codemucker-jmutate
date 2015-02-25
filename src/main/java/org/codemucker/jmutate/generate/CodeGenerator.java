@@ -6,6 +6,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 
 public interface CodeGenerator<TGenerateOptions extends Annotation> {
 
+	public void beforeRun();
     /**
      * Perform the generation on the given node, using the extracted generation options
      * 
@@ -14,4 +15,5 @@ public interface CodeGenerator<TGenerateOptions extends Annotation> {
      */
     public void generate(ASTNode node,TGenerateOptions options);
 
+    public void afterRun();
 }

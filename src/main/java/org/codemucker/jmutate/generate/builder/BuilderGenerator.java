@@ -334,7 +334,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 					beanCtor.p(",");
 				}
 				if(model.markCtorArgsAsProperties){
-					beanCtor.p("@" + Property.class.getName() + "(\"" + property.propertyName + "\") ");
+					beanCtor.p("@" + Property.class.getName() + "(name=\"" + property.propertyName + "\") ");
 				}
 				beanCtor.p(property.type.fullName + " " + property.propertyName);
 				comma = true;

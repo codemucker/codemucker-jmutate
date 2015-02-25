@@ -10,6 +10,14 @@ import org.eclipse.jdt.core.dom.ASTNode;
 public abstract class AbstractCodeGenerator<T extends Annotation> implements CodeGenerator<T> {
 
     @Override
+	public void beforeRun() {
+	}
+
+	@Override
+	public void afterRun() {
+	}
+
+	@Override
     public final void generate(ASTNode node, T options) {
         if (JType.is(node)) {
             generate(JType.from(node), options);
