@@ -29,6 +29,7 @@ import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.NameUtil;
+import org.eclipse.jdt.core.dom.ASTNode;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
@@ -130,6 +131,20 @@ public class AJType extends ObjectMatcher<JType> {
     	super(JType.class);
 	}
 
+	public Matcher<ASTNode> toAstNodeMatcher(){
+		final AJType self = this;
+		return new AbstractMatcher<ASTNode>(){
+			@Override
+			protected boolean matchesSafely(ASTNode actual,MatchDiagnostics diag) {
+				if(JType.is(actual)){
+					return self.matches(JType.from(actual),diag);	
+				} else {
+					return false;
+				}
+			}
+		};
+	}
+	
 	  /**
      * Converts a logical expression using {@link ExpressionParser}} into a matcher. The names in the expression are converted into no arg 
      * method calls on this matcher as in X,isX ==&gt; isX()  (case insensitive) 

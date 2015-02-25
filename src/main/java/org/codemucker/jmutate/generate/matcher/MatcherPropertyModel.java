@@ -2,7 +2,7 @@ package org.codemucker.jmutate.generate.matcher;
 
 import org.codemucker.jmutate.util.NameUtil;
 
-public class PropertyModel {
+public class MatcherPropertyModel {
 	public final MatcherModel pojoModel;
 	public final String propertyName;
     String propertyGetter;
@@ -14,7 +14,7 @@ public class PropertyModel {
      */
     String propertyTypeAsObject;
     
-    PropertyModel(MatcherModel parent, String fieldName, String propertyType) {
+    MatcherPropertyModel(MatcherModel parent, String fieldName, String propertyType) {
         this.pojoModel = parent;
         this.propertyName = fieldName;
         this.propertyType = NameUtil.compiledNameToSourceName(propertyType);

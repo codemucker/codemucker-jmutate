@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 
 import com.google.inject.Inject;
 
-public final class InsertFieldTransform extends AbstractNodeInsertTransform<FieldDeclaration,InsertFieldTransform>{
+public final class InsertFieldTransform extends AbstractInsertNodeTransform<FieldDeclaration,InsertFieldTransform>{
 
 	private JField field;
 	
@@ -50,7 +50,7 @@ public final class InsertFieldTransform extends AbstractNodeInsertTransform<Fiel
 	private void insert(FieldDeclaration field, ASTNode beforeNode){
 		PlacementStrategy placement = new PlacementStrategySameLocation(getPlacementStrategy(),beforeNode);
 		
-		new NodeInserter()
+		new InsertNodeTransform()
 			.nodeToInsert(field)
 			.target(getTarget())
 			.placementStrategy(placement)

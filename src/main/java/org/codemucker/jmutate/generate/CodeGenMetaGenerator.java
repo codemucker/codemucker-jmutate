@@ -29,6 +29,7 @@ import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.ClashStrategy;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.IsGenerated;
 import org.codemucker.lang.ClassNameUtil;
 import org.codemucker.lang.annotation.NotThreadSafe;
@@ -99,9 +100,13 @@ public class CodeGenMetaGenerator {
 	}
 	
 	public boolean isManagedByThis(Annotations annotations){
-		JAnnotation anon = annotations.find(AJAnnotation.with().fullName(IsGenerated.class)).getFirstOrNull();
-		if(anon != null){
-			Expression attributeExp = anon.getExpressionForAttributeOrNull(PROP_BY);
+		JAnnotation dontGenerate = annotations.find(AJAnnotation.with().fullName(DontGenerate.class)).getFirstOrNull();
+		if( dontGenerate != null){
+			return false;
+		}
+		JAnnotation generated = annotations.find(AJAnnotation.with().fullName(IsGenerated.class)).getFirstOrNull();
+		if(generated != null){
+			Expression attributeExp = generated.getExpressionForAttributeOrNull(PROP_BY);
 			if(attributeExp instanceof StringLiteral){
 				String generator = ((StringLiteral)attributeExp).getLiteralValue();
 				return isGeneratorMatch(generator);

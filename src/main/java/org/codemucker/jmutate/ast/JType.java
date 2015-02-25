@@ -187,8 +187,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		}
 		return null;
 	}
-	
-	
+		
 	public abstract String getFullName();
 	//TODO:rename to 'shortName'? to avoi ambiguity with dom SimpleName?
 	public abstract String getSimpleName();
@@ -196,7 +195,21 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
     public abstract List<ASTNode> getBodyDeclarations();
 	public abstract boolean isInnerClass();
 	public abstract boolean isTopLevelClass();
-    
+
+	/**
+	 * Return the super class full type name, or if none is present (for interfaces, enums, annotations) just return java.lang.Object
+	 * @return
+	 */
+	public String getSuperTypeFullName() {
+		if (typeNode instanceof TypeDeclaration) {
+			Type st = ((TypeDeclaration) typeNode).getSuperclassType();
+			if (st != null) {
+				return NameUtil.resolveQualifiedName(st);
+			}
+		}
+		return Object.class.getName();
+	}
+
 	public RootResource getResource(){
         return getSource().getResource();
     }
@@ -941,6 +954,5 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 			return types;
 		}        
 	}
-
 
 }

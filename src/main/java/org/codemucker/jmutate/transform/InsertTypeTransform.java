@@ -6,16 +6,14 @@ import java.util.List;
 
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
-import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 
-public class InsertTypeTransform extends AbstractNodeInsertTransform<ASTNode,InsertTypeTransform>{
+public class InsertTypeTransform extends AbstractInsertNodeTransform<ASTNode,InsertTypeTransform>{
 	
 	private JType type;
 	
@@ -52,7 +50,7 @@ public class InsertTypeTransform extends AbstractNodeInsertTransform<ASTNode,Ins
 	private void insert(ASTNode type, ASTNode beforeNode){
 		PlacementStrategy placement = new PlacementStrategySameLocation(getPlacementStrategy(),beforeNode);
 		
-		new NodeInserter()
+		new InsertNodeTransform()
 			.nodeToInsert(type)
 			.target(getTarget())
 			.placementStrategy(placement)

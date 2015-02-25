@@ -46,6 +46,7 @@ public class TypeInfo {
 	public final String indexedValueTypeNameRaw;
 	public final boolean isIndexed;
 	public final boolean isCollection;
+	public final boolean isList;
 	public final boolean isMap;
 	public final boolean isArray;
 	public final boolean isKeyed;
@@ -80,8 +81,9 @@ public class TypeInfo {
 		this.isPrimitive = NameUtil.isPrimitive(fullName);
 		this.isString = fullName.equals("String") || fullName.equals("java.lang.String");
 		this.isMap = REGISTRY.isMap(fullNameRaw);
+		this.isList = REGISTRY.isList(fullNameRaw);
 		this.isCollection = REGISTRY.isCollection(fullNameRaw);
-		this.isIndexed = isMap || isCollection;
+		this.isIndexed = isMap || isList;
 		// this.propertyConcreteType =
 		// REGISTRY.getConcreteTypeFor(propertyTypeRaw);
 		this.isArray = fullName.endsWith("]");
@@ -253,13 +255,15 @@ public class TypeInfo {
 		private Map<String, String> defaultTypes = new HashMap<>();
 
 		private static final List<String> collectionTypes = new ArrayList<>();
+		private static final List<String> listTypes = new ArrayList<>();
 		private static final List<String> mapTypes = new ArrayList<>();
 
 		public IndexedTypeRegistry() {
-			addCollection("java.util.List", "java.util.ArrayList");
-			addCollection("java.util.ArrayList");
+			addList("java.util.List", "java.util.ArrayList");
+			addList("java.util.ArrayList");
+			addList("java.util.LinkedList");
+
 			addCollection("java.util.Collection", "java.util.ArrayList");
-			addCollection("java.util.LinkedList");
 			addCollection("java.util.Vector");
 
 			addMap("java.util.TreeSet");
@@ -271,15 +275,24 @@ public class TypeInfo {
 
 		}
 
+		private void addList(String fullName) {
+			addList(fullName, fullName);
+		}
+
 		private void addCollection(String fullName) {
 			addCollection(fullName, fullName);
+		}
+		
+		private void addList(String fullName, String defaultType) {
+			listTypes.add(fullName);
+			addCollection(fullName, defaultType);
 		}
 
 		private void addCollection(String fullName, String defaultType) {
 			collectionTypes.add(fullName);
 			defaultTypes.put(fullName, defaultType);
 		}
-
+		
 		private void addMap(String fullName) {
 			addMap(fullName, fullName);
 		}
@@ -291,6 +304,10 @@ public class TypeInfo {
 
 		public boolean isCollection(String fullName) {
 			return collectionTypes.contains(fullName);
+		}
+
+		public boolean isList(String fullName) {
+			return listTypes.contains(fullName);
 		}
 
 		public boolean isMap(String fullName) {

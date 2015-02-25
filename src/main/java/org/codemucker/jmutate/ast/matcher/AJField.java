@@ -13,6 +13,8 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JModifier;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.Type;
 
 import com.google.common.base.Predicate;
@@ -42,6 +44,20 @@ public class AJField extends ObjectMatcher<JField>{
 	    super(JField.class);
 	}
 
+	public Matcher<ASTNode> toAstNodeMatcher(){
+		final AJField self = this;
+		return new AbstractMatcher<ASTNode>(){
+			@Override
+			protected boolean matchesSafely(ASTNode actual,MatchDiagnostics diag) {
+				if(JField.is(actual)){
+					return self.matches(JField.from(actual),diag);	
+				} else {
+					return false;
+				}
+			}
+		};
+	}
+	
 	public AJField field(Predicate<JField> predicate){
 		predicate(predicate);
 		return this;
@@ -143,7 +159,7 @@ public class AJField extends ObjectMatcher<JField>{
 	}
 	
 	public AJField isStatic(boolean b){
-		modifiers(AJModifier.that().isStatic(b));
+		modifier(AJModifier.that().isStatic(b));
 		return this;
 	}
 	
@@ -153,11 +169,11 @@ public class AJField extends ObjectMatcher<JField>{
 	}
 	
 	public AJField isFinal(boolean b){
-		modifiers(AJModifier.that().isFinal(b));
+		modifier(AJModifier.that().isFinal(b));
 		return this;
 	}
 	
-	public AJField modifiers(final Matcher<JModifier> matcher){
+	public AJField modifier(final Matcher<JModifier> matcher){
         addMatcher(new AbstractNotNullMatcher<JField>() {
             @Override
             public boolean matchesSafely(JField found, MatchDiagnostics diag) {

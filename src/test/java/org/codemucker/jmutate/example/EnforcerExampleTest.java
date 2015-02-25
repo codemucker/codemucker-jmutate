@@ -131,7 +131,7 @@ public class EnforcerExampleTest
                     .that(builderType)
                     .is(ABuilderPattern.with()
                         .defaults()
-                        .ignoreMethod(AJMethod.with().name("copyOf").returningSomething())
+                        .ignoreMethod(AJMethod.with().name("copyOf").notReturningVoid())
                         .ignoreMethod(AJMethod.with().name("describeTo").returningVoid()));
             }
         }

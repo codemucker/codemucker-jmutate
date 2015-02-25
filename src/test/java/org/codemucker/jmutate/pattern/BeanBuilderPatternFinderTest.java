@@ -20,7 +20,7 @@ public class BeanBuilderPatternFinderTest {
 		//classes which subclass anything called 'builder' - confidence 80%
 		//classes where most methods return itself - confidence 60%
 		//classes which contain a method starting with 'build' - confidence 70%
-		FindResult<JType> foundBuilders = TestSourceHelper.newAllSourcesResolvingFinder()
+		FindResult<JType> foundBuilders = TestSourceHelper.newSourceScannerAllSrcs()
 			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..
@@ -52,7 +52,7 @@ public class BeanBuilderPatternFinderTest {
 				.isConstructor()
 				.numArgs(AnInt.greaterOrEqualTo(3));
 		
-		Iterable<JMethod> found = TestSourceHelper.newAllSourcesResolvingFinder()
+		Iterable<JMethod> found = TestSourceHelper.newSourceScannerAllSrcs()
 			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				//TODO:have matchers return confidences?? then finder can add that to results..

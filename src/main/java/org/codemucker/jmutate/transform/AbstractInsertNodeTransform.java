@@ -14,13 +14,13 @@ import com.google.inject.Inject;
  * Base helper transform to insert a set of AST nodes. Up to implementations to determine where in the AST these are inserted (handling duplicates)
  * @param <TSelf>
  */
-public abstract class AbstractNodeInsertTransform<TNode,TSelf extends AbstractNodeInsertTransform<TNode,TSelf>> implements Transform {
+public abstract class AbstractInsertNodeTransform<TNode,TSelf extends AbstractInsertNodeTransform<TNode,TSelf>> implements Transform {
 	private JType target;
 	
 	@Inject
 	private ClashStrategyResolver clashResolver = new ClashStrategyResolver.Fixed(ClashStrategy.ERROR);
 	
-	//@Inject
+	@Inject
 	private PlacementStrategy placementStrategy;
 
 	protected void checkFieldsSet(){

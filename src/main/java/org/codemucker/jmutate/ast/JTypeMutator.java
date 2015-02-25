@@ -124,7 +124,7 @@ public class JTypeMutator {
 	}
 	
 	public void addType(AbstractTypeDeclaration type){
-		InsertTypeTransform.newTransform()
+		ctxt.obtain(InsertTypeTransform.class)
 			.target(jType)
 			.setType(type)
 			.transform();

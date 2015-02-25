@@ -6,19 +6,29 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.codemucker.jmatch.AbstractNotNullMatcher;
+import org.codemucker.jmatch.Logical;
+import org.codemucker.jmatch.MatchDiagnostics;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.PlacementStrategy;
 import org.eclipse.jdt.core.dom.ASTNode;
 
 
 public class StrategyBeforeAfterNodes implements PlacementStrategy {
 
-	private final Collection<Class<?>> afterNodesOfType;
-	private final Collection<Class<?>> beforeNodesOfType;
-
-	private StrategyBeforeAfterNodes(Collection<Class<?>> afterNodesOfType, Collection<Class<?>> beforeNodesOfType) {
+	private final Matcher<ASTNode> afterNodes;
+	private final Matcher<ASTNode> beforeNodes;
+	private final Insert defaultLocation;
+	
+	private static enum Insert {
+		FIRST,LAST
+	}
+	
+	private StrategyBeforeAfterNodes(Matcher<ASTNode> afterNodes, Matcher<ASTNode> beforeNodes,Insert defaultLocation) {
 	    super();
-	    this.afterNodesOfType = newArrayList(afterNodesOfType);
-	    this.beforeNodesOfType = newArrayList(beforeNodesOfType);
+	    this.afterNodes = afterNodes;
+	    this.beforeNodes = beforeNodes;
+	    this.defaultLocation = defaultLocation;
     }
 
 	public static Builder with(){
@@ -27,61 +37,115 @@ public class StrategyBeforeAfterNodes implements PlacementStrategy {
 	
 	@Override
     public int findIndexToPlaceInto(ASTNode nodeToInsert, List<ASTNode> nodes) {
-	    return findIndexToInsertAt(nodes, afterNodesOfType, beforeNodesOfType);
-    }
-	
-	private int findIndexToInsertAt(List<ASTNode> nodes, Collection<Class<?>> afterNodesOfType, Collection<Class<?>> beforeNodesOfType) {
-		int index = findLastIndexOfTypeIn(afterNodesOfType, nodes);
+		int index = findFirstIndexAfter(afterNodes, nodes);
 		if (index != PlacementStrategy.INDEX_NOT_FOUND) {
 			index++;
 		} else {
-			index = findFirstIndexOfTypeIn(beforeNodesOfType, nodes);
+			index = findFirstIndexBefore(beforeNodes, nodes);
 		}
 		if (index == PlacementStrategy.INDEX_NOT_FOUND) {
-			index = 0;
+			switch (defaultLocation) {
+			case LAST:
+				index = nodes.size();
+				break;
+			case FIRST:
+			default:
+				index = 0;
+				break;
+			}
 		}
 		return index;
 	}
 
-	private int findLastIndexOfTypeIn(Collection<Class<?>> nodeTypes,Collection<ASTNode> nodes) {
-		int idx = 0;
+	private int findFirstIndexAfter(Matcher<ASTNode> matcher,Collection<ASTNode> nodes) {
 		int last = PlacementStrategy.INDEX_NOT_FOUND;
+		int idx = 0;
 		for (ASTNode node : nodes) {
-			if (nodeTypes.contains(node.getClass())) {
-				last = idx;
+			if (matcher.matches(node)) {
+				if(last == PlacementStrategy.INDEX_NOT_FOUND || idx > last){
+					last = idx;
+				}
 			}
 			idx++;
 		}
 		return last;
 	}
 
-	private int findFirstIndexOfTypeIn(Collection<Class<?>> nodeTypes,Collection<ASTNode> nodes) {
+	private int findFirstIndexBefore(Matcher<ASTNode> matcher,Collection<ASTNode> nodes) {
+		int first = PlacementStrategy.INDEX_NOT_FOUND; 
 		int idx = 0;
 		for (ASTNode node : nodes) {
-			if (nodeTypes.contains(node.getClass())) {
-				return idx;
+			if (matcher.matches(node)) {
+				if(first == PlacementStrategy.INDEX_NOT_FOUND || idx < first){
+					first =idx;
+				}
 			}
 			idx++;
 		}
-		return PlacementStrategy.INDEX_NOT_FOUND;
+		return first;
 	}
 	
 	public static class Builder {
 		
-		private final Collection<Class<?>> afterNodesOfType = newArrayList();
-		private final Collection<Class<?>> beforeNodesOfType = newArrayList();
+		private final Collection<Matcher<ASTNode>> afterNodes = newArrayList();
+		private final Collection<Matcher<ASTNode>> beforeNodes = newArrayList();
+		private Insert defaultLocation = Insert.FIRST;
+		
 		
 		public StrategyBeforeAfterNodes build(){
-			return new StrategyBeforeAfterNodes(afterNodesOfType,beforeNodesOfType);
+			return new StrategyBeforeAfterNodes(Logical.any(afterNodes),Logical.any(beforeNodes),defaultLocation);
 		}
-		
-		public Builder beforeNodes(Class<?>... nodes){
-			beforeNodesOfType.addAll(Arrays.asList(nodes));
+
+		public Builder defaultFirstNode() {
+			defaultLocation = Insert.FIRST;
 			return this;
 		}
 
-		public Builder afterNodes(Class<?>... nodes){
-			afterNodesOfType.addAll(Arrays.asList(nodes));
+		public Builder defaultLastNode() {
+			defaultLocation = Insert.LAST;
+			return this;
+		}
+
+		public Builder beforeTypes(Class<?>... nodeTypes){
+			for(Class<?> type:nodeTypes){
+				before(matchesType(type));
+			}
+			return this;
+		}
+
+		public Builder afterTypes(Class<?>... nodeTypes){
+			for(Class<?> type:nodeTypes){
+				after(matchesType(type));
+			}
+			return this;
+		}
+		
+		private Matcher<ASTNode> matchesType(final Class<?> expectNodeType ) {
+			return new AbstractNotNullMatcher<ASTNode>() {
+				@Override
+				protected boolean matchesSafely(ASTNode actual,MatchDiagnostics diag) {
+					return expectNodeType.equals(actual.getClass());
+				}
+			};
+		}
+		
+		public Builder before(Matcher<ASTNode>... matchers){
+			beforeNodes.addAll(Arrays.asList(matchers));
+			return this;
+		}
+		
+		public Builder before(Matcher<ASTNode> matcher){
+			beforeNodes.add(matcher);
+			return this;
+		}
+		
+		public Builder after(Matcher<ASTNode>... matchers){
+			afterNodes.addAll(Arrays.asList(matchers));
+			return this;
+		}
+		
+		public Builder after(Matcher<ASTNode> matcher){
+			afterNodes.add(matcher);
 			return this;
 		}
 	}

@@ -43,7 +43,7 @@ class ABuilderPattern extends AbstractMatcher<JType>{
     
     private boolean validateBuilderClass(ABuilderPattern.MatchHolder holder,MatchDiagnostics diag){
         if(holder.builderType.isConcreteClass()){//don't expect build methods on abstract builders
-            FindResult<JMethod> buildMethod = holder.builderType.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build*").returningSomething());
+            FindResult<JMethod> buildMethod = holder.builderType.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build*").notReturningVoid());
             
             if(buildMethod.isEmpty()){
                 diag.mismatched("expect to find a build*() method on " + holder.builderType.getFullName());
@@ -118,8 +118,8 @@ class ABuilderPattern extends AbstractMatcher<JType>{
     public ABuilderPattern defaults(){
         ignoreMethods.add(AJMethod.that().isConstructor());
         ignoreMethods.add(AJMethod.that().isNotPublic());
-        ignoreMethods.add(AJMethod.with().name(AString.matchingAntPattern("get*")).returningSomething());
-        ignoreMethods.add(AJMethod.with().name(AString.matchingAntPattern("build*")).returningSomething());
+        ignoreMethods.add(AJMethod.with().name(AString.matchingAntPattern("get*")).notReturningVoid());
+        ignoreMethods.add(AJMethod.with().name(AString.matchingAntPattern("build*")).notReturningVoid());
         
         ignoreMethods.add(AJMethod.with().name(AString.matchingAntPattern("is??*")).numArgs(0).returning(AType.BOOL_PRIMITIVE));
         ignoreMethods.add(AJMethod.with().name(AString.matchingAnyAntPattern("set*","with?*")));

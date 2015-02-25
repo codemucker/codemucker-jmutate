@@ -15,7 +15,6 @@ import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.Roots;
-import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.DefaultToSourceConverter;
 import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JAstParser;

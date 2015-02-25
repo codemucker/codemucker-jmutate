@@ -15,7 +15,7 @@ import com.google.common.base.Preconditions;
 /**
  * Inserts generic nodes using an insertion placement strategy
  */
-public class NodeInserter {
+public class InsertNodeTransform {
 
 	private List<ASTNode> nodesToInsertInto;
 	private AST ast;
@@ -38,28 +38,31 @@ public class NodeInserter {
 		if (index < 0) {
 			throw new JMutateException("Insertion strategy %s couldn't find an index to insert %s into", strategy, nodeToInsert);
 		}
+		if(index > nodesToInsertInto.size()){
+			index = nodesToInsertInto.size();
+		}
 		nodesToInsertInto.add(index, clonedNode);
 		return clonedNode;
 	}
 
-	public NodeInserter target(JType javaType) {
+	public InsertNodeTransform target(JType javaType) {
     	this.nodesToInsertInto = javaType.getBodyDeclarations();
     	this.ast = javaType.getAst();
     	return this;
 	}
 
-	public NodeInserter nodesToInsertInto(AST ast, List<ASTNode> nodesToInsertInto) {
+	public InsertNodeTransform nodesToInsertInto(AST ast, List<ASTNode> nodesToInsertInto) {
     	this.nodesToInsertInto = Preconditions.checkNotNull(nodesToInsertInto, "expect non null list of nodes to insert into");
     	this.ast = Preconditions.checkNotNull(ast,"expect non null ast");
     	return this;
 	}
 
-	public NodeInserter nodeToInsert(ASTNode childNode) {
+	public InsertNodeTransform nodeToInsert(ASTNode childNode) {
     	this.nodeToInsert = Preconditions.checkNotNull(childNode,"expect non null node to insert");
     	return this;
 	}
 
-	public NodeInserter placementStrategy(PlacementStrategy strategy) {
+	public InsertNodeTransform placementStrategy(PlacementStrategy strategy) {
     	this.strategy = Preconditions.checkNotNull(strategy, "expect non null strategy");
     	return this;
     }	

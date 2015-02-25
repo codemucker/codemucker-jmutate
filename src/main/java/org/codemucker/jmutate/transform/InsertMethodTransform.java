@@ -3,9 +3,9 @@ package org.codemucker.jmutate.transform;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.codemucker.jfind.FindResult;
+import org.codemucker.jmutate.ContextNames;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
-import org.codemucker.jmutate.ast.ContextNames;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -14,7 +14,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 
-public final class InsertMethodTransform extends AbstractNodeInsertTransform<MethodDeclaration,InsertMethodTransform>{
+public final class InsertMethodTransform extends AbstractInsertNodeTransform<MethodDeclaration,InsertMethodTransform>{
 
 	private JMethod method;
 
@@ -56,7 +56,7 @@ public final class InsertMethodTransform extends AbstractNodeInsertTransform<Met
 	private void insertAfter(MethodDeclaration newMethod, ASTNode afterNode){
 		PlacementStrategy placement = new PlacementStrategySameLocation(getPlacementStrategy(),afterNode);
 		
-		new NodeInserter()
+		new InsertNodeTransform()
 			.nodeToInsert(method.getAstNode())
 			.target(getTarget())
 			.placementStrategy(placement)

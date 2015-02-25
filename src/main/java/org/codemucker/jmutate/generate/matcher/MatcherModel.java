@@ -26,7 +26,7 @@ public class MatcherModel {
     
     final Set<String> staticBuilderMethodNames;
     
-    final Map<String, PropertyModel> properties = new LinkedHashMap<>();
+    final Map<String, MatcherPropertyModel> properties = new LinkedHashMap<>();
     
     public MatcherModel(AllMatchersModel parent, Class<?> pojoType) {
     	this.pojoTypeFull = NameUtil.compiledNameToSourceName(pojoType);
@@ -66,7 +66,7 @@ public class MatcherModel {
 		return className;
     }
     
-    void addField(PropertyModel field){
+    void addField(MatcherPropertyModel field){
         if (hasNamedField(field.propertyName)) {
             throw new JMutateException("More than one property with the same param name '%s' on %s", field.propertyName, matcherTypeFull);
         }
@@ -77,11 +77,11 @@ public class MatcherModel {
         return properties.containsKey(name);
     }
     
-    PropertyModel getNamedField(String name){
+    MatcherPropertyModel getNamedField(String name){
         return properties.get(name);
     }
     
-    Collection<PropertyModel> getFields(){
+    Collection<MatcherPropertyModel> getFields(){
         return properties.values();
     }
 }

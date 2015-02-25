@@ -1,6 +1,5 @@
 package org.codemucker.jmutate.util;
 
-import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -12,8 +11,8 @@ import org.eclipse.jdt.core.dom.ASTNode;
 public class MutateUtil  {
 
     private static final String NODE_PROPERTY_RESOURCE_LOADER = MutateUtil.class.getSimpleName() + ":Loader";
-    private static final String NODE_PROPERTY_RESOURCE = MutateUtil.class.getSimpleName() + ":resource";
-    private static final String NODE_PROPERTY_SRC = MutateUtil.class.getSimpleName() + ":src";
+    //private static final String NODE_PROPERTY_RESOURCE = MutateUtil.class.getSimpleName() + ":resource";
+    //private static final String NODE_PROPERTY_SRC = MutateUtil.class.getSimpleName() + ":src";
     private static final String NODE_PROPERTY_SOURCE_FILE = MutateUtil.class.getSimpleName() + ":srcfile";
 
     private static ClassLoader classLoader;

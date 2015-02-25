@@ -5,6 +5,7 @@ import org.codemucker.jmatch.Description;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
+import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JModifier;
 
@@ -206,4 +207,34 @@ public class AJModifier extends ObjectMatcher<JModifier> {
         return this;
     }
 
+    public AJModifier isAtLeastAccess(final JAccess access) {
+        addMatcher(new AbstractNotNullMatcher<JModifier>() {
+            @Override
+            public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {
+                return found.asAccess().compare(access) >= 0;
+            }
+
+            @Override
+            public void describeTo(Description desc) {
+                desc.text("is access atleast " + access.name());
+            }
+        });
+        return this;
+    }
+
+    public AJModifier isAccess(final JAccess access) {
+        addMatcher(new AbstractNotNullMatcher<JModifier>() {
+            @Override
+            public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {
+                return found.isAccess(access);
+            }
+
+            @Override
+            public void describeTo(Description desc) {
+                desc.text("is access " + access.name());
+            }
+        });
+        return this;
+    }
+    
 }

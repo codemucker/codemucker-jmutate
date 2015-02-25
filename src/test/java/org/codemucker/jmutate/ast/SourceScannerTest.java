@@ -21,7 +21,7 @@ public class SourceScannerTest {
 
 	@Test
 	public void testFindClassesWithMethodMatch() throws Exception {
-		SourceScanner scanner = TestSourceHelper.newAllSourcesResolvingFinder()
+		SourceScanner scanner = TestSourceHelper.newSourceScannerAllSrcs()
 			.filter(SourceFilter.where()
 				.typeMatches(AJType.with().method(AJMethod.with().nameMatchingAntPattern("testFindClassesWithMethodMatch")))
 			)
@@ -33,7 +33,7 @@ public class SourceScannerTest {
 	
 	@Test
 	public void testFindClassesExtending() throws Exception {
-		SourceScanner scanner = TestSourceHelper.newAllSourcesResolvingFinder()
+		SourceScanner scanner = TestSourceHelper.newSourceScannerAllSrcs()
 			.filter(SourceFilter.with()
 				.typeMatches(AJType.with().isASubclassOf(MyClass.class)))
 			.build();
@@ -50,7 +50,7 @@ public class SourceScannerTest {
 	
 	@Test
 	public void testFindClassesWithAnnotations() throws Exception {
-		SourceScanner finder = TestSourceHelper.newAllSourcesResolvingFinder()
+		SourceScanner finder = TestSourceHelper.newSourceScannerAllSrcs()
 			.filter(SourceFilter.with()
 				.typeMatches(AJType.with().annotation(MyAnnotation.class))
 			)
@@ -107,7 +107,7 @@ public class SourceScannerTest {
 	
 	@Test
 	public void testFindWithMethods(){
-		SourceScanner finder = TestSourceHelper.newAllSourcesResolvingFinder().build();
+		SourceScanner finder = TestSourceHelper.newSourceScannerAllSrcs().build();
 		
 		FindResult<JMethod> methods = finder.findMethods();
 		assertThat(methods.isEmpty(),isFalse());

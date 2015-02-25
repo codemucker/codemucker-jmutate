@@ -50,6 +50,11 @@ public class SourceTemplate extends AbstractTemplate<SourceTemplate>
 		this.snippetRoot = checkNotNull(snippetRoot, "expect snippet root");
 	}
 	
+	/**
+	 * Create a child template copying all this templates settings except for the actual text. Changes in the parent
+	 * template are not reflected in the child (or vice-versa)
+	 * @return
+	 */
 	public SourceTemplate child(){
 		SourceTemplate child = new SourceTemplate(parser,snippetRoot);
 		child.setVars(cloneVars());

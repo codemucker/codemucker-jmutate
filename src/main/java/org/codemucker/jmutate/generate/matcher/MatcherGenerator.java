@@ -146,7 +146,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
 			// standard builder factory method
 			addMethod(matcher,baseTemplate.child().pl("public static ${selfType} with(){ return new ${selfType}(); }").asMethodNodeSnippet(),markGenerated);
 
-			for (PropertyModel property : model.properties.values()) {
+			for (MatcherPropertyModel property : model.properties.values()) {
 				//add default equals matchers for known types
 				String equalMatcherSnippet = MATCHER_BY_TYPE.get(property.propertyTypeAsObject);
 				if (equalMatcherSnippet != null) {
@@ -231,7 +231,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
                 log("ignoring field:" + f.getName());
                 continue;
             }
-            PropertyModel property = new PropertyModel(model, f.getName(), f.getGenericType().getTypeName());
+            MatcherPropertyModel property = new MatcherPropertyModel(model, f.getName(), f.getGenericType().getTypeName());
 
             String getterName = BeanNameUtil.toGetterName(field.getName(), field.getType());
             String getter = getterName + "()";
@@ -250,14 +250,14 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
 
     private void extractFields(MatcherModel model, JType pojoType) {
         // call request builder methods for each field/method exposed
-        FindResult<JField> fields = pojoType.findFieldsMatching(AJField.with().modifiers(AJModifier.that().isNotStatic().isNotNative()));
+        FindResult<JField> fields = pojoType.findFieldsMatching(AJField.with().modifier(AJModifier.that().isNotStatic().isNotNative()));
         log("found " + fields.toList().size() + " fields");
         for (JField field: fields) {
             if (field.getAnnotations().contains(sourceAnnotationIgnore)) {
                 log("ignoring field:" + field.getName());
                 continue;
             }
-            PropertyModel property = new PropertyModel(model, field.getName(), field.getFullTypeName());
+            MatcherPropertyModel property = new MatcherPropertyModel(model, field.getName(), field.getFullTypeName());
             String getterName = BeanNameUtil.toGetterName(field.getName(), NameUtil.isBoolean(field.getFullTypeName()));
             String getter = getterName + "()";
             if (!pojoType.hasMethodMatching(AJMethod.with().name(getterName).numArgs(0))) {

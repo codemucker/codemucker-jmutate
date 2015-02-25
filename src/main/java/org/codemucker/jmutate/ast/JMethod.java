@@ -117,8 +117,8 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 	}
 	
 	@SuppressWarnings("unchecked")
-    public List<TypeParameter> getParameters(){
-		return methodNode.typeParameters();
+    public List<SingleVariableDeclaration> getParameters(){
+		return methodNode.parameters();
 	}
 	
 	public String getName(){

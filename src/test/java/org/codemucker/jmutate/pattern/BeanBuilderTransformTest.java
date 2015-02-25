@@ -51,28 +51,32 @@ public class BeanBuilderTransformTest {
 		t.pl("		private int myInt;");
 		t.pl("		private Collection<String> col;");
 		
-		t.pl("		public Builder setMyString(String myString){");
-		t.pl("			this.myString = myString;");
-		t.pl("			return this;");
+		t.pl("		public TestBuilderBean build(){");
+		t.pl("			return new TestBuilderBean(myString,myInt,col);");
 		t.pl("		}");
-		t.pl("		public Builder setMyInt(int myInt){");
-		t.pl("			this.myInt = myInt;");
-		t.pl("			return this;");
-		t.pl("		}");
+		
 		t.pl("		public Builder setCol(Collection<String> col){");
 		t.pl("			this.col = col;");
 		t.pl("			return this;");
 		t.pl("		}");
-		t.pl("		public TestBuilderBean build(){");
-		t.pl("			return new TestBuilderBean(myString,myInt,col);");
+		
+		t.pl("		public Builder setMyInt(int myInt){");
+		t.pl("			this.myInt = myInt;");
+		t.pl("			return this;");
 		t.pl("		}");
+		
+		t.pl("		public Builder setMyString(String myString){");
+		t.pl("			this.myString = myString;");
+		t.pl("			return this;");
+		t.pl("		}");
+		
 		t.pl("	}");
 		t.pl("}");
 		return t.asResolvedJTypeNamed("TestBuilderBean");	
 	}
 
 	private FindResult<JType> findTypesToTransform() {
-	    FindResult<JType> found = TestSourceHelper.newTestSourcesResolvingFinder()
+	    FindResult<JType> found = TestSourceHelper.newSourceScannerAllSrcs()
 			.filter(SourceFilter.with()
 				//.addIncludeTypes(JTypeMatchers.withAnnotation(GenerateBuilder.class))
 				.typeMatches(AJType.with().name(TestBuilderBean.class))

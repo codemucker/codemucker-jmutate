@@ -13,7 +13,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.inject.Inject;
 
-public final class InsertCtorTransform extends AbstractNodeInsertTransform<MethodDeclaration,InsertCtorTransform> {
+public final class InsertCtorTransform extends AbstractInsertNodeTransform<MethodDeclaration,InsertCtorTransform> {
 	
 	private JMethod contructorToAdd;
 
@@ -58,7 +58,7 @@ public final class InsertCtorTransform extends AbstractNodeInsertTransform<Metho
 	private void insert(MethodDeclaration ctor, ASTNode beforeNode){
 		PlacementStrategy placement = new PlacementStrategySameLocation(getPlacementStrategy(),beforeNode);
 		
-		new NodeInserter()
+		new InsertNodeTransform()
 			.nodeToInsert(ctor)
 			.target(getTarget())
 			.placementStrategy(placement)

@@ -4,10 +4,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
+import org.codemucker.jmatch.AString;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.StrategyBeforeAfterNodes;
+import org.codemucker.jmutate.ast.matcher.AJField;
+import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -67,19 +70,24 @@ public class ConfigurablePlacementStrategy  implements PlacementStrategy {
 	public static class Builder {
 
 		private static final PlacementStrategy DEFAULT_STRATEGY_FIELD = StrategyBeforeAfterNodes.with()
-			.afterNodes(FieldDeclaration.class)
-			.beforeNodes(MethodDeclaration.class, TypeDeclaration.class, EnumDeclaration.class)
+			.afterTypes(FieldDeclaration.class)
+			.beforeTypes(MethodDeclaration.class, TypeDeclaration.class, EnumDeclaration.class)
+			.defaultFirstNode()
 			.build();	
 		private static final PlacementStrategy DEFAULT_STRATEGY_METHOD = StrategyBeforeAfterNodes.with()
-			.afterNodes(MethodDeclaration.class, FieldDeclaration.class, EnumDeclaration.class)
-		    .beforeNodes(TypeDeclaration.class)
+			.afterTypes(FieldDeclaration.class)
+		    .beforeTypes(TypeDeclaration.class)
+		    .before(AJMethod.with().name(AString.equalToAny("toString","equals","hashCode")).numArgs(0).toAstNodeMatcher())
+		    .defaultLastNode()
 		    .build();
 		private static final PlacementStrategy DEFAULT_STRATEGY_CTOR = StrategyBeforeAfterNodes.with()
-			.afterNodes(FieldDeclaration.class, EnumDeclaration.class)
-			.beforeNodes(TypeDeclaration.class,MethodDeclaration.class)
+			.afterTypes(FieldDeclaration.class)
+			.beforeTypes(TypeDeclaration.class, MethodDeclaration.class)
+			.defaultFirstNode()
 			.build();
 		private static final PlacementStrategy DEFAULT_STRATEGY_CLASS = StrategyBeforeAfterNodes.with()
-			.afterNodes(FieldDeclaration.class, MethodDeclaration.class, EnumDeclaration.class, TypeDeclaration.class)
+			.afterTypes(FieldDeclaration.class, MethodDeclaration.class, EnumDeclaration.class, TypeDeclaration.class)
+			.defaultLastNode()
 			.build();
 
 		private PlacementStrategy fieldStrategy;

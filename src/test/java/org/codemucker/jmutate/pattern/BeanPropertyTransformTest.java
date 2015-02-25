@@ -66,8 +66,8 @@ public class BeanPropertyTransformTest {
     		.pl("import " + Property.class.getName() + ";")
     		.pl( "public class TestBeanModify {")
     		.pl('@').p(Pattern.class.getName()).p("(name=\"bean.property\")").p( "private String myField;" ).pl()
-    		.pl("@").p(Pattern.class.getName()).p("(name=\"bean.setter\") public void setMyField(String myField ){ this.myField = myField;}" ).pl()
     		.pl("@").p(Pattern.class.getName()).p("(name=\"bean.getter\") public String getMyField(){ return this.myField;}" ).pl()
+    		.pl("@").p(Pattern.class.getName()).p("(name=\"bean.setter\") public void setMyField(String myField ){ this.myField = myField;}" ).pl()
     		
     		//.println( "public String getMyField(){ return this.myField;}" )
     		.pl("}")

@@ -11,13 +11,14 @@ import org.codemucker.lang.BeanNameUtil;
 
 public abstract class AbstractPropertyModel {
 	public final String propertyName;
-	public final String propertyGetterName;
-	public final String propertySetterName;
-    public final String propertyConcreteType;
-    public final String propertyAddName;
-    public final String propertyRemoveName;
-    public final String propertyNameSingular;
-	
+	public final String propertyNameSingular;
+	public String propertyConcreteType;
+    
+	public String propertyGetterName;
+	public String propertySetterName;
+    public String propertyAddName;
+    public String propertyRemoveName;
+    
 	public final TypeInfo type;
 	
     //TODO:add all the concurrent ones in. Or better yet, for util types auto detect!

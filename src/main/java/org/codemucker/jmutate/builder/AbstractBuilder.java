@@ -3,8 +3,8 @@ package org.codemucker.jmutate.builder;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.apache.commons.lang3.StringUtils;
+import org.codemucker.jmutate.ContextNames;
 import org.codemucker.jmutate.JMutateContext;
-import org.codemucker.jmutate.ast.ContextNames;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;

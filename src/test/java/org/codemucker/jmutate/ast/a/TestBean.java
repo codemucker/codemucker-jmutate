@@ -22,7 +22,7 @@ import org.codemucker.jpattern.bean.Property;
 @Pattern(type=PatternType.Builder)
 public class TestBean {
 
-	@Property(name = "one")
+	@Property(value = "one")
 	private String fieldOne;
 	private String fieldTwo;
 

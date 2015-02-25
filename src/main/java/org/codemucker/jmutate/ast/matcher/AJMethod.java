@@ -15,8 +15,8 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifier;
-import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.NameUtil;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.Type;
 
@@ -40,6 +40,20 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 
 	public AJMethod(){
 	    super(JMethod.class);
+	}
+	
+	public Matcher<ASTNode> toAstNodeMatcher(){
+		final AJMethod self = this;
+		return new AbstractMatcher<ASTNode>(){
+			@Override
+			protected boolean matchesSafely(ASTNode actual,MatchDiagnostics diag) {
+				if(JMethod.is(actual)){
+					return self.matches(JMethod.from(actual),diag);	
+				} else {
+					return false;
+				}
+			}
+		};
 	}
 	
 	public AJMethod method(Predicate<JMethod> predicate){
@@ -77,7 +91,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
-	public AJMethod returningSomething() {
+	public AJMethod notReturningVoid() {
         addMatcher(Logical.not(newVoidReturnMatcher()));
         return this;
     }
