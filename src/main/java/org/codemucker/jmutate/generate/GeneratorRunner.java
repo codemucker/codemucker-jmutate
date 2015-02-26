@@ -27,6 +27,7 @@ import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.DefaultResourceLoader;
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ProjectOptions;
 import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceScanner;
 import org.codemucker.jmutate.ast.BaseSourceVisitor;
@@ -123,7 +124,9 @@ public class GeneratorRunner {
         return new Builder();
     }
 
-    public GeneratorRunner(Iterable<Root> roots, Iterable<Root> scanRoots, Matcher<Root> scanRootsFilter, boolean scanSubtypes,Root generationRoot, String searchPkg,Map<String, String> generators, boolean failOnParseError,ClashStrategy defaultClashStrategy, Matcher<String> filterAnnotations, Matcher<String> filterGenerators) {
+    public GeneratorRunner(Iterable<Root> roots, Iterable<Root> scanRoots, Matcher<Root> scanRootsFilter, boolean scanSubtypes,Root generationRoot, String searchPkg,
+    		Map<String, String> generators, boolean failOnParseError,ClashStrategy defaultClashStrategy, Matcher<String> filterAnnotations, Matcher<String> filterGenerators,
+    		ProjectOptions options) {
         super();
         this.resourceLoader = DefaultResourceLoader.with()
                 .parentLoader(DefaultResourceLoader.with().classLoader(Thread.currentThread().getContextClassLoader()).build())
@@ -150,6 +153,7 @@ public class GeneratorRunner {
         
         ctxt = DefaultMutateContext.with()
                 .defaults()
+                .projectOptions(options)
                 .parser(JAstParser.with()
                         .defaults()
                         .resourceLoader(resourceLoader)
@@ -569,6 +573,9 @@ public class GeneratorRunner {
         @Optional
         private ClashStrategy defaultClashStrategy = ClashStrategy.SKIP;
         
+        @Optional
+        private ProjectOptions projectOptions;
+        
 		private final Map<String, String> generators = new HashMap<>();
 
 		private Matcher<String> annotationNameMatcher;
@@ -586,7 +593,7 @@ public class GeneratorRunner {
             Matcher<String> annotationsMatcher = this.annotationNameMatcher != null ? this.annotationNameMatcher : AString.equalToAnything();
             Matcher<String> generatorMatcher = this.generatorNameMatcher != null ? this.generatorNameMatcher : AString.equalToAnything();
             
-            return new GeneratorRunner(roots,scanRoots, scanRootsFilter, scanSubTypes, defaultGenerateTo, scanPkg, generators, failOnParseError,defaultClashStrategy, annotationsMatcher, generatorMatcher);
+            return new GeneratorRunner(roots,scanRoots, scanRootsFilter, scanSubTypes, defaultGenerateTo, scanPkg, generators, failOnParseError,defaultClashStrategy, annotationsMatcher, generatorMatcher, projectOptions);
         }
         
         private Iterable<Root> getRootsOrDefault(){
@@ -715,6 +722,12 @@ public class GeneratorRunner {
         	this.generatorNameMatcher = matcher;
         	return this;
 		}
+
+        @Optional
+		public Builder projectOptions(ProjectOptions projectOptions) {
+			this.projectOptions = projectOptions;
+			return this;
+        }
 
     }
 }

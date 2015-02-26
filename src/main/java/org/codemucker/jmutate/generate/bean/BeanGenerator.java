@@ -3,6 +3,7 @@ package org.codemucker.jmutate.generate.bean;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -134,6 +135,11 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			
 			//TODO:add per property bind/veto override support. Use TriState?
 			BeanPropertyModel property = new BeanPropertyModel(model, field.getName(),field.getFullTypeName(),generateSetter,generateGetter,model.bindable, model.vetoable, fromSuperClass);
+			
+			property.hasField = true;
+			property.finalField = field.isFinal();
+			property.readOnly = field.isFinal() || !generateSetter;
+			
 			model.addField(property);
 		}
 	}
@@ -152,6 +158,11 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			boolean generateSetter = !field.isFinal();
 			
 			BeanPropertyModel property = new BeanPropertyModel(model, f.getName(), f.getGenericType().getTypeName(),generateSetter,generateGetter, false, false, false);
+			
+			property.hasField = true;
+			property.finalField = field.isModifier(Modifier.FINAL);
+			property.readOnly = field.isModifier(Modifier.FINAL) || !generateSetter;
+			
 			model.addField(property);
 		}
 	}
@@ -197,7 +208,8 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	}
 
 	private void generateNoArgCtor(JType bean, BeanModel model) {
-		if(model.generateNoArgCtor){
+		if(model.generateNoArgCtor && !model.hasDirectFinalProperties()){
+			
 			JMethod ctor = ctxt
 				.newSourceTemplate()
 				.pl("public " + model.type.simpleNameRaw + "(){}")
@@ -255,12 +267,16 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 
 	private void generateClone(JType bean, BeanModel model) {
 		if(model.generateCloneMethod && !bean.isAbstract()){
+			log.debug("adding method 'newInstanceOf'");
+
 			SourceTemplate clone = ctxt
 				.newSourceTemplate()
 				.var("b.type", model.type.simpleName)
 				.var("b.genericPart", model.type.genericPartOrEmpty)
+				.var("b.typeBounds", model.type.typeBoundsOrEmpty)
 				
-				.pl("public static ${b.genericPart} ${b.type} newInstanceOf(${b.type} bean){")
+				
+				.pl("public static ${b.typeBounds} ${b.type} newInstanceOf(${b.type} bean){")
 				.pl("if(bean == null){ return null;}")
 				.pl("final ${b.type} clone = new ${b.type}();");
 			

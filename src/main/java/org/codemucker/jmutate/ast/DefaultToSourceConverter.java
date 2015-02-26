@@ -37,13 +37,17 @@ public class DefaultToSourceConverter implements ToSourceConverter {
     public String toFormattedSource(String src, Kind kind) {
 	    String formattedSource = src;
 	    
-		int startIndentLevel = 0;
+		int startIndentLevel = 1;
 		TextEdit edits  = formatter.format(kind.getCodeFormatterKind(), src, 0, src.length(), startIndentLevel, NL);
         if (edits == null) {
-            String msg = String.format("Can not format the provided source, returning source as is. Source is %n%s", src);
+            String msg = String.format("No formatting changes, returning source as is");//. Source is %n%s", src);
             // throw new JMutateParseException(msg);
-            log.warn(msg);
-            formattedSource = applyTextEditsToSrc(src, edits);
+            log.debug(msg);
+            if(log.isTraceEnabled()){
+            	log.trace("source is\n" + src);
+            }
+        } else {
+        	formattedSource = applyTextEditsToSrc(src, edits);
         }
 		 
 		return formattedSource;

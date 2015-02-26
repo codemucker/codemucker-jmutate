@@ -4,8 +4,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import javax.print.DocFlavor.STRING;
-
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JType;
@@ -54,6 +52,15 @@ public class BeanModel {
     	this.inheritSuperClassProperties = options.inheritSuperClassProperties();
     	this.bindable = options.bindable();
     	this.vetoable = options.vetoable();
+    }
+    
+    public boolean hasDirectFinalProperties(){
+    	for(BeanPropertyModel p:properties.values()){
+    		if(!p.fromSuperClass && p.finalField && p.hasField){
+    			return true;
+    		}
+    	}
+    	return false;
     }
     
 	private static JAccess toJAccess(Access access) {

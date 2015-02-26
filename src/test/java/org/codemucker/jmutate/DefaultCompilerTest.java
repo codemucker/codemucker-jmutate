@@ -15,11 +15,15 @@ import org.junit.Test;
 public class DefaultCompilerTest {
 
     @Test
-    public void testCanCompileSource() {
+    public void testCanCompileSourceUsingEclipseAndSystemCompiler() {
         JMutateContext ctxt = DefaultMutateContext.with().defaults().build();
 
+        //use a changing package name to avoid other test classes (like import cleaner) finding this class on the class path
+        String packageName = "com.mycompany.x" + System.currentTimeMillis() + "x";
+        
         SourceTemplate t = ctxt.newSourceTemplate();
-        t.pl("package com.mycompany;");
+        t.var("pkg",packageName);
+        t.pl("package ${pkg};");
         t.p("@").p(MyAnnotation.class).pl("(foo=\"myvalue\")" );
         t.pl("public class FooBar {");
         t.pl("  private String myField;");
@@ -33,23 +37,22 @@ public class DefaultCompilerTest {
         ResourceLoader resourceLoader = ctxt.getParser().getResourceLoader();
         
         SystemCompiler compiler = new SystemCompiler(resourceLoader, new DefaultProjectOptions());
-        Class<?> sourceClass = compiler.toCompiledClass(source.getResource());
-        assertCorrectCompile(sourceClass);   
+        Class<?> sourceClassSystem = compiler.toCompiledClass(source.getResource());
+        assertCorrectCompile(sourceClassSystem, packageName);   
         
         SystemCompiler compilerEclipse = new SystemCompiler(resourceLoader, new DefaultProjectOptions());
         Class<?> sourceClassEclipe = compilerEclipse.toCompiledClass(source.getResource());
-        assertCorrectCompile(sourceClassEclipe);   
-        
+        assertCorrectCompile(sourceClassEclipe,packageName);   
         
     }
 
 
 
-    private void assertCorrectCompile(Class<?> sourceClass) {
+    private void assertCorrectCompile(Class<?> sourceClass,String pkgName) {
         Expect
             .that(sourceClass)
             .is(AClass.with()
-                .fullName("com.mycompany.FooBar")
+                .fullName( pkgName + ".FooBar")
                 .isPublic()
                 .annotation(AnAnnotation.with().fullName(MyAnnotation.class))
                 .field(AField.with().name("myField").isPrivate())

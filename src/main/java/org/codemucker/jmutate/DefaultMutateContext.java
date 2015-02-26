@@ -414,6 +414,12 @@ public class DefaultMutateContext implements JMutateContext {
             return this;
         }
 
+	    @Optional
+        public Builder projectOptions(ProjectOptions options) {
+            this.projectOptions = options;
+            return this;
+        }
+
         @Optional
         public Builder formattingOptions(DefaultCodeFormatterOptions formattingOptions) {
             this.formattingOptions = formattingOptions;

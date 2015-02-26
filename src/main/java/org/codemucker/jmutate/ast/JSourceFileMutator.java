@@ -113,7 +113,7 @@ public class JSourceFileMutator {
     private void internalWriteChangesToFile(boolean formatSrc) {
         String src = source.getCurrentSource();
         if(formatSrc){
-            src = context.getNodeToSourceConverter().toFormattedSource(src, Kind.COMPILATION_UNIT);
+            src = context.getNodeToSourceConverter().toFormattedSource(src, Kind.UNKNOWN);
         }
         OutputStream os = null;
         try {

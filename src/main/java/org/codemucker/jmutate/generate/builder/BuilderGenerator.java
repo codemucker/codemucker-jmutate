@@ -21,6 +21,7 @@ import org.codemucker.jmutate.ClashStrategyResolver;
 import org.codemucker.jmutate.CodeFinder;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
+import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
@@ -419,7 +420,8 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
             }
             String getterName = BeanNameUtil.toGetterName(field.getName(), NameUtil.isBoolean(field.getFullTypeName()));
             String getter = getterName + "()";
-            if (!pojoType.hasMethodMatching(AJMethod.with().name(getterName).numArgs(0))) {
+            boolean hasGetter = pojoType.hasMethodMatching(AJMethod.with().name(getterName).numArgs(0)); 
+            if (!hasGetter) {
                 log("no method " + getter);
                 if (!field.getJModifiers().isPublic()) {
                     //can't access field, lets skip
@@ -430,7 +432,9 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
             //property.propertyGetter = getter;
             BuilderPropertyModel property = new BuilderPropertyModel(model, field.getName(), field.getFullTypeName(),superClass);
             
-            
+            property.hasField = true;
+            property.finalField = field.isFinal();
+            property.readOnly = field.isFinal() || (field.isAccess(JAccess.PRIVATE) && !hasGetter);
             model.addProperty(property);
         }
     }

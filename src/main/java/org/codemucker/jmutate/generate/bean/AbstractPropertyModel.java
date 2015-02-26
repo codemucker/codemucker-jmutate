@@ -13,7 +13,10 @@ public abstract class AbstractPropertyModel {
 	public final String propertyName;
 	public final String propertyNameSingular;
 	public String propertyConcreteType;
-    
+	public boolean readOnly;
+	public boolean hasField;
+	public boolean finalField;
+	
 	public String propertyGetterName;
 	public String propertySetterName;
     public String propertyAddName;
