@@ -14,7 +14,16 @@ public interface ResourceLoader {
     
     boolean containsResource(String relPath);
 
-    RootResource getResource(String relPath);
+    /**
+     * Find the resource for the given classpath. Converts full stops '.' into slashes '/'. Handles '$' which denote internal classes. If the classname is an internal class
+     * of the form com.mycompany.Foo.Bar, then it will look for com/mycompany/Foo/Bar.java, then com/mycompany/Foo.java, com/mycompany.java etc 
+     * @param fullClassName
+     * @return
+     */
+    RootResource getResourceOrNullFromClassName(String fullClassName);
+    
+    RootResource getResourceOrNull(String relPath);
+    
 
     /**
      * Return all the roots used in this loader, including those of any parent loaders (if any)
@@ -23,14 +32,17 @@ public interface ResourceLoader {
     public Collection<Root> getAllRoots();
     
     /**
-     * DOes a class witht eh given full name exist either as a source file (so uncompiled) or in the the classpath heiarchy? Results might be cached for faster lookup
+     * Does a class with the given full name exist either as a source file (so uncompiled) or in the the classpath heiarchy? Results might be cached for faster lookup
      * @param fullClassName
      * @return
      */
     public boolean canLoadClassOrSource(String fullClassName);
     
     public Class<?> loadClass(String fullClassName) throws ClassNotFoundException;
-
-    ClassLoader getClassLoader();
     
+    Class<?> loadClassOrNull(String fullClassName);
+    
+    ClassLoader getClassLoader();
+
+	
 }

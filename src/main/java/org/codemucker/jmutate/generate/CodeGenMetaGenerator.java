@@ -106,7 +106,7 @@ public class CodeGenMetaGenerator {
 		}
 		JAnnotation generated = annotations.find(AJAnnotation.with().fullName(IsGenerated.class)).getFirstOrNull();
 		if(generated != null){
-			Expression attributeExp = generated.getExpressionForAttributeOrNull(PROP_BY);
+			Expression attributeExp = generated.getAttributeValueOrNull(PROP_BY);
 			if(attributeExp instanceof StringLiteral){
 				String generator = ((StringLiteral)attributeExp).getLiteralValue();
 				return isGeneratorMatch(generator);
@@ -118,7 +118,7 @@ public class CodeGenMetaGenerator {
 				if(match != null){
 					return match;
 				}
-				String fieldValue = resolveFieldValue(annotations, qn);
+				String fieldValue = resolveFieldValue(annotations.getAstNode(), qn);
 				match = isGeneratorMatch(fieldValue);
 				cachedFieldValueMatchResults.put(fullName, match);
 				return match;
@@ -127,14 +127,17 @@ public class CodeGenMetaGenerator {
 				Expression exp = fa.getExpression();
 				if(exp instanceof Name){
 					Name name = (Name)exp;
+					//e.g. field =   Foo.Bar
+					//com.mycompany.Foo
 					String className = NameUtil.resolveQualifiedName(name);
+					//Bar
 					String fieldName  = fa.getName().toString();
 					String fullName = className + "." + fieldName;
 					Boolean match = cachedFieldValueMatchResults.get(fullName); 
 					if(match != null){
 						return match;
 					}
-					String fieldValue = resolveFieldValue(annotations, className, fieldName);
+					String fieldValue = resolveFieldValue(annotations.getAstNode(), className, fieldName);
 					match = isGeneratorMatch(fieldValue);
 					cachedFieldValueMatchResults.put(fullName, match);
 					return match;
@@ -145,17 +148,17 @@ public class CodeGenMetaGenerator {
 		return false;
 	}
 
-	private String resolveFieldValue(Annotations annotations, QualifiedName qn) {
+	private String resolveFieldValue(ASTNode fromNode, QualifiedName qn) {
 		String className = NameUtil.resolveQualifiedName(qn.getQualifier());
 		String fieldName = qn.getName().toString();
-		return resolveFieldValue(annotations, className,fieldName);
+		return resolveFieldValue(fromNode, className,fieldName);
 	}
 	
-	private String resolveFieldValue(Annotations annotations,String className, String fieldName){
+	private String resolveFieldValue(ASTNode fromNode,String className, String fieldName){
 		String fieldValue = null;
-		ResourceLoader loader = MutateUtil.getResourceLoader(annotations.getAstNode());
+		ResourceLoader loader = MutateUtil.getResourceLoader(fromNode);
 		if(loader.canLoadClassOrSource(className)){
-			RootResource file = loader.getResource(className.replace('.', '/') + ".java");
+			RootResource file = loader.getResourceOrNullFromClassName(className);
 			if(file.exists()){
 				//read generator field value
 				JSourceFile source = JSourceFile.fromResource(file, ctxt.getParser());

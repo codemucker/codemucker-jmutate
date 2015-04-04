@@ -304,7 +304,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 						t.pl("		clone.${p.setter}(null);");
 						t.pl("	} else {");
 						t.pl("		${p.rawType}[] src = bean.${p.getter}();");
-						t.pl("		${p.rawType}[] copy = new ${p.rawType}[src].length;");
+						t.pl("		${p.rawType}[] copy = new ${p.rawType}[src.length];");
 						t.pl("		System.arraycopy(src,0,copy,0,src.length);");
 						t.pl("		clone.${p.setter}(copy);");
 						t.pl("	}");
@@ -313,7 +313,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 						t.pl("	if(bean.${p.name} == null){");
 						t.pl("		clone.${p.name} = null;");
 						t.pl("	} else {");
-						t.pl("		clone.${p.name} = new ${p.rawType}[bean.${p.name}].length;");
+						t.pl("		clone.${p.name} = new ${p.rawType}[bean.${p.name}.length];");
 						t.pl("		System.arraycopy(bean.${p.name},0,clone.${p.name},0,bean.${p.name}.length);");
 						t.pl("	}");
 					}
@@ -524,12 +524,12 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	private void generateToString(JType bean, BeanModel model) {
 		if(model.generateToString){
 			StringBuilder sb = new StringBuilder();
-			String label = model.type.simpleNameRaw;
-			JType t = bean;
-			while(!t.isTopLevelClass()){
-				t = t.getParentJType();
-				label = t.getSimpleName() + "." + label;
-			}
+//			String label = model.type.simpleNameRaw;
+//			JType t = bean;
+//			while(!t.isTopLevelClass()){
+//				t = t.getParentJType();
+//				label = t.getSimpleName() + "." + label;
+//			}
 			sb.append("\" [");
 			if(model.properties.isEmpty()){
 				sb.append("]\"");
@@ -552,10 +552,9 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			
 			SourceTemplate toString = ctxt
 				.newSourceTemplate()
-				.var("label", label)
 				.pl("@java.lang.Override")
 				.pl("public String toString(){")
-				.pl("return \"${label}@\" + System.identityHashCode(this) + " + sb.toString() + ";")
+				.pl("return this.getClass().getName() + \"@\" + System.identityHashCode(this) + " + sb.toString() + ";")
 				.pl("}");
 			addMethod(bean, toString.asMethodNodeSnippet(),model.markGenerated);
 		}
@@ -624,8 +623,12 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.var("p.keyType", property.type.indexedKeyTypeNameOrNull)
 				.var("p.valueType", property.type.indexedValueTypeNameOrNull)
 					
-				.pl("public void ${p.addName}(final ${p.keyType} key,final ${p.valueType} val){")
-				.pl("	if(this.${p.name} == null){ this.${p.name} = new ${p.newType}${p.genericPart}(); }")
+				.pl("public void ${p.addName}(final ${p.keyType} key,final ${p.valueType} val){");
+			
+			if(!property.finalField){
+				add.pl("	if(this.${p.name} == null){ this.${p.name} = new ${p.newType}${p.genericPart}(); }");
+			}
+			add
 				.pl("	this.${p.name}.put(key, val);")
 				.pl("}");
 				
@@ -675,10 +678,12 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 					}
 					add.pl("{");
 						
-					add
-					.pl(" 	if(this.${p.name} == null){ ")
-					.pl("		this.${p.name} = new ${p.newType}${p.genericPart}(); ")
-					.pl("	}");	
+					if(!property.finalField){
+						add
+						.pl(" 	if(this.${p.name} == null){ ")
+						.pl("		this.${p.name} = new ${p.newType}${p.genericPart}(); ")
+						.pl("	}");	
+					}
 				
 				CharSequence vetoString = "";
 				

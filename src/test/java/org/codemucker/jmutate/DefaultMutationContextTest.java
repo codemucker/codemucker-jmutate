@@ -23,7 +23,7 @@ public class DefaultMutationContextTest {
 
         Class<?> sourceClass = ctxt.getCompiler().toCompiledClass(source);
         
-        Expect.that(sourceClass).is(AClass.that().isPublic().fullName("com.mycompany.FooBar"));
+        Expect.that(sourceClass).is(AClass.that().isPublic().fullNameAntPattern("com.mycompany.FooBar"));
         
     }
 }

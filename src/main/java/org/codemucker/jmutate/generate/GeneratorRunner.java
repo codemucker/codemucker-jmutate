@@ -309,7 +309,7 @@ public class GeneratorRunner {
 		log.debug("trying to load annotation class " + key + " from source");
 		//ok, template might be a source file in the project
 		String sourcePath = key.replace('.', '/') + ".java";
-		RootResource resource = ctxt.getResourceLoader().getResource(sourcePath);
+		RootResource resource = ctxt.getResourceLoader().getResourceOrNull(sourcePath);
 		if(resource != null && resource.exists()){
 			JSourceFile source = JSourceFile.fromResource(resource, ctxt.getParser());
 			if(source.getMainType().getAnnotations().contains(IsGeneratorTemplate.class)){

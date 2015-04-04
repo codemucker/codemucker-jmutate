@@ -194,11 +194,12 @@ public class RefactorTest {
 	private <A extends Annotation> String getAnonationValue(AnnotationsProvider  annotatable, Class<A> anon, String attributeName){
 		JAnnotation janon = annotatable.getAnnotations().get(Property.class);
 		if( anon != null ){
-			String value = janon.getValueAsStringForAttribute("name", null);
-			if( StringUtils.isBlank(value)){
+			Object value = janon.getAttributeValue("name", null);
+			String sval = value==null?null:value.toString();
+			if(StringUtils.isBlank(sval)){
 				throw new JMutateException("Expected a value for 'name' for annotation 'BeanProperty'");
 			}
-			return value;
+			return sval;
 		} 
 		return null;
 	}

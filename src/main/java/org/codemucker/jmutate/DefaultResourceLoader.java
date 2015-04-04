@@ -70,9 +70,33 @@ public class DefaultResourceLoader implements ResourceLoader {
     }
     
     @Override
-    public RootResource getResource(String relPath){
+    public RootResource getResourceOrNullFromClassName(String fullClassName) {
+    	
+    	//if of type com.mycompany.Foo$Bar we can look direct for Fcom.mycompany.Foo
+    	String relPath;
+    	int dollar  = fullClassName.indexOf('$');
+    	if( dollar !=-1){
+    		relPath = fullClassName.substring(0, dollar) + ".java";
+    	} else {
+    		relPath= fullClassName.replace(".", "/") + ".java";
+    	}
+    	RootResource r = getResourceOrNull(relPath);
+    	if(r == null){
+    		//is it an inner class path? so com.mycompany.Foo.Bar or com.mycompany.Foo$Bar
+    		for( int i = fullClassName.length() - 1; i >=0 && r == null;i--){
+    			if(fullClassName.charAt(i) == '.'){
+    				relPath = fullClassName.substring(0, i).replace(".", "/")  + ".java";
+    				r = getResourceOrNull(relPath);
+    			}
+    		}
+    	}
+    	return r;
+    };
+    
+    @Override
+    public RootResource getResourceOrNull(String relPath){
         if(parent != null){
-            RootResource resource = parent.getResource(relPath);
+            RootResource resource = parent.getResourceOrNull(relPath);
             if(resource != null){
                 return resource;
             }
@@ -110,11 +134,21 @@ public class DefaultResourceLoader implements ResourceLoader {
     }
     
     @Override
+    public Class<?> loadClassOrNull(String fullClassName) {
+        try {
+        	return loadClass(fullClassName);
+        }catch (ClassNotFoundException e){
+        	//do nothing
+        }
+        return null;
+    }
+    
+    @Override
     public Class<?> loadClass(String fullClassName) throws ClassNotFoundException {
         if (parent != null) {
             try {
-                Class<?> klass = parent.loadClass(fullClassName);
-                return klass;
+                Class<?> loadedClass = parent.loadClass(fullClassName);
+                return loadedClass;
             } catch(ClassNotFoundException e){
                 
             }

@@ -119,7 +119,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		}
 		sourcePath = sourcePath.replace('.', '/') + ".java";
 		
-		RootResource resource = ctxt.getResourceLoader().getResource(sourcePath);
+		RootResource resource = ctxt.getResourceLoader().getResourceOrNull(sourcePath);
 		JSourceFile source = ctxt.getOrLoadSource(resource);
 		if( source != null){
 			source.getMainType().findTypesMatching(AJType.with().fullName(AString.equalTo(NameUtil.compiledNameToSourceName(fullName)))).getFirstOrNull();

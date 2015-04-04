@@ -119,9 +119,9 @@ public class JAstParser {
 		CompilationUnit cu = (CompilationUnit) parseNode(src, ASTParser.K_COMPILATION_UNIT, resource);
 		if (resource != null) {
 			JSourceFile source = new JSourceFile(resource, cu, src.toString(), resource.getLastModified());
-			bindToNode(cu,resourceLoader,source);
+			bindToNode(cu,resourceLoader,this,source);
 		}
-		bindToNode(cu,getResourceLoader());
+		bindToNode(cu,getResourceLoader(), this);
 		
 		if (failOnParseErrors){
 			IProblem[] problems = cu.getProblems();
@@ -220,7 +220,7 @@ public class JAstParser {
 		parser.setKind(kind);
 		ASTNode node = parser.createAST(null);
 
-		bindToNode(node,resourceLoader);
+		bindToNode(node,resourceLoader,this);
 		//check the parsed type is what was asked for as if there was an error
 		//parsing the parser can decide to change it's mind as to what it's returning
 				
@@ -231,12 +231,12 @@ public class JAstParser {
 		return node;
 	}
 	
-	private static void bindToNode(ASTNode node, ResourceLoader resourceLoader) {
-    	MutateUtil.setResourceLoader(node, resourceLoader);
+	private static void bindToNode(ASTNode node, ResourceLoader resourceLoader,JAstParser parser) {
+    	MutateUtil.setResourceLoader(node, resourceLoader, parser);
     }
 	
-	private static void bindToNode(ASTNode node, ResourceLoader resourceLoader, JSourceFile source) {
-		MutateUtil.setResourceLoader(node, resourceLoader);
+	private static void bindToNode(ASTNode node, ResourceLoader resourceLoader, JAstParser parser,JSourceFile source) {
+		MutateUtil.setResourceLoader(node, resourceLoader, parser);
 		MutateUtil.setSource(node, source);
     }
     

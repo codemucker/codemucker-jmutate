@@ -52,7 +52,7 @@ public class DefaultCompilerTest {
         Expect
             .that(sourceClass)
             .is(AClass.with()
-                .fullName( pkgName + ".FooBar")
+                .fullNameAntPattern( pkgName + ".FooBar")
                 .isPublic()
                 .annotation(AnAnnotation.with().fullName(MyAnnotation.class))
                 .field(AField.with().name("myField").isPrivate())
