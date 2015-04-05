@@ -1,9 +1,12 @@
 package org.codemucker.jmutate.generate.bean;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JType;
@@ -13,28 +16,28 @@ import org.codemucker.jpattern.generate.GenerateBean;
 
 public class BeanModel {   
 
-	public final boolean markGenerated;
-	public final boolean markCtorArgsAsProperties;
-	public final JAccess fieldAccess;
-	public final boolean generateHashCodeEquals;
-	public final boolean generateCloneMethod;
-	public final boolean makeReadonly;
-	public final boolean generateStaticPropertyNameFields;
-	public final boolean generateNoArgCtor;
-	public final boolean generateAllArgCtor;
-	public final boolean generateToString;
-	public final boolean generateAddRemoveMethodsForIndexedProperties;
-	public final boolean inheritSuperClassProperties;
-	public final String  propertyChangeSupportFieldName = "_propertyChangeSupport";
-	public final String  vetoableChangeSupportFieldName = "_vetoableSupport";
+	private boolean markGenerated;
+	private boolean markCtorArgsAsProperties;
+	private JAccess fieldAccess;
+	private boolean generateHashCodeEquals;
+	private boolean generateCloneMethod;
+	private boolean makeReadonly;
+	private boolean generateStaticPropertyNameFields;
+	private boolean generateNoArgCtor;
+	private boolean generateAllArgCtor;
+	private boolean generateToString;
+	private boolean generateAddRemoveMethodsForIndexedProperties;
+	private boolean inheritSuperClassProperties;
+	private String  propertyChangeSupportFieldName = "_propertyChangeSupport";
+	private String  vetoableChangeSupportFieldName = "_vetoableSupport";
 	
-	public final boolean bindable;
-	public final boolean vetoable;
+	private boolean bindable;
+	private boolean vetoable;
 	
 	
-	public final TypeInfo type;
-    final Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
-	
+	private TypeInfo type;
+    private Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
+
     public BeanModel(JType pojoType,GenerateBean options) {
     	this.type = TypeInfo.newFromFullNameAndTypeBounds(pojoType.getFullGenericName(), pojoType.getTypeBoundsExpressionOrNull());
 
@@ -54,9 +57,17 @@ public class BeanModel {
     	this.vetoable = options.vetoable();
     }
     
+    public BeanModel(JType pojoType,Map<String,?> cfg) {
+        try {
+			BeanUtils.populate(this, cfg);
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			throw new RuntimeException("Error configuring BeanModel from map",e);
+		}
+    }
+    
     public boolean hasDirectFinalProperties(){
     	for(BeanPropertyModel p:properties.values()){
-    		if(!p.fromSuperClass && p.finalField && p.hasField){
+    		if(!p.isFromSuperClass() && p.finalField && p.hasField){
     			return true;
     		}
     	}
@@ -80,7 +91,7 @@ public class BeanModel {
 
     void addField(BeanPropertyModel field){
         if (hasNamedField(field.propertyName)) {
-            throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, type.fullName);
+            throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, getType().getFullName());
         }
         properties.put(field.propertyName, field);
     }
@@ -96,4 +107,76 @@ public class BeanModel {
     Collection<BeanPropertyModel> getFields(){
         return properties.values();
     }
+
+	public boolean isMarkGenerated() {
+		return markGenerated;
+	}
+
+	public boolean isMarkCtorArgsAsProperties() {
+		return markCtorArgsAsProperties;
+	}
+
+	public JAccess getFieldAccess() {
+		return fieldAccess;
+	}
+
+	public boolean isGenerateHashCodeEquals() {
+		return generateHashCodeEquals;
+	}
+
+	public boolean isGenerateCloneMethod() {
+		return generateCloneMethod;
+	}
+
+	public boolean isMakeReadonly() {
+		return makeReadonly;
+	}
+
+	public boolean isGenerateStaticPropertyNameFields() {
+		return generateStaticPropertyNameFields;
+	}
+
+	public boolean isGenerateNoArgCtor() {
+		return generateNoArgCtor;
+	}
+
+	public boolean isGenerateAllArgCtor() {
+		return generateAllArgCtor;
+	}
+
+	public boolean isGenerateToString() {
+		return generateToString;
+	}
+
+	public boolean isGenerateAddRemoveMethodsForIndexedProperties() {
+		return generateAddRemoveMethodsForIndexedProperties;
+	}
+
+	public boolean isInheritSuperClassProperties() {
+		return inheritSuperClassProperties;
+	}
+
+	public String getPropertyChangeSupportFieldName() {
+		return propertyChangeSupportFieldName;
+	}
+
+	public String getVetoableChangeSupportFieldName() {
+		return vetoableChangeSupportFieldName;
+	}
+
+	public boolean isBindable() {
+		return bindable;
+	}
+
+	public boolean isVetoable() {
+		return vetoable;
+	}
+
+	public TypeInfo getType() {
+		return type;
+	}
+
+	Map<String, BeanPropertyModel> getProperties() {
+		return properties;
+	}
 }

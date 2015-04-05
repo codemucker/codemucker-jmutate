@@ -87,7 +87,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 
 	private void extractAllProperties(JType optionsDeclaredInNode,
 			Matcher<String> fieldMatcher, BuilderModel model) {
-		if(model.inheritSuperBeanProperties){
+		if(model.isInheritSuperBeanProperties()){
         	CodeFinder finder = ctxt.obtain(CodeFinder.class).failOnNotFound(false);
         	String superTypeName = NameUtil.removeGenericOrArrayPart(optionsDeclaredInNode.getSuperTypeFullName());
         	while(!Object.class.getName().equals(superTypeName)){
@@ -117,28 +117,28 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	}
 
 	private void generateBuilder(JType optionsDeclaredInNode,BuilderModel model) {
-		boolean markGenerated = model.markGenerated;
+		boolean markGenerated = model.isMarkGenerated();
 		
 		JSourceFile source = optionsDeclaredInNode.getSource();
 		JType pojo = source.getMainType();
 		JType builder;
 		
-		boolean isAbstract = model.supportSubclassing;
+		boolean isAbstract = model.isSupportSubclassing();
 
-		if(pojo.getSimpleName().equals(model.builderTypeSimpleRaw)){
+		if(pojo.getSimpleName().equals(model.getBuilderTypeSimpleRaw())){
 			builder = pojo;
 		} else{
-			builder = pojo.getChildTypeWithNameOrNull(model.builderTypeSimpleRaw);
+			builder = pojo.getChildTypeWithNameOrNull(model.getBuilderTypeSimpleRaw());
 			if(builder == null){
 				SourceTemplate t = ctxt.newSourceTemplate()
-					.var("typeBounds", model.pojoType.typeBoundsOrNull)
-					.var("type", model.builderTypeSimpleRaw + Strings.nullToEmpty(model.builderTypeBoundsOrNull))
+					.var("typeBounds", model.getPojoType().getTypeBoundsOrNull())
+					.var("type", model.getBuilderTypeSimpleRaw() + Strings.nullToEmpty(model.getBuilderTypeBoundsOrNull()))
 					.var("modifier", (isAbstract ?"abstract":""))
 					.pl("public static ${modifier} class ${type} { }")
 				;
 				
 				pojo.asMutator(ctxt).addType(t.asResolvedTypeNodeNamed(null));
-				builder = pojo.getChildTypeWithName(model.builderTypeSimpleRaw);
+				builder = pojo.getChildTypeWithName(model.getBuilderTypeSimpleRaw());
 				genInfo.addGeneratedMarkers(builder.asAbstractTypeDecl());
 			}
 		}
@@ -148,10 +148,10 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		//TODO:builder clone/from method
 		
 		//add the self() method
-		if(!"this".equals(model.builderSelfAccessor)){
+		if(!"this".equals(model.getBuilderSelfAccessor())){
 			SourceTemplate selfMethod = ctxt.newSourceTemplate()
-				.var("selfType", model.builderSelfType)
-				.var("selfGetter", model.builderSelfAccessor)
+				.var("selfType", model.getBuilderSelfType())
+				.var("selfGetter", model.getBuilderSelfAccessor())
 				
 				.pl("protected ${selfType} ${selfGetter} { return (${selfType})this; }");		
 			
@@ -175,10 +175,10 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 
 		SourceTemplate setterMethod = ctxt.newSourceTemplate()
 			.var("p.name", property.propertyName)
-			.var("p.type", property.type.fullName)
-			.var("p.type_raw", property.type.fullNameRaw)
-			.var("self.type", model.builderSelfType)
-			.var("self.getter", model.builderSelfAccessor)
+			.var("p.type", property.type.getFullName())
+			.var("p.type_raw", property.type.getFullNameRaw())
+			.var("self.type", model.getBuilderSelfType())
+			.var("self.getter", model.getBuilderSelfAccessor())
 			
 			.pl("public ${self.type} ${p.name}(final ${p.type} val){")
 			.pl("	this.${p.name} = val;")
@@ -191,7 +191,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	private void generateField(boolean markGenerated, JType builder,BuilderPropertyModel property) {
 		SourceTemplate field = ctxt.newSourceTemplate()
 			.var("p.name", property.propertyName)
-			.var("p.type", property.type.fullName)
+			.var("p.type", property.type.getFullName())
 			.pl("private ${p.type} ${p.name};");
 			
 			addField(builder, field.asFieldNodeSnippet(),markGenerated);
@@ -199,30 +199,30 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 
 	
 	private void generateStaticBuilderCreateMethods(BuilderModel model,JType beanType) {
-		if(model.generateStaticBuilderMethod){
+		if(model.isGenerateStaticBuilderMethod()){
 			SourceTemplate t = ctxt
 					.newSourceTemplate()
-					.var("self.type", model.builderTypeSimple)
-					.var("typeBounds", model.pojoType.typeBoundsOrEmpty);
+					.var("self.type", model.getBuilderTypeSimple())
+					.var("typeBounds", model.getPojoType().getTypeBoundsOrEmpty());
 		
-			for (String name : model.staticBuilderMethodNames) {
-				addMethod(beanType,t.child().pl("public static ${typeBounds} ${self.type} " + name + " (){ return new ${self.type}(); }").asMethodNodeSnippet(),model.markGenerated);
+			for (String name : model.getStaticBuilderMethodNames()) {
+				addMethod(beanType,t.child().pl("public static ${typeBounds} ${self.type} " + name + " (){ return new ${self.type}(); }").asMethodNodeSnippet(),model.isMarkGenerated());
 			}
 		}
 	}
 	
 	private void generateCollectionAddRemove(JType bean, BuilderModel model,BuilderPropertyModel property) {
-		if(property.type.isCollection && model.generateAddRemoveMethodsForIndexedProperties){
+		if(property.type.isCollection() && model.isGenerateAddRemoveMethodsForIndexedProperties()){
 			SourceTemplate add = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.addName", property.propertyAddName)
-				.var("p.type", property.type.objectTypeFullName)
+				.var("p.type", property.type.getObjectTypeFullName())
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.genericPart", property.type.genericPartOrEmpty)
-				.var("p.valueType", property.type.indexedValueTypeNameOrNull)
-				.var("self.type", model.builderSelfType)
-				.var("self.getter", model.builderSelfAccessor)
+				.var("p.genericPart", property.type.getGenericPartOrEmpty())
+				.var("p.valueType", property.type.getIndexedValueTypeNameOrNull())
+				.var("self.type", model.getBuilderSelfType())
+				.var("self.getter", model.getBuilderSelfAccessor())
 				
 				.pl("public ${self.type} ${p.addName}(final ${p.valueType} val){")
 				.pl("	if(this.${p.name} == null){ ")
@@ -232,17 +232,17 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				.pl("	return ${self.getter};")
 				.pl("}");
 				
-			addMethod(bean, add.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, add.asMethodNodeSnippet(),model.isMarkGenerated());
 			
 			SourceTemplate remove = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.removeName", property.propertyRemoveName)
-				.var("p.type", property.type.objectTypeFullName)
+				.var("p.type", property.type.getObjectTypeFullName())
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.valueType", property.type.indexedValueTypeNameOrNull)
-				.var("self.type", model.builderSelfType)
-				.var("self.getter", model.builderSelfAccessor)
+				.var("p.valueType", property.type.getIndexedValueTypeNameOrNull())
+				.var("self.type", model.getBuilderSelfType())
+				.var("self.getter", model.getBuilderSelfAccessor())
 				
 				.pl("public ${self.type} ${p.removeName}(final ${p.valueType} val){")
 				.pl("	if(this.${p.name} != null){ ")
@@ -251,23 +251,23 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				.pl("	return ${self.getter};")
 				.pl("}");
 				
-			addMethod(bean, remove.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, remove.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 	
 	private void generateMapAddRemove(JType bean, BuilderModel model,BuilderPropertyModel property) {
-		if(property.type.isMap && model.generateAddRemoveMethodsForIndexedProperties){
+		if(property.type.isMap() && model.isGenerateAddRemoveMethodsForIndexedProperties()){
 			SourceTemplate add = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.addName", property.propertyAddName)
-				.var("p.type", property.type.objectTypeFullName)
+				.var("p.type", property.type.getObjectTypeFullName())
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.genericPart", property.type.genericPartOrEmpty)
-				.var("p.keyType", property.type.indexedKeyTypeNameOrNull)
-				.var("p.valueType", property.type.indexedValueTypeNameOrNull)
-				.var("self.type", model.builderSelfType)
-				.var("self.getter", model.builderSelfAccessor)
+				.var("p.genericPart", property.type.getGenericPartOrEmpty())
+				.var("p.keyType", property.type.getIndexedKeyTypeNameOrNull())
+				.var("p.valueType", property.type.getIndexedValueTypeNameOrNull())
+				.var("self.type", model.getBuilderSelfType())
+				.var("self.getter", model.getBuilderSelfAccessor())
 					
 				.pl("public ${self.type} ${p.addName}(final ${p.keyType} key,final ${p.valueType} val){")
 				.pl("	if(this.${p.name} == null){ this.${p.name} = new ${p.newType}${p.genericPart}(); }")
@@ -275,17 +275,17 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				.pl("	return ${self.getter};")
 				.pl("}");
 				
-			addMethod(bean, add.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, add.asMethodNodeSnippet(),model.isMarkGenerated());
 			
 			SourceTemplate remove = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.removeName", property.propertyRemoveName)
-				.var("p.type", property.type.objectTypeFullName)
+				.var("p.type", property.type.getObjectTypeFullName())
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.keyType", property.type.indexedKeyTypeNameOrNull)
-				.var("self.type", model.builderSelfType)
-				.var("self.getter", model.builderSelfAccessor)
+				.var("p.keyType", property.type.getIndexedKeyTypeNameOrNull())
+				.var("self.type", model.getBuilderSelfType())
+				.var("self.getter", model.getBuilderSelfAccessor())
 				
 				.pl("public ${self.type} ${p.removeName}(final ${p.keyType} key){")
 				.pl("	if(this.${p.name} != null){ ")
@@ -294,16 +294,16 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				.pl("	return ${self.getter};")
 				.pl("}");
 				
-			addMethod(bean, remove.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, remove.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
 	private void generateBuildMethod(JType builder,BuilderModel model) {
-		if(!model.supportSubclassing){
+		if(!model.isSupportSubclassing()){
 			SourceTemplate buildMethod = ctxt
 				.newSourceTemplate()
-				.var("b.type", model.pojoType.simpleName)
-				.var("buildName", model.buildPojoMethodName)	
+				.var("b.type", model.getPojoType().getSimpleName())
+				.var("buildName", model.getBuildPojoMethodName())	
 				.pl("public ${b.type} ${buildName}(){")
 				.p("	return new ${b.type}(");
 			
@@ -317,7 +317,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			}
 			buildMethod.pl(");");
 			buildMethod.pl("}");
-			addMethod(builder, buildMethod.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(builder, buildMethod.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
@@ -325,7 +325,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		if(!beanType.isAbstract()){
 			SourceTemplate beanCtor = ctxt
 					.newSourceTemplate()
-					.var("b.name", model.pojoType.simpleNameRaw)
+					.var("b.name", model.getPojoType().getSimpleNameRaw())
 					.pl("private ${b.name} (");
 			
 			boolean comma = false;
@@ -334,10 +334,10 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				if(comma){
 					beanCtor.p(",");
 				}
-				if(model.markCtorArgsAsProperties){
+				if(model.isMarkCtorArgsAsProperties()){
 					beanCtor.p("@" + Property.class.getName() + "(name=\"" + property.propertyName + "\") ");
 				}
-				beanCtor.p(property.type.fullName + " " + property.propertyName);
+				beanCtor.p(property.type.getFullName() + " " + property.propertyName);
 				comma = true;
 			}
 			
@@ -346,7 +346,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			for (BuilderPropertyModel property : model.getProperties()) {
 				//TODO:figure out if we can set field directly, via setter, or via ctor args
 				//for now assume a setter
-				if(property.fromSuperClass){
+				if(property.isFromSuperClass()){
 					beanCtor.pl(property.propertySetterName + "(" + property.propertyName + ");");
 				} else {
 					beanCtor.pl("this." + property.propertyName + "=" + property.propertyName + ";");
@@ -354,7 +354,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				comma = true;
 			}
 			beanCtor.pl("}");
-			addMethod(beanType, beanCtor.asConstructorNodeSnippet(),model.markGenerated);
+			addMethod(beanType, beanCtor.asConstructorNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 	

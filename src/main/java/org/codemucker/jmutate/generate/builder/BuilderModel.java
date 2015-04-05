@@ -24,47 +24,47 @@ public class BuilderModel {
 		}
 	};
 	
-	public final TypeInfo pojoType;
-	public final String builderTypeSimple;
-	public final String builderTypeSimpleRaw;
-	public final String builderTypeBoundsOrNull;
-	public final String builderSelfAccessor;
-	public final String builderSelfType;
+	private final TypeInfo pojoType;
+	private final String builderTypeSimple;
+	private final String builderTypeSimpleRaw;
+	private final String builderTypeBoundsOrNull;
+	private final String builderSelfAccessor;
+	private final String builderSelfType;
 	
-	public final String buildPojoMethodName;
+	private final String buildPojoMethodName;
 	
-	public final boolean isGeneric;
+	private final boolean isGeneric;
 	
-	public final boolean markGenerated;
-	public final boolean markCtorArgsAsProperties;
+	private final boolean markGenerated;
+	private final boolean markCtorArgsAsProperties;
 	
-	public final boolean generateStaticBuilderMethod;
-	public final boolean generateAddRemoveMethodsForIndexedProperties;
-	public final boolean generateCopyBeanMethod;
-	public final boolean generateStaticBuilderMethodOnBuilder;
-	public final boolean inheritSuperBeanBuilder;
-	public final boolean inheritSuperBeanProperties;
-	public final boolean supportSubclassing;
+	private final boolean generateStaticBuilderMethod;
+	private final boolean generateAddRemoveMethodsForIndexedProperties;
+	private final boolean generateCopyBeanMethod;
+	private final boolean generateStaticBuilderMethodOnBuilder;
+	private final boolean inheritSuperBeanBuilder;
+	private final boolean inheritSuperBeanProperties;
+	private final boolean supportSubclassing;
 	
-    final Set<String> staticBuilderMethodNames;
-    final Map<String, BuilderPropertyModel> properties = new LinkedHashMap<>();
+    private final Set<String> staticBuilderMethodNames;
+    private final Map<String, BuilderPropertyModel> properties = new LinkedHashMap<>();
 	
     public BuilderModel(JType pojo,GenerateBuilder options) {
     	this.pojoType = TypeInfo.newFromFullNameAndTypeBounds(pojo.getFullGenericName(), pojo.getTypeBoundsExpressionOrNull());
-    	this.isGeneric = pojoType.isGeneric;
+    	this.isGeneric = getPojoType().isGeneric();
     	
     	this.builderTypeSimpleRaw = pojo.isAbstract()?"AbstractBuilder":"Builder";
-    	this.builderTypeSimple = builderTypeSimpleRaw + pojoType.genericPartOrEmpty;
+    	this.builderTypeSimple = getBuilderTypeSimpleRaw() + getPojoType().getGenericPartOrEmpty();
     	
         this.staticBuilderMethodNames = Sets.newHashSet(options.builderCreateMethodNames());
-        if(staticBuilderMethodNames.size()==0){
-        	staticBuilderMethodNames.add("with");
+        if(getStaticBuilderMethodNames().size()==0){
+        	getStaticBuilderMethodNames().add("with");
         }
         this.buildPojoMethodName = options.buildMethodName();
         this.markGenerated = options.markGenerated();
         this.markCtorArgsAsProperties = options.markCtorArgsAsProperties();
         this.supportSubclassing = options.supportSubclassing() || pojo.isAbstract();
-        this.generateStaticBuilderMethod = options.generateStaticBuilderCreateMethod() && !supportSubclassing;
+        this.generateStaticBuilderMethod = options.generateStaticBuilderCreateMethod() && !isSupportSubclassing();
         this.generateAddRemoveMethodsForIndexedProperties = options.generateAddRemoveMethodsForIndexProperties();
         this.generateCopyBeanMethod = options.generateCreateFromBean();
         
@@ -72,18 +72,18 @@ public class BuilderModel {
         this.inheritSuperBeanProperties = options.inheritSuperBeanProperties();
         this.generateStaticBuilderMethodOnBuilder = options.generateStaticBuilderCreateMethodOnBuilder();
 		String self = "this";
-		String selfType = builderTypeSimple;
-		String builderTypeBounds = pojoType.typeBoundsOrNull;
+		String selfType = getBuilderTypeSimple();
+		String builderTypeBounds = getPojoType().getTypeBoundsOrNull();
 		
-		if(supportSubclassing){
-			if(pojoType.typeBoundsOrNull==null){
-				selfType = builderTypeSimpleRaw + "<TSelf>";
-				builderTypeBounds = "<TSelf extends " + builderTypeSimpleRaw + "<TSelf>>";		
+		if(isSupportSubclassing()){
+			if(getPojoType().getTypeBoundsOrNull()==null){
+				selfType = getBuilderTypeSimpleRaw() + "<TSelf>";
+				builderTypeBounds = "<TSelf extends " + getBuilderTypeSimpleRaw() + "<TSelf>>";		
 			} else {
-				String typeBounds = pojoType.typeBoundsOrNull;
+				String typeBounds = getPojoType().getTypeBoundsOrNull();
 				typeBounds = typeBounds.substring(1, typeBounds.length()-1);//remove trailing/leading '<>'
-				selfType = builderTypeSimpleRaw + "<TSelf," + pojoType.typeBoundsNamesOrNull + ">";
-				builderTypeBounds = "<TSelf extends " + builderTypeSimpleRaw + "<TSelf," + pojoType.typeBoundsNamesOrNull + ">," + typeBounds+ ">";
+				selfType = getBuilderTypeSimpleRaw() + "<TSelf," + getPojoType().getTypeBoundsNamesOrNull() + ">";
+				builderTypeBounds = "<TSelf extends " + getBuilderTypeSimpleRaw() + "<TSelf," + getPojoType().getTypeBoundsNamesOrNull() + ">," + typeBounds+ ">";
 			}
 			self = "self()";
 		}
@@ -94,7 +94,7 @@ public class BuilderModel {
     
     void addProperty(BuilderPropertyModel field){
         if (hasPropertyNamed(field.propertyName)) {
-            throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, pojoType.fullName);
+            throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, getPojoType().getFullName());
         }
         properties.put(field.propertyName, field);
     }
@@ -112,4 +112,76 @@ public class BuilderModel {
         Collections.sort(list,COMPARE_BY_NAME);
         return list;
     }
+
+	public TypeInfo getPojoType() {
+		return pojoType;
+	}
+
+	public String getBuilderTypeSimple() {
+		return builderTypeSimple;
+	}
+
+	public String getBuilderTypeSimpleRaw() {
+		return builderTypeSimpleRaw;
+	}
+
+	public String getBuilderTypeBoundsOrNull() {
+		return builderTypeBoundsOrNull;
+	}
+
+	public String getBuilderSelfAccessor() {
+		return builderSelfAccessor;
+	}
+
+	public String getBuilderSelfType() {
+		return builderSelfType;
+	}
+
+	public String getBuildPojoMethodName() {
+		return buildPojoMethodName;
+	}
+
+	public boolean isGeneric() {
+		return isGeneric;
+	}
+
+	public boolean isMarkGenerated() {
+		return markGenerated;
+	}
+
+	public boolean isMarkCtorArgsAsProperties() {
+		return markCtorArgsAsProperties;
+	}
+
+	public boolean isGenerateStaticBuilderMethod() {
+		return generateStaticBuilderMethod;
+	}
+
+	public boolean isGenerateAddRemoveMethodsForIndexedProperties() {
+		return generateAddRemoveMethodsForIndexedProperties;
+	}
+
+	public boolean isGenerateCopyBeanMethod() {
+		return generateCopyBeanMethod;
+	}
+
+	public boolean isGenerateStaticBuilderMethodOnBuilder() {
+		return generateStaticBuilderMethodOnBuilder;
+	}
+
+	public boolean isInheritSuperBeanBuilder() {
+		return inheritSuperBeanBuilder;
+	}
+
+	public boolean isInheritSuperBeanProperties() {
+		return inheritSuperBeanProperties;
+	}
+
+	public boolean isSupportSubclassing() {
+		return supportSubclassing;
+	}
+
+	Set<String> getStaticBuilderMethodNames() {
+		return staticBuilderMethodNames;
+	}
 }

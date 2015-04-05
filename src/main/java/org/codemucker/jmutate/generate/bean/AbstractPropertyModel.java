@@ -40,9 +40,9 @@ public abstract class AbstractPropertyModel {
     	this.type = TypeInfo.newFromFullNameAndTypeBounds(propertyType, null);
     	this.propertyGetterName = BeanNameUtil.toGetterName(fieldName, NameUtil.isBoolean(propertyType));
         this.propertySetterName = BeanNameUtil.toSetterName(fieldName);
-        this.propertyConcreteType = REGISTRY.getConcreteTypeFor(type.fullNameRaw);
-        this.propertyAddName = type.isIndexed?BeanNameUtil.addPrefixName("add",propertyNameSingular):null;
-        this.propertyRemoveName = type.isIndexed?BeanNameUtil.addPrefixName("remove",propertyNameSingular):null;
+        this.propertyConcreteType = REGISTRY.getConcreteTypeFor(type.getFullNameRaw());
+        this.propertyAddName = type.isIndexed()?BeanNameUtil.addPrefixName("add",propertyNameSingular):null;
+        this.propertyRemoveName = type.isIndexed()?BeanNameUtil.addPrefixName("remove",propertyNameSingular):null;
     }  
     
     static class IndexedTypeRegistry {

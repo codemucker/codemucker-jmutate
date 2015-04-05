@@ -20,39 +20,39 @@ public class TypeInfo {
 	private static final IndexedTypeRegistry REGISTRY = new IndexedTypeRegistry();
 	private static final List<String> EMPTY_STRING_LIST = Collections.emptyList();
 
-	public final String pkg;
+	private final String pkg;
 	
-	public final String fullName;
-	public final String fullNameRaw;
+	private final String fullName;
+	private final String fullNameRaw;
 
 	/**
 	 * if this type is a primitive, this is the equivalent version. For all
 	 * other types this is the same as the full name
 	 */
-	public final String objectTypeFullName;
-	public final String objectTypeFullNameRaw;
-	public final String genericPartOrNull;
-	public final String genericPartOrEmpty;
+	private final String objectTypeFullName;
+	private final String objectTypeFullNameRaw;
+	private final String genericPartOrNull;
+	private final String genericPartOrEmpty;
 
-	public final String typeBoundsOrNull;
-	public final String typeBoundsOrEmpty;
-	public final String typeBoundsNamesOrNull;
+	private final String typeBoundsOrNull;
+	private final String typeBoundsOrEmpty;
+	private final String typeBoundsNamesOrNull;
 	
-	public final String simpleName;
-	public final String simpleNameRaw;
-	public final String indexedKeyTypeNameOrNull;
-	public final String indexedKeyTypeNameRaw;
-	public final String indexedValueTypeNameOrNull;
-	public final String indexedValueTypeNameRaw;
-	public final boolean isIndexed;
-	public final boolean isCollection;
-	public final boolean isList;
-	public final boolean isMap;
-	public final boolean isArray;
-	public final boolean isKeyed;
-	public final boolean isPrimitive;
-	public final boolean isString;
-	public final boolean isGeneric;
+	private final String simpleName;
+	private final String simpleNameRaw;
+	private final String indexedKeyTypeNameOrNull;
+	private final String indexedKeyTypeNameRaw;
+	private final String indexedValueTypeNameOrNull;
+	private final String indexedValueTypeNameRaw;
+	private final boolean isIndexed;
+	private final boolean isCollection;
+	private final boolean isList;
+	private final boolean isMap;
+	private final boolean isArray;
+	private final boolean isKeyed;
+	private final boolean isPrimitive;
+	private final boolean isString;
+	private final boolean isGeneric;
 
 	public static TypeInfo newFromFullNameAndTypeBounds(String fullType, String typeBounds){
 		return new TypeInfo(fullType, typeBounds);
@@ -60,42 +60,42 @@ public class TypeInfo {
 	
 	public TypeInfo(String fullType, String typeBounds) {
 		this.typeBoundsOrNull = Strings.emptyToNull(typeBounds);
-		this.typeBoundsOrEmpty = Strings.nullToEmpty(typeBoundsOrNull);
-		this.typeBoundsNamesOrNull = typeBoundsOrNull == null?null:Joiner.on(",").join(extractTypeNames(typeBoundsOrNull));
+		this.typeBoundsOrEmpty = Strings.nullToEmpty(getTypeBoundsOrNull());
+		this.typeBoundsNamesOrNull = getTypeBoundsOrNull() == null?null:Joiner.on(",").join(extractTypeNames(getTypeBoundsOrNull()));
 		
 		this.isGeneric = fullType.contains("<");
 		
 		this.fullName = NameUtil.compiledNameToSourceName(fullType);
-		this.fullNameRaw = NameUtil.removeGenericOrArrayPart(fullName);
+		this.fullNameRaw = NameUtil.removeGenericOrArrayPart(getFullName());
 		this.genericPartOrNull = NameUtil.extractGenericPartOrNull(fullType);
-		this.genericPartOrEmpty = Strings.nullToEmpty(genericPartOrNull);
+		this.genericPartOrEmpty = Strings.nullToEmpty(getGenericPartOrNull());
 		
 		this.pkg = ClassNameUtil.extractPkgPartOrNull(fullType);
 		
-		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(fullNameRaw);
-		this.simpleName = simpleNameRaw + (genericPartOrNull == null ? "" : genericPartOrNull);
+		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(getFullNameRaw());
+		this.simpleName = getSimpleNameRaw() + (getGenericPartOrNull() == null ? "" : getGenericPartOrNull());
 
-		this.objectTypeFullName = NameUtil.primitiveToObjectType(fullName);
-		this.objectTypeFullNameRaw = NameUtil.removeGenericOrArrayPart(objectTypeFullName);
+		this.objectTypeFullName = NameUtil.primitiveToObjectType(getFullName());
+		this.objectTypeFullNameRaw = NameUtil.removeGenericOrArrayPart(getObjectTypeFullName());
 
-		this.isPrimitive = NameUtil.isPrimitive(fullName);
-		this.isString = fullName.equals("String") || fullName.equals("java.lang.String");
-		this.isMap = REGISTRY.isMap(fullNameRaw);
-		this.isList = REGISTRY.isList(fullNameRaw);
-		this.isCollection = REGISTRY.isCollection(fullNameRaw);
-		this.isIndexed = isMap || isList;
+		this.isPrimitive = NameUtil.isPrimitive(getFullName());
+		this.isString = getFullName().equals("String") || getFullName().equals("java.lang.String");
+		this.isMap = REGISTRY.isMap(getFullNameRaw());
+		this.isList = REGISTRY.isList(getFullNameRaw());
+		this.isCollection = REGISTRY.isCollection(getFullNameRaw());
+		this.isIndexed = isMap() || isList();
 		// this.propertyConcreteType =
 		// REGISTRY.getConcreteTypeFor(propertyTypeRaw);
-		this.isArray = fullName.endsWith("]");
-		this.isKeyed = isMap;
-		this.indexedValueTypeNameOrNull = isCollection ? BeanNameUtil.extractIndexedValueType(fullName) : null;
-		this.indexedValueTypeNameRaw = NameUtil.removeGenericOrArrayPart(indexedValueTypeNameOrNull);
-		this.indexedKeyTypeNameOrNull = isMap ? BeanNameUtil.extractIndexedKeyType(fullName) : null;
-		this.indexedKeyTypeNameRaw = NameUtil.removeGenericOrArrayPart(indexedKeyTypeNameOrNull);
+		this.isArray = getFullName().endsWith("]");
+		this.isKeyed = isMap();
+		this.indexedValueTypeNameOrNull = isCollection() ? BeanNameUtil.extractIndexedValueType(getFullName()) : null;
+		this.indexedValueTypeNameRaw = NameUtil.removeGenericOrArrayPart(getIndexedValueTypeNameOrNull());
+		this.indexedKeyTypeNameOrNull = isMap() ? BeanNameUtil.extractIndexedKeyType(getFullName()) : null;
+		this.indexedKeyTypeNameRaw = NameUtil.removeGenericOrArrayPart(getIndexedKeyTypeNameOrNull());
 	}
 
 	public List<String> getTypeParamNames(){
-		return extractTypeNames(typeBoundsOrNull);
+		return extractTypeNames(getTypeBoundsOrNull());
 	}
 	
 	/**
@@ -172,7 +172,7 @@ public class TypeInfo {
 	}
 	
 	public boolean is(String type){
-		return fullName.equals(type);
+		return getFullName().equals(type);
 	}
 
 	public String getFullName() {
@@ -192,11 +192,11 @@ public class TypeInfo {
 	}
 
 	public String getGenericPart() {
-		return genericPartOrNull;
+		return getGenericPartOrNull();
 	}
 
 	public String getTypeBounds() {
-		return typeBoundsOrNull;
+		return getTypeBoundsOrNull();
 	}
 
 	public String getSimpleName() {
@@ -208,7 +208,7 @@ public class TypeInfo {
 	}
 
 	public String getIndexedKeyTypeName() {
-		return indexedKeyTypeNameOrNull;
+		return getIndexedKeyTypeNameOrNull();
 	}
 
 	public boolean isIndexed() {
@@ -220,7 +220,7 @@ public class TypeInfo {
 	}
 
 	public String getIndexedValueTypeName() {
-		return indexedValueTypeNameOrNull;
+		return getIndexedValueTypeNameOrNull();
 	}
 
 	public String getIndexedValueTypeNameRaw() {
@@ -249,6 +249,46 @@ public class TypeInfo {
 
 	public boolean isString() {
 		return isString;
+	}
+
+	public String getPkg() {
+		return pkg;
+	}
+
+	public String getGenericPartOrNull() {
+		return genericPartOrNull;
+	}
+
+	public String getGenericPartOrEmpty() {
+		return genericPartOrEmpty;
+	}
+
+	public String getTypeBoundsOrNull() {
+		return typeBoundsOrNull;
+	}
+
+	public String getTypeBoundsOrEmpty() {
+		return typeBoundsOrEmpty;
+	}
+
+	public String getTypeBoundsNamesOrNull() {
+		return typeBoundsNamesOrNull;
+	}
+
+	public String getIndexedKeyTypeNameOrNull() {
+		return indexedKeyTypeNameOrNull;
+	}
+
+	public String getIndexedValueTypeNameOrNull() {
+		return indexedValueTypeNameOrNull;
+	}
+
+	public boolean isList() {
+		return isList;
+	}
+
+	public boolean isGeneric() {
+		return isGeneric;
 	}
 
 	static class IndexedTypeRegistry {

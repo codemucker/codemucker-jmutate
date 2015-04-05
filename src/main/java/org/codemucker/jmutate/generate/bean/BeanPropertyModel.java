@@ -4,11 +4,11 @@ public class BeanPropertyModel extends AbstractPropertyModel {
 
 	public final BeanModel pojoModel;
 
-	public final boolean generateGetter;
-	public final boolean generateSetter;
-	public final boolean bindable;
-	public final boolean vetoable;
-	public final boolean fromSuperClass;
+	private final boolean generateGetter;
+	private final boolean generateSetter;
+	private final boolean bindable;
+	private final boolean vetoable;
+	private final boolean fromSuperClass;
 
 
 	BeanPropertyModel(BeanModel parent, String fieldName, String propertyType,
@@ -23,5 +23,30 @@ public class BeanPropertyModel extends AbstractPropertyModel {
 		this.bindable = bindable;
 		
 		this.fromSuperClass = fromSuperClass;
+	}
+
+
+	public boolean isGenerateGetter() {
+		return generateGetter;
+	}
+
+
+	public boolean isGenerateSetter() {
+		return generateSetter;
+	}
+
+
+	public boolean isBindable() {
+		return bindable;
+	}
+
+
+	public boolean isVetoable() {
+		return vetoable;
+	}
+
+
+	public boolean isFromSuperClass() {
+		return fromSuperClass;
 	}
 }

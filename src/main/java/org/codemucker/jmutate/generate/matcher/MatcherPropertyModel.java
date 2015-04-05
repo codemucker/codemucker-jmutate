@@ -3,11 +3,11 @@ package org.codemucker.jmutate.generate.matcher;
 import org.codemucker.jmutate.util.NameUtil;
 
 public class MatcherPropertyModel {
-	public final MatcherModel pojoModel;
-	public final String propertyName;
-    String propertyGetter;
-    public final String propertyType;
-    public final boolean isPrimitive;
+	private final MatcherModel pojoModel;
+	private final String propertyName;
+    private String propertyGetter;
+    private final String propertyType;
+    private final boolean isPrimitive;
     
     /**
      * The object version of the property type if a primitive, else just the same as the property type
@@ -20,5 +20,29 @@ public class MatcherPropertyModel {
         this.propertyType = NameUtil.compiledNameToSourceName(propertyType);
         this.propertyTypeAsObject = NameUtil.compiledNameToSourceName(NameUtil.primitiveToObjectType(propertyType));
         this.isPrimitive = NameUtil.isPrimitive(propertyType);
-    }  
+    }
+
+	public MatcherModel getPojoModel() {
+		return pojoModel;
+	}
+
+	public String getPropertyName() {
+		return propertyName;
+	}
+
+	String getPropertyGetter() {
+		return propertyGetter;
+	}
+
+	void setPropertyGetter(String propertyGetter) {
+		this.propertyGetter = propertyGetter;
+	}
+
+	public String getPropertyType() {
+		return propertyType;
+	}
+
+	public boolean isPrimitive() {
+		return isPrimitive;
+	}  
 }

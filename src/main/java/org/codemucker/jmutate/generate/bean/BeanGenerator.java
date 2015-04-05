@@ -86,7 +86,6 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		//TODO:remove all artifacts belonging to this generator which were not regenerated
 	}
 
-
 	@Override
 	public void generate(JType optionsDeclaredInNode, GenerateBean options) {
 		if(optionsDeclaredInNode.isInterface()){
@@ -100,12 +99,12 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		BeanModel model = new BeanModel(optionsDeclaredInNode,options);
 		extractAllProperties(optionsDeclaredInNode, fieldMatcher, model);
 		
-		log.debug("found " + model.properties.size() + " bean properties for "  + model.type.fullNameRaw);
+		log.debug("found " + model.getProperties().size() + " bean properties for "  + model.getType().getFullNameRaw());
 		generateBeanProperties(optionsDeclaredInNode, model);
 	}
 	
 	private void extractAllProperties(JType optionsDeclaredInNode,Matcher<String> fieldMatcher, BeanModel model) {
-		if(model.inheritSuperClassProperties){
+		if(model.isInheritSuperClassProperties()){
         	CodeFinder finder = ctxt.obtain(CodeFinder.class).failOnNotFound(false);
         	String superTypeName = NameUtil.removeGenericOrArrayPart(optionsDeclaredInNode.getSuperTypeFullName());
         	while(!Object.class.getName().equals(superTypeName)){
@@ -131,10 +130,10 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				continue;
 			}
 			boolean generateGetter = true;//!field.getJModifiers().isFinal();
-			boolean generateSetter = !(model.makeReadonly || field.getJModifiers().isFinal());
+			boolean generateSetter = !(model.isMakeReadonly() || field.getJModifiers().isFinal());
 			
 			//TODO:add per property bind/veto override support. Use TriState?
-			BeanPropertyModel property = new BeanPropertyModel(model, field.getName(),field.getFullTypeName(),generateSetter,generateGetter,model.bindable, model.vetoable, fromSuperClass);
+			BeanPropertyModel property = new BeanPropertyModel(model, field.getName(),field.getFullTypeName(),generateSetter,generateGetter,model.isBindable(), model.isVetoable(), fromSuperClass);
 			
 			property.hasField = true;
 			property.finalField = field.isFinal();
@@ -188,7 +187,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		generateAllArgCtor(bean, model);
 		generateStaticPropertyNames(bean, model);
 		
-		for (BeanPropertyModel property : model.properties.values()) {
+		for (BeanPropertyModel property : model.getProperties().values()) {
 			generateFieldAccess(bean, model, property);			
 			generateGetter(bean, model, property);
 			generateSetter(bean, model, property);
@@ -208,21 +207,21 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	}
 
 	private void generateNoArgCtor(JType bean, BeanModel model) {
-		if(model.generateNoArgCtor && !model.hasDirectFinalProperties()){
+		if(model.isGenerateNoArgCtor() && !model.hasDirectFinalProperties()){
 			
 			JMethod ctor = ctxt
 				.newSourceTemplate()
-				.pl("public " + model.type.simpleNameRaw + "(){}")
+				.pl("public " + model.getType().getSimpleNameRaw() + "(){}")
 				.asConstructorSnippet();
-			addMethod(bean, ctor.getAstNode(), model.markGenerated);
+			addMethod(bean, ctor.getAstNode(), model.isMarkGenerated());
 		}
 	}
 	
 	private void generateAllArgCtor(JType beanType, BeanModel model) {
-		if(model.generateAllArgCtor){
+		if(model.isGenerateAllArgCtor()){
 			SourceTemplate beanCtor = ctxt
 					.newSourceTemplate()
-					.var("b.name", model.type.simpleNameRaw)
+					.var("b.name", model.getType().getSimpleNameRaw())
 					.pl("private ${b.name} (");
 			
 			boolean comma = false;
@@ -231,75 +230,75 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				if(comma){
 					beanCtor.p(",");
 				}
-				if(model.markCtorArgsAsProperties){
+				if(model.isMarkCtorArgsAsProperties()){
 					beanCtor.p("@" + Property.class.getName() + "(name=\"" + property.propertyName + "\") ");
 				}
-				beanCtor.p(property.type.fullName + " " + property.propertyName);
+				beanCtor.p(property.type.getFullName() + " " + property.propertyName);
 				comma = true;
 			}
 			
 			beanCtor.pl("){");
 			//field assignments
 			for (BeanPropertyModel property : model.getFields()) {
-				if(property.fromSuperClass){
+				if(property.isFromSuperClass()){
 					beanCtor.pl(property.propertySetterName + "(" + property.propertyName + ");");
 				} else {
 					beanCtor.pl("this." + property.propertyName + "=" + property.propertyName + ";");
 				}
 			}
 			beanCtor.pl("}");
-			addMethod(beanType, beanCtor.asConstructorNodeSnippet(),model.markGenerated);
+			addMethod(beanType, beanCtor.asConstructorNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
 	private void generateStaticPropertyNames(JType bean, BeanModel model) {
 		//static property names
-		if(model.generateStaticPropertyNameFields){
-			for (BeanPropertyModel property : model.properties.values()) {
+		if(model.isGenerateStaticPropertyNameFields()){
+			for (BeanPropertyModel property : model.getProperties().values()) {
 				JField staticField = ctxt
 					.newSourceTemplate()
 					.pl("public static final String PROP_" + property.propertyName.toUpperCase() + " = \"" + property.propertyName +"\";")
 					.asJFieldSnippet();
-				addField(bean, staticField.getAstNode(), model.markGenerated);
+				addField(bean, staticField.getAstNode(), model.isMarkGenerated());
 			}	
 		}
 	}
 
 	private void generateClone(JType bean, BeanModel model) {
-		if(model.generateCloneMethod && !bean.isAbstract()){
+		if(model.isGenerateCloneMethod() && !bean.isAbstract()){
 			log.debug("adding method 'newInstanceOf'");
 
 			SourceTemplate clone = ctxt
 				.newSourceTemplate()
-				.var("b.type", model.type.simpleName)
-				.var("b.genericPart", model.type.genericPartOrEmpty)
-				.var("b.typeBounds", model.type.typeBoundsOrEmpty)
+				.var("b.type", model.getType().getSimpleName())
+				.var("b.genericPart", model.getType().getGenericPartOrEmpty())
+				.var("b.typeBounds", model.getType().getTypeBoundsOrEmpty())
 				
 				
 				.pl("public static ${b.typeBounds} ${b.type} newInstanceOf(${b.type} bean){")
 				.pl("if(bean == null){ return null;}")
 				.pl("final ${b.type} clone = new ${b.type}();");
 			
-			for (BeanPropertyModel property : model.properties.values()) {
+			for (BeanPropertyModel property : model.getProperties().values()) {
 				SourceTemplate t = clone
 					.child()
 					.var("p.name",property.propertyName)
 					.var("p.getter",property.propertyGetterName)
 					.var("p.setter",property.propertySetterName)
-					.var("p.type",property.type.fullName)
+					.var("p.type",property.type.getFullName())
 					.var("p.concreteType",property.propertyConcreteType)
-					.var("p.rawType",property.type.fullNameRaw)
-					.var("p.genericPart",property.type.genericPartOrEmpty)
+					.var("p.rawType",property.type.getFullNameRaw())
+					.var("p.genericPart",property.type.getGenericPartOrEmpty())
 					
 					;
-				if(property.type.isPrimitive){
-					if(property.fromSuperClass){
+				if(property.type.isPrimitive()){
+					if(property.isFromSuperClass()){
 						t.pl("	clone.${p.setter}(bean.${p.getter}());");			
 					} else {
 						t.pl("	clone.${p.name} = bean.${p.name};");
 					}
-				} else if(property.type.isArray){
-					if(property.fromSuperClass){
+				} else if(property.type.isArray()){
+					if(property.isFromSuperClass()){
 						t.pl("	if(bean.${p.getter}() == null){");
 						t.pl("		clone.${p.setter}(null);");
 						t.pl("	} else {");
@@ -317,8 +316,8 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 						t.pl("		System.arraycopy(bean.${p.name},0,clone.${p.name},0,bean.${p.name}.length);");
 						t.pl("	}");
 					}
-				} else if(property.type.isIndexed){
-					if(property.fromSuperClass){
+				} else if(property.type.isIndexed()){
+					if(property.isFromSuperClass()){
 						//TODO:add a safe copy util in here. codemucker.lang?
 						t.pl("	clone.${p.setter}(bean.${p.getter}()} == null?null:new ${p.concreteType}${p.genericPart}(bean.${p.getter}());");
 					} else {
@@ -328,7 +327,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			//		if(hasClassGotMethod(property.propertyTypeRaw, AString.matchingAntPattern("*newInstanceOf"))){
 					//	t.pl("	clone.${p.name} = bean.${p.name} == null?null:${p.rawType}.newInstanceOf(bean.${p.name});");
 				//	} else {
-					if(property.fromSuperClass){
+					if(property.isFromSuperClass()){
 						t.pl("	clone.${p.setter}(bean.${p.getter}());");
 					} else {
 						t.pl("	clone.${p.name} = bean.${p.name};");
@@ -342,7 +341,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		
 			clone.pl("}");
 			
-			addMethod(bean, clone.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, clone.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
@@ -370,25 +369,25 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	}
 	
 	private void generateHashCode(JType bean, BeanModel model) {
-		if(model.generateHashCodeEquals && !model.properties.isEmpty()){
-			int startingPrime = pickStartingPrimeForClass(model.type.fullName);
+		if(model.isGenerateHashCodeEquals() && !model.getProperties().isEmpty()){
+			int startingPrime = pickStartingPrimeForClass(model.getType().getFullName());
 			SourceTemplate hashcode = ctxt
 				.newSourceTemplate()
 				.var("prime", startingPrime)
 				.pl("@java.lang.Override")
 				.pl("public int hashCode(){");
 				
-			if(model.properties.isEmpty()){
+			if(model.getProperties().isEmpty()){
 				hashcode.pl("return super.hashCode();");
 			} else {
 				hashcode.pl("final int prime = ${prime};");
 				hashcode.pl("int result = super.hashCode();");
-				for (BeanPropertyModel property : model.properties.values()) {
+				for (BeanPropertyModel property : model.getProperties().values()) {
 					SourceTemplate t = hashcode
 						.child()
-						.var("p.accessor",property.fromSuperClass?(property.propertyGetterName + "()"):property.propertyName);
+						.var("p.accessor",property.isFromSuperClass()?(property.propertyGetterName + "()"):property.propertyName);
 					
-					if(property.type.isPrimitive && !property.type.isString){
+					if(property.type.isPrimitive() && !property.type.isString()){
 						//from the book 'Effective Java'
 						if(property.type.is("boolean")){
 							t.pl("result = prime * result + (${p.accessor} ? 1:0);");
@@ -413,16 +412,16 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			
 			hashcode.pl("}");
 			
-			addMethod(bean, hashcode.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, hashcode.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
 	private void generatePropertyChangeSupport(JType bean, BeanModel model) {
-		if(model.bindable){
+		if(model.isBindable()){
 			//TODO:check parent beans for existing property support
 			SourceTemplate t = ctxt
 				.newSourceTemplate()
-				.var("change.name", model.propertyChangeSupportFieldName);
+				.var("change.name", model.getPropertyChangeSupportFieldName());
 		
 			SourceTemplate changeSupportField = t.child()
 				.pl("@" + NotAProperty.class.getName())
@@ -443,18 +442,18 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.pl("	this.${change.name}.removePropertyChangeListener(listener);")
 				.pl("}");
 
-			addField(bean, changeSupportField.asFieldNodeSnippet(), model.markGenerated);
-			addMethod(bean, addListener.asMethodNodeSnippet(),model.markGenerated);
-			addMethod(bean, addNamedListener.asMethodNodeSnippet(),model.markGenerated);
-			addMethod(bean, removeListener.asMethodNodeSnippet(),model.markGenerated);
+			addField(bean, changeSupportField.asFieldNodeSnippet(), model.isMarkGenerated());
+			addMethod(bean, addListener.asMethodNodeSnippet(),model.isMarkGenerated());
+			addMethod(bean, addNamedListener.asMethodNodeSnippet(),model.isMarkGenerated());
+			addMethod(bean, removeListener.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
 	private void generateVetoableChangeSupport(JType bean, BeanModel model) {
-		if(model.vetoable){
+		if(model.isVetoable()){
 			//TODO:check parent beans for existing property support
 			SourceTemplate t = ctxt.newSourceTemplate()
-				.var("veto.name", model.vetoableChangeSupportFieldName);
+				.var("veto.name", model.getVetoableChangeSupportFieldName());
 		
 			SourceTemplate changeSupportField = t.child()
 				.pl("@" + NotAProperty.class.getName())
@@ -475,33 +474,33 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.pl("	this.${veto.name}.removeVetoableChangeListener(listener);")
 				.pl("}");
 
-			addField(bean, changeSupportField.asFieldNodeSnippet(), model.markGenerated);
-			addMethod(bean, addListener.asMethodNodeSnippet(),model.markGenerated);
-			addMethod(bean, addNamedListener.asMethodNodeSnippet(),model.markGenerated);
-			addMethod(bean, removeListener.asMethodNodeSnippet(),model.markGenerated);
+			addField(bean, changeSupportField.asFieldNodeSnippet(), model.isMarkGenerated());
+			addMethod(bean, addListener.asMethodNodeSnippet(),model.isMarkGenerated());
+			addMethod(bean, addNamedListener.asMethodNodeSnippet(),model.isMarkGenerated());
+			addMethod(bean, removeListener.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
 	
 	private void generateEquals(JType bean, BeanModel model) {
-		if(model.generateHashCodeEquals && !model.properties.isEmpty()){
+		if(model.isGenerateHashCodeEquals() && !model.getProperties().isEmpty()){
 			
 			SourceTemplate equals = ctxt
 					.newSourceTemplate()
-					.var("b.type", model.type.simpleName)
+					.var("b.type", model.getType().getSimpleName())
 					.pl("@java.lang.Override")
 					.pl("public boolean equals(final Object obj){")
 					.pl("if (this == obj) return true;")
 					.pl("if (!super.equals(obj) || getClass() != obj.getClass()) return false;");
 			
-			if(!model.properties.isEmpty()){
+			if(!model.getProperties().isEmpty()){
 				equals.pl("${b.type} other = (${b.type}) obj;");
-				for (BeanPropertyModel property : model.properties.values()) {
+				for (BeanPropertyModel property : model.getProperties().values()) {
 					SourceTemplate  t = equals
 						.child()
-						.var("p.accessor",property.fromSuperClass?(property.propertyGetterName + "()"):property.propertyName);
+						.var("p.accessor",property.isFromSuperClass()?(property.propertyGetterName + "()"):property.propertyName);
 					
-					if(property.type.isPrimitive && !property.type.isString){
+					if(property.type.isPrimitive() && !property.type.isString()){
 						t.pl("if (${p.accessor} != other.${p.accessor}) return false;");
 					} else {
 						t.pl("if(${p.accessor} == null) {")
@@ -517,12 +516,12 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			equals.pl("}");
 			
 
-			addMethod(bean, equals.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, equals.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
 	private void generateToString(JType bean, BeanModel model) {
-		if(model.generateToString){
+		if(model.isGenerateToString()){
 			StringBuilder sb = new StringBuilder();
 //			String label = model.type.simpleNameRaw;
 //			JType t = bean;
@@ -531,16 +530,16 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 //				label = t.getSimpleName() + "." + label;
 //			}
 			sb.append("\" [");
-			if(model.properties.isEmpty()){
+			if(model.getProperties().isEmpty()){
 				sb.append("]\"");
 			} else {
 				boolean comma = false;
-				for (BeanPropertyModel property : model.properties.values()) {
+				for (BeanPropertyModel property : model.getProperties().values()) {
 					if(comma){
 						sb.append(" + \",");
 					}
 					sb.append(property.propertyName ).append("=\" + ");
-					if(property.fromSuperClass){
+					if(property.isFromSuperClass()){
 						sb.append(property.propertyGetterName).append("()");
 					} else {
 						sb.append(property.propertyName);
@@ -556,45 +555,45 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.pl("public String toString(){")
 				.pl("return this.getClass().getName() + \"@\" + System.identityHashCode(this) + " + sb.toString() + ";")
 				.pl("}");
-			addMethod(bean, toString.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, toString.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
 	private void generateFieldAccess(JType bean, BeanModel model,BeanPropertyModel property) {
-		if(property.fromSuperClass){
+		if(property.isFromSuperClass()){
 			return;
 		}
 		JField field = bean.findFieldsMatching(AJField.with().name(property.propertyName)).getFirst();
-		if(!field.getAccess().equals(model.fieldAccess)){
-			field.getJModifiers().setAccess(model.fieldAccess);
+		if(!field.getAccess().equals(model.getFieldAccess())){
+			field.getJModifiers().setAccess(model.getFieldAccess());
 		}
 	}
 
 	private void generateSetter(JType bean, BeanModel model,BeanPropertyModel property) {
 		//setter
-		if(!property.fromSuperClass && property.propertySetterName != null && property.generateSetter){
+		if(!property.isFromSuperClass() && property.propertySetterName != null && property.isGenerateSetter()){
 			SourceTemplate setter = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.setterName", property.propertySetterName)
-				.var("p.type", property.type.objectTypeFullName)
-				.var("support.bind.name", model.propertyChangeSupportFieldName)
-				.var("support.veto.name", model.vetoableChangeSupportFieldName)
+				.var("p.type", property.type.getObjectTypeFullName())
+				.var("support.bind.name", model.getPropertyChangeSupportFieldName())
+				.var("support.veto.name", model.getVetoableChangeSupportFieldName())
 				
 				.p("public void ${p.setterName}(final ${p.type} val)");
 			
-				if(property.vetoable){
+				if(property.isVetoable()){
 					setter.p(" throws java.beans.PropertyVetoException ");
 				}
 				setter.pl("{");
 				CharSequence vetoString = "";
 				
-				if(property.vetoable){
+				if(property.isVetoable()){
 					vetoString = setter.child()
 					.pl("   this.${support.veto.name}.fireVetoableChange(\"${p.name}\",this.${p.name},val);")
 					.interpolateTemplate();
 				}
-				if(property.bindable){
+				if(property.isBindable()){
 					setter
 						.pl("	${p.type} oldVal = this.${p.name};")
 						.p(vetoString)
@@ -607,21 +606,21 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				}
 				setter.pl("}");
 				
-			addMethod(bean, setter.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, setter.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 	
 	private void generateMapAddRemove(JType bean, BeanModel model,BeanPropertyModel property) {
-		if(!property.fromSuperClass && property.type.isKeyed && model.generateAddRemoveMethodsForIndexedProperties){
+		if(!property.isFromSuperClass() && property.type.isKeyed() && model.isGenerateAddRemoveMethodsForIndexedProperties()){
 			SourceTemplate add = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.addName", property.propertyAddName)
-				.var("p.type", property.type.objectTypeFullName)
+				.var("p.type", property.type.getObjectTypeFullName())
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.genericPart", property.type.genericPartOrEmpty)
-				.var("p.keyType", property.type.indexedKeyTypeNameOrNull)
-				.var("p.valueType", property.type.indexedValueTypeNameOrNull)
+				.var("p.genericPart", property.type.getGenericPartOrEmpty())
+				.var("p.keyType", property.type.getIndexedKeyTypeNameOrNull())
+				.var("p.valueType", property.type.getIndexedValueTypeNameOrNull())
 					
 				.pl("public void ${p.addName}(final ${p.keyType} key,final ${p.valueType} val){");
 			
@@ -632,15 +631,15 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.pl("	this.${p.name}.put(key, val);")
 				.pl("}");
 				
-			addMethod(bean, add.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, add.asMethodNodeSnippet(),model.isMarkGenerated());
 			
 			SourceTemplate remove = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.removeName", property.propertyRemoveName)
-				.var("p.type", property.type.objectTypeFullName)
+				.var("p.type", property.type.getObjectTypeFullName())
 				.var("p.newType", property.propertyConcreteType)
-				.var("p.keyType", property.type.indexedKeyTypeNameOrNull)
+				.var("p.keyType", property.type.getIndexedKeyTypeNameOrNull())
 				
 				.pl("public void ${p.removeName}(final ${p.keyType} key){")
 				.pl("	if(this.${p.name} != null){ ")
@@ -649,14 +648,14 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				
 				.pl("}");
 				
-			addMethod(bean, remove.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, remove.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 
 	private void generateCollectionAddRemove(JType bean, BeanModel model,BeanPropertyModel property) {
-		if(!property.fromSuperClass && property.type.isCollection && model.generateAddRemoveMethodsForIndexedProperties){
+		if(!property.isFromSuperClass() && property.type.isCollection() && model.isGenerateAddRemoveMethodsForIndexedProperties()){
 		{
-			if((property.vetoable || property.bindable) && !property.type.isList){
+			if((property.isVetoable() || property.isBindable()) && !property.type.isList()){
 				throw new JMutateException("Property " + bean.getFullName() + "." + property.propertyName + " is marked as vetoable or bindable and it's a collection. "
 						+ "It must be a list, map, or not an indexed property (we must be able to get the index of the current element). Instead have a collection. "
 						+ "Mark the property as not vetoable or bindable, or don't generate add/remove methods.");
@@ -665,15 +664,15 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 					.newSourceTemplate()
 					.var("p.name", property.propertyName)
 					.var("p.addName", property.propertyAddName)
-					.var("p.type", property.type.objectTypeFullName)
+					.var("p.type", property.type.getObjectTypeFullName())
 					.var("p.newType", property.propertyConcreteType)
-					.var("p.genericPart", property.type.genericPartOrEmpty)
-					.var("p.valueType", property.type.indexedValueTypeNameOrNull)
-					.var("support.bind.name", model.propertyChangeSupportFieldName)
-					.var("support.veto.name", model.vetoableChangeSupportFieldName)
+					.var("p.genericPart", property.type.getGenericPartOrEmpty())
+					.var("p.valueType", property.type.getIndexedValueTypeNameOrNull())
+					.var("support.bind.name", model.getPropertyChangeSupportFieldName())
+					.var("support.veto.name", model.getVetoableChangeSupportFieldName())
 					
 					.p("public void ${p.addName}(final ${p.valueType} val)");
-					if(property.vetoable){
+					if(property.isVetoable()){
 						add.p(" throws java.beans.PropertyVetoException ");
 					}
 					add.pl("{");
@@ -687,12 +686,12 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				
 				CharSequence vetoString = "";
 				
-				if(property.vetoable){
+				if(property.isVetoable()){
 					vetoString = add.child()
 					.pl("   this.${support.veto.name}.fireIndexedVetoableChange(\"${p.name}\",this.${p.name}.size(),this.${p.name},val);")
 					.interpolateTemplate();
 				}
-				if(property.bindable){
+				if(property.isBindable()){
 					add
 						.pl("	${p.type} oldVal = this.${p.name};")
 						.p(vetoString)
@@ -705,22 +704,22 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				}
 				add.pl("}");
 					
-				addMethod(bean, add.asMethodNodeSnippet(),model.markGenerated);
+				addMethod(bean, add.asMethodNodeSnippet(),model.isMarkGenerated());
 			}
 			{
 				SourceTemplate remove = ctxt
 					.newSourceTemplate()
 					.var("p.name", property.propertyName)
 					.var("p.removeName", property.propertyRemoveName)
-					.var("p.type", property.type.objectTypeFullName)
+					.var("p.type", property.type.getObjectTypeFullName())
 					.var("p.newType", property.propertyConcreteType)
-					.var("p.valueType", property.type.indexedValueTypeNameOrNull)
-					.var("support.bind.name", model.propertyChangeSupportFieldName)
-					.var("support.veto.name", model.vetoableChangeSupportFieldName)
+					.var("p.valueType", property.type.getIndexedValueTypeNameOrNull())
+					.var("support.bind.name", model.getPropertyChangeSupportFieldName())
+					.var("support.veto.name", model.getVetoableChangeSupportFieldName())
 					
 					.p("public void ${p.removeName}(final ${p.valueType} val)");
 				
-					if(property.vetoable){
+					if(property.isVetoable()){
 						remove.p(" throws java.beans.PropertyVetoException ");
 					}
 					remove.pl("{");
@@ -728,18 +727,18 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				
 				CharSequence vetoString = "";
 				CharSequence indexString = "";
-				if(property.vetoable || property.bindable){
+				if(property.isVetoable() || property.isBindable()){
 					indexString = remove.child()
 							.pl("int index = this.${p.name}.indexOf(val);")
 							.pl("if( index < 0 ){ return; }")
 							.interpolateTemplate();
 				}
-				if(property.vetoable){
+				if(property.isVetoable()){
 					vetoString = remove.child()
 					.pl("   this.${support.veto.name}.fireIndexedVetoableChange(\"${p.name}\",index,val,null);")
 					.interpolateTemplate();
 				}
-				if(property.bindable){
+				if(property.isBindable()){
 					remove
 						.p(indexString)
 						.p(vetoString)
@@ -754,25 +753,25 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				remove.pl("	}");
 				remove.pl("}");
 				
-				addMethod(bean, remove.asMethodNodeSnippet(),model.markGenerated);
+				addMethod(bean, remove.asMethodNodeSnippet(),model.isMarkGenerated());
 			}
 		}
 	}
 
 	private void generateGetter(JType bean, BeanModel model, BeanPropertyModel property) {
 		//getter
-		if(!property.fromSuperClass && property.propertyGetterName != null && property.generateGetter){
+		if(!property.isFromSuperClass() && property.propertyGetterName != null && property.isGenerateGetter()){
 			SourceTemplate getter = ctxt
 				.newSourceTemplate()
 				.var("p.name", property.propertyName)
 				.var("p.getterName", property.propertyGetterName)
-				.var("p.type", property.type.objectTypeFullName)
+				.var("p.type", property.type.getObjectTypeFullName())
 				
 				.pl("public ${p.type} ${p.getterName}(){")
 				.pl("		return ${p.name};")
 				.pl("}");
 				
-			addMethod(bean, getter.asMethodNodeSnippet(),model.markGenerated);
+			addMethod(bean, getter.asMethodNodeSnippet(),model.isMarkGenerated());
 		}
 	}
 	

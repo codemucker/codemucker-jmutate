@@ -17,39 +17,39 @@ import com.google.common.collect.Sets;
  */
 public class MatcherModel {   
 	
-	public final String pojoTypeFull;
-	public final String matcherTypeFull;
-	public final String matcherTypeSimple;
-    public final String pkg;
-    public final boolean keepInSync;
-    public final boolean markGenerated;
+	private final String pojoTypeFull;
+	private final String matcherTypeFull;
+	private final String matcherTypeSimple;
+    private final String pkg;
+    private final boolean keepInSync;
+    private final boolean markGenerated;
     
-    final Set<String> staticBuilderMethodNames;
+    private final Set<String> staticBuilderMethodNames;
     
-    final Map<String, MatcherPropertyModel> properties = new LinkedHashMap<>();
+    private final Map<String, MatcherPropertyModel> properties = new LinkedHashMap<>();
     
     public MatcherModel(AllMatchersModel parent, Class<?> pojoType) {
     	this.pojoTypeFull = NameUtil.compiledNameToSourceName(pojoType);
     	this.pkg = extractPkgName(parent,pojoType.getName());
-    	this.matcherTypeFull = toMatcherName(pkg,NameUtil.compiledNameToSourceName(pojoType));
-        this.matcherTypeSimple = ClassNameUtil.extractSimpleClassNamePart(matcherTypeFull);
-        this.staticBuilderMethodNames = Sets.newHashSet(parent.options.builderMethodNames());
-        this.keepInSync = parent.options.keepInSync();
-        this.markGenerated = parent.options.markGenerated(); 
+    	this.matcherTypeFull = toMatcherName(getPkg(),NameUtil.compiledNameToSourceName(pojoType));
+        this.matcherTypeSimple = ClassNameUtil.extractSimpleClassNamePart(getMatcherTypeFull());
+        this.staticBuilderMethodNames = Sets.newHashSet(parent.getOptions().builderMethodNames());
+        this.keepInSync = parent.getOptions().keepInSync();
+        this.markGenerated = parent.getOptions().markGenerated(); 
     }
     
     public MatcherModel(AllMatchersModel parent, JType pojoType) {
     	this.pojoTypeFull = pojoType.getFullName();
-    	this.pkg = extractPkgName(parent,pojoTypeFull);
-    	this.matcherTypeFull = toMatcherName(pkg,pojoType.getFullName());
-        this.matcherTypeSimple = ClassNameUtil.extractSimpleClassNamePart(matcherTypeFull);
-        this.staticBuilderMethodNames = Sets.newHashSet(parent.options.builderMethodNames());
-        this.keepInSync = parent.options.keepInSync();
-        this.markGenerated = parent.options.markGenerated();
+    	this.pkg = extractPkgName(parent,getPojoTypeFull());
+    	this.matcherTypeFull = toMatcherName(getPkg(),pojoType.getFullName());
+        this.matcherTypeSimple = ClassNameUtil.extractSimpleClassNamePart(getMatcherTypeFull());
+        this.staticBuilderMethodNames = Sets.newHashSet(parent.getOptions().builderMethodNames());
+        this.keepInSync = parent.getOptions().keepInSync();
+        this.markGenerated = parent.getOptions().markGenerated();
     }
     
     private String extractPkgName(AllMatchersModel parent,String pojoFullName){
-    	return parent.defaultPackage!=null?parent.defaultPackage:ClassNameUtil.extractPkgPartOrNull(pojoFullName);
+    	return parent.getDefaultPackage()!=null?parent.getDefaultPackage():ClassNameUtil.extractPkgPartOrNull(pojoFullName);
     }
     
     private static String toMatcherName(String pkg,String fullPojoName){
@@ -67,10 +67,10 @@ public class MatcherModel {
     }
     
     void addField(MatcherPropertyModel field){
-        if (hasNamedField(field.propertyName)) {
-            throw new JMutateException("More than one property with the same param name '%s' on %s", field.propertyName, matcherTypeFull);
+        if (hasNamedField(field.getPropertyName())) {
+            throw new JMutateException("More than one property with the same param name '%s' on %s", field.getPropertyName(), getMatcherTypeFull());
         }
-        properties.put(field.propertyName, field);
+        properties.put(field.getPropertyName(), field);
     }
     
     boolean hasNamedField(String name){
@@ -84,4 +84,36 @@ public class MatcherModel {
     Collection<MatcherPropertyModel> getFields(){
         return properties.values();
     }
+
+	public String getPojoTypeFull() {
+		return pojoTypeFull;
+	}
+
+	public String getMatcherTypeFull() {
+		return matcherTypeFull;
+	}
+
+	public String getMatcherTypeSimple() {
+		return matcherTypeSimple;
+	}
+
+	public String getPkg() {
+		return pkg;
+	}
+
+	public boolean isKeepInSync() {
+		return keepInSync;
+	}
+
+	public boolean isMarkGenerated() {
+		return markGenerated;
+	}
+
+	Set<String> getStaticBuilderMethodNames() {
+		return staticBuilderMethodNames;
+	}
+
+	Map<String, MatcherPropertyModel> getProperties() {
+		return properties;
+	}
 }

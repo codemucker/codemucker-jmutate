@@ -12,10 +12,10 @@ import com.google.common.base.Strings;
  * Global details about what is being generated
  */
 public class AllMatchersModel {
-    public final GenerateMatchers options;
-    public final String defaultPackage;
+    private final GenerateMatchers options;
+    private final String defaultPackage;
 
-    final List<MatcherModel> matchers = new ArrayList<>();
+    private final List<MatcherModel> matchers = new ArrayList<>();
     
     public AllMatchersModel(JType declaredInNode, GenerateMatchers options) {
         this.options = options;
@@ -25,5 +25,17 @@ public class AllMatchersModel {
     void addMatcher(MatcherModel model){
         this.matchers.add(model);
     }
+
+	public GenerateMatchers getOptions() {
+		return options;
+	}
+
+	public String getDefaultPackage() {
+		return defaultPackage;
+	}
+
+	List<MatcherModel> getMatchers() {
+		return matchers;
+	}
     
 }

@@ -124,35 +124,35 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
             }
         }
         
-        log.info("found " + models.matchers.size() + " matchers to generate from source and compiled classes");
+        log.info("found " + models.getMatchers().size() + " matchers to generate from source and compiled classes");
 		return models;
 	}
 
 	private void generateMatchers(JType optionsDeclaredInNode,GenerateMatchers options, AllMatchersModel models) {
-		for (MatcherModel model : models.matchers) {
-			boolean markGenerated = model.markGenerated;
+		for (MatcherModel model : models.getMatchers()) {
+			boolean markGenerated = model.isMarkGenerated();
 			JSourceFile source = newOrExistingMatcherSourceFile(model);
-			if(source.getResource().exists() && !model.keepInSync){
+			if(source.getResource().exists() && !model.isKeepInSync()){
 				continue;//skip this generation
 			}
 			JType matcher = source.getMainType();
-			SourceTemplate baseTemplate = ctxt.newSourceTemplate().var("selfType", model.matcherTypeSimple);
+			SourceTemplate baseTemplate = ctxt.newSourceTemplate().var("selfType", model.getMatcherTypeSimple());
 
 			// custom user builder factory methods
-			for (String name : model.staticBuilderMethodNames) {
+			for (String name : model.getStaticBuilderMethodNames()) {
 				addMethod(matcher,baseTemplate.child().pl("public static ${selfType} " + name + " (){ return with(); }").asMethodNodeSnippet(),markGenerated);
 			}
 
 			// standard builder factory method
 			addMethod(matcher,baseTemplate.child().pl("public static ${selfType} with(){ return new ${selfType}(); }").asMethodNodeSnippet(),markGenerated);
 
-			for (MatcherPropertyModel property : model.properties.values()) {
+			for (MatcherPropertyModel property : model.getProperties().values()) {
 				//add default equals matchers for known types
 				String equalMatcherSnippet = MATCHER_BY_TYPE.get(property.propertyTypeAsObject);
 				if (equalMatcherSnippet != null) {
 					SourceTemplate equalsMethod = baseTemplate
 						.child()
-						.var("p.name", property.propertyName)
+						.var("p.name", property.getPropertyName())
 						.var("p.type", property.propertyTypeAsObject)
 						.var("matcher", equalMatcherSnippet)
 						
@@ -165,7 +165,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
 				//add the matcher method
 				SourceTemplate matcherMethod = baseTemplate
 					.child()
-					.var("p.name", property.propertyName)
+					.var("p.name", property.getPropertyName())
 					.var("p.type", property.propertyTypeAsObject)
 					.var("p.type_raw", NameUtil.removeGenericOrArrayPart(property.propertyTypeAsObject))
 					.var("matcher", equalMatcherSnippet)
@@ -184,9 +184,9 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
 	}
 
     private JSourceFile newOrExistingMatcherSourceFile(MatcherModel model) {
-    	log.debug("checking for source file for " + model.matcherTypeFull + "");
+    	log.debug("checking for source file for " + model.getMatcherTypeFull() + "");
     	
-    	String path = model.matcherTypeFull.replace('.', '/') + ".java";
+    	String path = model.getMatcherTypeFull().replace('.', '/') + ".java";
     	RootResource sourceFile = ctxt.getDefaultGenerationRoot().getResource(path);
     	JSourceFile  source;
     	if(sourceFile.exists()){
@@ -194,16 +194,16 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
     		source = JSourceFile.fromResource(sourceFile, ctxt.getParser());    
     	} else {
     		log.debug("creating new matcher source file " + path + "");
-    		SourceTemplate t = ctxt.newSourceTemplate().pl("package " + model.pkg + ";").pl("");
+    		SourceTemplate t = ctxt.newSourceTemplate().pl("package " + model.getPkg() + ";").pl("");
             addGeneratedMarkers(t);
-            t.pl("public class " + model.matcherTypeSimple + " extends  " + PropertyMatcher.class.getName() + "<" + model.pojoTypeFull + ">{}");
+            t.pl("public class " + model.getMatcherTypeSimple() + " extends  " + PropertyMatcher.class.getName() + "<" + model.getPojoTypeFull() + ">{}");
             source = t.asSourceFileSnippet();
     	}
     	
     	//add default ctor
         SourceTemplate ctor= ctxt.newSourceTemplate();
-        ctor.pl("public " + model.matcherTypeSimple + "(){super(" + model.pojoTypeFull + ".class);}");
-        addMethod(source.getMainType(),ctor.asConstructorNodeSnippet(),model.markGenerated);
+        ctor.pl("public " + model.getMatcherTypeSimple() + "(){super(" + model.getPojoTypeFull() + ".class);}");
+        addMethod(source.getMainType(),ctor.asConstructorNodeSnippet(),model.isMarkGenerated());
     	
     	return source;
     }
@@ -242,7 +242,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
                 }
                 getter = field.getName();// direct field access
             }
-            property.propertyGetter = getter;
+            property.setPropertyGetter(getter);
             
             model.addField(property);
         }
@@ -268,7 +268,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
                 }
                 getter = field.getName();// direct field access
             }
-            property.propertyGetter = getter;
+            property.setPropertyGetter(getter);
             
             model.addField(property);
         }
