@@ -13,7 +13,7 @@ public interface CodeGenerator<TGenerateOptions extends Annotation> {
      * @param node the node this annotation was found on
      * @param options the annotation with all the generation options. This is extracted from the source code and compiled
      */
-    public void generate(ASTNode node,TGenerateOptions options);
+    public void generate(ASTNode node,GeneratorConfig options);
 
     public void afterRun();
 }

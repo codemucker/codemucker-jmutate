@@ -2,9 +2,8 @@ package org.codemucker.jmutate.generate.builder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.FindResult;
@@ -33,6 +32,7 @@ import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
+import org.codemucker.jmutate.generate.GeneratorConfig;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
@@ -73,11 +73,13 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
     }
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, GenerateBuilder options) {
-		ClashStrategy methodClashDefaultStrategy = getOr(options.clashStrategy(),ClashStrategy.SKIP);
+	public void generate(JType optionsDeclaredInNode, GeneratorConfig options) {
+		BuilderModel model = new BuilderModel(optionsDeclaredInNode, options);
+        
+		
+		ClashStrategy methodClashDefaultStrategy = model.getClashStrategy();
 		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
-		Matcher<String> fieldMatcher = fieldMatcher(options.fieldNames());
-        BuilderModel model = new BuilderModel(optionsDeclaredInNode, options);
+		Matcher<String> fieldMatcher = fieldMatcher(model.getFieldNames());
         
         extractAllProperties(optionsDeclaredInNode, fieldMatcher, model);
         

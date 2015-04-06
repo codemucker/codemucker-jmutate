@@ -10,8 +10,6 @@ import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.lang.ClassNameUtil;
 
-import com.google.common.collect.Sets;
-
 /**
  * Holds the details about an individual pojo matcher
  */
@@ -22,10 +20,10 @@ public class MatcherModel {
 	private final String matcherTypeSimple;
     private final String pkg;
     private final boolean keepInSync;
-    private final boolean markGenerated;
-    
-    private final Set<String> staticBuilderMethodNames;
-    
+	private final boolean markGenerated;
+	private final Set<String> staticBuilderMethodNames;
+	
+	
     private final Map<String, MatcherPropertyModel> properties = new LinkedHashMap<>();
     
     public MatcherModel(AllMatchersModel parent, Class<?> pojoType) {
@@ -33,9 +31,11 @@ public class MatcherModel {
     	this.pkg = extractPkgName(parent,pojoType.getName());
     	this.matcherTypeFull = toMatcherName(getPkg(),NameUtil.compiledNameToSourceName(pojoType));
         this.matcherTypeSimple = ClassNameUtil.extractSimpleClassNamePart(getMatcherTypeFull());
-        this.staticBuilderMethodNames = Sets.newHashSet(parent.getOptions().builderMethodNames());
-        this.keepInSync = parent.getOptions().keepInSync();
-        this.markGenerated = parent.getOptions().markGenerated(); 
+ 
+        this.keepInSync = parent.isKeepInSync();
+        this.markGenerated = parent.isMarkGenerated();
+        this.staticBuilderMethodNames = parent.getStaticBuilderMethodNames();
+ 
     }
     
     public MatcherModel(AllMatchersModel parent, JType pojoType) {
@@ -43,9 +43,11 @@ public class MatcherModel {
     	this.pkg = extractPkgName(parent,getPojoTypeFull());
     	this.matcherTypeFull = toMatcherName(getPkg(),pojoType.getFullName());
         this.matcherTypeSimple = ClassNameUtil.extractSimpleClassNamePart(getMatcherTypeFull());
-        this.staticBuilderMethodNames = Sets.newHashSet(parent.getOptions().builderMethodNames());
-        this.keepInSync = parent.getOptions().keepInSync();
-        this.markGenerated = parent.getOptions().markGenerated();
+        
+        this.keepInSync = parent.isKeepInSync();
+        this.markGenerated = parent.isMarkGenerated();
+        this.staticBuilderMethodNames = parent.getStaticBuilderMethodNames();
+ 
     }
     
     private String extractPkgName(AllMatchersModel parent,String pojoFullName){
@@ -100,7 +102,7 @@ public class MatcherModel {
 	public String getPkg() {
 		return pkg;
 	}
-
+	
 	public boolean isKeepInSync() {
 		return keepInSync;
 	}
@@ -109,7 +111,7 @@ public class MatcherModel {
 		return markGenerated;
 	}
 
-	Set<String> getStaticBuilderMethodNames() {
+	public Set<String> getStaticBuilderMethodNames() {
 		return staticBuilderMethodNames;
 	}
 

@@ -11,11 +11,17 @@ import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.TypeInfo;
+import org.codemucker.jmutate.generate.GeneratorConfig;
+import org.codemucker.jmutate.generate.ModelUtils;
 import org.codemucker.jpattern.generate.Access;
+import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.GenerateBean;
 
 public class BeanModel {   
 
+	private ClashStrategy clashStrategy;
+	private String fieldNames;
+	
 	private boolean markGenerated;
 	private boolean markCtorArgsAsProperties;
 	private JAccess fieldAccess;
@@ -34,28 +40,45 @@ public class BeanModel {
 	private boolean bindable;
 	private boolean vetoable;
 	
-	
 	private TypeInfo type;
     private Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
-
+    
     public BeanModel(JType pojoType,GenerateBean options) {
-    	this.type = TypeInfo.newFromFullNameAndTypeBounds(pojoType.getFullGenericName(), pojoType.getTypeBoundsExpressionOrNull());
-
-    	this.markGenerated = options.markGenerated();
-    	this.markCtorArgsAsProperties = options.markCtorArgsAsProperties();
-    	this.fieldAccess = toJAccess(options.fieldAccess());
-    	this.generateHashCodeEquals = options.generateHashCodeAndEqualsMethod();
-    	this.generateAddRemoveMethodsForIndexedProperties = options.generateAddRemoveMethodsForIndexProperties();
-    	this.generateToString = options.generateToString();
-    	this.makeReadonly = options.readonlyProperties();
-    	this.generateStaticPropertyNameFields = options.generateStaticPropertyNameFields();
-    	this.generateNoArgCtor = options.generateNoArgCtor();
-    	this.generateAllArgCtor = options.generateAllArgCtor();
-    	this.generateCloneMethod = options.generateCloneMethod();
-    	this.inheritSuperClassProperties = options.inheritSuperClassProperties();
-    	this.bindable = options.bindable();
-    	this.vetoable = options.vetoable();
+    	this(pojoType,ModelUtils.getEmptyCfg(),options);
     }
+    
+    public BeanModel(JType pojoType,GeneratorConfig cfg) {
+        this(pojoType,cfg.getConfig(),getDefaultOptions());
+    }
+    
+    private BeanModel(JType pojoType,Configuration cfg, GenerateBean def) {
+    	this.type = TypeInfo.newFromFullNameAndTypeBounds(pojoType.getFullGenericName(), pojoType.getTypeBoundsExpressionOrNull());
+    	this.markGenerated = cfg.getBoolean("markGenerated",def.markGenerated());
+    	this.markCtorArgsAsProperties = cfg.getBoolean("markCtorArgsAsProperties",def.markCtorArgsAsProperties());
+    	this.fieldAccess = toJAccess(def.fieldAccess());
+    	this.generateHashCodeEquals = cfg.getBoolean("generateHashCodeAndEqualsMethod",def.generateHashCodeAndEqualsMethod());
+    	this.generateAddRemoveMethodsForIndexedProperties = cfg.getBoolean("generateAddRemoveMethodsForIndexProperties",def.generateAddRemoveMethodsForIndexProperties());
+    	this.generateToString = cfg.getBoolean("generateToString",def.generateToString());
+    	this.makeReadonly = cfg.getBoolean("readonlyProperties",def.readonlyProperties());
+    	this.generateStaticPropertyNameFields = cfg.getBoolean("generateStaticPropertyNameFields",def.generateStaticPropertyNameFields());
+    	this.generateNoArgCtor = cfg.getBoolean("generateNoArgCtor",def.generateNoArgCtor());
+    	this.generateAllArgCtor = cfg.getBoolean("generateAllArgCtor",def.generateAllArgCtor());
+    	this.generateCloneMethod = cfg.getBoolean("generateCloneMethod",def.generateCloneMethod());
+    	this.inheritSuperClassProperties = cfg.getBoolean("inheritSuperClassProperties",def.inheritSuperClassProperties());
+    	this.bindable = cfg.getBoolean("bindable",def.bindable());
+    	this.vetoable = cfg.getBoolean("vetoable",def.vetoable());
+    	
+    	this.clashStrategy = ModelUtils.getEnum(cfg,"clashStrategy", def.clashStrategy());
+    	this.fieldNames = cfg.getString("fieldNames", def.fieldNames());
+    	
+    }
+    
+    private static GenerateBean getDefaultOptions(){
+    	return Defaults.class.getAnnotation(GenerateBean.class);
+    }
+    
+    @GenerateBean
+    private static class Defaults{}
     
     public BeanModel(JType pojoType,Map<String,?> cfg) {
         try {
@@ -89,7 +112,15 @@ public class BeanModel {
 		}
 	}
 
-    void addField(BeanPropertyModel field){
+    public ClashStrategy getClashStrategy() {
+		return clashStrategy;
+	}
+
+	public String getFieldNames() {
+		return fieldNames;
+	}
+
+	void addField(BeanPropertyModel field){
         if (hasNamedField(field.propertyName)) {
             throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, getType().getFullName());
         }

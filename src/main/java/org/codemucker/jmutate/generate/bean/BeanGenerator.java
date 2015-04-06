@@ -32,6 +32,7 @@ import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
+import org.codemucker.jmutate.generate.GeneratorConfig;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
@@ -87,16 +88,16 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	}
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, GenerateBean options) {
+	public void generate(JType optionsDeclaredInNode, GeneratorConfig options) {
 		if(optionsDeclaredInNode.isInterface()){
 			log.warn("the " + GenerateBean.class.getName() + " generation annotation on an interface is not supported");
 			return;
 		}
-		ClashStrategy methodClashDefaultStrategy = getOr(options.clashStrategy(), ClashStrategy.SKIP);
-		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
-		Matcher<String> fieldMatcher = fieldMatcher(options.fieldNames());
-		
 		BeanModel model = new BeanModel(optionsDeclaredInNode,options);
+		ClashStrategy methodClashDefaultStrategy = model.getClashStrategy();
+		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
+		Matcher<String> fieldMatcher = fieldMatcher(model.getFieldNames());
+		
 		extractAllProperties(optionsDeclaredInNode, fieldMatcher, model);
 		
 		log.debug("found " + model.getProperties().size() + " bean properties for "  + model.getType().getFullNameRaw());

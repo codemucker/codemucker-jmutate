@@ -7,9 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.TypeInfo;
+import org.codemucker.jmutate.generate.GeneratorConfig;
+import org.codemucker.jmutate.generate.ModelUtils;
+import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.GenerateBuilder;
 
 import com.google.common.collect.Lists;
@@ -23,6 +27,9 @@ public class BuilderModel {
 			return left.propertyName.compareTo(right.propertyName);
 		}
 	};
+	
+	private final ClashStrategy clashStrategy;
+	private final String fieldNames;
 	
 	private final TypeInfo pojoType;
 	private final String builderTypeSimple;
@@ -48,29 +55,39 @@ public class BuilderModel {
 	
     private final Set<String> staticBuilderMethodNames;
     private final Map<String, BuilderPropertyModel> properties = new LinkedHashMap<>();
+
 	
     public BuilderModel(JType pojo,GenerateBuilder options) {
+    	this(pojo,ModelUtils.getEmptyCfg(),options);
+    }
+
+    public BuilderModel(JType pojo,GeneratorConfig cfg) {
+    	this(pojo,cfg.getConfig(),getDefaultOptions());
+    }
+    
+    private BuilderModel(JType pojo,Configuration cfg, GenerateBuilder def) {
+    	
     	this.pojoType = TypeInfo.newFromFullNameAndTypeBounds(pojo.getFullGenericName(), pojo.getTypeBoundsExpressionOrNull());
     	this.isGeneric = getPojoType().isGeneric();
     	
     	this.builderTypeSimpleRaw = pojo.isAbstract()?"AbstractBuilder":"Builder";
     	this.builderTypeSimple = getBuilderTypeSimpleRaw() + getPojoType().getGenericPartOrEmpty();
     	
-        this.staticBuilderMethodNames = Sets.newHashSet(options.builderCreateMethodNames());
+        this.staticBuilderMethodNames = Sets.newHashSet(ModelUtils.getList(cfg,"builderCreateMethodNames", def.builderCreateMethodNames()));
         if(getStaticBuilderMethodNames().size()==0){
         	getStaticBuilderMethodNames().add("with");
         }
-        this.buildPojoMethodName = options.buildMethodName();
-        this.markGenerated = options.markGenerated();
-        this.markCtorArgsAsProperties = options.markCtorArgsAsProperties();
-        this.supportSubclassing = options.supportSubclassing() || pojo.isAbstract();
-        this.generateStaticBuilderMethod = options.generateStaticBuilderCreateMethod() && !isSupportSubclassing();
-        this.generateAddRemoveMethodsForIndexedProperties = options.generateAddRemoveMethodsForIndexProperties();
-        this.generateCopyBeanMethod = options.generateCreateFromBean();
+        this.buildPojoMethodName = cfg.getString("buildMethodName",def.buildMethodName());
+        this.markGenerated = cfg.getBoolean("markGenerated",def.markGenerated());
+        this.markCtorArgsAsProperties = cfg.getBoolean("markCtorArgsAsProperties",def.markCtorArgsAsProperties());
+        this.supportSubclassing = cfg.getBoolean("supportSubclassing", def.supportSubclassing() || pojo.isAbstract());
+        this.generateStaticBuilderMethod = cfg.getBoolean("generateStaticBuilderCreateMethod", def.generateStaticBuilderCreateMethod() && !isSupportSubclassing());
+        this.generateAddRemoveMethodsForIndexedProperties = cfg.getBoolean("generateAddRemoveMethodsForIndexProperties", def.generateAddRemoveMethodsForIndexProperties());
+        this.generateCopyBeanMethod = cfg.getBoolean("generateCreateFromBean", def.generateCreateFromBean());
         
-        this.inheritSuperBeanBuilder = options.inheritSuperBeanBuilder();
-        this.inheritSuperBeanProperties = options.inheritSuperBeanProperties();
-        this.generateStaticBuilderMethodOnBuilder = options.generateStaticBuilderCreateMethodOnBuilder();
+        this.inheritSuperBeanBuilder = cfg.getBoolean("inheritSuperBeanBuilder", def.inheritSuperBeanBuilder());
+        this.inheritSuperBeanProperties = cfg.getBoolean("inheritSuperBeanProperties", def.inheritSuperBeanProperties());
+        this.generateStaticBuilderMethodOnBuilder = cfg.getBoolean("generateStaticBuilderCreateMethodOnBuilder", def.generateStaticBuilderCreateMethodOnBuilder());
 		String self = "this";
 		String selfType = getBuilderTypeSimple();
 		String builderTypeBounds = getPojoType().getTypeBoundsOrNull();
@@ -90,7 +107,18 @@ public class BuilderModel {
 		this.builderTypeBoundsOrNull = builderTypeBounds;
 		this.builderSelfAccessor = self;
 		this.builderSelfType = selfType;
+		
+		this.clashStrategy = ModelUtils.getEnum(cfg,"clashStrategy", def.clashStrategy());
+    	this.fieldNames = cfg.getString("fieldNames", def.fieldNames());
+    	
     }
+    
+    private static GenerateBuilder getDefaultOptions(){
+    	return Defaults.class.getAnnotation(GenerateBuilder.class);
+    }
+    
+    @GenerateBuilder
+    private static class Defaults{}
     
     void addProperty(BuilderPropertyModel field){
         if (hasPropertyNamed(field.propertyName)) {
@@ -183,5 +211,13 @@ public class BuilderModel {
 
 	Set<String> getStaticBuilderMethodNames() {
 		return staticBuilderMethodNames;
+	}
+
+	public ClashStrategy getClashStrategy() {
+		return clashStrategy;
+	}
+
+	public String getFieldNames() {
+		return fieldNames;
 	}
 }

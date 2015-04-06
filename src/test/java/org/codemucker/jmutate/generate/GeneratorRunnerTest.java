@@ -51,7 +51,7 @@ public class GeneratorRunnerTest {
         public static final List<JType> nodesInvoked = new ArrayList<>();
 
         @Override
-        protected void generate(JType applyToNode, GenerateOne options) {
+        protected void generate(JType applyToNode, GeneratorConfig options) {
             nodesInvoked.add(applyToNode);
         }
     }
@@ -93,7 +93,7 @@ public class GeneratorRunnerTest {
         public static final List<JType> nodesInvoked = new ArrayList<>();
 
         @Override
-        protected void generate(JType applyToNode, GenerateTwo options) {
+        protected void generate(JType applyToNode, GeneratorConfig options) {
             nodesInvoked.add(applyToNode);
         }
     }

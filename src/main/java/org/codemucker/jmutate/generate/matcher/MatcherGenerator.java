@@ -31,6 +31,7 @@ import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
+import org.codemucker.jmutate.generate.GeneratorConfig;
 import org.codemucker.jmutate.generate.PojoScanner;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
@@ -82,29 +83,23 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
     }
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, GenerateMatchers options) {
-		ClashStrategy methodClashDefaultStrategy = getOr(options.clashStrategy(),ClashStrategy.SKIP);
-		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
-
-		PojoScanner scanner = new PojoScanner(
-				ctxt.getResourceLoader(), 
-				options.pojoDependencies(), 
-				options.pojoNames(),
-				options.pojoTypes());
-	    
-		AllMatchersModel models = createModel(optionsDeclaredInNode,options, scanner);
-		generateMatchers(optionsDeclaredInNode, options, models);
+	public void generate(JType optionsDeclaredInNode, GeneratorConfig options) {
+		AllMatchersModel models = new AllMatchersModel(optionsDeclaredInNode, options);
+		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(models.getClashStrategy());
+		
+		findAndAddModels(optionsDeclaredInNode,models);
+		generateMatchers(optionsDeclaredInNode, models);
 	}
 
-	private static <T> T getOr(T val, T defaultVal) {
-        if (val == null) {
-            return defaultVal;
-        }
-        return val;
-    }
-	private AllMatchersModel createModel(JType optionsDeclaredInNode,GenerateMatchers options, PojoScanner pojoScanner) {
-		AllMatchersModel models = new AllMatchersModel(optionsDeclaredInNode, options);
-        if(options.scanSources() ){
+	private void findAndAddModels(JType optionsDeclaredInNode,AllMatchersModel models) {
+		PojoScanner pojoScanner = new PojoScanner(
+				ctxt.getResourceLoader(), 
+				models.getPojoDependencies(), 
+				models.getPojoNames(),
+				models.getPojoTypes());
+	    
+		
+        if(models.isScanSources() ){
             FindResult<JType> pojos = pojoScanner.scanSources();
             // add the appropriate methods and types for each request bean
             for (JType pojo : pojos) {
@@ -114,7 +109,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
             }
         }
         
-        if(options.scanDependencies()){
+        if(models.isScanDependencies()){
             FindResult<Class<?>> pojos = pojoScanner.scanForReflectedClasses();
             // add the appropriate methods and types for each request bean
             for (Class<?> pojo : pojos) {
@@ -125,10 +120,9 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
         }
         
         log.info("found " + models.getMatchers().size() + " matchers to generate from source and compiled classes");
-		return models;
 	}
 
-	private void generateMatchers(JType optionsDeclaredInNode,GenerateMatchers options, AllMatchersModel models) {
+	private void generateMatchers(JType optionsDeclaredInNode,AllMatchersModel models) {
 		for (MatcherModel model : models.getMatchers()) {
 			boolean markGenerated = model.isMarkGenerated();
 			JSourceFile source = newOrExistingMatcherSourceFile(model);

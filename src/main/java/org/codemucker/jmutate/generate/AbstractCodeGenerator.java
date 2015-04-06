@@ -18,7 +18,7 @@ public abstract class AbstractCodeGenerator<T extends Annotation> implements Cod
 	}
 
 	@Override
-    public final void generate(ASTNode node, T options) {
+    public final void generate(ASTNode node, GeneratorConfig options) {
         if (JType.is(node)) {
             generate(JType.from(node), options);
         } else if (JField.is(node)) {
@@ -28,13 +28,13 @@ public abstract class AbstractCodeGenerator<T extends Annotation> implements Cod
         }
     }
 
-    protected void generate(JType applyToNode, T options) {
+    protected void generate(JType applyToNode, GeneratorConfig options) {
     }
 
-    protected void generate(JMethod applyToNode, T options) {
+    protected void generate(JMethod applyToNode, GeneratorConfig options) {
     }
 
-    protected void generate(JField applyToNode, T options) {
+    protected void generate(JField applyToNode, GeneratorConfig options) {
     }
 
 }

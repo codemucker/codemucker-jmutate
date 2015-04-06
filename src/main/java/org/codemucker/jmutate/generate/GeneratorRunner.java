@@ -1,6 +1,9 @@
 package org.codemucker.jmutate.generate;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,6 +14,7 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.DirectoryRoot;
@@ -91,10 +95,7 @@ public class GeneratorRunner {
     private final Map<String, String> generators;
     
     private final boolean throwErrorOnMissingGenerators = true;
-    /**
-     * Used to compile the generator annotations found so as to be able to easily extract the info. These annotations are effectively the configuration of each generator
-     */
-    private final JAnnotationCompiler annotationCompiler;
+
     /**
      * Class loader used to load the generators with
      */
@@ -116,9 +117,14 @@ public class GeneratorRunner {
 	private final Matcher<String> filterGenerators;
 	private final Matcher<JAnnotation> annotationFilter;
 	
-	
-	private final Map<String, List<java.lang.annotation.Annotation>> templateAnnotations = new HashMap<>();
-	private final List<String> normalAnnotations = new ArrayList();
+	/**
+	 * Used to prevent constant scanning of already found template nodes
+	 */
+	private final Map<String, List<Options>> templateOptions = new HashMap<>();
+	/**
+	 * Used to prevent constant scanning of already found annotations
+	 */
+	private final List<String> normalAnnotationsCache = new ArrayList<>();
 	
     public static Builder with() {
         return new Builder();
@@ -161,8 +167,6 @@ public class GeneratorRunner {
                 .generationRoot(generationRoot)
                 .clashStrategy(defaultClashStrategy)
                 .build();
-        
-        this.annotationCompiler = ctxt.obtain(JAnnotationCompiler.class);
     }
 
     /**
@@ -198,11 +202,11 @@ public class GeneratorRunner {
         }
         //compile all the annotations at once instead of calling the compiler once for each annotation. The compiled
         //version will be cached on the ast node of each annotation
-        annotationCompiler.compileAnnotations(generateAnnotations);
+        //annotationCompiler.compileAnnotations(generateAnnotations);
         //group the found annotations by the generator they invoke
-        Collection<GroupedAnnotations> groups = groupByAnnotationType(generateAnnotations);
+        Collection<GroupedOptions> groups = groupByAnnotationType(generateAnnotations);
         //run the generators in order (of generator)
-        for (GroupedAnnotations group : groups) {
+        for (GroupedOptions group : groups) {
             CodeGenerator<?> generator = getGeneratorFor(group.getAnnotationName());
             if (generator != null) {
             	generator.beforeRun();
@@ -213,12 +217,11 @@ public class GeneratorRunner {
         MutateUtil.setClassLoader(null);
     }
 
-    @SuppressWarnings("unchecked")
-    private void invokeGenerator(CodeGenerator generator, GroupedAnnotations nodesForThisGenerator) {
+    private void invokeGenerator(CodeGenerator<?> generator, GroupedOptions nodesForThisGenerator) {
         for (NodeOptionsPair pair : nodesForThisGenerator.getCollectedNodes()) {
-            log.debug("processing annotation '" + pair.compiledGeneratorOptions.toString() + "' in '" + pair.enclosedInType.getFullName());
+            log.debug("processing annotation '" + pair.options.toString() + "' in '" + pair.enclosedInType.getFullName());
             try {
-            	generator.generate(pair.markedNode, pair.compiledGeneratorOptions);
+            	generator.generate(pair.markedNode, pair.options);
             } catch(Exception e){
             	throw new JMutateException("error processing node : " + pair.markedNode,e);
             }
@@ -263,87 +266,117 @@ public class GeneratorRunner {
      * @param generatorAnnotations
      * @return
      */
-    private Collection<GroupedAnnotations> groupByAnnotationType(List<Annotation> generatorAnnotations) {
+    private Collection<GroupedOptions> groupByAnnotationType(List<Annotation> generatorAnnotations) {
         //collect all the annotations of a given type to be passed to a generator at once (and so we can apply generator ordering)        
-        Map<String, GroupedAnnotations> nodesByAnnotationName = new HashMap<>();
+        Map<String, GroupedOptions> nodesByAnnotationName = new HashMap<>();
        
-		for(Annotation sourceGeneratorOptions:generatorAnnotations){
-			 String fullName = JAnnotation.from(sourceGeneratorOptions).getQualifiedName();
+		for(Annotation sourceAnnotations:generatorAnnotations){
+			 String fullName = JAnnotation.from(sourceAnnotations).getQualifiedName();
 			 
-		     ASTNode attachedToNode = getOwningNodeFor(sourceGeneratorOptions);
+		     ASTNode attachedToNode = getOwningNodeFor(sourceAnnotations);
 			
 			if (isTemplate(fullName)) {
 				useTemplateOptionsFor(nodesByAnnotationName, fullName, attachedToNode);
-			} else {
-				java.lang.annotation.Annotation compiledGeneratorOptions = annotationCompiler.toCompiledAnnotation(sourceGeneratorOptions);
-				if(compiledGeneratorOptions.annotationType().isAnnotationPresent(GeneratorOptions.class) && !isTemplateNode(attachedToNode)){
-					addToGroup(nodesByAnnotationName, fullName, attachedToNode, compiledGeneratorOptions);
-				}
+			} else if(isGeneratorAnnotation(sourceAnnotations) && !isTemplateNode(attachedToNode)){
+				Options options = new Options(sourceAnnotations);
+				addToGroup(nodesByAnnotationName, fullName, attachedToNode, options);
 			}
 		}
         return nodesByAnnotationName.values();
     }
+    
+    /**
+     * If the provided annotation is a generator annotation (else a normal annotation which got caught up in the scan)
+     */
+    private boolean isGeneratorAnnotation(Annotation a){
+    	//TODO:only use this annotation if this annotation type is marked with 'GeneatorOptions'
+		JAnnotation ja = JAnnotation.from(a);
+		String qn = ja.getQualifiedName();
 
-	private boolean isTemplateNode(ASTNode attachedToNode) {
+		// look up the source first. This may have changed and not yet compiled
+		// (freshest)
+		RootResource resource = resourceLoader.getResourceOrNullFromClassName(qn);
+		if (resource != null && resource.exists()) {
+			JSourceFile source = JSourceFile.fromResource(resource,ctxt.getParser());
+			JType t = source.findTypesMatching(AJType.with().fullName(qn)).getFirstOrNull();
+			if (t == null) {
+				log.warn("Can't find type '" + qn + "' in " + source.getResource().getFullPath());
+			} else {
+				return t.getAnnotations().contains(GeneratorOptions.class);
+			}
+		}
+		// try the compiled version
+		Class<?> annotationClass = resourceLoader.loadClassOrNull(qn);
+		if (annotationClass != null) {
+			return annotationClass.isAnnotationPresent(GeneratorOptions.class);
+		}
+
+		log.warn("Can't load annotation as class or resource '" + qn + "'. Ignoring as a generator");
+		return false;
+    }
+
+    /**
+     * Is the given source node a template noe, that is, solely to collect multiple generator annotations and mark-up other classes for generation
+     */
+	private boolean isTemplateNode(ASTNode node) {
 		boolean isTemplateNode = false;
-		if(JType.is(attachedToNode) && JType.from(attachedToNode).getAnnotations().contains(IsGeneratorTemplate.class)){
+		if(JType.is(node) && JType.from(node).getAnnotations().contains(IsGeneratorTemplate.class)){
 			isTemplateNode = true;
 		}
 		return isTemplateNode;
 	}
 
-	private boolean isTemplate(String key) {
-		if(normalAnnotations.contains(key)){
+	private boolean isTemplate(String annotationClassName) {
+		if(normalAnnotationsCache.contains(annotationClassName)){
 			return false;
 		}
-		if(templateAnnotations.containsKey(key)){
+		if(templateOptions.containsKey(annotationClassName)){
 			return true;
 		}
-		extractAnnotationDetails(key);
+		extractAnnotationDetails(annotationClassName);
 		
-		return templateAnnotations.containsKey(key);
+		return templateOptions.containsKey(annotationClassName);
 	}
 
-	private void extractAnnotationDetails(String key) {
+	private void extractAnnotationDetails(String annotationClassName) {
 		//lets see if this annotation is a template
-		log.debug("trying to load annotation class " + key + " from source");
+		log.debug("trying to load annotation class " + annotationClassName + " from source");
 		//ok, template might be a source file in the project
-		String sourcePath = key.replace('.', '/') + ".java";
+		String sourcePath = annotationClassName.replace('.', '/') + ".java";
 		RootResource resource = ctxt.getResourceLoader().getResourceOrNull(sourcePath);
+		//extract the annotation details from source code
 		if(resource != null && resource.exists()){
 			JSourceFile source = JSourceFile.fromResource(resource, ctxt.getParser());
 			if(source.getMainType().getAnnotations().contains(IsGeneratorTemplate.class)){
 				//grab all the annotation options from the template. This will be in source form
 				GenerationAnnotationCollectorVisitor collector = new GenerationAnnotationCollectorVisitor(annotationFilter);
 				source.accept(collector);
-				List<Annotation> sourceTemplateOptions = collector.getResults();
+				List<Annotation> templateAnnotations = collector.getResults();
 				
 				//now compile all the options and store them
-				List<java.lang.annotation.Annotation> templateOptions = new ArrayList<>();
-				annotationCompiler.compileAnnotations(sourceTemplateOptions);
-				for(Annotation templateOption:sourceTemplateOptions){
-					java.lang.annotation.Annotation compiledOption = annotationCompiler.toCompiledAnnotation(templateOption);
-					templateOptions.add(compiledOption);
+				List<Options> options = new ArrayList<>();
+				for(Annotation a:templateAnnotations){
+					options.add(new Options(a));
 				}
-				templateAnnotations.put(key, templateOptions);
-				log.debug("found " + templateOptions.size() + " generation annotations on template " + key + "");
+				templateOptions.put(annotationClassName, options);
+				log.debug("found " + options.size() + " generation annotations on template " + annotationClassName + "");
 			}
-		} else {
+		} else { //extract the annotation details from a compiled class
 			try {
-				Class<?> normalOrTemplateAnon = ctxt.getResourceLoader().loadClass(key);
+				Class<?> normalOrTemplateAnon = ctxt.getResourceLoader().loadClass(annotationClassName);
 				
 				//handle the case where template might be in an external project instead of as a source file in the current project
 				if(normalOrTemplateAnon!= null && normalOrTemplateAnon.isAnnotationPresent(IsGeneratorTemplate.class)){
-					//found a template annoation. Extract all annotations from it
-					ArrayList<java.lang.annotation.Annotation> templateOptions = new ArrayList<>();
+					//found a template annotation. Extract all annotations from it
+					ArrayList<Options> options = new ArrayList<>();
 					//only get the annotations related to generation
-					for (java.lang.annotation.Annotation options : normalOrTemplateAnon.getAnnotations()) {
-						if (options.annotationType().isAnnotationPresent(GeneratorOptions.class)) {
-							templateOptions.add(options);
+					for (java.lang.annotation.Annotation a : normalOrTemplateAnon.getAnnotations()) {
+						if (a.annotationType().isAnnotationPresent(GeneratorOptions.class)) {
+							options.add(new Options(a));
 						}
 					}
-					templateAnnotations.put(key, templateOptions);
-					log.debug("found " + templateOptions.size() + " generation annotations on template " + key + "");
+					templateOptions.put(annotationClassName, options);
+					log.debug("found " + options.size() + " generation annotations on template " + annotationClassName + "");
 				}
 			} catch (ClassNotFoundException e) {
 				//bugger. oh well, default is to treat as a normal one
@@ -351,28 +384,28 @@ public class GeneratorRunner {
 		}
 	}
 
-	private void useTemplateOptionsFor(Map<String, GroupedAnnotations> nodesByAnnotationName, String key,ASTNode attachedToNode) {
-		List<java.lang.annotation.Annotation> templateOptions = templateAnnotations.get(key);
-		if (templateOptions != null) {
-			for(java.lang.annotation.Annotation templateOption:templateOptions){
-				String optionKey = templateOption.annotationType().getName();
-				addToGroup(nodesByAnnotationName, optionKey, attachedToNode, templateOption);
+	private void useTemplateOptionsFor(Map<String, GroupedOptions> nodesByAnnotationName, String annotationClassName,ASTNode attachedToNode) {
+		List<Options> options = this.templateOptions.get(annotationClassName);
+		if (options != null) {
+			for(Options opt:options){
+				String optionKey = opt.getKey();
+				addToGroup(nodesByAnnotationName, optionKey, attachedToNode, opt);
 			}
 		}
 	}
 
 	private void addToGroup(
-			Map<String, GroupedAnnotations> nodesByAnnotationName,
-			String key, 
+			Map<String, GroupedOptions> nodesByAnnotationName,
+			String annotationClassName, 
 			ASTNode attachedToNode,
-			java.lang.annotation.Annotation compiledGeneratorOptions) {
-		GroupedAnnotations group = nodesByAnnotationName.get(key);
+			Options generatorOptions) {
+		GroupedOptions group = nodesByAnnotationName.get(annotationClassName);
 		if(group == null){
-		    group = new GroupedAnnotations(key);
-		    nodesByAnnotationName.put(key, group);
+		    group = new GroupedOptions(annotationClassName);
+		    nodesByAnnotationName.put(annotationClassName, group);
 		}
 		
-		group.addNode(attachedToNode, compiledGeneratorOptions);
+		group.addNode(attachedToNode, generatorOptions);
 	}
     
     private CodeGenerator<?> getGeneratorFor(String annotationType){
@@ -424,7 +457,7 @@ public class GeneratorRunner {
                 log.info("auto registering generator '" + defGenAnon.defaultGenerator() + "' for annotation '" + annotationType + "'");
                 generators.put(annotationType, defGenAnon.defaultGenerator());
             } else {
-                log.warn("skipping auto registering generator for annotation '" + annotationType + "' as no default supplied");    
+                log.warn("skipping auto registering generator for annotation '" + annotationType + "' as no default generator supplied");    
             }
         } catch (ClassNotFoundException e) {
             log.warn(String.format("couldn't load annotation class %s, using roots:%n%s",annotationType,Joiner.on("\n").join(ctxt.getResourceLoader().getAllRoots())), e);
@@ -457,19 +490,74 @@ public class GeneratorRunner {
         log.debug(msg);
     }
     
+    public static class Options implements GeneratorConfig {
+    	private static final Object[] NO_ARGS = new Object[]{};
+    	
+    	private final Configuration config;
+    	private final String key;
+    	
+    	public Options(Annotation a){
+    		JAnnotation annotation = JAnnotation.from(a);
+    		this.key = annotation.getQualifiedName();
+    		this.config = new MapConfiguration(annotation.getAttributeMap());
+    	}
+
+    	public Options(java.lang.annotation.Annotation a){
+    		this.key = a.getClass().getName();
+    		this.config = extractConfig(a);
+    	}
+
+		private static Configuration extractConfig(java.lang.annotation.Annotation a) {
+			Configuration cfg = new MapConfiguration();
+    		
+    		Method[] methods = a.getClass().getDeclaredMethods();
+    		for(Method m:methods){
+    			if(m.getReturnType() == Void.class || !Modifier.isPublic(m.getModifiers()) || m.isSynthetic()){
+    				continue;
+    			}
+    			String name = m.getName();
+				try {
+	    			Object val = m.invoke(a, NO_ARGS);
+	    			if(val instanceof Enum<?>){ //from source code expands to full name 
+	    				Enum<?> en = (Enum<?>)val;
+	    				val = en.getClass().getName() + "." + en.name();
+	    			} else if(val instanceof Class<?>){//in source code expanded to fully qualified name
+	    				val = ((Class<?>)val).getName();
+	    			}
+					cfg.addProperty(name, val);
+				} catch (IllegalAccessException | IllegalArgumentException
+						| InvocationTargetException e) {
+					//should never be thrown
+					throw new RuntimeException("Error extracting value from annotation method '" + name + "'",e);
+				}
+    		}
+			return cfg;
+		}
+    	
+		@Override
+		public Configuration getConfig() {
+			return config;
+		}
+
+		public String getKey() {
+			return key;
+		}
+    }
+    
+    
     /**
      * A collection of nodes with the same annotation type. This will be sent to the appropriate generator as a group
      */
-    private static class GroupedAnnotations {
+    private static class GroupedOptions {
         private final String fullAnnotationName;
         private final Set<NodeOptionsPair> collectedOptions = new HashSet<>();
         
-        public GroupedAnnotations(String annotationName){
+        public GroupedOptions(String annotationName){
             this.fullAnnotationName = annotationName;
         }
         
-        public void addNode(ASTNode node,java.lang.annotation.Annotation compiledOptions){
-            collectedOptions.add(new NodeOptionsPair(node,compiledOptions));
+        public void addNode(ASTNode node,Options options){
+            collectedOptions.add(new NodeOptionsPair(node,options));
         }
 
         public Set<NodeOptionsPair> getCollectedNodes() {
@@ -483,13 +571,13 @@ public class GeneratorRunner {
     
     private static class NodeOptionsPair {
     	private final ASTNode markedNode;
-    	private final java.lang.annotation.Annotation compiledGeneratorOptions;
+    	private final Options options;
     	private final JType enclosedInType;
 
-		public NodeOptionsPair(ASTNode node, java.lang.annotation.Annotation compiledOptions) {
+		public NodeOptionsPair(ASTNode node, Options options) {
 			super();
 			this.markedNode = node;
-			this.compiledGeneratorOptions = compiledOptions;
+			this.options = options;
             this.enclosedInType = findNearestParentTypeFor(node);
 		}
     }

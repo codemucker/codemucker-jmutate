@@ -19,6 +19,7 @@ import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
@@ -174,6 +175,8 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 			return null;
 		} else if (exp instanceof TypeLiteral) {
 			return NameUtil.resolveQualifiedName(((TypeLiteral)exp).getType());
+		} else if (exp instanceof BooleanLiteral) {
+			return ((BooleanLiteral)exp).booleanValue();
 		} else if (exp instanceof SimpleName) {
 			return ((SimpleName) exp).getIdentifier();
 		} else if (exp instanceof QualifiedName) {

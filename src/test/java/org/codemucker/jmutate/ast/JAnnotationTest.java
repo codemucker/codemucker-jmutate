@@ -51,10 +51,12 @@ public class JAnnotationTest {
 		assertThat(annon.getAttributeValue("att4").toString(),isEqualTo("7"));
 		assertThat(annon.getAttributeValue("att5").toString(),isEqualTo(Test2Constants.class.getName().replace('$', '.')));
 		assertThat(annon.getAttributeValue("att6").toString(),isEqualTo("bar"));
+		//assertThat(annon.getAttributeValue("att7").toString(),isEqualTo("Foo"));
+		assertThat(annon.getAttributeValue("att8").toString(),isEqualTo("org.codemucker.jmutate.ast.JAnnotationTest.MyEnum.Bar"));
 	    
 		assertThat(annon.getAttributeValue("att2","mydefault").toString(),isEqualTo("mydefault"));
 		
-		Expect.that(annon.getAttributeMap()).is(AMap.ofStringObject().inAnyOrder().withOnly("att3", "abcd").and("att4","7").andKey("att5").and("att6","bar"));
+		Expect.that(annon.getAttributeMap()).is(AMap.ofStringObject().inAnyOrder().withOnly("att3", "abcd").and("att4","7").andKey("att5").and("att6","bar").and("att8","org.codemucker.jmutate.ast.JAnnotationTest.MyEnum.Bar"));
 		
     }
 	
@@ -64,7 +66,8 @@ public class JAnnotationTest {
 			att3="abcd",
 			att4=7,
 			att5=Test2Constants.class,
-			att6= Test2Constants.FOO
+			att6= Test2Constants.FOO,
+			att8=MyEnum.Bar
 	)
     public class Test2Bean {
 		
@@ -81,6 +84,14 @@ public class JAnnotationTest {
     	int att4() default 0;
     	Class<?> att5() default Object.class;
     	String att6() default "";
-	}
+    	MyEnum att7() default MyEnum.Foo;
+    	MyEnum att8();
+    	
+    	
+    }
+    
+    private enum MyEnum {
+    	Foo,Bar
+    }
 	
 }
