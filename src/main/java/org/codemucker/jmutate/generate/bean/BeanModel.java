@@ -1,11 +1,9 @@
 package org.codemucker.jmutate.generate.bean;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JAccess;
@@ -13,35 +11,34 @@ import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.TypeInfo;
 import org.codemucker.jmutate.generate.GeneratorConfig;
 import org.codemucker.jmutate.generate.ModelUtils;
-import org.codemucker.jpattern.generate.Access;
 import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.GenerateBean;
 
 public class BeanModel {   
 
-	private ClashStrategy clashStrategy;
-	private String fieldNames;
+	private final ClashStrategy clashStrategy;
+	private final String fieldNames;
 	
-	private boolean markGenerated;
-	private boolean markCtorArgsAsProperties;
-	private JAccess fieldAccess;
-	private boolean generateHashCodeEquals;
-	private boolean generateCloneMethod;
-	private boolean makeReadonly;
-	private boolean generateStaticPropertyNameFields;
-	private boolean generateNoArgCtor;
-	private boolean generateAllArgCtor;
-	private boolean generateToString;
-	private boolean generateAddRemoveMethodsForIndexedProperties;
-	private boolean inheritSuperClassProperties;
-	private String  propertyChangeSupportFieldName = "_propertyChangeSupport";
-	private String  vetoableChangeSupportFieldName = "_vetoableSupport";
+	private final boolean markGenerated;
+	private final boolean markCtorArgsAsProperties;
+	private final JAccess fieldAccess;
+	private final boolean generateHashCodeEquals;
+	private final boolean generateCloneMethod;
+	private final boolean makeReadonly;
+	private final boolean generateStaticPropertyNameFields;
+	private final boolean generateNoArgCtor;
+	private final boolean generateAllArgCtor;
+	private final boolean generateToString;
+	private final boolean generateAddRemoveMethodsForIndexedProperties;
+	private final boolean inheritSuperClassProperties;
+	private final String  propertyChangeSupportFieldName = "_propertyChangeSupport";
+	private final String  vetoableChangeSupportFieldName = "_vetoableSupport";
 	
-	private boolean bindable;
-	private boolean vetoable;
+	private final boolean bindable;
+	private final boolean vetoable;
 	
-	private TypeInfo type;
-    private Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
+	private final TypeInfo type;
+    private final Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
     
     public BeanModel(JType pojoType,GenerateBean options) {
     	this(pojoType,ModelUtils.getEmptyCfg(),options);
@@ -55,7 +52,7 @@ public class BeanModel {
     	this.type = TypeInfo.newFromFullNameAndTypeBounds(pojoType.getFullGenericName(), pojoType.getTypeBoundsExpressionOrNull());
     	this.markGenerated = cfg.getBoolean("markGenerated",def.markGenerated());
     	this.markCtorArgsAsProperties = cfg.getBoolean("markCtorArgsAsProperties",def.markCtorArgsAsProperties());
-    	this.fieldAccess = toJAccess(def.fieldAccess());
+    	this.fieldAccess = ModelUtils.getJAccess(cfg,"fieldAccess",def.fieldAccess());
     	this.generateHashCodeEquals = cfg.getBoolean("generateHashCodeAndEqualsMethod",def.generateHashCodeAndEqualsMethod());
     	this.generateAddRemoveMethodsForIndexedProperties = cfg.getBoolean("generateAddRemoveMethodsForIndexProperties",def.generateAddRemoveMethodsForIndexProperties());
     	this.generateToString = cfg.getBoolean("generateToString",def.generateToString());
@@ -80,14 +77,6 @@ public class BeanModel {
     @GenerateBean
     private static class Defaults{}
     
-    public BeanModel(JType pojoType,Map<String,?> cfg) {
-        try {
-			BeanUtils.populate(this, cfg);
-		} catch (IllegalAccessException | InvocationTargetException e) {
-			throw new RuntimeException("Error configuring BeanModel from map",e);
-		}
-    }
-    
     public boolean hasDirectFinalProperties(){
     	for(BeanPropertyModel p:properties.values()){
     		if(!p.isFromSuperClass() && p.finalField && p.hasField){
@@ -96,21 +85,6 @@ public class BeanModel {
     	}
     	return false;
     }
-    
-	private static JAccess toJAccess(Access access) {
-		switch (access) {
-		case PACKAGE:
-			return JAccess.PACKAGE;
-		case PRIVATE:
-			return JAccess.PRIVATE;
-		case PROTECTED:
-			return JAccess.PROTECTED;
-		case PUBLIC:
-			return JAccess.PUBLIC;
-		default:
-			throw new IllegalArgumentException("unknown value:" + access.name());
-		}
-	}
 
     public ClashStrategy getClashStrategy() {
 		return clashStrategy;

@@ -1,9 +1,6 @@
 package org.codemucker.jmutate.generate;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,7 +11,6 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.DirectoryRoot;
@@ -120,7 +116,7 @@ public class GeneratorRunner {
 	/**
 	 * Used to prevent constant scanning of already found template nodes
 	 */
-	private final Map<String, List<Options>> templateOptions = new HashMap<>();
+	private final Map<String, List<GeneratorConfigImpl>> templateOptions = new HashMap<>();
 	/**
 	 * Used to prevent constant scanning of already found annotations
 	 */
@@ -204,9 +200,9 @@ public class GeneratorRunner {
         //version will be cached on the ast node of each annotation
         //annotationCompiler.compileAnnotations(generateAnnotations);
         //group the found annotations by the generator they invoke
-        Collection<GroupedOptions> groups = groupByAnnotationType(generateAnnotations);
+        Collection<GroupedNodesAndOptions> groups = groupByAnnotationType(generateAnnotations);
         //run the generators in order (of generator)
-        for (GroupedOptions group : groups) {
+        for (GroupedNodesAndOptions group : groups) {
             CodeGenerator<?> generator = getGeneratorFor(group.getAnnotationName());
             if (generator != null) {
             	generator.beforeRun();
@@ -217,13 +213,13 @@ public class GeneratorRunner {
         MutateUtil.setClassLoader(null);
     }
 
-    private void invokeGenerator(CodeGenerator<?> generator, GroupedOptions nodesForThisGenerator) {
-        for (NodeOptionsPair pair : nodesForThisGenerator.getCollectedNodes()) {
+    private void invokeGenerator(CodeGenerator<?> generator, GroupedNodesAndOptions nodesForThisGenerator) {
+        for (NodeAndOptions pair : nodesForThisGenerator.getNodes()) {
             log.debug("processing annotation '" + pair.options.toString() + "' in '" + pair.enclosedInType.getFullName());
             try {
-            	generator.generate(pair.markedNode, pair.options);
+            	generator.generate(pair.forNode, pair.options);
             } catch(Exception e){
-            	throw new JMutateException("error processing node : " + pair.markedNode,e);
+            	throw new JMutateException("error processing node : " + pair.forNode,e);
             }
         }
     }
@@ -266,9 +262,9 @@ public class GeneratorRunner {
      * @param generatorAnnotations
      * @return
      */
-    private Collection<GroupedOptions> groupByAnnotationType(List<Annotation> generatorAnnotations) {
+    private Collection<GroupedNodesAndOptions> groupByAnnotationType(List<Annotation> generatorAnnotations) {
         //collect all the annotations of a given type to be passed to a generator at once (and so we can apply generator ordering)        
-        Map<String, GroupedOptions> nodesByAnnotationName = new HashMap<>();
+        Map<String, GroupedNodesAndOptions> nodesByAnnotationName = new HashMap<>();
        
 		for(Annotation sourceAnnotations:generatorAnnotations){
 			 String fullName = JAnnotation.from(sourceAnnotations).getQualifiedName();
@@ -278,7 +274,7 @@ public class GeneratorRunner {
 			if (isTemplate(fullName)) {
 				useTemplateOptionsFor(nodesByAnnotationName, fullName, attachedToNode);
 			} else if(isGeneratorAnnotation(sourceAnnotations) && !isTemplateNode(attachedToNode)){
-				Options options = new Options(sourceAnnotations);
+				GeneratorConfigImpl options = new GeneratorConfigImpl(sourceAnnotations);
 				addToGroup(nodesByAnnotationName, fullName, attachedToNode, options);
 			}
 		}
@@ -354,9 +350,9 @@ public class GeneratorRunner {
 				List<Annotation> templateAnnotations = collector.getResults();
 				
 				//now compile all the options and store them
-				List<Options> options = new ArrayList<>();
+				List<GeneratorConfigImpl> options = new ArrayList<>();
 				for(Annotation a:templateAnnotations){
-					options.add(new Options(a));
+					options.add(new GeneratorConfigImpl(a));
 				}
 				templateOptions.put(annotationClassName, options);
 				log.debug("found " + options.size() + " generation annotations on template " + annotationClassName + "");
@@ -368,11 +364,11 @@ public class GeneratorRunner {
 				//handle the case where template might be in an external project instead of as a source file in the current project
 				if(normalOrTemplateAnon!= null && normalOrTemplateAnon.isAnnotationPresent(IsGeneratorTemplate.class)){
 					//found a template annotation. Extract all annotations from it
-					ArrayList<Options> options = new ArrayList<>();
+					ArrayList<GeneratorConfigImpl> options = new ArrayList<>();
 					//only get the annotations related to generation
 					for (java.lang.annotation.Annotation a : normalOrTemplateAnon.getAnnotations()) {
 						if (a.annotationType().isAnnotationPresent(GeneratorOptions.class)) {
-							options.add(new Options(a));
+							options.add(new GeneratorConfigImpl(a));
 						}
 					}
 					templateOptions.put(annotationClassName, options);
@@ -384,10 +380,10 @@ public class GeneratorRunner {
 		}
 	}
 
-	private void useTemplateOptionsFor(Map<String, GroupedOptions> nodesByAnnotationName, String annotationClassName,ASTNode attachedToNode) {
-		List<Options> options = this.templateOptions.get(annotationClassName);
+	private void useTemplateOptionsFor(Map<String, GroupedNodesAndOptions> nodesByAnnotationName, String annotationClassName,ASTNode attachedToNode) {
+		List<GeneratorConfigImpl> options = this.templateOptions.get(annotationClassName);
 		if (options != null) {
-			for(Options opt:options){
+			for(GeneratorConfigImpl opt:options){
 				String optionKey = opt.getKey();
 				addToGroup(nodesByAnnotationName, optionKey, attachedToNode, opt);
 			}
@@ -395,13 +391,13 @@ public class GeneratorRunner {
 	}
 
 	private void addToGroup(
-			Map<String, GroupedOptions> nodesByAnnotationName,
+			Map<String, GroupedNodesAndOptions> nodesByAnnotationName,
 			String annotationClassName, 
 			ASTNode attachedToNode,
-			Options generatorOptions) {
-		GroupedOptions group = nodesByAnnotationName.get(annotationClassName);
+			GeneratorConfigImpl generatorOptions) {
+		GroupedNodesAndOptions group = nodesByAnnotationName.get(annotationClassName);
 		if(group == null){
-		    group = new GroupedOptions(annotationClassName);
+		    group = new GroupedNodesAndOptions(annotationClassName);
 		    nodesByAnnotationName.put(annotationClassName, group);
 		}
 		
@@ -490,77 +486,22 @@ public class GeneratorRunner {
         log.debug(msg);
     }
     
-    public static class Options implements GeneratorConfig {
-    	private static final Object[] NO_ARGS = new Object[]{};
-    	
-    	private final Configuration config;
-    	private final String key;
-    	
-    	public Options(Annotation a){
-    		JAnnotation annotation = JAnnotation.from(a);
-    		this.key = annotation.getQualifiedName();
-    		this.config = new MapConfiguration(annotation.getAttributeMap());
-    	}
-
-    	public Options(java.lang.annotation.Annotation a){
-    		this.key = a.getClass().getName();
-    		this.config = extractConfig(a);
-    	}
-
-		private static Configuration extractConfig(java.lang.annotation.Annotation a) {
-			Configuration cfg = new MapConfiguration();
-    		
-    		Method[] methods = a.getClass().getDeclaredMethods();
-    		for(Method m:methods){
-    			if(m.getReturnType() == Void.class || !Modifier.isPublic(m.getModifiers()) || m.isSynthetic()){
-    				continue;
-    			}
-    			String name = m.getName();
-				try {
-	    			Object val = m.invoke(a, NO_ARGS);
-	    			if(val instanceof Enum<?>){ //from source code expands to full name 
-	    				Enum<?> en = (Enum<?>)val;
-	    				val = en.getClass().getName() + "." + en.name();
-	    			} else if(val instanceof Class<?>){//in source code expanded to fully qualified name
-	    				val = ((Class<?>)val).getName();
-	    			}
-					cfg.addProperty(name, val);
-				} catch (IllegalAccessException | IllegalArgumentException
-						| InvocationTargetException e) {
-					//should never be thrown
-					throw new RuntimeException("Error extracting value from annotation method '" + name + "'",e);
-				}
-    		}
-			return cfg;
-		}
-    	
-		@Override
-		public Configuration getConfig() {
-			return config;
-		}
-
-		public String getKey() {
-			return key;
-		}
-    }
-    
-    
     /**
      * A collection of nodes with the same annotation type. This will be sent to the appropriate generator as a group
      */
-    private static class GroupedOptions {
+    private static class GroupedNodesAndOptions {
         private final String fullAnnotationName;
-        private final Set<NodeOptionsPair> collectedOptions = new HashSet<>();
+        private final Set<NodeAndOptions> collectedOptions = new HashSet<>();
         
-        public GroupedOptions(String annotationName){
+        public GroupedNodesAndOptions(String annotationName){
             this.fullAnnotationName = annotationName;
         }
         
-        public void addNode(ASTNode node,Options options){
-            collectedOptions.add(new NodeOptionsPair(node,options));
+        public void addNode(ASTNode node,GeneratorConfigImpl options){
+            collectedOptions.add(new NodeAndOptions(node,options));
         }
 
-        public Set<NodeOptionsPair> getCollectedNodes() {
+        public Set<NodeAndOptions> getNodes() {
             return collectedOptions;
         }
 
@@ -568,15 +509,17 @@ public class GeneratorRunner {
             return fullAnnotationName;
         }
     }
-    
-    private static class NodeOptionsPair {
-    	private final ASTNode markedNode;
-    	private final Options options;
+    /**
+     * Holds a generator config with the node it is applied to
+     */
+    private static class NodeAndOptions {
+    	private final ASTNode forNode;
+    	private final GeneratorConfigImpl options;
     	private final JType enclosedInType;
 
-		public NodeOptionsPair(ASTNode node, Options options) {
+		public NodeAndOptions(ASTNode node, GeneratorConfigImpl options) {
 			super();
-			this.markedNode = node;
+			this.forNode = node;
 			this.options = options;
             this.enclosedInType = findNearestParentTypeFor(node);
 		}

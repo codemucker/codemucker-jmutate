@@ -37,6 +37,7 @@ public class ModelUtils {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static <T extends Enum<?>> T getEnum(Configuration cfg,String key, T def){
     	String val = cfg.getString(key,def.name());
     	if(val != null){
