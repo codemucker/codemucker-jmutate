@@ -32,7 +32,6 @@ import org.codemucker.jmutate.ast.matcher.AJModifier;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
 import org.codemucker.jmutate.generate.GeneratorConfig;
-import org.codemucker.jmutate.generate.PojoScanner;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.util.NameUtil;
@@ -92,7 +91,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
 	}
 
 	private void findAndAddModels(JType optionsDeclaredInNode,AllMatchersModel models) {
-		PojoScanner pojoScanner = new PojoScanner(
+		PojoSourceAndClassScanner pojoScanner = new PojoSourceAndClassScanner(
 				ctxt.getResourceLoader(), 
 				models.getPojoDependencies(), 
 				models.getPojoNames(),

@@ -8,19 +8,19 @@ import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.eclipse.jdt.core.dom.Annotation;
 
-class GeneratorConfigImpl implements GeneratorConfig {
+class InternalGeneratorConfig implements GeneratorConfig {
 	private static final Object[] NO_ARGS = new Object[]{};
 	
 	private final Configuration config;
 	private final String key;
 	
-	public GeneratorConfigImpl(Annotation a){
+	public InternalGeneratorConfig(Annotation a){
 		JAnnotation annotation = JAnnotation.from(a);
 		this.key = annotation.getQualifiedName();
 		this.config = new MapConfiguration(annotation.getAttributeMap());
 	}
 
-	public GeneratorConfigImpl(java.lang.annotation.Annotation a){
+	public InternalGeneratorConfig(java.lang.annotation.Annotation a){
 		this.key = a.getClass().getName();
 		this.config = extractConfig(a);
 	}

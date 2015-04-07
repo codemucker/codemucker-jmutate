@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.generate;
+package org.codemucker.jmutate.generate.matcher;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -19,9 +19,12 @@ import org.codemucker.jmutate.ast.matcher.AJType;
 
 import com.google.common.base.Strings;
 
-public class PojoScanner {
+/**
+ * Scans for sources and compiled classes. Allows for scanning of current project sources and third party compiled libs
+ */
+public class PojoSourceAndClassScanner {
     
-    private static final Logger log = LogManager.getLogger(PojoScanner.class);
+    private static final Logger log = LogManager.getLogger(PojoSourceAndClassScanner.class);
     
     private final ResourceLoader resourceLoader;
     private final Matcher<Root> scanRootMatcher;
@@ -29,7 +32,7 @@ public class PojoScanner {
     private final Matcher<Class<?>> scanForClasses;
     private final Matcher<JType> scanForTypes;
     
-    public PojoScanner(ResourceLoader resourceLoader,String dependenciesExpression,String pojoNameExpression, String pojoClassExpression) {
+    public PojoSourceAndClassScanner(ResourceLoader resourceLoader,String dependenciesExpression,String pojoNameExpression, String pojoClassExpression) {
         this.resourceLoader = resourceLoader;
         this.scanRootMatcher = ARoot.with().dependenciesExpression(dependenciesExpression);
         this.scanForClassNameMatcher = AString.matchingExpression(pojoNameExpression);
