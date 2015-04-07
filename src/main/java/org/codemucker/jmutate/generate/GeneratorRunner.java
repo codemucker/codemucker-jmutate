@@ -255,6 +255,31 @@ public class GeneratorRunner {
     }
 
     /**
+     * Given a list of annotations, group them by type (fullname). This is so we can run a generator once for a given annotation type
+     * 
+     * @param generatorAnnotations
+     * @return
+     */
+    private GroupedAnnotations groupByAnnotationType(List<Annotation> generatorAnnotations) {
+        //collect all the annotations of a given type to be passed to a generator at once (and so we can apply generator ordering)        
+    	GroupedAnnotations g = new GroupedAnnotations();
+    	
+		for(Annotation sourceAnnotations:generatorAnnotations){
+			 String fullName = JAnnotation.from(sourceAnnotations).getQualifiedName();
+			 
+		     ASTNode attachedToNode = getOwningNodeFor(sourceAnnotations);
+			
+			if (isTemplate(fullName)) {
+				useTemplateOptionsFor(fullName, attachedToNode, g);
+			} else if(isGeneratorAnnotation(sourceAnnotations) && !isTemplate(attachedToNode)){
+				InternalGeneratorConfig options = new InternalGeneratorConfig(sourceAnnotations);
+				g.addNode(fullName, attachedToNode, options);
+			}
+		}
+        return g;
+    }
+    
+    /**
      * If the provided annotation is a generator annotation (else a normal annotation which got caught up in the scan)
      */
     private boolean isGeneratorAnnotation(Annotation a){
@@ -282,32 +307,6 @@ public class GeneratorRunner {
 
 		log.warn("Can't load annotation as class or resource '" + qn + "'. Ignoring as a generator");
 		return false;
-    }
-
-    
-    /**
-     * Given a list of annotations, group them by type (fullname). This is so we can run a generator once for a given annotation type
-     * 
-     * @param generatorAnnotations
-     * @return
-     */
-    private GroupedAnnotations groupByAnnotationType(List<Annotation> generatorAnnotations) {
-        //collect all the annotations of a given type to be passed to a generator at once (and so we can apply generator ordering)        
-    	GroupedAnnotations g = new GroupedAnnotations();
-    	
-		for(Annotation sourceAnnotations:generatorAnnotations){
-			 String fullName = JAnnotation.from(sourceAnnotations).getQualifiedName();
-			 
-		     ASTNode attachedToNode = getOwningNodeFor(sourceAnnotations);
-			
-			if (isTemplate(fullName)) {
-				useTemplateOptionsFor(fullName, attachedToNode, g);
-			} else if(isGeneratorAnnotation(sourceAnnotations) && !isTemplate(attachedToNode)){
-				InternalGeneratorConfig options = new InternalGeneratorConfig(sourceAnnotations);
-				g.addNode(fullName, attachedToNode, options);
-			}
-		}
-        return g;
     }
     
     /**
