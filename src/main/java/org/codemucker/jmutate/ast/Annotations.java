@@ -19,11 +19,11 @@ public interface Annotations extends AstNodeProvider<ASTNode> {
 
     public List<JAnnotation> getAllIncludeNested();
 
-    public JAnnotation get(Matcher<JAnnotation> matcher);
+    public JAnnotation getOrNull(Matcher<JAnnotation> matcher);
 
-    public <A extends Annotation> JAnnotation get(Class<A> annotationClass);
+    public <A extends Annotation> JAnnotation getOrNull(Class<A> annotationClass);
 
-    public JAnnotation get(Matcher<JAnnotation> matcher, Depth depth);
+    public JAnnotation getOrNull(Matcher<JAnnotation> matcher, Depth depth);
 
     public FindResult<JAnnotation> find(Matcher<JAnnotation> matcher);
 

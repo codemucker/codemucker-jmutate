@@ -8,6 +8,9 @@ import org.codemucker.jpattern.generate.GeneratorOptions;
 
 @Retention(RetentionPolicy.RUNTIME)
 @GeneratorOptions(defaultGenerator="org.codemucker.jmutate.generate.GeneratorRunnerTest.MyCodeGeneratorOne")
+/**
+ * Marking a class with this annotation will cause the associated generator to be invoked
+ */
 public @interface GenerateOne {
     String foo();
     String bar() default "someDefault";

@@ -75,7 +75,7 @@ public class SourceScannerTest {
 							for(JAnnotation a:as){
 								System.out.println("a=" + a.getAstNode());
 							}
-							System.out.println("getAnnotation=" + src.getAnnotations().get(MyAnnotation.class));
+							System.out.println("getAnnotation=" + src.getAnnotations().getOrNull(MyAnnotation.class));
 							System.out.println("hasAnnotation=" + src.getAnnotations().contains(MyAnnotation.class));
 						}
 					}

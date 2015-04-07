@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -11,17 +12,17 @@ import org.eclipse.jdt.core.dom.Annotation;
 class InternalGeneratorConfig implements GeneratorConfig {
 	private static final Object[] NO_ARGS = new Object[]{};
 	
-	private final Configuration config;
-	private final String key;
+	private Configuration config;
+	private final String annotationType;
 	
 	public InternalGeneratorConfig(Annotation a){
 		JAnnotation annotation = JAnnotation.from(a);
-		this.key = annotation.getQualifiedName();
+		this.annotationType = annotation.getQualifiedName();
 		this.config = new MapConfiguration(annotation.getAttributeMap());
 	}
 
 	public InternalGeneratorConfig(java.lang.annotation.Annotation a){
-		this.key = a.getClass().getName();
+		this.annotationType = a.getClass().getName();
 		this.config = extractConfig(a);
 	}
 
@@ -52,12 +53,21 @@ class InternalGeneratorConfig implements GeneratorConfig {
 		return cfg;
 	}
 	
+	public void addParentConfig(Configuration parent){
+		CompositeConfiguration combined = new CompositeConfiguration();
+		//first one wins
+		combined.addConfiguration(config);
+		combined.addConfiguration(parent);
+		
+		this.config = combined;
+	}
+	
 	@Override
 	public Configuration getConfig() {
 		return config;
 	}
 
-	public String getKey() {
-		return key;
+	public String getAnnotationType() {
+		return annotationType;
 	}
 }

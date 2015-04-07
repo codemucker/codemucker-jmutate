@@ -33,7 +33,7 @@ public class DefaultAnnotationCompilerTest {
 		
 		JType myClass = source.getMainType().findTypesMatching(AJType.with().annotation(MyTestAnnotation.class)).getFirstOrNull();
 	
-		JAnnotation myAnon = myClass.getAnnotations().get(MyTestAnnotation.class);
+		JAnnotation myAnon = myClass.getAnnotations().getOrNull(MyTestAnnotation.class);
 		Annotation anon = compiler.toCompiledAnnotation(myAnon.getAstNode());
 
 		//need to use reflection as different classloaders are used (mainly so we can drop the classloader when generation complete)

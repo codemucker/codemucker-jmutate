@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
@@ -25,11 +26,20 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
         return new AJAnnotation();
     }
 
+    public AJAnnotation annotationPresent(final Class<? extends Annotation> anon){
+        annotationPresent(AnAnnotation.with().fullName(anon));
+    	return this;
+    }
     /**
      * This annotation is itself marked with the given annotation
      */
-    public AJAnnotation annotatedWith(final Matcher<Annotation> anonMatcher){
-        addMatcher(new AbstractNotNullMatcher<JAnnotation>() {
+    public AJAnnotation annotationPresent(final Matcher<Annotation> anonMatcher){
+        addMatcher(newMatcher(anonMatcher));
+        return this;
+    }
+    
+    private Matcher<JAnnotation> newMatcher(final Matcher<Annotation> anonMatcher){
+        return new AbstractNotNullMatcher<JAnnotation>() {
             //let's not needlessly recheck classes we've already tested
             private Map<String,Boolean> cachedClassNameToMatch = new HashMap<>();
             private ClassLoader classLoader = MutateUtil.getClassLoaderForResolving();
@@ -38,8 +48,8 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
             public boolean matchesSafely(JAnnotation found, MatchDiagnostics diag) {
                 String fullCompiledName = NameUtil.sourceNameToCompiledName(found.getQualifiedName());
                 Boolean isMatch = cachedClassNameToMatch.get(fullCompiledName);
-                if (isMatch != null && isMatch == false) {
-                    return false;
+                if (isMatch != null) {
+                    return isMatch.booleanValue();
                 }
                 try {
                     Class<?> annotationClass = classLoader.loadClass(fullCompiledName);
@@ -66,9 +76,7 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
             public void describeTo(Description desc) {
                 desc.value("is marked with", anonMatcher);
             }
-        });
-                
-        return this;
+        };
     }
     
     public <A extends java.lang.annotation.Annotation> AJAnnotation notFullName(final Class<A> annotationClass){

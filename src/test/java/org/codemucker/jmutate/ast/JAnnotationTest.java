@@ -45,7 +45,7 @@ public class JAnnotationTest {
 	
     @Test
 	public void extractAttributeValues(){
-		JAnnotation annon = TestSourceHelper.findSourceForClass(JAnnotationTest.class).getTypeWithName(Test2Bean.class).getAnnotations().get(Test2Annotation.class);
+		JAnnotation annon = TestSourceHelper.findSourceForClass(JAnnotationTest.class).getTypeWithName(Test2Bean.class).getAnnotations().getOrNull(Test2Annotation.class);
 		
 		assertThat(annon.getAttributeValue("att3").toString(),isEqualTo("abcd"));
 		assertThat(annon.getAttributeValue("att4").toString(),isEqualTo("7"));

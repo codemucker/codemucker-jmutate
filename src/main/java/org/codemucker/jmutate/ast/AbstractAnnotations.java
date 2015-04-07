@@ -14,6 +14,9 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 
+/**
+ * Represents a node which contains annotations
+ */
 public abstract class AbstractAnnotations implements Annotations {
 
     private static final Matcher<JAnnotation> MATCH_ANY = Logical.<JAnnotation> any();
@@ -29,14 +32,12 @@ public abstract class AbstractAnnotations implements Annotations {
 
     @Override
     public boolean contains(Matcher<JAnnotation> matcher) {
-        boolean match = get(matcher) != null;
-    
-        return match;
+        return getOrNull(matcher) != null;
     }
 
     @Override
     public boolean contains(Matcher<JAnnotation> matcher, Depth depth) {
-        return get(matcher, depth) != null;
+        return getOrNull(matcher, depth) != null;
     }
 
     @Override
@@ -50,17 +51,17 @@ public abstract class AbstractAnnotations implements Annotations {
     }
 
     @Override
-    public <A extends java.lang.annotation.Annotation> JAnnotation get(Class<A> annotationClass) {
-        return get(AJAnnotation.with().fullName(annotationClass));
+    public <A extends java.lang.annotation.Annotation> JAnnotation getOrNull(Class<A> annotationClass) {
+        return getOrNull(AJAnnotation.with().fullName(annotationClass));
     }
 
     @Override
-    public JAnnotation get(Matcher<JAnnotation> matcher) {
-        return get(matcher, Depth.DIRECT);
+    public JAnnotation getOrNull(Matcher<JAnnotation> matcher) {
+        return getOrNull(matcher, Depth.DIRECT);
     }
 
     @Override
-    public JAnnotation get(final Matcher<JAnnotation> matcher, Depth depth) {
+    public JAnnotation getOrNull(final Matcher<JAnnotation> matcher, Depth depth) {
         if (depth.max == Depth.DIRECT.max) {
             for (IExtendedModifier mod : getModifiers()) {
                 if (mod instanceof org.eclipse.jdt.core.dom.Annotation) {

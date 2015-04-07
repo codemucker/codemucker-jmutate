@@ -192,7 +192,7 @@ public class RefactorTest {
 	}
 
 	private <A extends Annotation> String getAnonationValue(AnnotationsProvider  annotatable, Class<A> anon, String attributeName){
-		JAnnotation janon = annotatable.getAnnotations().get(Property.class);
+		JAnnotation janon = annotatable.getAnnotations().getOrNull(Property.class);
 		if( anon != null ){
 			Object value = janon.getAttributeValue("name", null);
 			String sval = value==null?null:value.toString();

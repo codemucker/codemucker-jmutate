@@ -383,6 +383,11 @@ public class AJType extends ObjectMatcher<JType> {
         });
         return this;
     }
+   
+    public AJType fullName(final Class<?> className){
+        fullName(NameUtil.compiledNameToSourceName(className.getName()));
+        return this;
+    }
     
     public AJType fullName(final String antPattern){
         fullName(AString.matchingAntPattern(antPattern));
