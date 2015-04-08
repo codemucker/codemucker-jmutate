@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.configuration.Configuration;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.TypeInfo;
@@ -21,10 +23,12 @@ import com.google.common.collect.Sets;
 
 public class BuilderModel {   
 
+    private static final Logger LOG = LogManager.getLogger(BuilderModel.class);
+    
 	private static final Comparator<BuilderPropertyModel> COMPARE_BY_NAME = new Comparator<BuilderPropertyModel>() {
 		@Override
 		public int compare(BuilderPropertyModel left, BuilderPropertyModel right) {
-			return left.propertyName.compareTo(right.propertyName);
+			return left.getPropertyName().compareTo(right.getPropertyName());
 		}
 	};
 	
@@ -120,11 +124,15 @@ public class BuilderModel {
     @GenerateBuilder
     private static class Defaults{}
     
-    void addProperty(BuilderPropertyModel field){
-        if (hasPropertyNamed(field.propertyName)) {
-            throw new JMutateException("More than one property with the same name '%s' on %s", field.propertyName, getPojoType().getFullName());
+    void addProperty(BuilderPropertyModel property){
+        if (hasPropertyNamed(property.getPropertyName())) {
+            throw new JMutateException("More than one property with the same name '%s' on %s", property.getPropertyName(), getPojoType().getFullName());
         }
-        properties.put(field.propertyName, field);
+        if(LOG.isDebugEnabled()){
+			LOG.debug("adding property '" + property.getPropertyName() + "', " + property);
+		}
+		
+        properties.put(property.getPropertyName(), property);
     }
     
     boolean hasPropertyNamed(String name){

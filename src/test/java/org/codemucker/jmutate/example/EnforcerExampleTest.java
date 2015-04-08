@@ -128,11 +128,12 @@ public class EnforcerExampleTest
             
             for (JType builderType : foundBuilders) {            
                 Expect
+                	.with().debugEnabled(true)
                     .that(builderType)
                     .is(ABuilderPattern.with()
                         .defaults()
-                        .ignoreMethod(AJMethod.with().name("copyOf").notReturningVoid())
-                        .ignoreMethod(AJMethod.with().name("describeTo").returningVoid()));
+                        .ignoreMethod(AJMethod.with().name("copyOf").isNotVoidReturn())
+                        .ignoreMethod(AJMethod.with().name("describeTo").isVoidReturn()));
             }
         }
         //TODO:add build options

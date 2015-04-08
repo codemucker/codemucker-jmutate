@@ -2,6 +2,8 @@ package org.codemucker.jmutate.generate;
 
 import java.util.List;
 
+import javax.management.RuntimeErrorException;
+
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.ast.JAccess;
@@ -39,14 +41,23 @@ public class ModelUtils {
 	
 	@SuppressWarnings("unchecked")
 	public static <T extends Enum<?>> T getEnum(Configuration cfg,String key, T def){
-    	String val = cfg.getString(key,def.name());
+    	Object val = cfg.getProperty(key);
+    	
     	if(val != null){
-    		int lastDot = val.lastIndexOf('.');
-    		if(lastDot != -1 && val.startsWith(def.getClass().getName().replace('$', '.'))){
-    			val = val.substring(lastDot);
+    		if(def.getClass().isAssignableFrom(val.getClass())){
+    			return (T)val;
+    		}
+    		if(!(val instanceof String)){
+        		throw new RuntimeException("expected type of String or " + def.getClass().getName() + ", but got " + val.getClass().getName());
+        	}
+    		String s = (String)val;
+    		int lastDot = s.lastIndexOf('.');
+    		if(lastDot != -1 && s.startsWith(def.getClass().getName().replace('$', '.'))){
+    			val = s.substring(lastDot);
     		} 
+    		return (T) Enum.valueOf(def.getClass(),s);
     	}
-		return (T) Enum.valueOf(def.getClass(), val);
+		return def;
     }
 	
 }

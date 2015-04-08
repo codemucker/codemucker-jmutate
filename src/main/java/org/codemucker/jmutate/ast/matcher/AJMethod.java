@@ -91,13 +91,22 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		return this;
 	}
 	
-	public AJMethod notReturningVoid() {
-        addMatcher(Logical.not(newVoidReturnMatcher()));
-        return this;
+	public AJMethod isNotVoidReturn() {
+		isVoidReturn(false);
+		return this;
     }
 	
-	public AJMethod returningVoid() {
-	    addMatcher(newVoidReturnMatcher());
+	public AJMethod isVoidReturn() {
+		isVoidReturn(true);
+	    return this;
+	}
+	
+	public AJMethod isVoidReturn(boolean b) {
+		if(b){
+			addMatcher(newVoidReturnMatcher());	
+		} else {
+			addMatcher(Logical.not(newVoidReturnMatcher()));
+		}
 	    return this;
 	}
 	
@@ -112,30 +121,30 @@ public class AJMethod extends ObjectMatcher<JMethod> {
             
             @Override
             public void describeTo(Description desc) {
-                desc.text("returning void");
+                desc.text("void return");
             }
         };
 	}
 	
-	   private static Matcher<Type> newVoidTypeMatcher(){
-	        return new AbstractMatcher<Type>(AllowNulls.YES) {
-	            @Override
-	            public boolean matchesSafely(Type found, MatchDiagnostics diag) {
-	                if (found != null && !(found.isPrimitiveType() && ((PrimitiveType) found).getPrimitiveTypeCode() == PrimitiveType.VOID)) {
-	                    diag.mismatched("expect void but was " + NameUtil.resolveQualifiedNameElseShort(found));
-	                    return false;
-	                }
-	                diag.matched("is void");
-	                return true;
-	            }
-	            
-	            @Override
-	            public void describeTo(Description desc) {
-	                desc.text("returning void");
-	            }
-	        };
-	    }
-	   
+   private static Matcher<Type> newVoidTypeMatcher(){
+        return new AbstractMatcher<Type>(AllowNulls.YES) {
+            @Override
+            public boolean matchesSafely(Type found, MatchDiagnostics diag) {
+                if (found != null && !(found.isPrimitiveType() && ((PrimitiveType) found).getPrimitiveTypeCode() == PrimitiveType.VOID)) {
+                    diag.mismatched("expect void but was " + NameUtil.resolveQualifiedNameElseShort(found));
+                    return false;
+                }
+                diag.matched("is void");
+                return true;
+            }
+            
+            @Override
+            public void describeTo(Description desc) {
+                desc.text("returning void");
+            }
+        };
+    }
+   
 	public AJMethod returning(final Matcher<Type> matcher) {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
