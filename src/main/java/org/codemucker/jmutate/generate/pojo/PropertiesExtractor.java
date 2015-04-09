@@ -97,7 +97,7 @@ public class PropertiesExtractor {
 						.isPublic()
 						.isVoidReturn()));
 	
-	private static final Matcher<String> ignoreNames = any(AString.startingWith("_"),AString.startingWith("$"),AString.equalToAny("hashcode","toString", "equals"));
+	private static final Matcher<String> ignoreNames = any(AString.startingWith("_"),AString.startingWith("$"),AString.equalToAny("hashCode","toString", "equals", "clone"));
 	private final ResourceLoader resourceLoader;
 	private final JAstParser parser;
 
