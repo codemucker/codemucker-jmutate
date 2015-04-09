@@ -80,6 +80,21 @@ public class BeanPropertyModel {
 		return property.getFieldName();
 	}
 
+	public String getInternalAccessor() {
+		if (fromSuperClass) {
+			return addIfNotNull(getPropertyGetterName(),"()");
+		}
+		if (hasField()) {
+			return getFieldName();
+		} else {
+			return addIfNotNull(getPropertyGetterName(),"()");
+		}
+	}
+	
+	private static String addIfNotNull(String s, String suffix){
+		return s==null?null:s+suffix;
+	}
+
 	public boolean isFinalField() {
 		return property.isFinalField();
 	}

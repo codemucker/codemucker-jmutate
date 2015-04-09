@@ -59,23 +59,31 @@ public class PropertiesExtractor {
 			all(
 				AJMethod.with().numArgs(0).isNotVoidReturn(),
 				any(AJMethod.with().annotation(Property.class), 
-				   AJMethod.with()
-						.name(AString.matchingExpression("get?*||is?*||has?*"))
-						.isPublic()));
+				    AJMethod.with()
+						.name(AString.matchingExpression("get?*"))
+						.isPublic(),
+					AJMethod.with()
+						.name(AString.matchingExpression("is?*||has?*"))
+						.isPublic()
+						.returnType("boolean")));
 	
 	private static final Matcher<Method> getterMatcherCompiled = 
 			all(
 				AMethod.with().numArgs(0).isNotVoidReturn(),
 				any(AMethod.with().annotation(Property.class),
-				   AMethod.with()
-						.name(AString.matchingExpression("get?*||is?*||has?*"))
-						.isPublic()));
+					AMethod.with()
+						.name(AString.matchingExpression("get?*"))
+						.isPublic(),
+					AMethod.with()
+						.name(AString.matchingExpression("is?*||has?*"))
+						.isPublic()
+						.returnType("boolean")));
 	
 	private static final Matcher<JMethod> setterMatcherSource = 
 			all(
 				AJMethod.with().numArgs(1),
 				any(AJMethod.with().annotation(Property.class), 
-				   AJMethod.with()
+					AJMethod.with()
 						.name(AString.matchingExpression("set?*"))
 						.isPublic()
 						.isVoidReturn()));
@@ -84,12 +92,12 @@ public class PropertiesExtractor {
 			all(
 				AMethod.with().numArgs(1),
 				any(AMethod.with().annotation(Property.class), 
-				   AMethod.with()
+					AMethod.with()
 						.name(AString.matchingExpression("set?*"))
 						.isPublic()
 						.isVoidReturn()));
 	
-	private static final Matcher<String> ignoreNames = any(AString.startingWith("_"),AString.startingWith("$"));
+	private static final Matcher<String> ignoreNames = any(AString.startingWith("_"),AString.startingWith("$"),AString.equalToAny("hashcode","toString", "equals"));
 	private final ResourceLoader resourceLoader;
 	private final JAstParser parser;
 

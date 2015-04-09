@@ -296,7 +296,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				for (BeanPropertyModel property : model.getProperties()) {
 					SourceTemplate t = hashcode
 						.child()
-						.var("p.accessor",property.isFromSuperClass()?(property.getPropertyGetterName() + "()"):property.getPropertyName());
+						.var("p.accessor",property.getInternalAccessor());
 					
 					if(property.getType().isPrimitive() && !property.getType().isString()){
 						//from the book 'Effective Java'
@@ -407,9 +407,12 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			if(!model.getProperties().isEmpty()){
 				equals.pl("${b.type} other = (${b.type}) obj;");
 				for (BeanPropertyModel property : model.getProperties()) {
+					if(!((property.isFromSuperClass() && property.hasGetter()) || (!property.isFromSuperClass() && property.hasField()))){
+						continue;
+					}
 					SourceTemplate  t = equals
 						.child()
-						.var("p.accessor",property.isFromSuperClass()?(property.getPropertyGetterName() + "()"):property.getPropertyName());
+						.var("p.accessor",property.getInternalAccessor());
 					
 					if(property.getType().isPrimitive() && !property.getType().isString()){
 						t.pl("if (${p.accessor} != other.${p.accessor}) return false;");
@@ -440,15 +443,14 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			} else {
 				boolean comma = false;
 				for (BeanPropertyModel property : model.getProperties()) {
+					if(!(property.hasField() || property.hasGetter())){
+						continue;
+					}
 					if(comma){
 						sb.append(" + \",");
 					}
 					sb.append(property.getPropertyName() ).append("=\" + ");
-					if(property.hasField() && !property.isFromSuperClass()){
-						sb.append(property.getFieldName());
-					} else if(property.hasGetter()){
-						sb.append(property.getPropertyGetterName()).append("()");
-					}
+					sb.append(property.getInternalAccessor());
 					comma = true;
 				}
 				sb.append(" + \"]\"");
@@ -487,6 +489,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		if(!property.isFromSuperClass() && property.getPropertySetterName() != null && property.isGenerateSetter()){
 			SourceTemplate setter = ctxt
 				.newSourceTemplate()
+				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getPropertyName())
 				.var("p.setterName", property.getPropertySetterName())
 				.var("p.type", property.getType().getObjectTypeFullName())
@@ -503,19 +506,19 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				
 				if(property.isVetoable()){
 					vetoString = setter.child()
-					.pl("   this.${support.veto.name}.fireVetoableChange(\"${p.name}\",this.${p.name},val);")
+					.pl("   this.${support.veto.name}.fireVetoableChange(\"${p.name}\",this.${p.fieldName},val);")
 					.interpolateTemplate();
 				}
 				if(property.isBindable()){
 					setter
-						.pl("	${p.type} oldVal = this.${p.name};")
+						.pl("	${p.type} oldVal = this.${p.fieldName};")
 						.p(vetoString)
-						.pl("	this.${p.name} = val;")
+						.pl("	this.${p.fieldName} = val;")
 						.pl("   this.${support.bind.name}.firePropertyChange(\"${p.name}\",oldVal,val);");
 				} else {
 					setter
 						.p(vetoString)
-						.pl("		this.${p.name} = val;");
+						.pl("		this.${p.fieldName} = val;");
 				}
 				setter.pl("}");
 				
@@ -524,9 +527,10 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	}
 	
 	private void generateMapAddRemove(JType bean, BeanModel model,BeanPropertyModel property) {
-		if(!property.isFromSuperClass() && property.getType().isKeyed() && model.options.isGenerateAddRemoveMethodsForIndexedProperties()){
+		if(!property.isFromSuperClass() && !property.isReadOnly() && property.hasField() && property.getType().isKeyed() && model.options.isGenerateAddRemoveMethodsForIndexedProperties()){
 			SourceTemplate add = ctxt
 				.newSourceTemplate()
+				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getPropertyName())
 				.var("p.addName", property.getPropertyAddName())
 				.var("p.type", property.getType().getObjectTypeFullName())
@@ -538,16 +542,17 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.pl("public void ${p.addName}(final ${p.keyType} key,final ${p.valueType} val){");
 			
 			if(!property.isFinalField()){
-				add.pl("	if(this.${p.name} == null){ this.${p.name} = new ${p.newType}${p.genericPart}(); }");
+				add.pl("	if(this.${p.fieldName} == null){ this.${p.fieldName} = new ${p.newType}${p.genericPart}(); }");
 			}
 			add
-				.pl("	this.${p.name}.put(key, val);")
+				.pl("	this.${p.fieldName}.put(key, val);")
 				.pl("}");
 				
 			addMethod(bean, add.asMethodNodeSnippet(),model.options.isMarkGenerated());
 			
 			SourceTemplate remove = ctxt
 				.newSourceTemplate()
+				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getPropertyName())
 				.var("p.removeName", property.getPropertyRemoveName())
 				.var("p.type", property.getType().getObjectTypeFullName())
@@ -555,8 +560,8 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.var("p.keyType", property.getType().getIndexedKeyTypeNameOrNull())
 				
 				.pl("public void ${p.removeName}(final ${p.keyType} key){")
-				.pl("	if(this.${p.name} != null){ ")
-				.pl("		this.${p.name}.remove(key);")
+				.pl("	if(this.${p.fieldName} != null){ ")
+				.pl("		this.${p.fieldName}.remove(key);")
 				.pl("	}")
 				
 				.pl("}");
@@ -566,7 +571,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	}
 
 	private void generateCollectionAddRemove(JType bean, BeanModel model,BeanPropertyModel property) {
-		if(!property.isFromSuperClass() && property.getType().isCollection() && model.options.isGenerateAddRemoveMethodsForIndexedProperties()){
+		if(!property.isFromSuperClass() && !property.isReadOnly() && property.hasField() && property.getType().isCollection() && model.options.isGenerateAddRemoveMethodsForIndexedProperties()){
 		{
 			if((property.isVetoable() || property.isBindable()) && !property.getType().isList()){
 				throw new JMutateException("Property " + bean.getFullName() + "." + property.getPropertyName() + " is marked as vetoable or bindable and it's a collection. "
@@ -575,6 +580,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			}
 				SourceTemplate add = ctxt
 					.newSourceTemplate()
+					.var("p.fieldName", property.getFieldName())
 					.var("p.name", property.getPropertyName())
 					.var("p.addName", property.getPropertyAddName())
 					.var("p.type", property.getType().getObjectTypeFullName())
@@ -592,8 +598,8 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 						
 					if(!property.isFinalField()){
 						add
-						.pl(" 	if(this.${p.name} == null){ ")
-						.pl("		this.${p.name} = new ${p.newType}${p.genericPart}(); ")
+						.pl(" 	if(this.${p.fieldName} == null){ ")
+						.pl("		this.${p.fieldName} = new ${p.newType}${p.genericPart}(); ")
 						.pl("	}");	
 					}
 				
@@ -601,19 +607,19 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				
 				if(property.isVetoable()){
 					vetoString = add.child()
-					.pl("   this.${support.veto.name}.fireIndexedVetoableChange(\"${p.name}\",this.${p.name}.size(),this.${p.name},val);")
+					.pl("   this.${support.veto.name}.fireIndexedVetoableChange(\"${p.name}\",this.${p.fieldName}.size(),this.${p.fieldName},val);")
 					.interpolateTemplate();
 				}
 				if(property.isBindable()){
 					add
-						.pl("	${p.type} oldVal = this.${p.name};")
+						.pl("	${p.type} oldVal = this.${p.fieldName};")
 						.p(vetoString)
-						.pl("	this.${p.name}.add(val);")
-						.pl("   this.${support.bind.name}.fireIndexedPropertyChange(\"${p.name}\",this.${p.name}.size()-1,oldVal,val);");
+						.pl("	this.${p.fieldName}.add(val);")
+						.pl("   this.${support.bind.name}.fireIndexedPropertyChange(\"${p.name}\",this.${p.fieldName}.size()-1,oldVal,val);");
 				} else {
 					add
 						.p(vetoString)
-						.pl("		this.${p.name}.add(val);");
+						.pl("		this.${p.fieldName}.add(val);");
 				}
 				add.pl("}");
 					
@@ -622,6 +628,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			{
 				SourceTemplate remove = ctxt
 					.newSourceTemplate()
+					.var("p.fieldName", property.getFieldName())
 					.var("p.name", property.getPropertyName())
 					.var("p.removeName", property.getPropertyRemoveName())
 					.var("p.type", property.getType().getObjectTypeFullName())
@@ -636,13 +643,13 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 						remove.p(" throws java.beans.PropertyVetoException ");
 					}
 					remove.pl("{");
-					remove.pl("	if(this.${p.name} != null){ ");
+					remove.pl("	if(this.${p.fieldName} != null){ ");
 				
 				CharSequence vetoString = "";
 				CharSequence indexString = "";
 				if(property.isVetoable() || property.isBindable()){
 					indexString = remove.child()
-							.pl("int index = this.${p.name}.indexOf(val);")
+							.pl("int index = this.${p.fieldName}.indexOf(val);")
 							.pl("if( index < 0 ){ return; }")
 							.interpolateTemplate();
 				}
@@ -655,13 +662,13 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 					remove
 						.p(indexString)
 						.p(vetoString)
-						.pl("	this.${p.name}.remove(val);")
+						.pl("	this.${p.fieldName}.remove(val);")
 						.pl("   this.${support.bind.name}.fireIndexedPropertyChange(\"${p.name}\",index,val,null);");
 				} else {
 					remove
 						.p(indexString)
 						.p(vetoString)
-						.pl("	this.${p.name}.remove(val);");
+						.pl("	this.${p.fieldName}.remove(val);");
 				}
 				remove.pl("	}");
 				remove.pl("}");
@@ -676,12 +683,12 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		if(!property.isFromSuperClass() && property.getPropertyGetterName() != null && property.isGenerateGetter()){
 			SourceTemplate getter = ctxt
 				.newSourceTemplate()
-				.var("p.name", property.getPropertyName())
+				.var("p.fieldName", property.getFieldName())
 				.var("p.getterName", property.getPropertyGetterName())
 				.var("p.type", property.getType().getObjectTypeFullName())
 				
 				.pl("public ${p.type} ${p.getterName}(){")
-				.pl("		return ${p.name};")
+				.pl("		return ${p.fieldName};")
 				.pl("}");
 				
 			addMethod(bean, getter.asMethodNodeSnippet(),model.options.isMarkGenerated());

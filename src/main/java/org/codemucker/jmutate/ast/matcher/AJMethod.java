@@ -1,7 +1,9 @@
 package org.codemucker.jmutate.ast.matcher;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
+import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractMatcher;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
@@ -16,6 +18,7 @@ import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifier;
 import org.codemucker.jmutate.util.NameUtil;
+import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.Type;
@@ -126,7 +129,32 @@ public class AJMethod extends ObjectMatcher<JMethod> {
         };
 	}
 	
-   private static Matcher<Type> newVoidTypeMatcher(){
+	public AJMethod returnType(final Class<?> klass){
+		returnType(NameUtil.compiledNameToSourceName(klass.getName()));
+		return this;
+	}
+	
+	public AJMethod returnType(final String fullName){
+		returnType(AString.equalTo(fullName));
+		return this;
+	}
+	
+	public AJMethod returnType(final Matcher<String> fullNameMatcher){
+		addMatcher(new AbstractMatcher<JMethod>() {
+            @Override
+            public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+            	return diag.tryMatch(this, found.getReturnTypeFullName(), fullNameMatcher);
+            }
+            
+            @Override
+            public void describeTo(Description desc) {
+                desc.value("returning ",fullNameMatcher);
+            }
+        });
+		return this;
+	}
+	
+	private static Matcher<Type> newVoidTypeMatcher(){
         return new AbstractMatcher<Type>(AllowNulls.YES) {
             @Override
             public boolean matchesSafely(Type found, MatchDiagnostics diag) {
