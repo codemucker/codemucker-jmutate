@@ -10,7 +10,6 @@ public class BuilderPropertyModel {
 
 	private final PojoProperty property;
 
-
 	BuilderPropertyModel(BuilderModel parent, PojoProperty property,boolean superClass) {
 		this.property = property;
 		this.pojoModel = parent;
@@ -21,6 +20,18 @@ public class BuilderPropertyModel {
 		return pojoModel;
 	}
 
+	public boolean hasGetter() {
+		return property.hasGetter();
+	}
+
+	public boolean hasSetter() {
+		return property.hasSetter();
+	}
+
+	public String getFieldName() {
+		return property.getFieldName();
+	}
+	
 	public boolean isFromSuperClass() {
 		return fromSuperClass;
 	}
@@ -38,7 +49,14 @@ public class BuilderPropertyModel {
 	}
 
 	public boolean isReadOnly() {
-		return property.isReadOnly();
+		return !isWriteable();
+	}
+	
+	public boolean isWriteable() {
+		if(fromSuperClass){
+			return property.hasSetter();
+		}
+		return property.hasField() || property.hasSetter();
 	}
 
 	public boolean hasField() {

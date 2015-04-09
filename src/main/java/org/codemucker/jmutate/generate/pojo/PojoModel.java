@@ -21,7 +21,7 @@ public class PojoModel {
 	}
 
 	public void addProperty(PojoProperty prop) {
-		properties.put(prop.getPropertyName(), prop);
+		properties.put(prop.getPropertyName().toLowerCase(), prop);
 	}
 
 	public PojoProperty getProperty(String name) {
@@ -33,6 +33,7 @@ public class PojoModel {
 	}
 
 	public PojoProperty getDeclaredProperty(String name) {
+		name = name.toLowerCase();
 		return properties.get(name);
 	}
 

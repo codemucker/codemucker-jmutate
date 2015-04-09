@@ -19,6 +19,11 @@ public class PojoProperty {
 	private String propertySetterName;
     private String propertyAddName;
     private String propertyRemoveName;
+
+	private String calculatedPropertyGetterName;
+	private String calculatedPropertySetterName;
+    private String calculatedPropertyAddName;
+    private String calculatedPropertyRemoveName;
     
 	public final PojoModel definedIn;
 	
@@ -26,22 +31,31 @@ public class PojoProperty {
      * The object version of the property type if a primitive, else just the same as the property type
      */
     
-    public PojoProperty(PojoModel definedIn, String fieldName, String propertyType) {
+    public PojoProperty(PojoModel definedIn, String propertyName, String propertyType) {
         
     	propertyType = NameUtil.compiledNameToSourceName(propertyType);
     	
     	this.definedIn = definedIn;
-    	this.propertyName = fieldName;
-    	this.propertyNameSingular = PluralToSingularConverter.INSTANCE.pluralToSingle(fieldName);
+    	this.propertyName = propertyName;
+    	this.propertyNameSingular = PluralToSingularConverter.INSTANCE.pluralToSingle(propertyName);
         
     	this.type = TypeInfo.newFromFullNameAndTypeBounds(propertyType, null);
-    	this.propertyGetterName = BeanNameUtil.toGetterName(fieldName, NameUtil.isBoolean(propertyType));
-        this.propertySetterName = BeanNameUtil.toSetterName(fieldName);
+    	this.propertyGetterName = null;// = BeanNameUtil.toGetterName(propertyName, NameUtil.isBoolean(propertyType));
+        this.propertySetterName = null;//BeanNameUtil.toSetterName(propertyName);
+        this.propertyAddName = null;// type.isIndexed()?BeanNameUtil.addPrefixName("add",propertyNameSingular):null;
+        this.propertyRemoveName = null;//type.isIndexed()?BeanNameUtil.addPrefixName("remove",propertyNameSingular):null;
         this.propertyConcreteType = IndexedTypeRegistry.INSTANCE.getConcreteTypeFor(type.getFullNameRaw());
-        this.propertyAddName = type.isIndexed()?BeanNameUtil.addPrefixName("add",propertyNameSingular):null;
-        this.propertyRemoveName = type.isIndexed()?BeanNameUtil.addPrefixName("remove",propertyNameSingular):null;
-    }  
+        
+        recalculate();
+    } 
     
+    private void recalculate(){
+    	this.calculatedPropertyGetterName = BeanNameUtil.toGetterName(propertyName, NameUtil.isBoolean(type.getFullName()));
+        this.calculatedPropertySetterName = BeanNameUtil.toSetterName(propertyName);
+        this.calculatedPropertyAddName = type.isIndexed()?BeanNameUtil.addPrefixName("add",propertyNameSingular):null;
+        this.calculatedPropertyRemoveName = type.isIndexed()?BeanNameUtil.addPrefixName("remove",propertyNameSingular):null;
+    }
+
     public String getPropertyName() {
 		return propertyName;
 	}
@@ -59,11 +73,19 @@ public class PojoProperty {
 	}
 
 	public boolean isReadOnly() {
-		return finalField || propertySetterName == null;
+		return isFinalField() || !(hasField() || hasSetter());
 	}
 
 	public boolean hasField() {
 		return fieldName != null;
+	}
+
+	public boolean hasGetter() {
+		return propertyGetterName != null;
+	}
+
+	public boolean hasSetter() {
+		return propertySetterName != null;
 	}
 
 	public void setFieldName(String name) {
@@ -80,6 +102,10 @@ public class PojoProperty {
 
 	public TypeInfo getType() {
 		return type;
+	}
+
+	public String getFieldName() {
+		return fieldName;
 	}
 
 	public String getPropertyGetterName() {
@@ -113,6 +139,22 @@ public class PojoProperty {
 	public void setPropertyRemoveName(String propertyRemoveName) {
 		this.propertyRemoveName = propertyRemoveName;
 	}
+	
+	public String getCalculatedPropertyGetterName() {
+		return calculatedPropertyGetterName;
+	}
+
+	public String getCalculatedPropertySetterName() {
+		return calculatedPropertySetterName;
+	}
+
+	public String getCalculatedPropertyAddName() {
+		return calculatedPropertyAddName;
+	}
+
+	public String getCalculatedPropertyRemoveName() {
+		return calculatedPropertyRemoveName;
+	}
 
 	@Override
 	public String toString() {
@@ -120,13 +162,19 @@ public class PojoProperty {
 				+ ", propertyNameSingular=" + propertyNameSingular
 				+ ", propertyConcreteType=" + propertyConcreteType
 				+ ", fieldName=" + fieldName + ", finalField=" + finalField
-				+ ", propertyGetterName=" + propertyGetterName
-				+ ", propertySetterName=" + propertySetterName
-				+ ", propertyAddName=" + propertyAddName
-				+ ", propertyRemoveName=" + propertyRemoveName + ", definedIn="
-				+ definedIn + ", type=" + type + "]";
+				+ ", type=" + type + ", propertyGetterName="
+				+ propertyGetterName + ", propertySetterName="
+				+ propertySetterName + ", propertyAddName=" + propertyAddName
+				+ ", propertyRemoveName=" + propertyRemoveName
+				+ ", calculatedPropertyGetterName="
+				+ calculatedPropertyGetterName
+				+ ", calculatedPropertySetterName="
+				+ calculatedPropertySetterName + ", calculatedPropertyAddName="
+				+ calculatedPropertyAddName + ", calculatedPropertyRemoveName="
+				+ calculatedPropertyRemoveName + "]";
 	}
-    
+
+
 	
 
 }

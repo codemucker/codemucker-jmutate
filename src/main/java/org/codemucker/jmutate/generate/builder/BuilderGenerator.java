@@ -2,10 +2,6 @@ package org.codemucker.jmutate.generate.builder;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jmatch.AString;
-import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmatch.expression.ExpressionParser;
-import org.codemucker.jmatch.expression.StringMatcherBuilderCallback;
 import org.codemucker.jmutate.ClashStrategyResolver;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
@@ -66,11 +62,9 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	private void extractAllProperties(JType optionsDeclaredInNode,BuilderModel model) {
 		LOG.debug("adding properties to Builder for " + model.getPojoType().getFullName());
 		
-		Matcher<String> fieldMatcher = fieldMatcher(model.getFieldNames());
-		
 		PropertiesExtractor extractor = PropertiesExtractor.with(ctxt.getResourceLoader(), ctxt.getParser())
 			.includeCompiledClasses(true)
-			.propertyNameMatcher(fieldMatcher)
+			.propertyNameMatching(model.getFieldNames())
 			.includeSuperClass(model.isInheritSuperBeanBuilder())
 			.build();
 		
@@ -78,26 +72,17 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		
 		boolean fromSuper = false;
 		while(pojo != null){	
-			for(PojoProperty p:pojo.getDeclaredProperties()){				
-				if(p.hasField() || !p.isReadOnly()){
-					BuilderPropertyModel p2 = new BuilderPropertyModel(model, p, fromSuper);
-					
+			for(PojoProperty p:pojo.getDeclaredProperties()){	
+				BuilderPropertyModel p2 = new BuilderPropertyModel(model, p, fromSuper);
+				if(p2.isWriteable()){
 					model.addProperty(p2);
 				} else {
 					LOG.debug("ignoring readonly property: " + p.getPropertyName());
-					
 				}
 			}
 			pojo = pojo.getParent();
 			fromSuper = true;
 		}
-	}
-
-	private Matcher<String> fieldMatcher(String s){
-		if(Strings.isNullOrEmpty(s)){
-			return AString.equalToAnything();
-		}
-		return ExpressionParser.parse(s, new StringMatcherBuilderCallback());
 	}
 
 	private void generateBuilder(JType optionsDeclaredInNode,BuilderModel model) {
@@ -143,10 +128,12 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		}
 		
 		for (BuilderPropertyModel property : model.getProperties()) {
-			generateField(markGenerated, builder, property);
-			generateSetter(model, markGenerated, builder, property);
-			generateCollectionAddRemove(builder, model, property);
-			generateMapAddRemove(builder, model, property);
+			if(property.isWriteable()){
+				generateField(markGenerated, builder, property);
+				generateSetter(model, markGenerated, builder, property);
+				generateCollectionAddRemove(builder, model, property);
+				generateMapAddRemove(builder, model, property);
+			}
 		}
 		
 		generateAllArgCtor(pojo, model);
@@ -293,6 +280,9 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			
 			boolean comma = false;
 			for (BuilderPropertyModel property : model.getProperties()) {
+				if(property.isReadOnly()){
+					continue;
+				}
 				if(comma){
 					buildMethod.p(",");
 				}
@@ -315,6 +305,9 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			boolean comma = false;
 			//args
 			for (BuilderPropertyModel property : model.getProperties()) {
+				if(property.isReadOnly()){
+					continue;
+				}
 				if(comma){
 					beanCtor.p(",");
 				}
@@ -328,12 +321,15 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			beanCtor.pl("){");
 			//field assignments
 			for (BuilderPropertyModel property : model.getProperties()) {
+				if(property.isReadOnly()){
+					continue;
+				}
 				//TODO:figure out if we can set field directly, via setter, or via ctor args
 				//for now assume a setter
 				if(property.isFromSuperClass()){
 					beanCtor.pl(property.getPropertySetterName() + "(" + property.getPropertyName() + ");");
 				} else {
-					beanCtor.pl("this." + property.getPropertyName() + "=" + property.getPropertyName() + ";");
+					beanCtor.pl("this." + property.getFieldName() + "=" + property.getPropertyName() + ";");
 				}
 				comma = true;
 			}

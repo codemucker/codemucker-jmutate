@@ -2,14 +2,11 @@ package org.codemucker.jmutate.generate.bean;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jmatch.AString;
-import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmatch.expression.ExpressionParser;
-import org.codemucker.jmatch.expression.StringMatcherBuilderCallback;
 import org.codemucker.jmutate.ClashStrategyResolver;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.SourceTemplate;
+import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
@@ -32,7 +29,6 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
-import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 /**
@@ -48,7 +44,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	 * on bean name
 	 */
 	private static final int[] FIRST_PRIMES = new int[]{31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,103,107,109,113,127,131,137,139,149,151,157,163,167,173,179,181,191,193,197,199,211,223,227,229,233,239,241,251,257,263,269,271,277,281,283,293,307,311,313,317,331,337,347,349,353,359,367,373,379,383,389,397,401,409,419,421,431,433,439,443,449,457,461,463,467,479,487,491,499,503,509,521,523,541,547,557,563,569,571,577,587,593,599,601,607,613,617,619,631,641,643,647,653,659,661,673,677,683,691,701,709,719,727,733,739,743,751,757,761,769,773,787,797,809,811,821,823,827,829,839,853,857,859,863,877,881,883,887,907,911,919,929,937,941,947,953,967,971,977,983,991,997,1009,1013};
-	
+
 	private final CodeGenMetaGenerator generatorMeta;
 
 	private final JMutateContext ctxt;
@@ -59,7 +55,6 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		this.ctxt = ctxt;
 		this.generatorMeta = new CodeGenMetaGenerator(ctxt, getClass());
 	}
-
 	
 	@Override
 	public void beforeRun() {
@@ -92,11 +87,9 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		
 		LOG.debug("adding properties to " + model.options.getType().getFullName());
 		
-		Matcher<String> fieldMatcher = fieldMatcher(model.options.getFieldNames());
-		
 		PropertiesExtractor extractor = PropertiesExtractor.with(ctxt.getResourceLoader(), ctxt.getParser())
 			.includeCompiledClasses(true)
-			.propertyNameMatcher(fieldMatcher)
+			.propertyNameMatching(model.options.getFieldNames())
 			.includeSuperClass(model.options.isInheritSuperClassProperties())
 			.build();
 		
@@ -114,13 +107,6 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		}
 	}
 
-	private Matcher<String> fieldMatcher(String s){
-		if(Strings.isNullOrEmpty(s)){
-			return AString.equalToAnything();
-		}
-		return ExpressionParser.parse(s, new StringMatcherBuilderCallback());
-	}
-
 	private void generateBeanProperties(JType bean,BeanModel model) {
 		JSourceFile source = bean.getSource();
 		
@@ -128,12 +114,15 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		generateAllArgCtor(bean, model);
 		generateStaticPropertyNames(bean, model);
 		
-		for (BeanPropertyModel property : model.getProperties().values()) {
-			generateFieldAccess(bean, model, property);			
-			generateGetter(bean, model, property);
-			generateSetter(bean, model, property);
-			generateCollectionAddRemove(bean, model, property);
-			generateMapAddRemove(bean, model, property);
+		for (BeanPropertyModel property : model.getProperties()) {
+			if(property.hasField()){
+				LOG.debug("processing property:'" + property.getPropertyName() + "'");
+				generateFieldModifiers(bean, model, property);	
+				generateGetter(bean, model, property);
+				generateSetter(bean, model, property);
+				generateCollectionAddRemove(bean, model, property);
+				generateMapAddRemove(bean, model, property);
+			}
 		}
 		
 		generatePropertyChangeSupport(bean, model);
@@ -150,6 +139,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	private void generateNoArgCtor(JType bean, BeanModel model) {
 		if(model.options.isGenerateNoArgCtor() && !model.hasDirectFinalProperties()){
 			
+			LOG.debug("generating no arg constructor");
 			JMethod ctor = ctxt
 				.newSourceTemplate()
 				.pl("public " + model.options.getType().getSimpleNameRaw() + "(){}")
@@ -167,7 +157,10 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			
 			boolean comma = false;
 			//args
-			for (BeanPropertyModel property : model.getFields()) {
+			for (BeanPropertyModel property : model.getProperties()) {
+				if(!property.hasField()){
+					continue;
+				}
 				if(comma){
 					beanCtor.p(",");
 				}
@@ -180,7 +173,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			
 			beanCtor.pl("){");
 			//field assignments
-			for (BeanPropertyModel property : model.getFields()) {
+			for (BeanPropertyModel property : model.getProperties()) {
 				if(property.isFromSuperClass()){
 					beanCtor.pl(property.getPropertySetterName() + "(" + property.getPropertyName() + ");");
 				} else {
@@ -195,7 +188,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	private void generateStaticPropertyNames(JType bean, BeanModel model) {
 		//static property names
 		if(model.options.isGenerateStaticPropertyNameFields()){
-			for (BeanPropertyModel property : model.getProperties().values()) {
+			for (BeanPropertyModel property : model.getProperties()) {
 				JField staticField = ctxt
 					.newSourceTemplate()
 					.pl("public static final String PROP_" + property.getPropertyName().toUpperCase() + " = \"" + property.getPropertyName() +"\";")
@@ -220,7 +213,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 				.pl("if(bean == null){ return null;}")
 				.pl("final ${b.type} clone = new ${b.type}();");
 			
-			for (BeanPropertyModel property : model.getProperties().values()) {
+			for (BeanPropertyModel property : model.getProperties()) {
 				SourceTemplate t = clone
 					.child()
 					.var("p.name",property.getPropertyName())
@@ -300,7 +293,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			} else {
 				hashcode.pl("final int prime = ${prime};");
 				hashcode.pl("int result = super.hashCode();");
-				for (BeanPropertyModel property : model.getProperties().values()) {
+				for (BeanPropertyModel property : model.getProperties()) {
 					SourceTemplate t = hashcode
 						.child()
 						.var("p.accessor",property.isFromSuperClass()?(property.getPropertyGetterName() + "()"):property.getPropertyName());
@@ -413,7 +406,7 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 			
 			if(!model.getProperties().isEmpty()){
 				equals.pl("${b.type} other = (${b.type}) obj;");
-				for (BeanPropertyModel property : model.getProperties().values()) {
+				for (BeanPropertyModel property : model.getProperties()) {
 					SourceTemplate  t = equals
 						.child()
 						.var("p.accessor",property.isFromSuperClass()?(property.getPropertyGetterName() + "()"):property.getPropertyName());
@@ -441,26 +434,20 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 	private void generateToString(JType bean, BeanModel model) {
 		if(model.options.isGenerateToString()){
 			StringBuilder sb = new StringBuilder();
-//			String label = model.type.simpleNameRaw;
-//			JType t = bean;
-//			while(!t.isTopLevelClass()){
-//				t = t.getParentJType();
-//				label = t.getSimpleName() + "." + label;
-//			}
 			sb.append("\" [");
 			if(model.getProperties().isEmpty()){
 				sb.append("]\"");
 			} else {
 				boolean comma = false;
-				for (BeanPropertyModel property : model.getProperties().values()) {
+				for (BeanPropertyModel property : model.getProperties()) {
 					if(comma){
 						sb.append(" + \",");
 					}
 					sb.append(property.getPropertyName() ).append("=\" + ");
-					if(property.isFromSuperClass()){
+					if(property.hasField() && !property.isFromSuperClass()){
+						sb.append(property.getFieldName());
+					} else if(property.hasGetter()){
 						sb.append(property.getPropertyGetterName()).append("()");
-					} else {
-						sb.append(property.getPropertyName());
 					}
 					comma = true;
 				}
@@ -477,14 +464,22 @@ public class BeanGenerator extends AbstractCodeGenerator<GenerateBean> {
 		}
 	}
 
-	private void generateFieldAccess(JType bean, BeanModel model,BeanPropertyModel property) {
-		if(property.isFromSuperClass()){
+	private void generateFieldModifiers(JType bean, BeanModel model,BeanPropertyModel property) {
+		if(property.isFromSuperClass() || !property.hasField()){
 			return;
 		}
-		JField field = bean.findFieldsMatching(AJField.with().name(property.getPropertyName())).getFirst();
-		if(!field.getAccess().equals(model.options.getFieldAccess())){
+		JAccess access = model.options.getFieldAccess();
+		
+		LOG.debug("ensuring " + access.name() + " access for field " + property.getFieldName());
+		JField field = bean.findFieldsMatching(AJField.with().name(property.getFieldName())).getFirst();
+		if(!field.getAccess().equals(access)){
 			field.getJModifiers().setAccess(model.options.getFieldAccess());
 		}
+		
+		if(model.options.isMakeReadonly() && (access == JAccess.PUBLIC ||access == JAccess.PACKAGE)){
+			field.getJModifiers().setFinal(true);
+		}
+		
 	}
 
 	private void generateSetter(JType bean, BeanModel model,BeanPropertyModel property) {

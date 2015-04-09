@@ -59,6 +59,22 @@ public class JModifier {
 		return JAccess.PACKAGE;
 	}
 
+	public void setStatic(boolean add) {
+		if(add){
+			setModifierKeywordIfNotSet(ModifierKeyword.STATIC_KEYWORD);
+		} else {
+			removeModifier(ModifierKeyword.STATIC_KEYWORD);
+		}
+	}
+	
+	public void setFinal(boolean add) {
+		if(add){
+			setModifierKeywordIfNotSet(ModifierKeyword.FINAL_KEYWORD);
+		} else {
+			removeModifier(ModifierKeyword.FINAL_KEYWORD);
+		}
+	}
+	
 	public void setModifierKeywordIfNotSet(ModifierKeyword keywordToSet) {
 		setModifier(ast.newModifier(keywordToSet), null);
 	}
@@ -72,7 +88,7 @@ public class JModifier {
 		boolean exists = false;
 		for (Iterator<Modifier> modifiers = getModifiers().iterator(); modifiers.hasNext();) {
 			Modifier m = modifiers.next();
-			if (removeKeywords.contains(m.getKeyword())
+			if (removeKeywords != null && removeKeywords.contains(m.getKeyword())
 			        && (keywordToSet == null || !keywordToSet.equals(m.getKeyword()))) {
 				modifiers.remove();
 			}
@@ -83,6 +99,15 @@ public class JModifier {
 		}
 		if (!exists && keywordToSet != null) {
 			this.modifiers.add(modifierToSet);
+		}
+	}
+	
+	private void removeModifier(ModifierKeyword modifier){
+		for (Iterator<Modifier> modifiers = getModifiers().iterator(); modifiers.hasNext();) {
+			Modifier m = modifiers.next();
+			if(m.getKeyword() == modifier) {
+				modifiers.remove();				
+			}
 		}
 	}
 

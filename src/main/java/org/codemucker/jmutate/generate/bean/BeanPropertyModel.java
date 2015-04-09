@@ -76,6 +76,10 @@ public class BeanPropertyModel {
 		return property.hasField();
 	}
 
+	public String getFieldName() {
+		return property.getFieldName();
+	}
+
 	public boolean isFinalField() {
 		return property.isFinalField();
 	}
@@ -84,20 +88,52 @@ public class BeanPropertyModel {
 		return property.getType();
 	}
 
+	public boolean hasGetter() {
+		return property.hasGetter() || generateGetter;
+	}
+
+	public boolean hasSetter() {
+		return property.hasGetter() || generateSetter;
+	}
+	
 	public String getPropertyGetterName() {
-		return property.getPropertyGetterName();
+		String name = property.getPropertyGetterName();
+		if(name == null){
+			if(generateGetter){
+				name = property.getCalculatedPropertyGetterName();
+			}
+		}
+		return name;
 	}
 
 	public String getPropertySetterName() {
-		return property.getPropertySetterName();
+		String name = property.getPropertySetterName();
+		if(name == null){
+			if(generateSetter){
+				name = property.getCalculatedPropertySetterName();
+			}
+		}
+		return name;
 	}
 
 	public String getPropertyAddName() {
-		return property.getPropertyAddName();
+		String name = property.getPropertyAddName();
+		if(name == null){
+			if(generateSetter){
+				name = property.getCalculatedPropertyAddName();
+			}
+		}
+		return name;
 	}
 
 	public String getPropertyRemoveName() {
-		return property.getPropertyRemoveName();
+		String name = property.getPropertyRemoveName();
+		if(name == null){
+			if(generateSetter){
+				name = property.getCalculatedPropertyRemoveName();
+			}
+		}
+		return name;
 	}
 
 	@Override

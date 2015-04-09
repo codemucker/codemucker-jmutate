@@ -1,7 +1,11 @@
 package org.codemucker.jmutate.generate.bean;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.LogManager;
@@ -9,13 +13,20 @@ import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.generate.GeneratorConfig;
-import org.codemucker.jmutate.generate.builder.BuilderModel;
 import org.codemucker.jpattern.generate.GenerateBean;
 
 public class BeanModel {   
 
 	private static final Logger LOG = LogManager.getLogger(BeanModel.class);
-    
+	
+	public static final Comparator<BeanPropertyModel> PROP_COMPARATOR = new Comparator<BeanPropertyModel>() {
+
+		@Override
+		public int compare(BeanPropertyModel left,BeanPropertyModel right) {
+			return left.getPropertyName().compareTo(right.getPropertyName());
+		}
+	};
+	
 	public final GenerateBeanOptions options;
     private final Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
     
@@ -29,7 +40,7 @@ public class BeanModel {
 
     public boolean hasDirectFinalProperties(){
     	for(BeanPropertyModel p:properties.values()){
-    		if(!p.isFromSuperClass() && p.isFinalField() && p.hasField()){
+    		if(!p.isFromSuperClass() && p.hasField() && p.isFinalField()){
     			return true;
     		}
     	}
@@ -54,11 +65,15 @@ public class BeanModel {
         return properties.get(name);
     }
     
-    Collection<BeanPropertyModel> getFields(){
-        return properties.values();
+    Collection<BeanPropertyModel> getProperties(){
+    	List<BeanPropertyModel> ordered = new ArrayList<>(properties.values());
+    	Collections.sort(ordered,PROP_COMPARATOR);
+        return ordered;
     }
 
-	Map<String, BeanPropertyModel> getProperties() {
+	Map<String, BeanPropertyModel> getPropertiesMap() {
 		return properties;
 	}
+	
+	
 }
