@@ -15,9 +15,7 @@ public class MapConfiguration extends AbstractConfiguration {
 	}
 	
 	public MapConfiguration(Map<String,Object> map){
-		this.map = new HashMap<>();
-		addAll(map);
-		
+		this.map = new HashMap<>(map);
 	}
 	
 	@Override
