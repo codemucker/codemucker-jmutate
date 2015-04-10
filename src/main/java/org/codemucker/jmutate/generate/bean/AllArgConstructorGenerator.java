@@ -27,7 +27,7 @@ public class AllArgConstructorGenerator extends AbstractBeanGenerator<GenerateAl
 	
 	@Override
 	protected void generate(JType beanType, BeanModel model) {
-		if(model.options.isGenerateAllArgCtor()){
+		if(model.options.isEnabled()){
 			SourceTemplate beanCtor = getCtxt()
 					.newSourceTemplate()
 					.var("b.name", model.options.getType().getSimpleNameRaw())

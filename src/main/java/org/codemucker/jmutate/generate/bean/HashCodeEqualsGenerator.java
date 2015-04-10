@@ -35,7 +35,7 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 	}
 	
 	private void generateEquals(JType bean, BeanModel model) {
-		if(model.options.isGenerateEqualsMethod() && !model.getProperties().isEmpty()){
+		if(model.options.isEnabled() && !model.getProperties().isEmpty()){
 			
 			SourceTemplate equals = newSourceTemplate()
 					.var("b.type", model.options.getType().getSimpleName())

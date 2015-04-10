@@ -32,23 +32,25 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 
 	@Override
 	protected void generate(JType bean,BeanModel model) {
-		generateNoArgCtor(bean, model);
-		generateAllArgCtor(bean, model);
-		generateStaticPropertyNames(bean, model);
-		
-		for (BeanPropertyModel property : model.getProperties()) {
-			if(property.hasField()){
-				LOG.debug("processing property:'" + property.getPropertyName() + "'");
-				generateFieldModifiers(bean, model, property);	
-				generateGetter(bean, model, property);
-				generateSetter(bean, model, property);
-				generateCollectionAddRemove(bean, model, property);
-				generateMapAddRemove(bean, model, property);
+		if(model.options.isEnabled()){
+			generateNoArgCtor(bean, model);
+			generateAllArgCtor(bean, model);
+			generateStaticPropertyNames(bean, model);
+			
+			for (BeanPropertyModel property : model.getProperties()) {
+				if(property.hasField()){
+					LOG.debug("processing property:'" + property.getPropertyName() + "'");
+					generateFieldModifiers(bean, model, property);	
+					generateGetter(bean, model, property);
+					generateSetter(bean, model, property);
+					generateCollectionAddRemove(bean, model, property);
+					generateMapAddRemove(bean, model, property);
+				}
 			}
+			
+			generatePropertyChangeSupport(bean, model);
+			generateVetoableChangeSupport(bean, model);
 		}
-		
-		generatePropertyChangeSupport(bean, model);
-		generateVetoableChangeSupport(bean, model);
 	}
 
 	private void generateNoArgCtor(JType bean, BeanModel model) {
@@ -203,7 +205,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getPropertyName())
 				.var("p.setterName", property.getPropertySetterName())
-				.var("p.type", property.getType().getObjectTypeFullName())
+				.var("p.type", property.getType().getFullName())
 				.var("support.bind.name", model.options.getPropertyChangeSupportFieldName())
 				.var("support.veto.name", model.options.getVetoableChangeSupportFieldName())
 				
@@ -243,7 +245,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getPropertyName())
 				.var("p.addName", property.getPropertyAddName())
-				.var("p.type", property.getType().getObjectTypeFullName())
+				.var("p.type", property.getType().getFullName())
 				.var("p.newType", property.getPropertyConcreteType())
 				.var("p.genericPart", property.getType().getGenericPartOrEmpty())
 				.var("p.keyType", property.getType().getIndexedKeyTypeNameOrNull())
@@ -264,7 +266,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getPropertyName())
 				.var("p.removeName", property.getPropertyRemoveName())
-				.var("p.type", property.getType().getObjectTypeFullName())
+				.var("p.type", property.getType().getFullName())
 				.var("p.newType", property.getPropertyConcreteType())
 				.var("p.keyType", property.getType().getIndexedKeyTypeNameOrNull())
 				
@@ -291,7 +293,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 					.var("p.fieldName", property.getFieldName())
 					.var("p.name", property.getPropertyName())
 					.var("p.addName", property.getPropertyAddName())
-					.var("p.type", property.getType().getObjectTypeFullName())
+					.var("p.type", property.getType().getFullName())
 					.var("p.newType", property.getPropertyConcreteType())
 					.var("p.genericPart", property.getType().getGenericPartOrEmpty())
 					.var("p.valueType", property.getType().getIndexedValueTypeNameOrNull())
@@ -338,7 +340,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 					.var("p.fieldName", property.getFieldName())
 					.var("p.name", property.getPropertyName())
 					.var("p.removeName", property.getPropertyRemoveName())
-					.var("p.type", property.getType().getObjectTypeFullName())
+					.var("p.type", property.getType().getFullName())
 					.var("p.newType", property.getPropertyConcreteType())
 					.var("p.valueType", property.getType().getIndexedValueTypeNameOrNull())
 					.var("support.bind.name", model.options.getPropertyChangeSupportFieldName())
@@ -391,7 +393,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			SourceTemplate getter = newSourceTemplate()
 				.var("p.fieldName", property.getFieldName())
 				.var("p.getterName", property.getPropertyGetterName())
-				.var("p.type", property.getType().getObjectTypeFullName())
+				.var("p.type", property.getType().getFullName())
 				
 				.pl("public ${p.type} ${p.getterName}(){")
 				.pl("		return ${p.fieldName};")

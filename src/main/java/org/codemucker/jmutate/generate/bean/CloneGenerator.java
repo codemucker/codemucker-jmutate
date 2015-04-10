@@ -23,7 +23,7 @@ public class CloneGenerator extends AbstractBeanGenerator<GenerateCloneMethod> {
 	}
 	
 	protected void generate(JType bean, BeanModel model) {
-		if(model.options.isGenerateCloneMethod() && !bean.isAbstract()){
+		if(model.options.isEnabled() && !bean.isAbstract()){
 			String methodName = model.options.getCloneMethodName();
 			
 			LOG.debug("adding method '" + methodName + "'");

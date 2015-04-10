@@ -23,7 +23,7 @@ public class ToStringGenerator extends AbstractBeanGenerator<GenerateToStringMet
 	}
 	
 	protected void generate(JType bean, BeanModel model) {
-		if(model.options.isGenerateToString()){
+		if(model.options.isEnabled()){
 			StringBuilder sb = new StringBuilder();
 			sb.append("\" [");
 			if(model.getProperties().isEmpty()){
