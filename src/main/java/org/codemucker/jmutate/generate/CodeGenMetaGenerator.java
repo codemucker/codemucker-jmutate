@@ -73,18 +73,21 @@ public class CodeGenMetaGenerator {
 	
 	private String extractGenName(String name) {
 		String className = ClassNameUtil.extractSimpleClassNamePart(name);
-		StringBuilder sb = new StringBuilder();
-		boolean previousCharUpper = false;
-		for(int i = 0; i < className.length();i++){
-			char c = className.charAt(i);
-			boolean isUpper = Character.isUpperCase(c);
-			if(isUpper && i > 0 && !previousCharUpper){
-				sb.append("_");
-			}
-			sb.append(Character.toUpperCase(c));
-			previousCharUpper = isUpper;
-		}
-		return sb.toString();
+		name = Character.toLowerCase(className.charAt(0)) + className.substring(1);
+//		
+//		StringBuilder sb = new StringBuilder();
+//		boolean previousCharUpper = false;
+//		for(int i = 0; i < className.length();i++){
+//			char c = className.charAt(i);
+//			boolean isUpper = Character.isUpperCase(c);
+//			if(isUpper && i > 0 && !previousCharUpper){
+//				sb.append("_");
+//			}
+//			sb.append(Character.toUpperCase(c));
+//			previousCharUpper = isUpper;
+//		}
+//		return sb.toString();
+		return name;
 	}
 
 	public boolean isManagedByThis(AbstractTypeDeclaration type){

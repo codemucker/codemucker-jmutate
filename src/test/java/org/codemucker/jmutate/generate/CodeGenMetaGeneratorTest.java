@@ -14,8 +14,8 @@ public class CodeGenMetaGeneratorTest {
 	public void ensureFieldNameCorrrectlyGenerated() {
 		CodeGenMetaGenerator info = new CodeGenMetaGenerator(ctxt, MyCodeGenerator.class);
 
-		Assert.assertEquals("CODE_GEN_META_GENERATOR_TEST$_MY_CODE_GENERATOR",info.getConstantFieldName());
-		Assert.assertEquals("org.codemucker.jmutate.generate.CodeGenMeta.CODE_GEN_META_GENERATOR_TEST$_MY_CODE_GENERATOR",info.getFullConstantFieldPath());
+		Assert.assertEquals("codeGenMetaGeneratorTest$MyCodeGenerator",info.getConstantFieldName());
+		Assert.assertEquals("org.codemucker.jmutate.generate.CodeGenMeta.codeGenMetaGeneratorTest$MyCodeGenerator",info.getFullConstantFieldPath());
 	}
 
 	private static class MyCodeGenerator extends AbstractCodeGenerator<MyAnnotation> {
