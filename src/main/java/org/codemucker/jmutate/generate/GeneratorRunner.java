@@ -211,27 +211,33 @@ public class GeneratorRunner {
         for (Group group : groups.getGroups()) {
             CodeGenerator<?> generator = getGeneratorFor(group.getAnnotationType());
             if (generator != null) {
-            	generator.beforeRun();
-                invokeGenerator(generator,group);
-                generator.afterRun();
+            	invokeGenerator(generator,group);        
             }
         }
         MutateUtil.setClassLoader(null);
     }
 
     private void invokeGenerator(CodeGenerator<?> generator, Group group) {
-        
-    	Configuration defaults = generator.getDefaultConfig();
-    	
-    	for (NodeAndOptions pair : group.getNodes()) {
-            log.debug("processing annotation '" + pair.options.toString() + "' in '" + pair.enclosedInType.getFullName());
-            try {
-            	Configuration cfg = merge(pair.options.getConfig(),defaults);
-            	generator.generate(pair.forNode, cfg);
-            } catch(Exception e){
-            	throw new JMutateException("error processing node : " + pair.forNode,e);
-            }
-        }
+    	log.debug("invoking generator " + generator.getClass().getName());
+    	try {
+	    	generator.beforeRun();
+	        
+	    	Configuration defaults = generator.getDefaultConfig();
+	    	
+	    	for (NodeAndOptions pair : group.getNodes()) {
+	            log.debug("processing annotation '" + pair.options.toString() + "' in '" + pair.enclosedInType.getFullName());
+	            try {
+	            	Configuration cfg = merge(pair.options.getConfig(),defaults);
+	            	generator.generate(pair.forNode, cfg);
+	            } catch(Exception e){
+	            	throw new JMutateException("error processing node : " + pair.forNode,e);
+	            }
+	        }
+    	} catch(Exception e){
+         	throw new JMutateException("error invoking generator " + generator.getClass().getName(),e);
+    	} finally {
+    		generator.afterRun();
+    	}
     }
     
     private Configuration merge(Configuration cfg,Configuration defaults){
