@@ -8,7 +8,6 @@ import org.codemucker.jmutate.generate.CodeGenerator;
 import org.codemucker.jmutate.generate.builder.BuilderGenerator;
 import org.codemucker.jmutate.generate.matcher.MatcherGenerator;
 import org.codemucker.jpattern.generate.ClashStrategy;
-import org.codemucker.jpattern.generate.GenerateBean;
 import org.codemucker.jpattern.generate.GenerateBuilder;
 import org.codemucker.jpattern.generate.GenerateCloneMethod;
 import org.codemucker.jpattern.generate.GenerateHashCodeAndEqualsMethod;
@@ -22,8 +21,6 @@ public class BeanGeneratorsTest {
 
 	@Test
 	public void ensureDefaultGeneratorSetOnAnnotations(){
-		
-		isCorrectGenerator(GenerateBean.class, BeanGenerator.class);
 		isCorrectGenerator(GenerateToStringMethod.class, ToStringGenerator.class);
 		isCorrectGenerator(GenerateHashCodeAndEqualsMethod.class,HashCodeEqualsGenerator.class);
 		isCorrectGenerator(GenerateProperties.class, PropertiesGenerator.class);
@@ -40,7 +37,6 @@ public class BeanGeneratorsTest {
 	
 	@Test
 	public void ensureMethodNamesMatchThoseInBeanAnnotation(){
-		matchBeanGen(GenerateBean.class);
 		matchBeanGen(GenerateToStringMethod.class);
 		matchBeanGen(GenerateHashCodeAndEqualsMethod.class);
 		matchBeanGen(GenerateProperties.class);

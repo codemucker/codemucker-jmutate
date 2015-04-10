@@ -7,11 +7,10 @@ import org.codemucker.jmutate.ast.TypeInfo;
 import org.codemucker.jmutate.generate.ModelUtils;
 import org.codemucker.jpattern.generate.Access;
 import org.codemucker.jpattern.generate.ClashStrategy;
-import org.codemucker.jpattern.generate.GenerateBean;
 
 public class GenerateBeanOptions {   
 
-	//these should match the annotation methods names on GenrateBean
+	//these should match the annotation methods names on all the bean annoations
 	public static final String PROP_FIELDNAMES = "fieldNames";
 	public static final String PROP_INHERIT_PROPERTIES = "inheritParentProperties";
 	public static final String PROP_MARK_GENERATED = "markGenerated";
@@ -27,13 +26,11 @@ public class GenerateBeanOptions {
 	private final JAccess fieldAccess;
 	private final boolean generateHashCodeMethod;
 	private final boolean generateEqualsMethod;
-	private final boolean generateCloneMethod;
 	private final String cloneMethodName;
 	private final boolean makeReadonly;
 	private final boolean generateStaticPropertyNameFields;
 	private final boolean generateNoArgCtor;
 	private final boolean generateAllArgCtor;
-	private final boolean generateToString;
 	private final boolean generateAddRemoveMethodsForIndexedProperties;
 	private final boolean inheritSuperClassProperties;
 	private final String  propertyChangeSupportFieldName = "_propertyChangeSupport";
@@ -59,19 +56,14 @@ public class GenerateBeanOptions {
     	this.generateEqualsMethod = cfg.getBoolean("generateEquals",false);
     	
     	this.generateAddRemoveMethodsForIndexedProperties = cfg.getBoolean("generateAddRemoveMethodsForIndexProperties",false);
-    	this.generateToString = cfg.getBoolean("generateToString",false);
     	this.makeReadonly = cfg.getBoolean("readonlyProperties",false);
     	this.generateStaticPropertyNameFields = cfg.getBoolean("generateStaticPropertyNameFields",false);
     	this.generateNoArgCtor = cfg.getBoolean("generateNoArgCtor",false);
     	this.generateAllArgCtor = cfg.getBoolean("generateAllArgCtor",false);
-    	this.generateCloneMethod = cfg.getBoolean("generateCloneMethod",false);
     	this.bindable = cfg.getBoolean("bindable",false);
     	this.vetoable = cfg.getBoolean("vetoable",false);
     	this.cloneMethodName = cfg.getString("cloneMethodName","clone");
     }
-    
-    @GenerateBean
-    private static class Defaults{}
 
     public ClashStrategy getClashStrategy() {
 		return clashStrategy;
@@ -104,10 +96,6 @@ public class GenerateBeanOptions {
 	public boolean isGenerateEqualsMethod() {
 		return generateEqualsMethod;
 	}
-	
-	public boolean isGenerateCloneMethod() {
-		return generateCloneMethod;
-	}
 
 	public boolean isMakeReadonly() {
 		return makeReadonly;
@@ -123,10 +111,6 @@ public class GenerateBeanOptions {
 
 	public boolean isGenerateAllArgCtor() {
 		return generateAllArgCtor;
-	}
-
-	public boolean isGenerateToString() {
-		return generateToString;
 	}
 
 	public boolean isGenerateAddRemoveMethodsForIndexedProperties() {
