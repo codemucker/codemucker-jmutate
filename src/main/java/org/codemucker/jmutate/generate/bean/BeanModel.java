@@ -8,12 +8,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.generate.GeneratorConfig;
-import org.codemucker.jpattern.generate.GenerateBean;
 
 public class BeanModel {   
 
@@ -30,11 +29,7 @@ public class BeanModel {
 	public final GenerateBeanOptions options;
     private final Map<String, BeanPropertyModel> properties = new LinkedHashMap<>();
     
-    public BeanModel(JType pojoType,GenerateBean options) {
-    	this.options = new GenerateBeanOptions(pojoType, options);
-    }
-    
-    public BeanModel(JType pojoType,GeneratorConfig cfg) {
+    public BeanModel(JType pojoType,Configuration cfg) {
     	this.options = new GenerateBeanOptions(pojoType, cfg);
     }
 

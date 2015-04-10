@@ -9,6 +9,8 @@ import java.util.Map;
 
 import javax.annotation.Generated;
 
+import org.apache.commons.configuration.CompositeConfiguration;
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.DirectoryRoot;
@@ -22,7 +24,9 @@ import org.codemucker.jfind.matcher.ARoot;
 import org.codemucker.jfind.matcher.ARootResource;
 import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
-import org.codemucker.jmatch.Logical;
+
+import static org.codemucker.jmatch.Logical.*;
+
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.DefaultResourceLoader;
@@ -41,7 +45,8 @@ import org.codemucker.jmutate.generate.GeneratorRunner.GroupedAnnotations.NodeAn
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.ClashStrategy;
-import org.codemucker.jpattern.generate.GeneratorOptions;
+import org.codemucker.jpattern.generate.IsGeneratorConfig;
+import org.codemucker.jpattern.generate.DisableGenerators;
 import org.codemucker.jpattern.generate.IsGenerated;
 import org.codemucker.jpattern.generate.IsGeneratorTemplate;
 import org.codemucker.lang.IBuilder;
@@ -67,7 +72,7 @@ public class GeneratorRunner {
     private static final Matcher<String> MATCH_CONTENT = AString.matchingAntPattern("**Generate**");
     private static final Matcher<JAnnotation> CLIENT_OPTIONS_ANNOTATIONS = AJAnnotation.with().fullName(AString.matchingExpression("*.*Generate* && !" + IsGenerated.class.getName() + " && !" + Generated.class.getName() ));
     
-    private static final Matcher<java.lang.annotation.Annotation> COMPILED_GENERATION_ANNOTATION = AnAnnotation.with().fullName(AString.matchingExpression("*.*Generate* && !" + IsGenerated.class.getName() + " && !" + Generated.class.getName() )).annotationPresent(GeneratorOptions.class);
+    private static final Matcher<java.lang.annotation.Annotation> COMPILED_GENERATION_ANNOTATION = AnAnnotation.with().fullName(AString.matchingExpression("*.*Generate* && !" + IsGenerated.class.getName() + " && !" + Generated.class.getName() )).annotationPresent(IsGeneratorConfig.class);
 
     
     private final Logger log = LogManager.getLogger(GeneratorRunner.class);
@@ -151,7 +156,9 @@ public class GeneratorRunner {
         this.autoRegisterDefaultGenerators = true;
 
         this.filterGenerators = filterGenerators;
-        this.annotationFilter = Logical.all(CLIENT_OPTIONS_ANNOTATIONS,AJAnnotation.with().fullName(filterAnnotations));
+        this.annotationFilter = all(
+        		CLIENT_OPTIONS_ANNOTATIONS,
+        		AJAnnotation.with().fullName(filterAnnotations));
         
         
         ctxt = DefaultMutateContext.with()
@@ -213,14 +220,28 @@ public class GeneratorRunner {
     }
 
     private void invokeGenerator(CodeGenerator<?> generator, Group group) {
-        for (NodeAndOptions pair : group.getNodes()) {
+        
+    	Configuration defaults = generator.getDefaultConfig();
+    	
+    	for (NodeAndOptions pair : group.getNodes()) {
             log.debug("processing annotation '" + pair.options.toString() + "' in '" + pair.enclosedInType.getFullName());
             try {
-            	generator.generate(pair.forNode, pair.options);
+            	Configuration cfg = merge(pair.options.getConfig(),defaults);
+            	generator.generate(pair.forNode, cfg);
             } catch(Exception e){
             	throw new JMutateException("error processing node : " + pair.forNode,e);
             }
         }
+    }
+    
+    private Configuration merge(Configuration cfg,Configuration defaults){
+    	CompositeConfiguration merged = new CompositeConfiguration();
+    	//first one wins
+    	merged.addConfiguration(cfg);
+    	if(defaults !=null){
+    		merged.addConfiguration(defaults);
+    	}
+    	return merged;
     }
   
     /**
@@ -237,9 +258,10 @@ public class GeneratorRunner {
         if(log.isDebugEnabled()){
              log.debug("match resource " + resourceFilter);
         }
-        Matcher<JType> typeMatcher= Logical.all(
+        Matcher<JType> typeMatcher= all(
         		AJType.with().annotation(annotationFilter).expression(scanSubtypes?null:"notInnerClass"),
-        		Logical.not(AJType.with().annotation(AJAnnotation.with().fullName(AString.contains(IsGeneratorTemplate.class.getSimpleName())))));
+        		not(AJType.with().annotation(AJAnnotation.with().fullName(IsGeneratorTemplate.class))),
+        		not(AJType.with().annotation(AJAnnotation.with().fullName(DisableGenerators.class))));
 				
         //find all the code with generation annotations
         SourceScanner scanner = ctxt.obtain(SourceScanner.Builder.class)
@@ -376,7 +398,7 @@ public class GeneratorRunner {
 					//TODO:make recursive! if these annotations point back to other generators, include them too!
 					groups.addOptions(forNode, extractTemplateOptions(annotationDeclarationType));
 					return;
-				} else if (annotationDeclarationType.getAnnotations().contains(GeneratorOptions.class)){//this is an annotation for a generator
+				} else if (annotationDeclarationType.getAnnotations().contains(IsGeneratorConfig.class)){//this is an annotation for a generator
 					groups.addOptions(forNode, new InternalGeneratorConfig(annotationOnNode));
 					return;
 				} else {//ensure we ignore so we don't try to scan again
@@ -391,7 +413,7 @@ public class GeneratorRunner {
 			if(annotationClass.isAnnotationPresent(IsGeneratorTemplate.class)){//this is a template annotation
 				groups.addOptions(forNode, extractTemplateOptions(annotationClass));
 				return;
-			} else if(annotationClass.isAnnotationPresent(GeneratorOptions.class)){//this is an annotation for a generator
+			} else if(annotationClass.isAnnotationPresent(IsGeneratorConfig.class)){//this is an annotation for a generator
 				groups.addOptions(forNode, new InternalGeneratorConfig(annotationOnNode));
 				return;
 			} else {//ensure we ignore so we don't try to scan again
@@ -427,7 +449,7 @@ public class GeneratorRunner {
     private void autoRegisterGeneratorFor(String annotationType) {
         try {
             Class<?> annotation = ctxt.getResourceLoader().loadClass(NameUtil.sourceNameToCompiledName(annotationType));
-            GeneratorOptions defGenAnon = annotation.getAnnotation(GeneratorOptions.class);
+            IsGeneratorConfig defGenAnon = annotation.getAnnotation(IsGeneratorConfig.class);
             if(defGenAnon!=null){
                 log.info("auto registering generator '" + defGenAnon.defaultGenerator() + "' for annotation '" + annotationType + "'");
                 generators.put(annotationType, defGenAnon.defaultGenerator());

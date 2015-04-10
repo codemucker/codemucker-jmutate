@@ -4,10 +4,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import org.codemucker.jpattern.generate.Access;
-import org.codemucker.jpattern.generate.GeneratorOptions;
+import org.codemucker.jpattern.generate.IsGeneratorConfig;
 
 @Retention(RetentionPolicy.RUNTIME)
-@GeneratorOptions(defaultGenerator="org.codemucker.jmutate.generate.GeneratorRunnerTest.MyCodeGeneratorOne")
+@IsGeneratorConfig(defaultGenerator="org.codemucker.jmutate.generate.GeneratorRunnerTest.MyCodeGeneratorOne")
 /**
  * Marking a class with this annotation will cause the associated generator to be invoked
  */

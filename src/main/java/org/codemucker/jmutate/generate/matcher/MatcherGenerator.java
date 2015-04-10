@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.FindResult;
@@ -31,7 +32,6 @@ import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
-import org.codemucker.jmutate.generate.GeneratorConfig;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.util.NameUtil;
@@ -82,8 +82,8 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
     }
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, GeneratorConfig options) {
-		AllMatchersModel models = new AllMatchersModel(optionsDeclaredInNode, options);
+	public void generate(JType optionsDeclaredInNode, Configuration config) {
+		AllMatchersModel models = new AllMatchersModel(optionsDeclaredInNode, config);
 		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(models.getClashStrategy());
 		
 		findAndAddModels(optionsDeclaredInNode,models);
@@ -289,6 +289,14 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
         log.debug(msg);
     }
 
+	@Override
+	protected GenerateMatchers getAnnotation() {
+		return Defaults.class.getAnnotation(GenerateMatchers.class);
+	}
+	
+	@GenerateMatchers
+	private static class Defaults{}
+
 	
 	private class OnlyReplaceMyManagedMethodsResolver implements ClashStrategyResolver{
 
@@ -309,4 +317,5 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
 		
 	}
 
+	
 }

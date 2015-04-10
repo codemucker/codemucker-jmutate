@@ -1,5 +1,6 @@
 package org.codemucker.jmutate.generate.builder;
 
+import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jmutate.ClashStrategyResolver;
@@ -10,7 +11,6 @@ import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
-import org.codemucker.jmutate.generate.GeneratorConfig;
 import org.codemucker.jmutate.generate.pojo.PojoModel;
 import org.codemucker.jmutate.generate.pojo.PojoProperty;
 import org.codemucker.jmutate.generate.pojo.PropertiesExtractor;
@@ -19,6 +19,7 @@ import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jpattern.bean.Property;
 import org.codemucker.jpattern.generate.ClashStrategy;
+import org.codemucker.jpattern.generate.DisableGenerators;
 import org.codemucker.jpattern.generate.GenerateBuilder;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -46,8 +47,8 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
     }
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, GeneratorConfig options) {
-		BuilderModel model = new BuilderModel(optionsDeclaredInNode, options);
+	public void generate(JType optionsDeclaredInNode, Configuration config) {
+		BuilderModel model = new BuilderModel(optionsDeclaredInNode, config);
         
 		
 		ClashStrategy methodClashDefaultStrategy = model.getClashStrategy();
@@ -394,5 +395,14 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		}
 		
 	}
+
+	@Override
+	protected GenerateBuilder getAnnotation() {
+		return Defaults.class.getAnnotation(GenerateBuilder.class);
+	}
+	
+	@DisableGenerators
+	@GenerateBuilder
+	private static class Defaults{}
 
 }

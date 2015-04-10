@@ -3,6 +3,7 @@ package org.codemucker.jmutate.generate;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.configuration.AbstractConfiguration;
 
@@ -14,7 +15,9 @@ public class MapConfiguration extends AbstractConfiguration {
 	}
 	
 	public MapConfiguration(Map<String,Object> map){
-		this.map = new HashMap<>(map);
+		this.map = new HashMap<>();
+		addAll(map);
+		
 	}
 	
 	@Override
@@ -35,6 +38,12 @@ public class MapConfiguration extends AbstractConfiguration {
 	@Override
 	public Iterator getKeys() {
 		return map.keySet().iterator();
+	}
+	
+	public void addAll(Map<String,Object> map){
+		for(Entry<String, Object> entry:map.entrySet()){
+			addProperty(entry.getKey(), entry.getValue());
+		}
 	}
 
 	@Override

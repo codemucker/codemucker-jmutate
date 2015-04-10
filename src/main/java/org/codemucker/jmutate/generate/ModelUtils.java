@@ -53,7 +53,7 @@ public class ModelUtils {
     		String s = (String)val;
     		int lastDot = s.lastIndexOf('.');
     		if(lastDot != -1 && s.startsWith(def.getClass().getName().replace('$', '.'))){
-    			val = s.substring(lastDot);
+    			s = s.substring(lastDot + 1);
     		} 
     		return (T) Enum.valueOf(def.getClass(),s);
     	}

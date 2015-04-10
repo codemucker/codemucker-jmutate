@@ -8,6 +8,7 @@ import java.util.List;
 import org.codemucker.jmatch.AMap;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.TestSourceHelper;
+import org.codemucker.jmutate.ast.sub_package.EnumFromOtherPackage;
 import org.codemucker.jpattern.generate.IsGenerated;
 import org.junit.Test;
 
@@ -86,12 +87,31 @@ public class JAnnotationTest {
     	String att6() default "";
     	MyEnum att7() default MyEnum.Foo;
     	MyEnum att8();
-    	
-    	
     }
     
     private enum MyEnum {
     	Foo,Bar
+    }
+    
+    @Test
+	public void bugEnumFromOtherPackage(){
+		JAnnotation annon = TestSourceHelper.findSourceForClass(JAnnotationTest.class).getTypeWithName(Test3Bean.class).getAnnotations().getOrNull(Test3Annotation.class);
+
+		Expect
+			.that(annon.getAttributeMap())
+			.is(AMap.ofStringObject()
+					.withOnly("att", EnumFromOtherPackage.class.getName() + ".TWO"));
+
+		
+    }
+    
+    @Test3Annotation(att=EnumFromOtherPackage.TWO)
+    public class Test3Bean {
+		
+   	}
+    
+    private @interface Test3Annotation {
+    	EnumFromOtherPackage att();
     }
 	
 }

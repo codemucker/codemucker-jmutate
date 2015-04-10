@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.TypeInfo;
-import org.codemucker.jmutate.generate.GeneratorConfig;
 import org.codemucker.jmutate.generate.ModelUtils;
 import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.GenerateBuilder;
@@ -60,13 +59,8 @@ public class BuilderModel {
     private final Set<String> staticBuilderMethodNames;
     private final Map<String, BuilderPropertyModel> properties = new LinkedHashMap<>();
 
-	
-    public BuilderModel(JType pojo,GenerateBuilder options) {
-    	this(pojo,ModelUtils.getEmptyCfg(),options);
-    }
-
-    public BuilderModel(JType pojo,GeneratorConfig cfg) {
-    	this(pojo,cfg.getConfig(),getDefaultOptions());
+    public BuilderModel(JType pojo,Configuration cfg) {
+    	this(pojo,cfg,getDefaultOptions());
     }
     
     private BuilderModel(JType pojo,Configuration cfg, GenerateBuilder def) {
@@ -90,7 +84,7 @@ public class BuilderModel {
         this.generateCopyBeanMethod = cfg.getBoolean("generateCreateFromBean", def.generateCreateFromBean());
         
         this.inheritSuperBeanBuilder = cfg.getBoolean("inheritSuperBeanBuilder", def.inheritSuperBeanBuilder());
-        this.inheritSuperBeanProperties = cfg.getBoolean("inheritSuperBeanProperties", def.inheritSuperBeanProperties());
+        this.inheritSuperBeanProperties = cfg.getBoolean("inheritSuperBeanProperties", def.inheritParentProperties());
         this.generateStaticBuilderMethodOnBuilder = cfg.getBoolean("generateStaticBuilderCreateMethodOnBuilder", def.generateStaticBuilderCreateMethodOnBuilder());
 		String self = "this";
 		String selfType = getBuilderTypeSimple();

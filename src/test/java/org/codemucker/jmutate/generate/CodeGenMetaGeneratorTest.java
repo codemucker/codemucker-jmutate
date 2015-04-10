@@ -2,7 +2,6 @@ package org.codemucker.jmutate.generate;
 
 import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.JMutateContext;
-import org.codemucker.jpattern.generate.GenerateBean;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -19,8 +18,16 @@ public class CodeGenMetaGeneratorTest {
 		Assert.assertEquals("org.codemucker.jmutate.generate.CodeGenMeta.CODE_GEN_META_GENERATOR_TEST$_MY_CODE_GENERATOR",info.getFullConstantFieldPath());
 	}
 
-	private static class MyCodeGenerator extends
-			AbstractCodeGenerator<GenerateBean> {
+	private static class MyCodeGenerator extends AbstractCodeGenerator<MyAnnotation> {
 
+		@Override
+		protected MyAnnotation getAnnotation() {
+			return Defaults.class.getAnnotation(MyAnnotation.class);
+		}
+		
+		@MyAnnotation
+		private static class Defaults {}
 	}
+	
+	private static @interface MyAnnotation {}
 }

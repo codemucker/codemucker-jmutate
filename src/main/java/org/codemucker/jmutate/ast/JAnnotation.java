@@ -196,14 +196,20 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 			if (fieldExp instanceof Name) {
 				// e.g Foo.Bar
 				Name fieldExpName = (Name) exp;
+				
 				// com.mycompany.Foo
 				String className = NameUtil.resolveQualifiedName(fieldExpName);
 				// Bar
 				String fieldName = fa.getName().toString();
 				String fullName = className + "." + fieldName;
+				System.out.println("fieldExpName=" + fieldExpName);
+				System.out.println("className=" + className);
+				System.out.println("fullName=" + fullName);
 				
 
 				Object val = findFieldValue(node, fullName, className, fieldName);
+				System.out.println("val=" + val);
+				
 				return val==null?fullName:val;
 			}
 		} else {

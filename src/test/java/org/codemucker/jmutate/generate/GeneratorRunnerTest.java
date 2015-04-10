@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.configuration.Configuration;
 import org.codemucker.jfind.DirectoryRoot;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
@@ -14,6 +15,7 @@ import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jpattern.generate.Access;
+import org.codemucker.jpattern.generate.DisableGenerators;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.junit.Test;
 
@@ -50,9 +52,18 @@ public class GeneratorRunnerTest {
         public static final List<JType> nodesInvoked = new ArrayList<>();
 
         @Override
-        protected void generate(JType applyToNode, GeneratorConfig options) {
+        protected void generate(JType applyToNode, Configuration config) {
             nodesInvoked.add(applyToNode);
         }
+        
+        @Override
+		protected GenerateOne getAnnotation() {
+			return Defaults.class.getAnnotation(GenerateOne.class);
+		}
+		
+        @DisableGenerators
+		@GenerateOne(foo="__default")
+		private static class Defaults {}
     }
     
     
@@ -78,8 +89,7 @@ public class GeneratorRunnerTest {
         	.that(MyCodeGeneratorTwo.nodesInvoked)
         	.is(AList.withOnly(AJType.with().fullName(BeanTwo.class)));
     }
-    
-    
+   
     @GenerateMyTemplate
     public static class BeanTwo {
     	
@@ -90,8 +100,17 @@ public class GeneratorRunnerTest {
         public static final List<JType> nodesInvoked = new ArrayList<>();
 
         @Override
-        protected void generate(JType applyToNode, GeneratorConfig options) {
+        protected void generate(JType applyToNode, Configuration config) {
             nodesInvoked.add(applyToNode);
         }
+        
+        @Override
+		protected GenerateTwo getAnnotation() {
+			return Defaults.class.getAnnotation(GenerateTwo.class);
+		}
+		
+        @DisableGenerators
+        @GenerateTwo(foo="__default")
+		private static class Defaults {}
     }
 }

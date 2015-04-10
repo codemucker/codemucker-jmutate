@@ -60,12 +60,12 @@ public class CodeGenMetaGenerator {
 
     private static final String PROP_BY = "by";//on the IsGenerated class
 	private final JMutateContext ctxt;
-	private final Class<? extends CodeGenerator<?>> generator;
+	private final Class<? extends CodeGenerator> generator;
 	private boolean exists;
 	private final String constantField;
 	private final Map<String,Boolean> cachedFieldValueMatchResults = new HashMap<>();
 	
-	public CodeGenMetaGenerator(JMutateContext ctxt,Class<? extends CodeGenerator<?>> generator){
+	public CodeGenMetaGenerator(JMutateContext ctxt,Class<? extends CodeGenerator> generator){
 		this.ctxt = ctxt;
 		this.generator = generator;
 		this.constantField = extractGenName(generator.getName());

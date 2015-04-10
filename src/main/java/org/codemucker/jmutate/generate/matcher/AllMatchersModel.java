@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.generate.GeneratorConfig;
 import org.codemucker.jmutate.generate.ModelUtils;
 import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.GenerateMatchers;
@@ -33,13 +32,9 @@ public class AllMatchersModel {
 	private final Set<String> staticBuilderMethodNames;
 	
     private final List<MatcherModel> matchers = new ArrayList<>();
-
-    public AllMatchersModel(JType declaredInNode, GenerateMatchers options) {
-        this(declaredInNode,ModelUtils.getEmptyCfg(),options);
-    }
    
-    public AllMatchersModel(JType declaredInNode, GeneratorConfig cfg) {
-        this(declaredInNode,cfg.getConfig(), getDefaultOptions());
+    public AllMatchersModel(JType declaredInNode, Configuration cfg) {
+        this(declaredInNode,cfg, getDefaultOptions());
     }
    
     private AllMatchersModel(JType declaredInNode, Configuration cfg, GenerateMatchers def) {
