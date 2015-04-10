@@ -12,8 +12,8 @@ import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jpattern.bean.NotAProperty;
 import org.codemucker.jpattern.bean.Property;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.GenerateBean;
-import org.codemucker.jpattern.generate.DisableGenerators;
 
 import com.google.inject.Inject;
 
@@ -626,7 +626,7 @@ public class BeanGenerator extends AbstractBeanGenerator<GenerateBean> {
 		return Defaults.class.getAnnotation(GenerateBean.class);
 	}
 	
-	@DisableGenerators
+	@DontGenerate
 	@GenerateBean
 	private static class Defaults {}
 }

@@ -15,7 +15,7 @@ import org.codemucker.jmatch.Expect;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jpattern.generate.Access;
-import org.codemucker.jpattern.generate.DisableGenerators;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.junit.Test;
 
@@ -61,7 +61,7 @@ public class GeneratorRunnerTest {
 			return Defaults.class.getAnnotation(GenerateOne.class);
 		}
 		
-        @DisableGenerators
+        @DontGenerate
 		@GenerateOne(foo="__default")
 		private static class Defaults {}
     }
@@ -109,7 +109,7 @@ public class GeneratorRunnerTest {
 			return Defaults.class.getAnnotation(GenerateTwo.class);
 		}
 		
-        @DisableGenerators
+        @DontGenerate
         @GenerateTwo(foo="__default")
 		private static class Defaults {}
     }

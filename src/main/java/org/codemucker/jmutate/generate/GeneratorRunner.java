@@ -1,5 +1,8 @@
 package org.codemucker.jmutate.generate;
 
+import static org.codemucker.jmatch.Logical.all;
+import static org.codemucker.jmatch.Logical.not;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,9 +27,6 @@ import org.codemucker.jfind.matcher.ARoot;
 import org.codemucker.jfind.matcher.ARootResource;
 import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
-
-import static org.codemucker.jmatch.Logical.*;
-
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.DefaultMutateContext;
 import org.codemucker.jmutate.DefaultResourceLoader;
@@ -45,9 +45,9 @@ import org.codemucker.jmutate.generate.GeneratorRunner.GroupedAnnotations.NodeAn
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.ClashStrategy;
-import org.codemucker.jpattern.generate.IsGeneratorConfig;
-import org.codemucker.jpattern.generate.DisableGenerators;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.IsGenerated;
+import org.codemucker.jpattern.generate.IsGeneratorConfig;
 import org.codemucker.jpattern.generate.IsGeneratorTemplate;
 import org.codemucker.lang.IBuilder;
 import org.codemucker.lang.annotation.Optional;
@@ -267,7 +267,7 @@ public class GeneratorRunner {
         Matcher<JType> typeMatcher= all(
         		AJType.with().annotation(annotationFilter).expression(scanSubtypes?null:"notInnerClass"),
         		not(AJType.with().annotation(AJAnnotation.with().fullName(IsGeneratorTemplate.class))),
-        		not(AJType.with().annotation(AJAnnotation.with().fullName(DisableGenerators.class))));
+        		not(AJType.with().annotation(AJAnnotation.with().fullName(DontGenerate.class))));
 				
         //find all the code with generation annotations
         SourceScanner scanner = ctxt.obtain(SourceScanner.Builder.class)

@@ -19,7 +19,7 @@ import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jpattern.bean.Property;
 import org.codemucker.jpattern.generate.ClashStrategy;
-import org.codemucker.jpattern.generate.DisableGenerators;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.GenerateBuilder;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -401,7 +401,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		return Defaults.class.getAnnotation(GenerateBuilder.class);
 	}
 	
-	@DisableGenerators
+	@DontGenerate
 	@GenerateBuilder
 	private static class Defaults{}
 

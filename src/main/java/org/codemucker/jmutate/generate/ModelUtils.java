@@ -2,8 +2,6 @@ package org.codemucker.jmutate.generate;
 
 import java.util.List;
 
-import javax.management.RuntimeErrorException;
-
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.ast.JAccess;

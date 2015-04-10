@@ -6,8 +6,8 @@ import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jpattern.bean.Property;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.GenerateAllArgsCtor;
-import org.codemucker.jpattern.generate.DisableGenerators;
 
 import com.google.inject.Inject;
 
@@ -68,7 +68,7 @@ public class AllArgConstructorGenerator extends AbstractBeanGenerator<GenerateAl
 		return Defaults.class.getAnnotation(GenerateAllArgsCtor.class);
 	}
 	
-	@DisableGenerators
+	@DontGenerate
 	@GenerateAllArgsCtor
 	private static class Defaults {}
 }

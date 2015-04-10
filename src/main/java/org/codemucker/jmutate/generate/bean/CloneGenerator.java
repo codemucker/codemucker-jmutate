@@ -5,8 +5,8 @@ import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.GenerateCloneMethod;
-import org.codemucker.jpattern.generate.DisableGenerators;
 
 import com.google.inject.Inject;
 
@@ -122,7 +122,7 @@ public class CloneGenerator extends AbstractBeanGenerator<GenerateCloneMethod> {
 		return Defaults.class.getAnnotation(GenerateCloneMethod.class);
 	}
 	
-	@DisableGenerators
+	@DontGenerate
 	@GenerateCloneMethod
 	private static class Defaults {}
 

@@ -5,8 +5,8 @@ import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.GenerateToStringMethod;
-import org.codemucker.jpattern.generate.DisableGenerators;
 
 import com.google.inject.Inject;
 
@@ -58,7 +58,7 @@ public class ToStringGenerator extends AbstractBeanGenerator<GenerateToStringMet
 		return Defaults.class.getAnnotation(GenerateToStringMethod.class);
 	}
 	
-	@DisableGenerators
+	@DontGenerate
 	@GenerateToStringMethod
 	private static class Defaults {}
 }

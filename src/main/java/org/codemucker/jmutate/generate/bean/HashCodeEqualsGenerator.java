@@ -5,8 +5,8 @@ import org.apache.log4j.Logger;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.GenerateHashCodeAndEqualsMethod;
-import org.codemucker.jpattern.generate.DisableGenerators;
 
 import com.google.inject.Inject;
 
@@ -137,7 +137,7 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 		return Defaults.class.getAnnotation(GenerateHashCodeAndEqualsMethod.class);
 	}
 	
-	@DisableGenerators
+	@DontGenerate
 	@GenerateHashCodeAndEqualsMethod
 	private static class Defaults {}
 }
