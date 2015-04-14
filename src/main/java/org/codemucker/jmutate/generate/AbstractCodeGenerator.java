@@ -2,21 +2,12 @@ package org.codemucker.jmutate.generate;
 
 import java.lang.annotation.Annotation;
 
-import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.ASTNode;
 
-public abstract class AbstractCodeGenerator<T extends Annotation> implements CodeGenerator<T> {
-
-	@Override
-	public Configuration getDefaultConfig() {
-		return new AnnotationConfiguration(getAnnotation());
-	}
-	
-	protected abstract T getAnnotation();
-	
+public abstract class AbstractCodeGenerator<T extends Annotation> implements CodeGenerator<T> {	
 	
     @Override
 	public void beforeRun() {
@@ -27,7 +18,7 @@ public abstract class AbstractCodeGenerator<T extends Annotation> implements Cod
 	}
 
 	@Override
-    public final void generate(ASTNode node, Configuration config) {
+    public final void generate(ASTNode node, SmartConfig config) {
         if (JType.is(node)) {
             generate(JType.from(node), config);
         } else if (JField.is(node)) {
@@ -37,13 +28,13 @@ public abstract class AbstractCodeGenerator<T extends Annotation> implements Cod
         }
     }
 
-    protected void generate(JType applyToNode, Configuration config) {
+	protected void generate(JType applyToNode, SmartConfig config) {
     }
 
-    protected void generate(JMethod applyToNode, Configuration config) {
+    protected void generate(JMethod applyToNode, SmartConfig config) {
     }
 
-    protected void generate(JField applyToNode, Configuration config) {
+    protected void generate(JField applyToNode, SmartConfig config) {
     }
 
 }

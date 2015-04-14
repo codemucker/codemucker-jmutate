@@ -13,11 +13,13 @@ import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
+import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ast.matcher.AJSourceFile;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -203,13 +205,13 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	}
 	
 	public JType getTypeWithName(Class<?> type) {
-		return getTypeWithName(type.getSimpleName());
+		return getTypeWithSimpleName(type.getSimpleName());
 	}
 	
 	/**
 	 * Look through all top level types and all their children for any type with the given name. 
 	 */
-	public JType getTypeWithName(final String simpleName) {
+	public JType getTypeWithSimpleName(final String simpleName) {
 		Matcher<JType> matcher = new AbstractNotNullMatcher<JType>() {
 			@Override
 			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
@@ -227,6 +229,30 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		throw new JMutateException("Could not find type with name '%s' in %s", simpleName, this);
 	}
 
+	public JType getTypeWithFullName(String fullName) {
+		return getTypeWithFullName(AString.equalTo(fullName));
+	}
+	
+	public JType getTypeWithFullName(final Matcher<String> nameMatcher) {
+		Matcher<JType> matcher = new AbstractNotNullMatcher<JType>() {
+			@Override
+			public boolean matchesSafely(JType found, MatchDiagnostics diag) {
+				return diag.tryMatch(this, found.getFullName(), nameMatcher);
+			}
+		};
+		
+		List<JType> found = internalFindTypesMatching(matcher);
+		
+		if (found.size() > 1) {
+			throw new JMutateException("Invalid source file, found more than one type with name '%s'", nameMatcher);
+		}
+		if (found.size() == 1) {
+			return found.get(0);
+		}
+		throw new JMutateException("Could not find type with name '%s' in %s", nameMatcher, this);
+	}
+
+		
 	public FindResult<JType> findAllTypes(){
 		return DefaultFindResult.from(internalFindTypesMatching(AJType.any()));
 	}

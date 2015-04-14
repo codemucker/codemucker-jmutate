@@ -49,4 +49,17 @@ public class MapConfiguration extends AbstractConfiguration {
 		map.put(key, value);
 	}
 	
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getClass().getSimpleName()).append('@').append(hashCode()).append('[');
+		for(Entry<String, Object> entry:map.entrySet()){
+			sb.append("\n\t").append(entry.getKey()).append("=").append(entry.getValue());
+		}
+		sb.append(']');
+		return sb.toString();
+	}
+
+	
 }

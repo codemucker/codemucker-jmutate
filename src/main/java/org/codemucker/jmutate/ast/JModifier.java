@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.codemucker.jmutate.generate.model.ModifierModel;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.Modifier;

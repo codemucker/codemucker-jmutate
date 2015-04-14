@@ -1,11 +1,13 @@
 package org.codemucker.jmutate.generate.bean;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.commons.configuration.Configuration;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jpattern.generate.DontGenerate;
+import org.codemucker.jmutate.generate.SmartConfig;
+import org.codemucker.jmutate.generate.bean.HashCodeEqualsGenerator.HashCodeEqualsOptions;
+import org.codemucker.jmutate.generate.model.pojo.PojoModel;
+import org.codemucker.jmutate.generate.model.pojo.PropertyModel;
 import org.codemucker.jpattern.generate.GenerateHashCodeAndEqualsMethod;
 
 import com.google.inject.Inject;
@@ -13,9 +15,7 @@ import com.google.inject.Inject;
 /**
  * Generates the 'hashCode' and 'equals' methods on pojos
  */
-public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashCodeAndEqualsMethod> {
-
-	private static final Logger LOG = LogManager.getLogger(HashCodeEqualsGenerator.class);
+public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashCodeAndEqualsMethod,HashCodeEqualsOptions> {
 
 	/**
 	 * Used to select a reproducible starting prime when generating a hash code. Rather than pick a random one at each generation causing churn in the code, pick out of this array in a deterministic way based
@@ -25,29 +25,31 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 
 	@Inject
 	public HashCodeEqualsGenerator(JMutateContext ctxt) {
-		super(ctxt);
+		super(ctxt,GenerateHashCodeAndEqualsMethod.class);
 	}
 	
 	@Override
-	protected void generate(JType bean, BeanModel model) {
-		generateEquals(bean, model);
-		generateHashCode(bean, model);
+	protected void generate(JType bean, SmartConfig config,PojoModel model, HashCodeEqualsOptions options) {
+		if(options.isEnabled()){
+			generateEquals(bean, model, options);
+			generateHashCode(bean, model, options);
+		}
 	}
 	
-	private void generateEquals(JType bean, BeanModel model) {
-		if(model.options.isEnabled() && !model.getProperties().isEmpty()){
+	private void generateEquals(JType bean, PojoModel model, HashCodeEqualsOptions options) {
+		if(options.generateEquals && model.hasAnyProperties()){
 			
 			SourceTemplate equals = newSourceTemplate()
-					.var("b.type", model.options.getType().getSimpleName())
+					.var("b.type", options.getType().getSimpleName())
 					.pl("@java.lang.Override")
 					.pl("public boolean equals(final Object obj){")
 					.pl("if (this == obj) return true;")
 					.pl("if (!super.equals(obj) || getClass() != obj.getClass()) return false;");
 			
-			if(!model.getProperties().isEmpty()){
+			if(model.hasAnyProperties()){
 				equals.pl("${b.type} other = (${b.type}) obj;");
-				for (BeanPropertyModel property : model.getProperties()) {
-					if(!((property.isFromSuperClass() && property.hasGetter()) || (!property.isFromSuperClass() && property.hasField()))){
+				for (PropertyModel property : model.getAllProperties()) {
+					if(!((property.isSuperClassProperty() && property.hasGetter()) || (!property.isSuperClassProperty() && property.hasField()))){
 						continue;
 					}
 					SourceTemplate  t = equals
@@ -70,24 +72,24 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 			equals.pl("}");
 			
 
-			addMethod(bean, equals.asMethodNodeSnippet(),model.options.isMarkGenerated());
+			addMethod(bean, equals.asMethodNodeSnippet(),options.isMarkGenerated());
 		}
 	}
 
-	private void generateHashCode(JType bean, BeanModel model) {
-		if(model.options.isGenerateHashCodeMethod() && !model.getProperties().isEmpty()){
-			int startingPrime = pickStartingPrimeForClass(model.options.getType().getFullName());
+	private void generateHashCode(JType bean, PojoModel model, HashCodeEqualsOptions options) {
+		if(options.generateHashCode && model.hasAnyProperties()){
+			int startingPrime = pickStartingPrimeForClass(options.getType().getFullName());
 			SourceTemplate hashcode = newSourceTemplate()
 				.var("prime", startingPrime)
 				.pl("@java.lang.Override")
 				.pl("public int hashCode(){");
 				
-			if(model.getProperties().isEmpty()){
+			if(!model.hasAnyProperties()){
 				hashcode.pl("return super.hashCode();");
 			} else {
 				hashcode.pl("final int prime = ${prime};");
 				hashcode.pl("int result = super.hashCode();");
-				for (BeanPropertyModel property : model.getProperties()) {
+				for (PropertyModel property : model.getAllProperties()) {
 					SourceTemplate t = hashcode
 						.child()
 						.var("p.accessor",property.getInternalAccessor());
@@ -117,7 +119,7 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 			
 			hashcode.pl("}");
 			
-			addMethod(bean, hashcode.asMethodNodeSnippet(),model.options.isMarkGenerated());
+			addMethod(bean, hashcode.asMethodNodeSnippet(),options.isMarkGenerated());
 		}
 	}
 
@@ -132,12 +134,21 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 		return FIRST_PRIMES[index];
 	}
 	
+	
 	@Override
-	protected GenerateHashCodeAndEqualsMethod getAnnotation() {
-		return Defaults.class.getAnnotation(GenerateHashCodeAndEqualsMethod.class);
+	protected HashCodeEqualsOptions createOptionsFrom(Configuration config, JType type) {
+		return new HashCodeEqualsOptions(config,type);
 	}
 	
-	@DontGenerate
-	@GenerateHashCodeAndEqualsMethod
-	private static class Defaults {}
+	public static class HashCodeEqualsOptions extends AbstractBeanOptions<GenerateHashCodeAndEqualsMethod> {
+
+		public boolean generateHashCode;
+		public boolean generateEquals;
+		
+		public HashCodeEqualsOptions(Configuration config,JType type) {
+			super(config,GenerateHashCodeAndEqualsMethod.class,type);
+		}
+	}
+
+		
 }

@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.ast;
+package org.codemucker.jmutate.generate.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,7 +13,10 @@ import org.codemucker.lang.ClassNameUtil;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 
-public class TypeInfo {
+/**
+ * Single place to merge all type meta information from both source and compiled code
+ */
+public class TypeModel extends ModelObject {
 
 	// TODO:add all the concurrent ones in. Or better yet, for util types auto
 	// detect!
@@ -54,48 +57,48 @@ public class TypeInfo {
 	private final boolean isString;
 	private final boolean isGeneric;
 
-	public static TypeInfo newFromFullNameAndTypeBounds(String fullType, String typeBounds){
-		return new TypeInfo(fullType, typeBounds);
+	public static TypeModel newFromFullNameAndTypeBounds(String fullType, String typeBounds){
+		return new TypeModel(fullType, typeBounds);
 	}
 	
-	public TypeInfo(String fullType, String typeBounds) {
+	public TypeModel(String fullType, String typeBounds) {
 		this.typeBoundsOrNull = Strings.emptyToNull(typeBounds);
-		this.typeBoundsOrEmpty = Strings.nullToEmpty(getTypeBoundsOrNull());
-		this.typeBoundsNamesOrNull = getTypeBoundsOrNull() == null?null:Joiner.on(",").join(extractTypeNames(getTypeBoundsOrNull()));
+		this.typeBoundsOrEmpty = Strings.nullToEmpty(typeBoundsOrNull);
+		this.typeBoundsNamesOrNull = getTypeBoundsOrNull() == null?null:Joiner.on(",").join(extractTypeNames(typeBoundsOrNull));
 		
 		this.isGeneric = fullType.contains("<");
 		
 		this.fullName = NameUtil.compiledNameToSourceName(fullType);
-		this.fullNameRaw = NameUtil.removeGenericOrArrayPart(getFullName());
+		this.fullNameRaw = NameUtil.removeGenericOrArrayPart(fullName);
 		this.genericPartOrNull = NameUtil.extractGenericPartOrNull(fullType);
-		this.genericPartOrEmpty = Strings.nullToEmpty(getGenericPartOrNull());
+		this.genericPartOrEmpty = Strings.nullToEmpty(genericPartOrNull);
 		
 		this.pkg = ClassNameUtil.extractPkgPartOrNull(fullType);
 		
-		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(getFullNameRaw());
-		this.simpleName = getSimpleNameRaw() + (getGenericPartOrNull() == null ? "" : getGenericPartOrNull());
+		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(fullNameRaw);
+		this.simpleName = getSimpleNameRaw() + (genericPartOrNull == null ? "" : genericPartOrNull);
 
-		this.objectTypeFullName = NameUtil.primitiveToObjectType(getFullName());
-		this.objectTypeFullNameRaw = NameUtil.removeGenericOrArrayPart(getObjectTypeFullName());
+		this.objectTypeFullName = NameUtil.primitiveToObjectType(fullName);
+		this.objectTypeFullNameRaw = NameUtil.removeGenericOrArrayPart(objectTypeFullName);
 
-		this.isPrimitive = NameUtil.isPrimitive(getFullName());
-		this.isString = getFullName().equals("String") || getFullName().equals("java.lang.String");
-		this.isMap = REGISTRY.isMap(getFullNameRaw());
-		this.isList = REGISTRY.isList(getFullNameRaw());
-		this.isCollection = REGISTRY.isCollection(getFullNameRaw());
-		this.isIndexed = isMap() || isList();
+		this.isPrimitive = NameUtil.isPrimitive(fullName);
+		this.isString = fullName.equals("String") || fullName.equals("java.lang.String");
+		this.isMap = REGISTRY.isMap(fullNameRaw);
+		this.isList = REGISTRY.isList(fullNameRaw);
+		this.isCollection = REGISTRY.isCollection(fullNameRaw);
+		this.isIndexed = isMap || isList;
 		// this.propertyConcreteType =
 		// REGISTRY.getConcreteTypeFor(propertyTypeRaw);
 		this.isArray = getFullName().endsWith("]");
-		this.isKeyed = isMap();
-		this.indexedValueTypeNameOrNull = isCollection() ? BeanNameUtil.extractIndexedValueType(getFullName()) : null;
-		this.indexedValueTypeNameRaw = NameUtil.removeGenericOrArrayPart(getIndexedValueTypeNameOrNull());
-		this.indexedKeyTypeNameOrNull = isMap() ? BeanNameUtil.extractIndexedKeyType(getFullName()) : null;
-		this.indexedKeyTypeNameRaw = NameUtil.removeGenericOrArrayPart(getIndexedKeyTypeNameOrNull());
+		this.isKeyed = isMap;
+		this.indexedValueTypeNameOrNull = isCollection() ? BeanNameUtil.extractIndexedValueType(fullName) : null;
+		this.indexedValueTypeNameRaw = NameUtil.removeGenericOrArrayPart(indexedValueTypeNameOrNull);
+		this.indexedKeyTypeNameOrNull = isMap() ? BeanNameUtil.extractIndexedKeyType(fullName) : null;
+		this.indexedKeyTypeNameRaw = NameUtil.removeGenericOrArrayPart(indexedKeyTypeNameOrNull);
 	}
 
 	public List<String> getTypeParamNames(){
-		return extractTypeNames(getTypeBoundsOrNull());
+		return extractTypeNames(typeBoundsOrNull);
 	}
 	
 	/**
@@ -155,16 +158,6 @@ public class TypeInfo {
 			names.add(sb.toString());
 		}
     	return names;
-    }
-    
-    private static int readTill(String s, int offset, char terminal){
-    	for(int i = offset;i < s.length();i++){
-    		char c = s.charAt(i);
-    		if(c == terminal){
-    			return i;
-    		}
-    	}
-    	return -1;
     }
     
 	public static IndexedTypeRegistry getRegistry() {

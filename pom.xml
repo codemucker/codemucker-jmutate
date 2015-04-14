@@ -14,8 +14,8 @@
 	<description>Source code modification and assertion</description>
 	<properties>
 		<orient.version>2.0-M1</orient.version>
-<!-- 		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssZ</maven.build.timestamp.format> -->
-        <build.timestamp>${maven.build.timestamp}</build.timestamp>
+		<!-- <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssZ</maven.build.timestamp.format> -->
+		<build.timestamp>${maven.build.timestamp}</build.timestamp>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -29,6 +29,11 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<dependency>
+			<groupId>commons-beanutils</groupId>
+			<artifactId>commons-beanutils</artifactId>
+			<version>1.9.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.codemucker</groupId>
 			<artifactId>codemucker-jtest</artifactId>

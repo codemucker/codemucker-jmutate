@@ -21,8 +21,7 @@ public class ModelUtils {
     	return cfg.getList(key, defList);
     }
 	
-	public static JAccess getJAccess(Configuration cfg, String key, Access def) {
-		Access access = getEnum(cfg, key, def);
+	public static JAccess toJAccess(Access access) {
 		switch (access) {
 		case PACKAGE:
 			return JAccess.PACKAGE;
@@ -38,24 +37,29 @@ public class ModelUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T extends Enum<?>> T getEnum(Configuration cfg,String key, T def){
+	public static <T extends Enum<T>> T getEnum(Configuration cfg,String key, T def){
     	Object val = cfg.getProperty(key);
-    	
-    	if(val != null){
-    		if(def.getClass().isAssignableFrom(val.getClass())){
-    			return (T)val;
-    		}
-    		if(!(val instanceof String)){
-        		throw new RuntimeException("expected type of String or " + def.getClass().getName() + ", but got " + val.getClass().getName());
-        	}
-    		String s = (String)val;
-    		int lastDot = s.lastIndexOf('.');
-    		if(lastDot != -1 && s.startsWith(def.getClass().getName().replace('$', '.'))){
-    			s = s.substring(lastDot + 1);
-    		} 
-    		return (T) Enum.valueOf(def.getClass(),s);
-    	}
-		return def;
+    	Class<T> enumType = (Class<T>) def.getClass();
+    	T enumVal = toEnum(val,enumType);
+    	return enumVal == null?def:enumVal;
     }
 	
+	@SuppressWarnings("unchecked")
+	public static <T extends Enum<T>> T toEnum(Object val, Class<T> enumType){
+    	if(val == null){
+    		return null;
+    	}
+		if(enumType.isAssignableFrom(val.getClass())){
+			return (T)val;
+		}
+		if(!(val instanceof String)){
+    		throw new RuntimeException("expected type of String or " + enumType.getName() + ", but got " + val.getClass().getName());
+    	}
+		String s = (String)val;
+		int lastDot = s.lastIndexOf('.');
+		if(lastDot != -1 && s.startsWith(enumType.getName().replace('$', '.'))){
+			s = s.substring(lastDot + 1);
+		} 
+		return (T) Enum.valueOf(enumType,s);
+    }
 }

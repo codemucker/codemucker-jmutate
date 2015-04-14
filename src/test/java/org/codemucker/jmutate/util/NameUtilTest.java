@@ -86,7 +86,7 @@ public class NameUtilTest {
 		t.pl("public class SubClass extends ${clashingClassName} {}");//should resolve to internal class rather than this test class
 		t.pl("}");
 		
-		JType subClass = t.asResolvedSourceFileNamed("${pkg}.MyClass").getTypeWithName("SubClass");
+		JType subClass = t.asResolvedSourceFileNamed("${pkg}.MyClass").getTypeWithSimpleName("SubClass");
 		
 		String expectName = NameUtilTest.class.getPackage().getName() + ".MyClass." + NameUtilTest.class.getSimpleName();
 		//SimpleType parent = (SimpleType)subClass.asTypeDecl().getSuperclassType();

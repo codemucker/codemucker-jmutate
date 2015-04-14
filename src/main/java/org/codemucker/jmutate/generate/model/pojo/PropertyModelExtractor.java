@@ -1,4 +1,4 @@
-package org.codemucker.jmutate.generate.pojo;
+package org.codemucker.jmutate.generate.model.pojo;
 
 import static org.codemucker.jmatch.Logical.all;
 import static org.codemucker.jmatch.Logical.any;
@@ -44,8 +44,8 @@ import com.google.inject.Inject;
 /**
  * I find source and compiled properties
  */
-public class PropertiesExtractor {
-	private static final Logger LOG = LogManager.getLogger(PropertiesExtractor.class);
+public class PropertyModelExtractor {
+	private static final Logger LOG = LogManager.getLogger(PropertyModelExtractor.class);
 
 	private static final Matcher<Annotation> annotationIgnoreCompiled = 
 			any(AnAnnotation.with().fullName(AString.matchingExpression("*.Ignore")),
@@ -109,7 +109,7 @@ public class PropertiesExtractor {
 
 	private final Matcher<String> propertyNameMatcher;
 
-	public PropertiesExtractor(ResourceLoader resourceLoader,
+	public PropertyModelExtractor(ResourceLoader resourceLoader,
 			JAstParser parser, boolean includeSuperClass,
 			boolean includeCompiledClasses, Matcher<String> propertyNameMatcher, boolean includeFields, boolean includeGetters, boolean includeSetters) {
 		super();
@@ -124,7 +124,11 @@ public class PropertiesExtractor {
 		this.includeSetters = includeSetters;
 	}
 
-	public PojoModel extractProperties(JType pojoType) {
+	public PojoModel extractModel(JType pojoType) {
+		return extractModel(pojoType, 0);
+	}
+	
+	private PojoModel extractModel(JType pojoType, int level) {
 		// call request builder methods for each field/method exposed
 
 		PojoModel parentModel = null;
@@ -137,19 +141,19 @@ public class PropertiesExtractor {
 					JSourceFile source = JSourceFile.fromResource(r, parser);
 					JType parent = source.findTypesMatching(
 							AJType.with().fullName(superType)).getFirstOrNull();
-					parentModel = extractProperties(parent);
+					parentModel = extractModel(parent, level+1);
 				} else {
 					if (includeCompiledClasses) {
 						Class<?> k = resourceLoader.loadClassOrNull(superType);
 						if (k != null) {
-							parentModel = extractProperties(k);
+							parentModel = extractModel(k);
 						}
 					}
 				}
 			}
 		}
 
-		PojoModel model = new PojoModel(parentModel);
+		PojoModel model = new PojoModel(level,parentModel);
 
 		if(includeFields){
 			extractFields(pojoType, model);
@@ -174,7 +178,7 @@ public class PropertiesExtractor {
 				continue;
 			}
 
-			PojoProperty property = new PojoProperty(model, propertyName,f.getFullTypeName());
+			PropertyModel property = new PropertyModel(model, propertyName,f.getFullTypeName());
 
 			property.setFieldName(f.getName());
 			property.setFinalField(f.isFinal());
@@ -196,12 +200,12 @@ public class PropertiesExtractor {
 				LOG.debug("ignoring source getter:" + getter.getName());
 				continue;
 			}
-			PojoProperty p = model.getProperty(propertyName);
+			PropertyModel p = model.getProperty(propertyName);
 			if (p == null) {
-				p = new PojoProperty(model, propertyName,getter.getReturnTypeFullName());
+				p = new PropertyModel(model, propertyName,getter.getReturnTypeFullName());
 				model.addProperty(p);
 			}
-			p.setPropertyGetterName(getter.getName());
+			p.setGetterName(getter.getName());
 			count++;
 		}
 		LOG.debug("added " + count + " source getters");
@@ -218,31 +222,35 @@ public class PropertiesExtractor {
 				continue;
 			}
 
-			PojoProperty p = model.getProperty(propertyName);
+			PropertyModel p = model.getProperty(propertyName);
 			if (p == null) {
 				SingleVariableDeclaration arg = setter.getParameters().iterator().next();
 				String pType = NameUtil.resolveQualifiedName(arg.getType());
-				p = new PojoProperty(model, propertyName, pType);
+				p = new PropertyModel(model, propertyName, pType);
 				model.addProperty(p);
 			}
-			p.setPropertySetterName(setter.getName());
+			p.setSetterName(setter.getName());
 			count++;
 		}
 		LOG.debug("added " + count + " source setters");
 	}
 
-	public PojoModel extractProperties(Class<?> requestType) {
+	public PojoModel extractModel(Class<?> pojoClass) {
+		return extractModel(pojoClass,0);
+	}
+	
+	private PojoModel extractModel(Class<?> pojoClass, int level) {
 
 		PojoModel parentModel = null;
 		if (includeSuperClass) {
-			Class<?> parent = requestType.getSuperclass();
+			Class<?> parent = pojoClass.getSuperclass();
 			if (parent != null && parent != Object.class) {
-				parentModel = extractProperties(requestType);
+				parentModel = extractModel(pojoClass, level+1);
 			}
 		}
-		PojoModel model = new PojoModel(parentModel);
+		PojoModel model = new PojoModel(level,parentModel);
 
-		ReflectedClass pojoType = ReflectedClass.from(requestType);
+		ReflectedClass pojoType = ReflectedClass.from(pojoClass);
 		if (includeFields) {
 			extractFields(pojoType, model);
 		}
@@ -267,7 +275,7 @@ public class PropertiesExtractor {
 				LOG.debug("ignoring compiled field:" + f.getName());
 				continue;
 			}
-			PojoProperty property = new PojoProperty(model, propertyName, f.getGenericType().getTypeName());
+			PropertyModel property = new PropertyModel(model, propertyName, f.getGenericType().getTypeName());
 			property.setFieldName(field.getName());
 			property.setFinalField(field.isFinal());
 
@@ -289,12 +297,12 @@ public class PropertiesExtractor {
 				LOG.debug("ignoring compiled getter:" + getter.getName());
 				continue;
 			}
-			PojoProperty p = model.getProperty(propertyName);
+			PropertyModel p = model.getProperty(propertyName);
 			if (p == null) {
-				p = new PojoProperty(model, propertyName, getter.getUnderlying().getReturnType().getName());
+				p = new PropertyModel(model, propertyName, getter.getUnderlying().getReturnType().getName());
 				model.addProperty(p);
 			}
-			p.setPropertyGetterName(getter.getName());
+			p.setGetterName(getter.getName());
 			count++;
 		}
 		LOG.trace("added " + count + " compiled getters");
@@ -312,13 +320,13 @@ public class PropertiesExtractor {
 				continue;
 			}
 
-			PojoProperty p = model.getProperty(propertyName);
+			PropertyModel p = model.getProperty(propertyName);
 			if (p == null) {
 				Class<?> argType = setter.getUnderlying().getParameterTypes()[0];
-				p = new PojoProperty(model, propertyName, argType.getName());
+				p = new PropertyModel(model, propertyName, argType.getName());
 				model.addProperty(p);
 			}
-			p.setPropertySetterName(setter.getName());
+			p.setSetterName(setter.getName());
 			count++;
 		}
 		LOG.trace("added " + count + " compiled setters");
@@ -408,8 +416,8 @@ public class PropertiesExtractor {
 			this.parser = parser;
 		}
 
-		public PropertiesExtractor build() {
-			return new PropertiesExtractor(resourceLoader, parser,
+		public PropertyModelExtractor build() {
+			return new PropertyModelExtractor(resourceLoader, parser,
 					includeSuperClass, includeCompiledClasses,
 					propertyNameMatcher, includeFields, includeGetters, includeSetters);
 		}

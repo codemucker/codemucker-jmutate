@@ -182,7 +182,7 @@ public class JTypeTest {
 		t.pl("	public class SubClass extends ${clashingClassName} {}");
 		t.pl("}");
 		
-		JType subClass = t.asResolvedSourceFileNamed("${pkg}.MyClass").getTypeWithName("SubClass");
+		JType subClass = t.asResolvedSourceFileNamed("${pkg}.MyClass").getTypeWithSimpleName("SubClass");
 		
 		String embeddedQualfiedName = JTypeTest.class.getPackage().getName() + ".MyClass." + JTypeTest.class.getSimpleName();
 		

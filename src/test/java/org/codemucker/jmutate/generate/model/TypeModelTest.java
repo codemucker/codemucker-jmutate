@@ -1,11 +1,12 @@
-package org.codemucker.jmutate.ast;
+package org.codemucker.jmutate.generate.model;
 
 import org.codemucker.jmatch.AList;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Expect;
+import org.codemucker.jmutate.generate.model.TypeModel;
 import org.junit.Test;
 
-public class TypeInfoTest {
+public class TypeModelTest {
 
 
     @Test
@@ -27,7 +28,7 @@ public class TypeInfoTest {
     
     private static void extractParamNamesIs(String s,String...values){
     	Expect
-		.that(TypeInfo.extractTypeNames(s))
+		.that(TypeModel.extractTypeNames(s))
 		.is(AList.inOrder().withOnly().items(AString.equalToAll(values)));	
     	
     }

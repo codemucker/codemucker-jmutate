@@ -19,14 +19,6 @@ public class CodeGenMetaGeneratorTest {
 	}
 
 	private static class MyCodeGenerator extends AbstractCodeGenerator<MyAnnotation> {
-
-		@Override
-		protected MyAnnotation getAnnotation() {
-			return Defaults.class.getAnnotation(MyAnnotation.class);
-		}
-		
-		@MyAnnotation
-		private static class Defaults {}
 	}
 	
 	private static @interface MyAnnotation {}

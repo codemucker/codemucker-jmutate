@@ -12,4 +12,6 @@ import org.codemucker.jpattern.generate.IsGeneratorConfig;
  */
 public @interface GenerateTwo {
     String foo();
+    String bar() default "barDefault";
+    int someAtt() default 0;
 }

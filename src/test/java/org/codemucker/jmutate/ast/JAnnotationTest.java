@@ -26,6 +26,11 @@ public class JAnnotationTest {
 		assertThat(anon.getQualifiedName(),isEqualTo(IsGenerated.class.getName()));
 		assertThat(anon.isOfType(IsGenerated.class));
 	}
+    
+    @Test
+    public void isAnnotationPresentCOmpiled(){
+    	//todo
+    }
 	
     public static class TestBean {
 		

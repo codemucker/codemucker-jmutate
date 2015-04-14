@@ -1,16 +1,16 @@
 package org.codemucker.jmutate.generate.builder;
 
-import org.codemucker.jmutate.ast.TypeInfo;
-import org.codemucker.jmutate.generate.pojo.PojoProperty;
+import org.codemucker.jmutate.generate.model.TypeModel;
+import org.codemucker.jmutate.generate.model.pojo.PropertyModel;
 
 public class BuilderPropertyModel {
 
 	private final BuilderModel pojoModel;
 	private final boolean fromSuperClass;
 
-	private final PojoProperty property;
+	private final PropertyModel property;
 
-	BuilderPropertyModel(BuilderModel parent, PojoProperty property,boolean superClass) {
+	BuilderPropertyModel(BuilderModel parent, PropertyModel property,boolean superClass) {
 		this.property = property;
 		this.pojoModel = parent;
 		this.fromSuperClass = superClass;
@@ -37,15 +37,15 @@ public class BuilderPropertyModel {
 	}
 	
 	public String getPropertyName() {
-		return property.getPropertyName();
+		return property.getName();
 	}
 
 	public String getPropertyNameSingular() {
-		return property.getPropertyNameSingular();
+		return property.getNameSingular();
 	}
 
 	public String getPropertyConcreteType() {
-		return property.getPropertyConcreteType();
+		return property.getConcreteType();
 	}
 
 	public boolean isReadOnly() {
@@ -67,24 +67,24 @@ public class BuilderPropertyModel {
 		return property.isFinalField();
 	}
 
-	public TypeInfo getType() {
+	public TypeModel getType() {
 		return property.getType();
 	}
 
 	public String getPropertyGetterName() {
-		return property.getPropertyGetterName();
+		return property.getGetterName();
 	}
 
 	public String getPropertySetterName() {
-		return property.getPropertySetterName();
+		return property.getSetterName();
 	}
 
 	public String getPropertyAddName() {
-		return property.getPropertyAddName();
+		return property.getAddName();
 	}
 
 	public String getPropertyRemoveName() {
-		return property.getPropertyRemoveName();
+		return property.getRemoveName();
 	}
 
 

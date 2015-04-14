@@ -32,6 +32,7 @@ import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
+import org.codemucker.jmutate.generate.SmartConfig;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.util.NameUtil;
@@ -82,8 +83,8 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
     }
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, Configuration config) {
-		AllMatchersModel models = new AllMatchersModel(optionsDeclaredInNode, config);
+	public void generate(JType optionsDeclaredInNode, SmartConfig config) {
+		AllMatchersModel models = new AllMatchersModel(optionsDeclaredInNode, config.getConfigFor(GenerateMatchers.class));
 		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(models.getClashStrategy());
 		
 		findAndAddModels(optionsDeclaredInNode,models);
@@ -289,15 +290,6 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
         log.debug(msg);
     }
 
-	@Override
-	protected GenerateMatchers getAnnotation() {
-		return Defaults.class.getAnnotation(GenerateMatchers.class);
-	}
-	
-	@GenerateMatchers
-	private static class Defaults{}
-
-	
 	private class OnlyReplaceMyManagedMethodsResolver implements ClashStrategyResolver{
 
 		private final ClashStrategy fallbackStrategy;

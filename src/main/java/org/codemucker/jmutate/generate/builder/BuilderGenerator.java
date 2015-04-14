@@ -1,6 +1,5 @@
 package org.codemucker.jmutate.generate.builder;
 
-import org.apache.commons.configuration.Configuration;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jmutate.ClashStrategyResolver;
@@ -11,15 +10,15 @@ import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
-import org.codemucker.jmutate.generate.pojo.PojoModel;
-import org.codemucker.jmutate.generate.pojo.PojoProperty;
-import org.codemucker.jmutate.generate.pojo.PropertiesExtractor;
+import org.codemucker.jmutate.generate.SmartConfig;
+import org.codemucker.jmutate.generate.model.pojo.PojoModel;
+import org.codemucker.jmutate.generate.model.pojo.PropertyModel;
+import org.codemucker.jmutate.generate.model.pojo.PropertyModelExtractor;
 import org.codemucker.jmutate.transform.CleanImportsTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jpattern.bean.Property;
 import org.codemucker.jpattern.generate.ClashStrategy;
-import org.codemucker.jpattern.generate.DontGenerate;
 import org.codemucker.jpattern.generate.GenerateBuilder;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -47,8 +46,9 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
     }
 
 	@Override
-	public void generate(JType optionsDeclaredInNode, Configuration config) {
-		BuilderModel model = new BuilderModel(optionsDeclaredInNode, config);
+	public void generate(JType optionsDeclaredInNode, SmartConfig config) {
+		BuilderOptions opts = config.mapFromTo(GenerateBuilder.class, BuilderOptions.class);
+		BuilderModel model = new BuilderModel(optionsDeclaredInNode, opts);
         
 		
 		ClashStrategy methodClashDefaultStrategy = model.getClashStrategy();
@@ -63,22 +63,22 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	private void extractAllProperties(JType optionsDeclaredInNode,BuilderModel model) {
 		LOG.debug("adding properties to Builder for " + model.getPojoType().getFullName());
 		
-		PropertiesExtractor extractor = PropertiesExtractor.with(ctxt.getResourceLoader(), ctxt.getParser())
+		PropertyModelExtractor extractor = PropertyModelExtractor.with(ctxt.getResourceLoader(), ctxt.getParser())
 			.includeCompiledClasses(true)
 			.propertyNameMatching(model.getFieldNames())
 			.includeSuperClass(model.isInheritSuperBeanBuilder())
 			.build();
 		
-		PojoModel pojo = extractor.extractProperties(optionsDeclaredInNode);
+		PojoModel pojo = extractor.extractModel(optionsDeclaredInNode);
 		
 		boolean fromSuper = false;
 		while(pojo != null){	
-			for(PojoProperty p:pojo.getDeclaredProperties()){	
+			for(PropertyModel p:pojo.getDeclaredProperties()){	
 				BuilderPropertyModel p2 = new BuilderPropertyModel(model, p, fromSuper);
 				if(p2.isWriteable()){
 					model.addProperty(p2);
 				} else {
-					LOG.debug("ignoring readonly property: " + p.getPropertyName());
+					LOG.debug("ignoring readonly property: " + p.getName());
 				}
 			}
 			pojo = pojo.getParent();
@@ -396,13 +396,5 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		
 	}
 
-	@Override
-	protected GenerateBuilder getAnnotation() {
-		return Defaults.class.getAnnotation(GenerateBuilder.class);
-	}
-	
-	@DontGenerate
-	@GenerateBuilder
-	private static class Defaults{}
 
 }
