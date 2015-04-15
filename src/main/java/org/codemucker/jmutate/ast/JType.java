@@ -491,12 +491,8 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		return typeNode.getAST();
 	}
 
-	public JCompilationUnit getJCompilationUnit(){
-		return JCompilationUnit.from(getCompilationUnit());
-	}
-	
-	public CompilationUnit getCompilationUnit(){
-		return JCompilationUnit.findCompilationUnit(typeNode);
+	public JCompilationUnit getCompilationUnit(){
+		return JCompilationUnit.findCompilationUnit(getAstNode());
 	}
 
 	/**
@@ -517,7 +513,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 	
 	public String getPackageName(){
-		PackageDeclaration pkg = getCompilationUnit().getPackage();
+		PackageDeclaration pkg = getCompilationUnit().getAstNode().getPackage();
 		if( pkg == null){
 			return null;
 		}
@@ -669,7 +665,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	
 	public boolean isSubClassOf(Class<?> superClass,String genericSuperClassName) {
 		String rawSuperClassName = NameUtil.removeGenericOrArrayPart(genericSuperClassName);
-		FindResult<JType> allTypesInCu = getJCompilationUnit().findAllTypes();
+		FindResult<JType> allTypesInCu = getCompilationUnit().findAllTypes();
 		//TODO:this can be done better. Really need to look up on each type
 		//and keep rack what has been tested already
 		Map<String,JType> fullNameToType = new HashMap<String, JType>();
@@ -911,7 +907,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 						return super.visit(node);
 					}
 				};
-				getCompilationUnit().accept(visitor);
+				getCompilationUnit().getAstNode().accept(visitor);
 				num = (Integer) typeNode.getProperty(propName);
 			}
 			return num;

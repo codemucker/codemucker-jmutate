@@ -288,7 +288,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
             }
             parent = parent.getParent();
         }
-        JCompilationUnit jcu = JCompilationUnit.from(JCompilationUnit.findCompilationUnit(node));
+        JCompilationUnit jcu = JCompilationUnit.from(JCompilationUnit.findCompilationUnitNode(node));
         
         throw new JMutateException("Currently can't figure out the annotation type:" + node + ", declared in " + jcu.getResource().getFullPath());
     }

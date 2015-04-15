@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ResourceLoader;
+import org.codemucker.jmutate.ast.JCompilationUnit;
 import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -27,7 +28,6 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.TypeParameter;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
@@ -262,12 +262,7 @@ public class NameUtil {
 	}
 
 	private static CompilationUnit getCompilationUnit(ASTNode node) {
-		ASTNode root = node.getRoot();
-		if (root instanceof CompilationUnit) {
-			CompilationUnit cu = (CompilationUnit) root;
-			return cu;
-		}
-		throw new JMutateException("Can't find compilation unit node");
+		return JCompilationUnit.findCompilationUnitNode(node);
 	}
 	
 	@VisibleForTesting

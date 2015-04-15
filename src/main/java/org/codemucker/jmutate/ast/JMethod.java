@@ -100,15 +100,8 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 		throw new JMutateException("Couldn't find parent type. Unexpected");
 	}
 	
-	public CompilationUnit getCompilationUnit(){
-		ASTNode node = getAstNode();
-		while( node != null ){
-			if(node instanceof CompilationUnit){
-				return (CompilationUnit)node;
-			}
-			node = node.getParent();
-		}
-		throw new JMutateException("Couldn't find compilation unit. Unexpected");
+	public JCompilationUnit getCompilationUnit(){
+		return JCompilationUnit.findCompilationUnit(getAstNode());
 	}
 	
 	@Override

@@ -254,11 +254,7 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 	}
 
 	public JCompilationUnit getJCompilationUnit() {
-		return JCompilationUnit.from(getCompilationUnit());
-	}
-
-	public CompilationUnit getCompilationUnit() {
-		return JCompilationUnit.findCompilationUnit(annotation);
+		return JCompilationUnit.findCompilationUnit(getAstNode());
 	}
 
 	@Override

@@ -85,7 +85,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	 * Determine whether this source is in sync with the resource it represents
 	 */
 	public boolean isInSyncWithResource(){
-        return originalTimestamp != Root.TIMESTAMP_NOT_EXIST && getCompilationUnitNode().getAST().modificationCount() == originalAstModificationCount && getResource().getLastModified() == originalTimestamp;
+        return originalTimestamp != Root.TIMESTAMP_NOT_EXIST && getAstNode().getAST().modificationCount() == originalAstModificationCount && getResource().getLastModified() == originalTimestamp;
     }
 
 	/**
@@ -93,7 +93,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	 */
 	public String getCurrentSource(){
     	Document doc = new Document(getOriginalSource());
-    	TextEdit edits = getCompilationUnitNode().rewrite(doc, null);
+    	TextEdit edits = getAstNode().rewrite(doc, null);
     	try {
     		edits.apply(doc);
     	} catch (MalformedTreeException e) {
@@ -133,7 +133,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
 	public void accept(BaseSourceVisitor visitor) {
 		if (visitor.visit(this)) {
-			CompilationUnit cu = getCompilationUnitNode();
+			CompilationUnit cu = getAstNode();
 			if (visitor.visit(cu)) {
 				cu.accept(visitor);
 			}
@@ -297,15 +297,11 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 	
 	@SuppressWarnings("unchecked")
 	public List<AbstractTypeDeclaration> getTopTypes() {
-		return getCompilationUnitNode().types();
+		return getAstNode().types();
 	}
 
 	public JCompilationUnit getCompilationUnit() {
-		return JCompilationUnit.from(getCompilationUnitNode());
-	}
-
-	public CompilationUnit getCompilationUnitNode() {
-		return compilationUnitNode;
+		return JCompilationUnit.from(compilationUnitNode);
 	}
 
 	public String toString() {

@@ -74,7 +74,7 @@ public class BuilderGeneratorTest {
 		}
 
 		public TestSourceFile createCopy(JMutateContext ctxt) {
-			RootResource resource = node.getJCompilationUnit().getSource().getResource();
+			RootResource resource = node.getCompilationUnit().getSource().getResource();
 			RootResource resourceCopy = makeCopy(resource,ctxt.getProjectLayout().newTmpSubDir("cloned_node"));
 			
 			JSourceFile source = ctxt.getOrLoadSource(resourceCopy);

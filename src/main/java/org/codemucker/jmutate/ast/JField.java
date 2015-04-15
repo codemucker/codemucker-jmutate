@@ -10,6 +10,7 @@ import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
@@ -200,6 +201,10 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 	@SuppressWarnings("unchecked")
     public JModifier getModifiers(){
 		return new JModifier(fieldNode.getAST(),fieldNode.modifiers());
+	}
+	
+	public JCompilationUnit getCompilationUnit(){
+		return JCompilationUnit.findCompilationUnit(getAstNode());
 	}
 
 	@Override

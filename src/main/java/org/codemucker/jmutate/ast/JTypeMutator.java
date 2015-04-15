@@ -157,7 +157,7 @@ public class JTypeMutator {
     }
 	
 	public void addImport(String fullName){
-		jType.getJCompilationUnit().addImport(fullName);
+		jType.getCompilationUnit().addImport(fullName);
 
     }
 	

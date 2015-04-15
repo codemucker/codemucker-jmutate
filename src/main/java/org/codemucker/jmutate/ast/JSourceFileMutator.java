@@ -36,14 +36,6 @@ public class JSourceFileMutator {
 		return source;
 	}
 
-	public CompilationUnit getCompilationUnit() {
-		return source.getCompilationUnitNode();
-	}
-
-	public JCompilationUnit getJCompilationUnit() {
-		return JCompilationUnit.from(source.getCompilationUnitNode());
-	}
-
 	/**
 	 * Return the type declared in this file with the same name as the name of the file.
 	 */
@@ -56,11 +48,15 @@ public class JSourceFileMutator {
 	 */
 	public Iterable<JTypeMutator> getTypesAsMutable() {
 		List<JTypeMutator> mutables = newArrayList();
-		List<AbstractTypeDeclaration> types = getCompilationUnit().types();
+		List<AbstractTypeDeclaration> types = source.getAstNode().types();
 		for (AbstractTypeDeclaration type : types) {
 			mutables.add(new JTypeMutator(context, type));
 		}
 		return mutables;
+	}
+
+	public JCompilationUnit getCompilationUnit() {
+		return source.getCompilationUnit();
 	}
 	
     /**
@@ -93,7 +89,8 @@ public class JSourceFileMutator {
                 try {
                     CompilationUnit existingOnDiskCu= context.getParser().parseCompilationUnit(existingOnDiskSrc, resource);
                     ASTMatcher matcher = JAstMatcher.with().matchDocTags(false).buildNonAsserting();
-                    boolean theSame = matcher.match(getCompilationUnit(), existingOnDiskCu); 
+                    CompilationUnit inMemoryCu = JCompilationUnit.findCompilationUnitNode(source.getAstNode());
+                    boolean theSame = matcher.match(inMemoryCu, existingOnDiskCu); 
                     return theSame;
                 } catch(JMutateParseException e){
                     log.debug("couldn't parse existing source, going to replace it");

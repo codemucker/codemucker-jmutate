@@ -35,7 +35,11 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
         return node instanceof CompilationUnit;
     }
 	
-	public static CompilationUnit findCompilationUnit(ASTNode node){
+	public static JCompilationUnit findCompilationUnit(ASTNode node){
+		return from(findCompilationUnitNode(node));
+	}
+	
+	public static CompilationUnit findCompilationUnitNode(ASTNode node){
 		ASTNode parent = node;
 		while( parent != null){
 			if( parent instanceof CompilationUnit){
