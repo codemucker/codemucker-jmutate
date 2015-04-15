@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.RootResource;
+import org.codemucker.jmutate.JCompiler;
 import org.codemucker.jmutate.JMutateCompileException;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
@@ -60,15 +61,17 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
     
     private final JMutateContext ctxt;
 
+    private final JCompiler compiler;
     /**
      * To ensure each compiled class has a unique name
      */
     private int uniqueSourceCount = 0;
 
     @Inject
-    public DefaultAnnotationCompiler(JMutateContext ctxt) {
+    public DefaultAnnotationCompiler(JMutateContext ctxt,JCompiler compiler) {
         super();
         this.ctxt = ctxt;
+        this.compiler = compiler;
         //ensure there are no clashes with other annotation compilers running
         this.tmpPackageName = "org.codemucker.jmutate.generate.annotationcompiler.tmp" + hashCode();
     }
@@ -244,7 +247,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
     
     private Class<?> toCompiledClass(SourceTemplate template){
         JSourceFile source = template.asSourceFileSnippet().asMutator(ctxt).writeModificationsToDisk();
-        Class<?> compiledClass = ctxt.getCompiler().toCompiledClass(source);
+        Class<?> compiledClass = compiler.toCompiledClass(source);
         return compiledClass;
     }
 
