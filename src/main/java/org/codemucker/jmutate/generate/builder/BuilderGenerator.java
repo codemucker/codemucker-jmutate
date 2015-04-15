@@ -89,7 +89,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	private void generateBuilder(JType optionsDeclaredInNode,BuilderModel model) {
 		boolean markGenerated = model.isMarkGenerated();
 		
-		JSourceFile source = optionsDeclaredInNode.getSource();
+		JSourceFile source = optionsDeclaredInNode.getCompilationUnit().getSource();
 		JType pojo = source.getMainType();
 		JType builder;
 		
