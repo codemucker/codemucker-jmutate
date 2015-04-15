@@ -256,7 +256,7 @@ public class MatcherGenerator extends AbstractCodeGenerator<GenerateMatchers> {
             String getter = getterName + "()";
             if (!pojoType.hasMethodMatching(AJMethod.with().name(getterName).numArgs(0))) {
                 log("no method " + getter);
-                if (!field.getJModifiers().isPublic()) {
+                if (!field.getModifiers().isPublic()) {
                     //can't access field, lets skip
                 	continue;
                 }

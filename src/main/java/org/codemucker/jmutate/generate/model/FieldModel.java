@@ -23,7 +23,7 @@ public class FieldModel extends ModelObject {
 	public FieldModel(JField f){
 		name = f.getName();
 		fullType = f.getFullTypeName();
-		modifiers = new ModifierModel(f.getJModifiers());
+		modifiers = new ModifierModel(f.getModifiers());
 	}
 
 	public String getName() {

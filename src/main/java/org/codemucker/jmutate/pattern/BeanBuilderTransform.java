@@ -98,7 +98,7 @@ public class BeanBuilderTransform implements Transform {
 	    return target.findFieldsMatching(new AbstractNotNullMatcher<JField>() {
             @Override
             public boolean matchesSafely(final JField field, MatchDiagnostics diag) {
-                final JModifier mods = field.getJModifiers();
+                final JModifier mods = field.getModifiers();
                 if( mods.isFinal() || mods.isStatic() || mods.isStrictFp()){
                     return false;
                 }

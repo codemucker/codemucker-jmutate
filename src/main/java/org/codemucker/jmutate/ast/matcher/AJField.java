@@ -177,7 +177,7 @@ public class AJField extends ObjectMatcher<JField>{
         addMatcher(new AbstractNotNullMatcher<JField>() {
             @Override
             public boolean matchesSafely(JField found, MatchDiagnostics diag) {
-                return diag.tryMatch(this, found.getJModifiers(), matcher);
+                return diag.tryMatch(this, found.getModifiers(), matcher);
             }
             
             @Override

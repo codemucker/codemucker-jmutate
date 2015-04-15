@@ -87,7 +87,7 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 	}
 
 	public boolean isStatic(boolean b){
-		return getJModifiers().isStatic(b);
+		return getModifiers().isStatic(b);
 	}
 	
 	public boolean isFinal(){
@@ -95,11 +95,11 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 	}
 
 	public boolean isFinal(boolean b){
-		return getJModifiers().isFinal(b);
+		return getModifiers().isFinal(b);
 	}
 	
 	public boolean isTransient(boolean b){
-		return getJModifiers().isTransient(b);
+		return getModifiers().isTransient(b);
 	}
 	
 	public List<SingleJField> asSingleFields(){
@@ -140,7 +140,7 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 
 
 	public JAccess getAccess(){
-		return getJModifiers().asAccess();
+		return getModifiers().asAccess();
 	}
 
 	public boolean isType(final JField field){
@@ -194,11 +194,11 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 	}
 
 	public boolean isAccess(final JAccess access) {
-		return getJModifiers().asAccess().equals(access);
+		return getModifiers().asAccess().equals(access);
 	}
 
 	@SuppressWarnings("unchecked")
-    public JModifier getJModifiers(){
+    public JModifier getModifiers(){
 		return new JModifier(fieldNode.getAST(),fieldNode.modifiers());
 	}
 

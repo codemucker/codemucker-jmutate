@@ -199,12 +199,12 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			JAccess jaccess = ModelUtils.toJAccess(access);	
 			LOG.debug("ensuring " + jaccess.name() + " access for field " + property.getFieldName());
 			if(!field.getAccess().equals(access)){
-				field.getJModifiers().setAccess(jaccess);
+				field.getModifiers().setAccess(jaccess);
 			}
 		}
 		
 		if(options.generateSetters && (access == Access.PUBLIC || access == Access.PACKAGE)){
-			field.getJModifiers().setFinal(true);
+			field.getModifiers().setFinal(true);
 		}
 	}
 
