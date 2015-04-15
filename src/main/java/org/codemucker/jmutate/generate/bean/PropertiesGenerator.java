@@ -59,7 +59,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			ext.bindable = options.bindable;
 			ext.setterReturnType = options.chainedSetters?options.getType().getFullNameRaw():"void";
 			ext.generateGetter = options.generateGetters;
-			ext.generateSetter = options.generateSetters;
+			ext.generateSetter = options.generateSetters && !options.makeFinal &&  (p.hasField() && !p.isFinalField());
 			
 			if(p.getGetterName() == null && options.generateGetters){
 				p.setGetterName(p.getCalculatedGetterName());

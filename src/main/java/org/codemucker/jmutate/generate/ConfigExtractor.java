@@ -9,7 +9,6 @@ import java.util.Set;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateException;
@@ -20,7 +19,6 @@ import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJType;
-import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.generate.IsGeneratorConfig;
 import org.codemucker.jpattern.generate.IsGeneratorTemplate;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -73,6 +71,14 @@ class ConfigExtractor {
         //collect all the annotations of a given type to be passed to a generator at once (and so we can apply generator ordering)        
     	Set<ASTNode> nodes = new HashSet<>();
 		for(Annotation sourceAnnotation:annotations){
+			JAnnotation janon = JAnnotation.from(sourceAnnotation);
+			ASTNode node = getAttachedNodeFor(sourceAnnotation);
+			
+			extractIt(janon,getOrSetSmartConfig(node));
+			
+			//then find generators
+			
+			//remaining are real
 		     ASTNode attachedToNode = getAttachedNodeFor(sourceAnnotation);
 		     //TODO:only non template nodes!
 		     if(JType.is(attachedToNode)){
@@ -82,10 +88,11 @@ class ConfigExtractor {
 		     } else {
 		    	 nodes.add(attachedToNode);
 		     }
-		     extractOptions(attachedToNode, sourceAnnotation);
+		//     extractOptions(attachedToNode, sourceAnnotation);
 		}
         return nodes;
     }
+    
     
     private ASTNode getAttachedNodeFor(Annotation annotation) {
         ASTNode parent = annotation.getParent();
@@ -99,126 +106,68 @@ class ConfigExtractor {
         throw new JMutateException("Currently can't figure out correct parent for annotation:" + annotation);
     }
     
-    /**
-     * If the provided annotation is a generator annotation (else a normal annotation which got caught up in the scan)
-     */
-    private void extractOptions(ASTNode node, Annotation annotationDeclaration){
-		String annotationName = JAnnotation.from(annotationDeclaration).getFullName();
-		//skip if we've already rules out this annotation type
-		if(isIgnoreAnnotation(annotationName)){
-			return;
-		}
-		SmartConfig sc = SmartConfig.get(node);
+    
+    private SmartConfig getOrSetSmartConfig(ASTNode node){
+    	SmartConfig sc = SmartConfig.get(node);
 		if(sc == null){
 			sc = new SmartConfig();
 			SmartConfig.set(node, sc);
 		}
-		//direct settings for this node
-		sc.addNodeConfigFor(annotationName,new AnnotationConfiguration(annotationDeclaration));
-		
-		//use the templates options if it's already been loaded
-		SmartConfig templateConfig = templateOptions.get(annotationName);
-		if(templateConfig != null){
-			sc.addParentConfigsFrom(templateConfig);
-			return;
-		}
-		
-		//haven't come across this annotation yet, let's see if we can load it and decide whether it's a standard generation annotation, or a template
-		// look up the source first. This may have changed and not yet compiled
-		// (freshest)
-		//load source code declaration of annotation
-
-		if(extractConfiguration(sc, loadTypeForOrNull(annotationName))){
-			return;
-		}
-
-		// try the compiled version
-		if(extractConfiguration(sc, (Class<java.lang.annotation.Annotation>) resourceLoader.loadClassOrNull(annotationName))){
-			return;
-		}
-
-		LOG.warn("Can't load annotation as class or resource '" + annotationName + "'. Ignoring as a generator");
+		return sc;
     }
-
-	private boolean extractConfiguration(SmartConfig sc, JType annotation) {
-		if(annotation == null){
-			return false;
-		}
-		String anonName = annotation.getFullName();
-		
-		if(isIgnoreAnnotation(anonName)){
-			return true;
-		}
-		for(JAnnotation markedWithAnnotation:annotation.getAnnotations().getAllDirect()){
-			String markedWithName = markedWithAnnotation.getFullName();
-			if(isIgnoreAnnotation(markedWithName)){
-				continue;
-			}
-			if(generateAnnotations.contains(markedWithName)){
-				sc.addNodeConfigFor(markedWithName, new AnnotationConfiguration(markedWithAnnotation));
-				continue;
-			}
-			if(AST_CONTAINS_TEMPLATE_ANNOTATION.matches(markedWithAnnotation)){					
-				SmartConfig templateConfig = templateOptions.get(markedWithName);
-				if(templateConfig == null){
-					templateConfig = new SmartConfig();
-					JType templateClass = loadTypeForOrNull(markedWithName);
-					if(!extractConfiguration(templateConfig,templateClass)){
-						Class<java.lang.annotation.Annotation> annoationClass = (Class<java.lang.annotation.Annotation>) resourceLoader.loadClassOrNull(markedWithName);
-						
-						extractConfiguration(sc, annoationClass);
-					}
-				}
-				sc.addParentConfigsFrom(templateConfig);
-			} else if(AST_CONTAINS_GENERATOR_CONFIG_ANNOTATION.matches(markedWithAnnotation)){
-				sc.addNodeConfigFor(markedWithName, new AnnotationConfiguration(markedWithAnnotation));
-				generateAnnotations.add(markedWithName);
-			} else {//ensure we ignore so we don't try to scan again
-				normalAnnotationsToIgnore.add(markedWithName);
-			}
-		}
-		return true;
-	}
-	
-	private boolean extractConfiguration(SmartConfig sc,Class<java.lang.annotation.Annotation> annotationClass) {
-		if(annotationClass==null){
-			return false;
-		}
-		if(!isIgnoreAnnotation(NameUtil.compiledNameToSourceName(annotationClass))){
-			for(java.lang.annotation.Annotation a:annotationClass.getDeclaredAnnotations()){
-				extractConfiguration(sc, a);
-			}
-		}
-		return true;
-	}
-	
-	private void extractConfiguration(SmartConfig sc,java.lang.annotation.Annotation annotation) {
-		String anonName= NameUtil.compiledNameToSourceName(annotation.annotationType().getName());
-		
-		if(isIgnoreAnnotation(anonName)){
+    
+    private void extractTemplateOptions(JAnnotation templateAnnon, SmartConfig templateConfig){
+    	
+    	String templateFullName = templateAnnon.getFullName();
+    	
+    	JType templateType = loadTypeForOrNull(templateFullName);
+    	if(templateType != null){
+    		for(JAnnotation a:templateType.getAnnotations().getAllDirect()){
+    			extractIt(a,templateConfig);
+    		}
+    	} else {
+    		//try class loader?
+    	}
+    }
+    
+    private void extractIt(JAnnotation janon,SmartConfig smart){
+    	String fullName = janon.getFullName();
+		if(isIgnoreAnnotation(fullName)){
 			return;
 		}
-		if(generateAnnotations.contains(anonName)){
-			sc.addNodeConfigFor(anonName, new AnnotationConfiguration(annotation));
+		//is a template and we already loaded it
+		if(templateOptions.containsKey(fullName)){
+			smart.addParentConfigsFrom(templateOptions.get(fullName));
 			return;
 		}
-		if (annotation.annotationType().isAnnotationPresent(IsGeneratorTemplate.class)) {
-			SmartConfig templateConfig = templateOptions.get(anonName);
-			if(templateConfig == null){
-				templateConfig = new SmartConfig();
-				//rip off all the annotations from this template
-				extractConfiguration(templateConfig,(Class<java.lang.annotation.Annotation>)annotation.getClass());
-				templateOptions.put(anonName,templateConfig);
-			}
-			sc.addParentConfigsFrom(templateConfig);
-		} else if (annotation.annotationType().isAnnotationPresent(IsGeneratorConfig.class)) {
-			sc.addNodeConfigFor(anonName,new AnnotationConfiguration(annotation));
-			generateAnnotations.add(anonName);
+		//we know it's a magic generator annotation
+		if(generateAnnotations.contains(fullName)){
+			smart.addNodeConfigFor(fullName, new AnnotationConfiguration(janon));
+			return;
+		}
+		//okay, haven't come across this annotation before
+		
+		
+		//first find templates
+		if(AST_CONTAINS_TEMPLATE_ANNOTATION.matches(janon)){
+			//grab templates options
+			SmartConfig templateConfig = new SmartConfig();
+			templateOptions.put(fullName, templateConfig);
+			extractTemplateOptions(janon,templateConfig);
+			smart.addParentConfigsFrom(templateConfig);
+			return;
+		} else if(AST_CONTAINS_GENERATOR_CONFIG_ANNOTATION.matches(janon)){
+			//add as is
+			smart.addNodeConfigFor(fullName, new AnnotationConfiguration(janon));
+			generateAnnotations.add(fullName);
+			return;
 		} else {
-			normalAnnotationsToIgnore.add(anonName);
+			//ignore
+			normalAnnotationsToIgnore.add(fullName);
+			return;
 		}
-	}
-
+    }
+   
 	private boolean isIgnoreAnnotation(String anonName){
 		if(normalAnnotationsToIgnore.contains(anonName)){
 			return true;

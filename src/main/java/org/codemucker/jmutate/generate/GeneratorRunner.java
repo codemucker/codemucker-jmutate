@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.annotation.Generated;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.DirectoryRoot;
@@ -44,6 +45,7 @@ import org.codemucker.jpattern.generate.IsGenerated;
 import org.codemucker.jpattern.generate.IsGeneratorConfig;
 import org.codemucker.jpattern.generate.IsGeneratorTemplate;
 import org.codemucker.lang.IBuilder;
+import org.codemucker.lang.StringUtil;
 import org.codemucker.lang.annotation.Optional;
 import org.codemucker.lang.annotation.Required;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -160,9 +162,38 @@ public class GeneratorRunner {
      * Run the scan and generator and invocation
      */
     public void run() {
+        logDetails();
+        
         MutateUtil.setClassLoader(generatorClassLoader);
-        if (log.isDebugEnabled()) {
+	    try {
+	        List<Annotation> annotations = scanForGenerationAnnotations();
+	        if(annotations.size()==0){
+	            log.info("no generation annotations found");
+	            return;
+	        }
+	        Set<ASTNode> nodes = configExtractor.processAnnotations(annotations);
+	        //run all generators per node
+	        //TODO:order generators by before/after requirements to make more deterministic
+	        for (ASTNode node: nodes) {	
+	        	SmartConfig sc = SmartConfig.get(node);
+	        	
+	        	for(String annotationType:sc.getAnnotations()){
+	        		CodeGenerator<?> generator = getGeneratorFor(annotationType);
+	        		if (generator != null) {
+	        			log.debug("processing annotation '" + annotationType + "' with generator " + generator.getClass().getName() + " for node " + StringUtils.abbreviate(node.toString(), 300));
+	                	invokeGenerator(generator,sc, node);        
+	                }
+	        	}
+	        }
+        } finally {
+        	MutateUtil.setClassLoader(null);  	
+        }
+    }
 
+    
+	private void logDetails() {
+		if (log.isDebugEnabled()) {
+			log.debug("Details:");
             //log.debug("filtering roots to " + scanRootMatcher);
             log.debug("filtering packages " + scanPackagesAntPattern);
             log.debug("scanning roots: ");
@@ -182,33 +213,7 @@ public class GeneratorRunner {
                 log.debug("@" + key + "-- handled by --> " + generators.get(key));
             }
         }
-        List<Annotation> annotations = scanForGenerationAnnotations();
-        if(annotations.size()==0){
-            log.info("no generation annotations found");
-            return;
-        }
-
-        //group the found annotations by the generator they invoke
-        Set<ASTNode> nodes = configExtractor.processAnnotations(annotations);
-        //run the generators in order (of generator)
-        for (ASTNode node: nodes) {
-        	
-        	SmartConfig sc = SmartConfig.get(node);
-        	
-        	for(String annotationType:sc.getAnnotations()){
-        		CodeGenerator<?> generator = getGeneratorFor(annotationType);
-        		if (generator != null) {
-        			
-        			log.debug("processing annotation '" + annotationType + "' on '" + node);
-    	            
-                	invokeGenerator(generator,sc, node);        
-                }    	
-        	}
-        	
-            
-        }
-        MutateUtil.setClassLoader(null);
-    }
+	}
 
     private void invokeGenerator(CodeGenerator<?> generator, SmartConfig config, ASTNode node) {
     	log.debug("invoking generator " + generator.getClass().getName());

@@ -26,12 +26,20 @@ public class AConfig extends ObjectMatcher<Configuration>{
 		return this;
 	}
 	
-	public AConfig entry(final String key,final Matcher<Object> valueMatcher){
+	public <V> AConfig entry(final String key,final Matcher<V> valueMatcher){
 		addMatcher(new AbstractNotNullMatcher<Configuration>() {
 			@Override
 			protected boolean matchesSafely(Configuration actual,MatchDiagnostics diag) {	
-				Object actualVal = actual.getProperty(key);
-				return diag.tryMatch(this, actualVal, valueMatcher);
+				Object val = actual.getProperty(key);
+				if(val == null){
+					return diag.tryMatch(this, (V)val, valueMatcher);	
+				} else {
+					V actualVal = safeCast(val);
+					if(actualVal != null){
+						return diag.tryMatch(this, actualVal, valueMatcher);
+					}
+				}
+				return false;
 			}
 			
 			@Override
@@ -69,6 +77,14 @@ public class AConfig extends ObjectMatcher<Configuration>{
 	
 		});
 		return this;
+	}
+	
+	private static <T> T safeCast(Object val){
+		try{
+			return (T)val;
+		}catch(ClassCastException e){
+			return null;
+		}
 	}
 	
 }

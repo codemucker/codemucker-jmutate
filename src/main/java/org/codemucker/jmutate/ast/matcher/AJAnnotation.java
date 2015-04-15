@@ -89,7 +89,7 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
                     for (Annotation a : annotationClass.getAnnotations()) {
                         //System.out.println("annotation " + a.getClass().getName()  + " on " + fullCompiledName + " loaded");
                         
-                        if (diag.tryMatch(this, NameUtil.compiledNameToSourceName(a.getClass()), nameMatcher)) {
+                        if (diag.tryMatch(this, NameUtil.compiledNameToSourceName(a.annotationType()), nameMatcher)) {
                         	cacheResult(name, true);
                             return true;
                         }

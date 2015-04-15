@@ -24,34 +24,78 @@ public class ToStringGenerator extends AbstractBeanGenerator<GenerateToString,To
 	
 	@Override
 	protected void generate(JType bean, SmartConfig config,PojoModel model, ToStringOptions options) {
-		if(options.isEnabled()){
-			StringBuilder sb = new StringBuilder();
-			sb.append("\" [");
-			if(!model.hasAnyProperties()){
-				sb.append("]\"");
-			} else {
-				boolean comma = false;
-				for (PropertyModel property : model.getAllProperties()) {
-					if(!(property.hasField() || property.hasGetter())){
-						continue;
-					}
-					if(comma){
-						sb.append(" + \",");
-					}
-					sb.append(property.getName() ).append("=\" + ");
-					sb.append(property.getInternalAccessor());
-					comma = true;
-				}
-				sb.append(" + \"]\"");
-			}
-			
-			SourceTemplate toString = newSourceTemplate()
-				.pl("@java.lang.Override")
-				.pl("public String toString(){")
-				.pl("return this.getClass().getName() + \"@\" + System.identityHashCode(this) + " + sb.toString() + ";")
-				.pl("}");
-			addMethod(bean, toString.asMethodNodeSnippet(),options.isMarkGenerated());
+		if(options.generateStringBuilderToString){
+			generateStringBuilderToString(bean, model, options);
+		} else {
+			generateClassicToString(bean, model, options);
 		}
+	}
+
+	private void generateClassicToString(JType bean, PojoModel model,ToStringOptions options) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("\" [");
+		if(!model.hasAnyProperties()){
+			sb.append("]\"");
+		} else {
+			boolean comma = false;
+			for (PropertyModel property : model.getAllProperties()) {
+				if(!(property.hasField() || property.hasGetter())){
+					continue;
+				}
+				if(comma){
+					sb.append(" + \",");
+				}
+				sb.append(property.getName() ).append("=\" + ");
+				sb.append(property.getInternalAccessor());
+				comma = true;
+			}
+			sb.append(" + \"]\"");
+		}
+		
+		SourceTemplate toString = newSourceTemplate()
+			.pl("@java.lang.Override")
+			.pl("public String toString(){")
+			.pl("return this.getClass().getName() + \"@\" + System.identityHashCode(this) + " + sb.toString() + ";")
+			.pl("}");
+		addMethod(bean, toString.asMethodNodeSnippet(),options.isMarkGenerated());
+	}
+	
+	private void generateStringBuilderToString(JType bean, PojoModel model,ToStringOptions options) {
+		StringBuilder sb = new StringBuilder();
+		if(model.hasAnyProperties()){
+			boolean comma = false;
+			for (PropertyModel property : model.getAllProperties()) {
+				if(!(property.hasField() || property.hasGetter())){
+					continue;
+				}
+				if(comma){
+					sb.append(".append(',');\n");
+				}
+				sb.append("\tsb.append(").append(property.getName() ).append(")");
+				sb.append(".append(").append(property.getInternalAccessor() ).append(")");
+				comma = true;
+			}
+			sb.append(";");
+		}
+	
+		SourceTemplate toString = newSourceTemplate()
+			.pl("@java.lang.Override")
+			.pl("public String toString(){")
+			.pl("	java.lang.StringBuilder sb = new java.lang.StringBuilder();")
+			.pl("	sb.append(this.getClass().getName()).append('@').append(System.identityHashCode(this)).append('[');")
+			.pl("	toString(sb);")
+			.pl("	sb.append(']');")
+			.pl("	return sb.toString();")
+			.pl("}");
+	
+		SourceTemplate toStringBuilder = newSourceTemplate()
+			.pl("protected void toString(StringBuilder sb){")
+			.pl(sb.toString())
+			.pl("}");
+		
+		addMethod(bean, toString.asMethodNodeSnippet(),options.isMarkGenerated());
+		addMethod(bean, toStringBuilder.asMethodNodeSnippet(),options.isMarkGenerated());
+		
 	}
 	
 	@Override
@@ -61,6 +105,8 @@ public class ToStringGenerator extends AbstractBeanGenerator<GenerateToString,To
 	
 	public static class ToStringOptions extends AbstractBeanOptions<GenerateToString> {
 
+		public boolean generateStringBuilderToString;
+		
 		public ToStringOptions(Configuration config,JType pojoType) {
 			super(config,GenerateToString.class,pojoType);
 		}

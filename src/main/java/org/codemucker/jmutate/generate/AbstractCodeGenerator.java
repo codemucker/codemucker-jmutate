@@ -2,10 +2,18 @@ package org.codemucker.jmutate.generate;
 
 import java.lang.annotation.Annotation;
 
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
+import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jmutate.transform.CleanImportsTransform;
+import org.codemucker.jmutate.transform.InsertFieldTransform;
+import org.codemucker.jmutate.transform.InsertMethodTransform;
+import org.codemucker.jpattern.generate.ClashStrategy;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 public abstract class AbstractCodeGenerator<T extends Annotation> implements CodeGenerator<T> {
 

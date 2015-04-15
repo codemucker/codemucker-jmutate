@@ -10,7 +10,10 @@ import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.Roots;
 import org.codemucker.jmatch.AList;
+import org.codemucker.jmatch.AString;
+import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Expect;
+import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jpattern.generate.Access;
@@ -86,16 +89,21 @@ public class GeneratorRunnerTest {
         
         List<SmartConfig> cfgs = MyCodeGeneratorTwo.configs;
         Expect.that(cfgs).isNotNull();
-        Expect
-			.that(MyCodeGeneratorTwo.configs.get(0).getConfigFor(GenerateMyTemplate.class))
-			.is(AConfig.with()
-				//	.entry("att1", true)
-				//	.entry("att2", "att2default")
-					.entry("att3", "att3val")
-					.entry("att4", true));
+//        Expect
+//			.that(MyCodeGeneratorTwo.configs.get(0).getConfigFor(GenerateMyTemplate.class))
+//			.is(AConfig.with()
+//				//	.entry("att1", true)
+//				//	.entry("att2", "att2default")
+//					.entry("att3", "att3val")
+//					.entry("att4", true));
+//        
         Expect
 			.that(MyCodeGeneratorTwo.configs.get(0).getConfigFor(GenerateTwo.class))
-			.is(AConfig.with().entry("foo", "my template"));
+			.is(AConfig.with()
+					.entry("foo", string("my template"))
+					//.entry("someAtt", AnInt.equalTo(5))
+					
+					);
         
         GenerateTwoOptions opts = MyCodeGeneratorTwo.configs.get(0).mapFromTo(GenerateTwo.class,GenerateTwoOptions.class);
         
@@ -103,6 +111,10 @@ public class GeneratorRunnerTest {
         Expect.that(opts.bar).isEqualTo("barDefault");
         Expect.that(opts.someAtt).isEqualTo(5);
         
+    }
+    
+    private static Matcher<String> string(String s){
+    	return AString.equalTo(s);
     }
     
     private static class GenerateTwoOptions extends GenerateOptions<GenerateTwo>{
