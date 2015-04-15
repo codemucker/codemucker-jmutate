@@ -38,7 +38,7 @@ public class DefaultResourceLoader implements ResourceLoader {
         return new Builder();
     }
     
-    private DefaultResourceLoader(Iterable<Root> roots,ClassLoader classLoader,ResourceLoader parent) {
+    private DefaultResourceLoader(Iterable<Root> roots,ClassLoader classLoader,ResourceLoader parent, int maxCacheEntries, long expireCacheTime,TimeUnit expireCacheUnits) {
         super();
         this.classLoader = classLoader;
         this.roots = ImmutableList.copyOf(roots);
@@ -48,7 +48,7 @@ public class DefaultResourceLoader implements ResourceLoader {
             this.rootsAndParent = this.roots;
         }
 
-        this.classExistsCache = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.MINUTES).maximumSize(5000).build();
+        this.classExistsCache = CacheBuilder.newBuilder().expireAfterAccess(expireCacheTime, expireCacheUnits).maximumSize(maxCacheEntries).build();
         this.parent = parent;
         List<URL> urls = new ArrayList<>();
         for (Root root : roots) {
@@ -216,11 +216,14 @@ public class DefaultResourceLoader implements ResourceLoader {
         private ClassLoader classLoader;
         private ResourceLoader parent;
         private List<Root> additionalRoots = new ArrayList<>();
+        private long expireCacheTime = 1;
+        private TimeUnit expireCacheUnits = TimeUnit.MINUTES;
+        private int maxCacheEntries = 5000;
         
         @Override
         public DefaultResourceLoader build() {
             ClassLoader cl = getClassLoaderOrDefault(parent);
-            return new DefaultResourceLoader(additionalRoots, cl, parent);
+            return new DefaultResourceLoader(additionalRoots, cl, parent, maxCacheEntries, expireCacheTime, expireCacheUnits);
         }
         
         private ClassLoader getClassLoaderOrDefault(ResourceLoader parent){
