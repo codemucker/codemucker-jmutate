@@ -33,9 +33,7 @@ public abstract class AbstractBeanOptions<T extends Annotation> extends Generate
 	public AbstractBeanOptions(Configuration config, Class<T> annotationClass, JType pojoType) {
 		super(config, annotationClass);
 		Preconditions.checkNotNull(pojoType, "expect beantype to be set");
-		this.type = TypeModel.newFromFullNameAndTypeBounds(
-				pojoType.getFullGenericName(),
-				pojoType.getTypeBoundsExpressionOrNull());
+		this.type = new TypeModel(pojoType);
 	}
 	
 
