@@ -71,7 +71,7 @@ public class ToStringGenerator extends AbstractBeanGenerator<GenerateToString,To
 				if(comma){
 					sb.append(".append(',');\n");
 				}
-				sb.append("\tsb.append(").append(property.getName() ).append(")");
+				sb.append("\tsb.append(\"").append(property.getName()).append("\")");
 				sb.append(".append(").append(property.getInternalAccessor() ).append(")");
 				comma = true;
 			}
