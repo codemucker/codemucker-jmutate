@@ -446,6 +446,9 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 		return new PropertiesOptions(config,type);
 	}
 	
+	/**
+	 * Extracted from the annotations
+	 */
 	public static class PropertiesOptions extends AbstractBeanOptions<GenerateProperties> {
 
 		public Access fieldAccess;
@@ -467,6 +470,9 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 
 	}
 	
+	/**
+	 * Used to enhance property models with additional information
+	 */
 	private static class PropertyExtension {
 		boolean generateSetter;
 		boolean generateGetter;
