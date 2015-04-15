@@ -203,7 +203,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			}
 		}
 		
-		if(options.generateSetters && (access == Access.PUBLIC || access == Access.PACKAGE)){
+		if(options.makeFinal){
 			field.getModifiers().setFinal(true);
 		}
 	}
@@ -456,6 +456,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 		public String vetoableChangeSupportFieldName = "_vetoableSupport";
 		public String setterPrefix;
 		public boolean generateGetters;
+		public boolean makeFinal;
 		public boolean generateSetters;
 		public boolean generateStaticPropertyNameFields;
 		public boolean generateNoArgCtor;
