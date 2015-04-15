@@ -1,11 +1,14 @@
 package org.codemucker.jmutate.ast;
 
 import org.codemucker.jfind.Roots;
+import org.junit.Ignore;
 import org.junit.Test;
 
 
 public class JSearchEngineTest {
 
+	//not implemented yet!
+	@Ignore
 	@Test
 	public void smokeTest(){
 		JIndexingEngine engine = JIndexingEngine.with()
