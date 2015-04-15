@@ -185,16 +185,23 @@ public class OptionsMapper {
 			}
 			//find suitable setter
 			String setterName = BeanNameUtil.toSetterName(propertyName);
+			
+			//TODO:use PropertiesExtractor?
 			Class<?> propertyType = m.getReturnType();
 			Method setter = null;
 			try {
 				setter = beanClass.getMethod(setterName, new Class<?>[]{ propertyType });
 			} catch (NoSuchMethodException | SecurityException e) {
-				if(LOG.isDebugEnabled()){
-					LOG.debug("couldn't find setter " + setterName + "(" + propertyType.getName() + ") on " + beanClass.getName());
+				try {
+					setter = beanClass.getMethod(propertyName, new Class<?>[]{ propertyType });
+				} catch (NoSuchMethodException | SecurityException e2) {
+					//ignore
 				}
-				//ignore
 			}
+			if(setter == null && LOG.isDebugEnabled()){
+				LOG.debug("couldn't find either setter/builder method " + setterName + "/" + propertyName + "(" + propertyType.getName() + ") on " + beanClass.getName());
+			}
+			
 			boolean set = false;
 			if(setter !=null){
 				Object value = getValueFrom(propertyName, propertyType, map, defaults);
