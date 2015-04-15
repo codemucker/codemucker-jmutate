@@ -7,9 +7,9 @@ import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.eclipse.jdt.core.dom.ASTNode;
 
-public abstract class AbstractCodeGenerator<T extends Annotation> implements CodeGenerator<T> {	
-	
-    @Override
+public abstract class AbstractCodeGenerator<T extends Annotation> implements CodeGenerator<T> {
+
+	@Override
 	public void beforeRun() {
 	}
 
@@ -18,23 +18,20 @@ public abstract class AbstractCodeGenerator<T extends Annotation> implements Cod
 	}
 
 	@Override
-    public final void generate(ASTNode node, SmartConfig config) {
-        if (JType.is(node)) {
-            generate(JType.from(node), config);
-        } else if (JField.is(node)) {
-            generate(JField.from(node), config);
-        } else if (JMethod.is(node)) {
-            generate(JMethod.from(node), config);
-        }
-    }
+	public final void generate(ASTNode declaredInNode, SmartConfig config) {
+		if (JType.is(declaredInNode)) {
+			generate(JType.from(declaredInNode), config);
+		} else if (JField.is(declaredInNode)) {
+			generate(JField.from(declaredInNode), config);
+		} else if (JMethod.is(declaredInNode)) {
+			generate(JMethod.from(declaredInNode), config);
+		}
+	}
 
-	protected void generate(JType applyToNode, SmartConfig config) {
-    }
+	protected void generate(JType declaredInNode, SmartConfig config) {}
 
-    protected void generate(JMethod applyToNode, SmartConfig config) {
-    }
+	protected void generate(JMethod declaredInNode, SmartConfig config) {}
 
-    protected void generate(JField applyToNode, SmartConfig config) {
-    }
+	protected void generate(JField declaredInNode, SmartConfig config) {}
 
 }
