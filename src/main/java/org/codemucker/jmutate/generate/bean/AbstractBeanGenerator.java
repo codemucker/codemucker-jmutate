@@ -8,11 +8,11 @@ import org.apache.log4j.Logger;
 import org.codemucker.jmutate.ClashStrategyResolver;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.generate.AbstractCodeGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
+import org.codemucker.jmutate.generate.ReplaceOnlyOwnedNodesResolver;
 import org.codemucker.jmutate.generate.SmartConfig;
 import org.codemucker.jmutate.generate.model.pojo.PojoModel;
 import org.codemucker.jmutate.generate.model.pojo.PropertyModelExtractor;
@@ -80,11 +80,11 @@ public abstract class AbstractBeanGenerator<T extends Annotation,TOptions extend
 
 		PojoModel model = extractPropertiesModelFrom(node, options);
 		ClashStrategy methodClashDefaultStrategy = options.getClashStrategy();
-		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
+		methodClashResolver = new ReplaceOnlyOwnedNodesResolver(generatorMeta,methodClashDefaultStrategy);
 		
 		LOG.debug("found " + model.getAllProperties().size() + " bean properties for "  + options.getType().getFullNameRaw());
 		
-		JSourceFile source = node.getSource();
+		JSourceFile source = node.getCompilationUnit().getSource();
 		generate(node, config, model, options);	
 		writeToDiskIfChanged(source);	
 	}
@@ -140,27 +140,6 @@ public abstract class AbstractBeanGenerator<T extends Annotation,TOptions extend
 	protected SourceTemplate newSourceTemplate(){
 		return ctxt
 			.newSourceTemplate();
-	}
-
-	private class OnlyReplaceMyManagedMethodsResolver implements
-			ClashStrategyResolver {
-
-		private final ClashStrategy fallbackStrategy;
-
-		public OnlyReplaceMyManagedMethodsResolver(
-				ClashStrategy fallbackStrategy) {
-			super();
-			this.fallbackStrategy = fallbackStrategy;
-		}
-
-		@Override
-		public ClashStrategy resolveClash(ASTNode existingNode, ASTNode newNode) {
-			if (generatorMeta.isManagedByThis(JMethod.from(existingNode).getAnnotations())) {
-				return ClashStrategy.REPLACE;
-			}
-			return fallbackStrategy;
-		}
-
 	}
 
 }
