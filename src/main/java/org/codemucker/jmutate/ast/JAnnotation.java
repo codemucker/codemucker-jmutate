@@ -10,8 +10,6 @@ import java.util.Map;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.RootResource;
-import org.codemucker.jmatch.AString;
-import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJType;
@@ -67,20 +65,7 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 		return annotation;
 	}
 
-	public boolean isOfType(
-			Class<? extends java.lang.annotation.Annotation> annotationClass) {
-		return isOfType(NameUtil.compiledNameToSourceName(annotationClass));
-	}
-
-	public boolean isOfType(String expectFqn) {
-		return isOfType(AString.equalTo(expectFqn));
-	}
-
-	private boolean isOfType(Matcher<String> matcher) {
-		return matcher.matches(getQualifiedName());
-	}
-
-	public String getQualifiedName() {
+	public String getFullName() {
 		return NameUtil.resolveQualifiedName(annotation.getTypeName());
 	}
 
@@ -88,7 +73,6 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 		return getAttributeValue(name, "");
 	}
 
-	
 	public Object getAttributeValue(String name, Object defaultValue) {
 		Object val = null;
 		Expression exp = getAttributeValueOrNull(name);

@@ -23,8 +23,7 @@ public class JAnnotationTest {
 	
 		JAnnotation anon = annons.iterator().next();
 		
-		assertThat(anon.getQualifiedName(),isEqualTo(IsGenerated.class.getName()));
-		assertThat(anon.isOfType(IsGenerated.class));
+		assertThat(anon.getFullName(),isEqualTo(IsGenerated.class.getName()));
 	}
     
     @Test

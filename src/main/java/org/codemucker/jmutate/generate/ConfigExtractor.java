@@ -103,7 +103,7 @@ class ConfigExtractor {
      * If the provided annotation is a generator annotation (else a normal annotation which got caught up in the scan)
      */
     private void extractOptions(ASTNode node, Annotation annotationDeclaration){
-		String annotationName = JAnnotation.from(annotationDeclaration).getQualifiedName();
+		String annotationName = JAnnotation.from(annotationDeclaration).getFullName();
 		//skip if we've already rules out this annotation type
 		if(isIgnoreAnnotation(annotationName)){
 			return;
@@ -150,7 +150,7 @@ class ConfigExtractor {
 			return true;
 		}
 		for(JAnnotation markedWithAnnotation:annotation.getAnnotations().getAllDirect()){
-			String markedWithName = markedWithAnnotation.getQualifiedName();
+			String markedWithName = markedWithAnnotation.getFullName();
 			if(isIgnoreAnnotation(markedWithName)){
 				continue;
 			}

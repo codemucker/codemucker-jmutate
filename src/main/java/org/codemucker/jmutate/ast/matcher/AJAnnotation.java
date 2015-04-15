@@ -58,7 +58,7 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
             
             @Override
             public boolean matchesSafely(JAnnotation found, MatchDiagnostics diag) {
-            	String name = found.getQualifiedName();
+            	String name = found.getFullName();
                 
             	
             	//String fullCompiledName = NameUtil.sourceNameToCompiledName(found.getQualifiedName());
@@ -144,7 +144,7 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
         addMatcher(new AbstractNotNullMatcher<JAnnotation>() {
             @Override
             public boolean matchesSafely(JAnnotation found, MatchDiagnostics diag) {
-                return diag.tryMatch(this, found.getQualifiedName(), matcher);
+                return diag.tryMatch(this, found.getFullName(), matcher);
             }
 
             @Override
