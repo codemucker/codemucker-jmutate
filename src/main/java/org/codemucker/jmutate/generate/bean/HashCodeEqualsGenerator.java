@@ -8,14 +8,14 @@ import org.codemucker.jmutate.generate.SmartConfig;
 import org.codemucker.jmutate.generate.bean.HashCodeEqualsGenerator.HashCodeEqualsOptions;
 import org.codemucker.jmutate.generate.model.pojo.PojoModel;
 import org.codemucker.jmutate.generate.model.pojo.PropertyModel;
-import org.codemucker.jpattern.generate.GenerateHashCodeAndEqualsMethod;
+import org.codemucker.jpattern.generate.GenerateHashCodeAndEquals;
 
 import com.google.inject.Inject;
 
 /**
  * Generates the 'hashCode' and 'equals' methods on pojos
  */
-public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashCodeAndEqualsMethod,HashCodeEqualsOptions> {
+public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashCodeAndEquals,HashCodeEqualsOptions> {
 
 	/**
 	 * Used to select a reproducible starting prime when generating a hash code. Rather than pick a random one at each generation causing churn in the code, pick out of this array in a deterministic way based
@@ -25,7 +25,7 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 
 	@Inject
 	public HashCodeEqualsGenerator(JMutateContext ctxt) {
-		super(ctxt,GenerateHashCodeAndEqualsMethod.class);
+		super(ctxt,GenerateHashCodeAndEquals.class);
 	}
 	
 	@Override
@@ -140,13 +140,13 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 		return new HashCodeEqualsOptions(config,type);
 	}
 	
-	public static class HashCodeEqualsOptions extends AbstractBeanOptions<GenerateHashCodeAndEqualsMethod> {
+	public static class HashCodeEqualsOptions extends AbstractBeanOptions<GenerateHashCodeAndEquals> {
 
 		public boolean generateHashCode;
 		public boolean generateEquals;
 		
 		public HashCodeEqualsOptions(Configuration config,JType type) {
-			super(config,GenerateHashCodeAndEqualsMethod.class,type);
+			super(config,GenerateHashCodeAndEquals.class,type);
 		}
 	}
 

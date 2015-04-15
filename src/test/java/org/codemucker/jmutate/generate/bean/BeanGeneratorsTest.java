@@ -33,9 +33,9 @@ import org.codemucker.jmutate.generate.model.pojo.PojoModel;
 import org.codemucker.jpattern.generate.GenerateAllArgsCtor;
 import org.codemucker.jpattern.generate.GenerateBuilder;
 import org.codemucker.jpattern.generate.GenerateCloneMethod;
-import org.codemucker.jpattern.generate.GenerateHashCodeAndEqualsMethod;
+import org.codemucker.jpattern.generate.GenerateHashCodeAndEquals;
 import org.codemucker.jpattern.generate.GenerateProperties;
-import org.codemucker.jpattern.generate.GenerateToStringMethod;
+import org.codemucker.jpattern.generate.GenerateToString;
 import org.codemucker.jpattern.generate.IsGeneratorConfig;
 import org.codemucker.jpattern.generate.matcher.GenerateManyMatchers;
 import org.codemucker.jpattern.generate.matcher.GenerateMatcher;
@@ -60,8 +60,8 @@ public class BeanGeneratorsTest {
     
 	@Test
 	public void ensureDefaultGeneratorSetOnAnnotations(){
-		assertCorrectGenerator(GenerateToStringMethod.class, ToStringGenerator.class);
-		assertCorrectGenerator(GenerateHashCodeAndEqualsMethod.class,HashCodeEqualsGenerator.class);
+		assertCorrectGenerator(GenerateToString.class, ToStringGenerator.class);
+		assertCorrectGenerator(GenerateHashCodeAndEquals.class,HashCodeEqualsGenerator.class);
 		assertCorrectGenerator(GenerateProperties.class, PropertiesGenerator.class);
 		assertCorrectGenerator(GenerateCloneMethod.class, CloneGenerator.class);
 		assertCorrectGenerator(GenerateBuilder.class, BuilderGenerator.class);
@@ -80,8 +80,8 @@ public class BeanGeneratorsTest {
 	public void ensureMethodSettersOrFieldsMatchThoseInGeneratorAnnotation(){
 		assertPropertiesMatch(AllArgOptions.class,GenerateAllArgsCtor.class);
 		assertPropertiesMatch(CloneOptions.class,GenerateCloneMethod.class);
-		assertPropertiesMatch(HashCodeEqualsOptions.class,GenerateHashCodeAndEqualsMethod.class);
-		assertPropertiesMatch(ToStringOptions.class,GenerateToStringMethod.class);
+		assertPropertiesMatch(HashCodeEqualsOptions.class,GenerateHashCodeAndEquals.class);
+		assertPropertiesMatch(ToStringOptions.class,GenerateToString.class);
 		assertPropertiesMatch(PropertiesOptions.class, GenerateProperties.class);
 		//ensurePropertiesMatch(BuilderGenerator.BuilderOptions.class,GenerateBuilder.class);
 		assertPropertiesMatch(GenerateMatcherOptions.class,GenerateMatcher.class);

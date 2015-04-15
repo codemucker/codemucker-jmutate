@@ -8,18 +8,18 @@ import org.codemucker.jmutate.generate.SmartConfig;
 import org.codemucker.jmutate.generate.bean.ToStringGenerator.ToStringOptions;
 import org.codemucker.jmutate.generate.model.pojo.PojoModel;
 import org.codemucker.jmutate.generate.model.pojo.PropertyModel;
-import org.codemucker.jpattern.generate.GenerateToStringMethod;
+import org.codemucker.jpattern.generate.GenerateToString;
 
 import com.google.inject.Inject;
 
 /**
  * Generates the 'toString' method on pojos
  */
-public class ToStringGenerator extends AbstractBeanGenerator<GenerateToStringMethod,ToStringOptions> {
+public class ToStringGenerator extends AbstractBeanGenerator<GenerateToString,ToStringOptions> {
 
 	@Inject
 	public ToStringGenerator(JMutateContext ctxt) {
-		super(ctxt,GenerateToStringMethod.class);
+		super(ctxt,GenerateToString.class);
 	}
 	
 	@Override
@@ -59,10 +59,10 @@ public class ToStringGenerator extends AbstractBeanGenerator<GenerateToStringMet
 		return new ToStringOptions(config,type);
 	}
 	
-	public static class ToStringOptions extends AbstractBeanOptions<GenerateToStringMethod> {
+	public static class ToStringOptions extends AbstractBeanOptions<GenerateToString> {
 
 		public ToStringOptions(Configuration config,JType pojoType) {
-			super(config,GenerateToStringMethod.class,pojoType);
+			super(config,GenerateToString.class,pojoType);
 		}
 	}
 }
