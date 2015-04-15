@@ -43,7 +43,7 @@ public class PropertyModel extends ModelObject {
     	this.name = propertyName;
     	this.nameSingular = PluralToSingularConverter.INSTANCE.pluralToSingle(propertyName);
         
-    	this.type = TypeModel.newFromFullNameAndTypeBounds(propertyType, null);
+    	this.type = new TypeModel(propertyType, null);
     	this.getterName = null;// = BeanNameUtil.toGetterName(propertyName, NameUtil.isBoolean(propertyType));
         this.setterName = null;//BeanNameUtil.toSetterName(propertyName);
         this.addName = null;// type.isIndexed()?BeanNameUtil.addPrefixName("add",propertyNameSingular):null;

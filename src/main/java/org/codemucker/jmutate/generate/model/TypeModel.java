@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.lang.BeanNameUtil;
 import org.codemucker.lang.ClassNameUtil;
@@ -33,6 +34,9 @@ public class TypeModel extends ModelObject {
 	 * other types this is the same as the full name
 	 */
 	private final String objectTypeFullName;
+	/**
+	 * The object type without the generic part
+	 */
 	private final String objectTypeFullNameRaw;
 	private final String genericPartOrNull;
 	private final String genericPartOrEmpty;
@@ -57,8 +61,12 @@ public class TypeModel extends ModelObject {
 	private final boolean isString;
 	private final boolean isGeneric;
 
-	public static TypeModel newFromFullNameAndTypeBounds(String fullType, String typeBounds){
-		return new TypeModel(fullType, typeBounds);
+	public TypeModel(Class<?> type){
+		this(NameUtil.compiledNameToSourceName(type), null);
+	}
+	
+	public TypeModel(JType type){
+		this(type.getFullGenericName(), type.getTypeBoundsExpressionOrNull());
 	}
 	
 	public TypeModel(String fullType, String typeBounds) {
@@ -72,16 +80,16 @@ public class TypeModel extends ModelObject {
 		this.fullNameRaw = NameUtil.removeGenericOrArrayPart(fullName);
 		this.genericPartOrNull = NameUtil.extractGenericPartOrNull(fullType);
 		this.genericPartOrEmpty = Strings.nullToEmpty(genericPartOrNull);
+		this.isPrimitive = NameUtil.isPrimitive(fullName);
 		
 		this.pkg = ClassNameUtil.extractPkgPartOrNull(fullType);
 		
 		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(fullNameRaw);
 		this.simpleName = getSimpleNameRaw() + (genericPartOrNull == null ? "" : genericPartOrNull);
 
-		this.objectTypeFullName = NameUtil.primitiveToObjectType(fullName);
-		this.objectTypeFullNameRaw = NameUtil.removeGenericOrArrayPart(objectTypeFullName);
+		this.objectTypeFullName = isPrimitive?NameUtil.primitiveToObjectType(fullName):fullName;
+		this.objectTypeFullNameRaw = isPrimitive?NameUtil.removeGenericOrArrayPart(objectTypeFullName):fullNameRaw;
 
-		this.isPrimitive = NameUtil.isPrimitive(fullName);
 		this.isString = fullName.equals("String") || fullName.equals("java.lang.String");
 		this.isMap = REGISTRY.isMap(fullNameRaw);
 		this.isList = REGISTRY.isList(fullNameRaw);

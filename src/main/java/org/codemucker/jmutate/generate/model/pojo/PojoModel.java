@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.codemucker.jmutate.generate.model.ModelObject;
+import org.codemucker.jmutate.generate.model.TypeModel;
 
 import com.google.common.collect.Lists;
 
@@ -37,17 +38,23 @@ public class PojoModel extends ModelObject {
 	 * processing
 	 */
 	private final int level;
+	private final TypeModel type;
 
-	public PojoModel(int level) {
-		this(level, null);
+	public PojoModel(TypeModel type,int level) {
+		this(type, level, null);
 	}
 
-	public PojoModel(int level, PojoModel parent) {
+	public PojoModel(TypeModel type,int level, PojoModel parent) {
 		super();
 		this.level = level;
 		this.parent = parent;
+		this.type = type;
 	}
 
+	public TypeModel getType() {
+		return type;
+	}
+	
 	public boolean hasAnyProperties() {
 		return hasDeclaredProperties()
 				|| (parent != null && parent.hasAnyProperties());
@@ -103,5 +110,6 @@ public class PojoModel extends ModelObject {
 		}
 		return false;
 	}
+
 
 }

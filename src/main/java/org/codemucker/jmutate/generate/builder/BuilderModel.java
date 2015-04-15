@@ -60,7 +60,7 @@ public class BuilderModel extends ModelObject {
 
     public BuilderModel(JType pojo,BuilderOptions options) {
     	
-    	this.pojoType = TypeModel.newFromFullNameAndTypeBounds(pojo.getFullGenericName(), pojo.getTypeBoundsExpressionOrNull());
+    	this.pojoType = new TypeModel(pojo);
     	this.isGeneric = getPojoType().isGeneric();
     	
     	this.builderTypeSimpleRaw = pojo.isAbstract()?"AbstractBuilder":"Builder";

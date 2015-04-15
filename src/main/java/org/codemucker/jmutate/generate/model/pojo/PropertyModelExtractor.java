@@ -33,6 +33,7 @@ import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
 import org.codemucker.jmutate.ast.matcher.AJType;
+import org.codemucker.jmutate.generate.model.TypeModel;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.bean.NotAProperty;
 import org.codemucker.jpattern.bean.Property;
@@ -109,7 +110,7 @@ public class PropertyModelExtractor {
 
 	private final Matcher<String> propertyNameMatcher;
 
-	public PropertyModelExtractor(ResourceLoader resourceLoader,
+	private PropertyModelExtractor(ResourceLoader resourceLoader,
 			JAstParser parser, boolean includeSuperClass,
 			boolean includeCompiledClasses, Matcher<String> propertyNameMatcher, boolean includeFields, boolean includeGetters, boolean includeSetters) {
 		super();
@@ -153,7 +154,7 @@ public class PropertyModelExtractor {
 			}
 		}
 
-		PojoModel model = new PojoModel(level,parentModel);
+		PojoModel model = new PojoModel(new TypeModel(pojoType.getFullGenericName(), pojoType.getTypeBoundsExpressionOrNull()),level,parentModel);
 
 		if(includeFields){
 			extractFields(pojoType, model);
@@ -248,7 +249,7 @@ public class PropertyModelExtractor {
 				parentModel = extractModel(pojoClass, level+1);
 			}
 		}
-		PojoModel model = new PojoModel(level,parentModel);
+		PojoModel model = new PojoModel(new TypeModel(NameUtil.compiledNameToSourceName(pojoClass),null),level,parentModel);
 
 		ReflectedClass pojoType = ReflectedClass.from(pojoClass);
 		if (includeFields) {
