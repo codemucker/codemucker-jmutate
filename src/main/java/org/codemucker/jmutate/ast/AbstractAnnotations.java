@@ -36,18 +36,18 @@ public abstract class AbstractAnnotations implements Annotations {
     }
 
     @Override
-    public boolean contains(Matcher<JAnnotation> matcher, Depth depth) {
+    public boolean contains(Matcher<JAnnotation> matcher, SearchDepth depth) {
         return getOrNull(matcher, depth) != null;
     }
 
     @Override
     public List<JAnnotation> getAllDirect() {
-        return find(MATCH_ANY, Depth.DIRECT).toList();
+        return find(MATCH_ANY, SearchDepth.DIRECT).toList();
     }
 
     @Override
     public List<JAnnotation> getAllIncludeNested() {
-        return find(MATCH_ANY, Depth.ANY).toList();
+        return find(MATCH_ANY, SearchDepth.ANY).toList();
     }
 
     @Override
@@ -57,12 +57,12 @@ public abstract class AbstractAnnotations implements Annotations {
 
     @Override
     public JAnnotation getOrNull(Matcher<JAnnotation> matcher) {
-        return getOrNull(matcher, Depth.DIRECT);
+        return getOrNull(matcher, SearchDepth.DIRECT);
     }
 
     @Override
-    public JAnnotation getOrNull(final Matcher<JAnnotation> matcher, Depth depth) {
-        if (depth.max == Depth.DIRECT.max) {
+    public JAnnotation getOrNull(final Matcher<JAnnotation> matcher, SearchDepth depth) {
+        if (depth.max == SearchDepth.DIRECT.max) {
             for (IExtendedModifier mod : getModifiers()) {
                 if (mod instanceof org.eclipse.jdt.core.dom.Annotation) {
                     JAnnotation anon = JAnnotation.from((org.eclipse.jdt.core.dom.Annotation) mod);
@@ -110,13 +110,13 @@ public abstract class AbstractAnnotations implements Annotations {
 
     @Override
     public FindResult<JAnnotation> find(Matcher<JAnnotation> matcher) {
-        return find(matcher, Depth.DIRECT);
+        return find(matcher, SearchDepth.DIRECT);
     }
 
     @Override
-    public FindResult<JAnnotation> find(final Matcher<JAnnotation> matcher, Depth depth) {
+    public FindResult<JAnnotation> find(final Matcher<JAnnotation> matcher, SearchDepth depth) {
         final List<JAnnotation> found = new ArrayList<>();
-        if (depth.max == Depth.DIRECT.max) {
+        if (depth.max == SearchDepth.DIRECT.max) {
             for (IExtendedModifier mod : getModifiers()) {
                 if (mod instanceof org.eclipse.jdt.core.dom.Annotation) {
                     JAnnotation anon = JAnnotation.from((org.eclipse.jdt.core.dom.Annotation) mod);

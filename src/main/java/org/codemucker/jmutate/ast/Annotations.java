@@ -13,7 +13,7 @@ public interface Annotations extends AstNodeProvider<ASTNode> {
 
     public boolean contains(Matcher<JAnnotation> matcher);
 
-    public boolean contains(Matcher<JAnnotation> matcher, Depth depth);
+    public boolean contains(Matcher<JAnnotation> matcher, SearchDepth depth);
 
     public List<JAnnotation> getAllDirect();
 
@@ -23,9 +23,9 @@ public interface Annotations extends AstNodeProvider<ASTNode> {
 
     public <A extends Annotation> JAnnotation getOrNull(Class<A> annotationClass);
 
-    public JAnnotation getOrNull(Matcher<JAnnotation> matcher, Depth depth);
+    public JAnnotation getOrNull(Matcher<JAnnotation> matcher, SearchDepth depth);
 
     public FindResult<JAnnotation> find(Matcher<JAnnotation> matcher);
 
-    public FindResult<JAnnotation> find(Matcher<JAnnotation> matcher, Depth depth);
+    public FindResult<JAnnotation> find(Matcher<JAnnotation> matcher, SearchDepth depth);
 }

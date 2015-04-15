@@ -23,7 +23,7 @@ import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmatch.expression.AbstractMatchBuilderCallback;
 import org.codemucker.jmatch.expression.ExpressionParser;
-import org.codemucker.jmutate.ast.Depth;
+import org.codemucker.jmutate.ast.SearchDepth;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
@@ -455,7 +455,7 @@ public class AJType extends ObjectMatcher<JType> {
         addMatcher(new AbstractNotNullMatcher<JType>() {
             @Override
             public boolean matchesSafely(JType found, MatchDiagnostics diag) {
-                return found.getAnnotations().contains(matcher, Depth.ANY);
+                return found.getAnnotations().contains(matcher, SearchDepth.ANY);
             }
 
             @Override
