@@ -26,21 +26,25 @@ import org.codemucker.jmutate.generate.bean.HashCodeEqualsGenerator.HashCodeEqua
 import org.codemucker.jmutate.generate.bean.PropertiesGenerator.PropertiesOptions;
 import org.codemucker.jmutate.generate.bean.ToStringGenerator.ToStringOptions;
 import org.codemucker.jmutate.generate.builder.BuilderGenerator;
+import org.codemucker.jmutate.generate.matcher.ManyMatchersGenerator;
 import org.codemucker.jmutate.generate.matcher.MatcherGenerator;
+import org.codemucker.jmutate.generate.matcher.MatcherGenerator.GenerateMatcherOptions;
 import org.codemucker.jmutate.generate.model.pojo.PojoModel;
 import org.codemucker.jpattern.generate.GenerateAllArgsCtor;
 import org.codemucker.jpattern.generate.GenerateBuilder;
 import org.codemucker.jpattern.generate.GenerateCloneMethod;
 import org.codemucker.jpattern.generate.GenerateHashCodeAndEqualsMethod;
-import org.codemucker.jpattern.generate.GenerateMatchers;
 import org.codemucker.jpattern.generate.GenerateProperties;
 import org.codemucker.jpattern.generate.GenerateToStringMethod;
 import org.codemucker.jpattern.generate.IsGeneratorConfig;
+import org.codemucker.jpattern.generate.matcher.GenerateManyMatchers;
+import org.codemucker.jpattern.generate.matcher.GenerateMatcher;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.codemucker.lang.BeanNameUtil;
 import org.junit.Test;
 
 import com.google.inject.Inject;
+
 import org.codemucker.jmutate.generate.bean.AbstractBeanGenerator;
 import org.codemucker.jmutate.generate.bean.AbstractBeanOptions;
 import org.codemucker.jmutate.generate.bean.CloneGenerator;
@@ -61,7 +65,9 @@ public class BeanGeneratorsTest {
 		assertCorrectGenerator(GenerateProperties.class, PropertiesGenerator.class);
 		assertCorrectGenerator(GenerateCloneMethod.class, CloneGenerator.class);
 		assertCorrectGenerator(GenerateBuilder.class, BuilderGenerator.class);
-		assertCorrectGenerator(GenerateMatchers.class, MatcherGenerator.class);
+		assertCorrectGenerator(GenerateManyMatchers.class, ManyMatchersGenerator.class);
+		assertCorrectGenerator(GenerateMatcher.class, MatcherGenerator.class);
+		
 	}
 	
 	private <T extends Annotation> void assertCorrectGenerator(Class<T> genOptions,Class<? extends CodeGenerator<T>> generatorClass){
@@ -78,7 +84,7 @@ public class BeanGeneratorsTest {
 		assertPropertiesMatch(ToStringOptions.class,GenerateToStringMethod.class);
 		assertPropertiesMatch(PropertiesOptions.class, GenerateProperties.class);
 		//ensurePropertiesMatch(BuilderGenerator.BuilderOptions.class,GenerateBuilder.class);
-		//ensurePropertiesMatch(MatcherGenerator.MatchersOptions.class,GenerateMatchers.class);
+		assertPropertiesMatch(GenerateMatcherOptions.class,GenerateMatcher.class);
 	}
 	
 	//ensure the options and annotation class map to each other
@@ -89,29 +95,43 @@ public class BeanGeneratorsTest {
 		}
 	}
 	
-	private void ensureOptionHasSetterOrField(Class<?> optionClass,String name, Class<?> returnType,Class<? extends Annotation> annotationClass){
-		Method m = null;
+	private void ensureOptionHasSetterOrField(Class<?> optionClass,String name, Class<?> annotationType,Class<? extends Annotation> annotationClass){
+		Method setter = null;
 		try {
 			String setterName = BeanNameUtil.toSetterName(name);
-			m = optionClass.getMethod(setterName, new Class[]{returnType});
-		} catch (NoSuchMethodException | SecurityException e) {}
+			for(Method m:optionClass.getMethods()){
+				//find setter/builder method for given property
+				if(m.getParameterCount() == 1 && (m.getName().equals(setterName)||m.getName().equals(name)) && typesCompatible(annotationType, m.getParameterTypes()[0])){
+					setter = m;
+					break;
+				}
+			}
+		} catch (SecurityException e) {}
 		
-		Field f = null;
+		Field fieldSetter = null;
 		try {
-			f = optionClass.getField(name);
+			fieldSetter = optionClass.getField(name);
 		} catch (NoSuchFieldException | SecurityException e) {}
 		
+
 		Expect.with()
-			.failureMessage("expected options class " + optionClass.getName() +" to have a setter or field for property '" + name + "' (for annotation " + annotationClass.getName()+ ")")
-			.that(m != null || f!= null).isTrue();
+			.failureMessage("expected options class " + optionClass.getName() +" to have a setter or field for property '" + name + "' (for annotation " + annotationClass.getName()+ ") compatible with type " + annotationType)
+			.that(setter != null || fieldSetter!= null).isTrue();
 		
-		Class actualReturnType = f==null?m.getParameterTypes()[0]:f.getType();
+		Class<?> setterType = fieldSetter==null?setter.getParameterTypes()[0]:fieldSetter.getType();
+		boolean compaitbleTypes = typesCompatible(annotationType, setterType);
+		
 		Expect.with()
-			.failureMessage("expected options class " + optionClass.getName() +" property '" + name + "' to be of type " + returnType + " but was " + actualReturnType )
-			.that(actualReturnType).isEqualTo(returnType);
-	
+			.failureMessage("expected options class " + optionClass.getName() +" property '" + name + "' to be of type " + annotationType + " but was " + setterType )
+			.that(compaitbleTypes).isTrue();
 	}
 	
+	private boolean typesCompatible(Class<?> annotationType,Class<?> optionType){
+		if( annotationType == Class.class && optionType == String.class){
+			return true;
+		}
+		return optionType.equals(annotationType);
+	}
 	
 	@Test
 	public void ensureOptionsArePopulated(){
