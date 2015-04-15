@@ -5,7 +5,6 @@ import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.ToSourceConverter;
-import org.codemucker.jmutate.generate.JAnnotationCompiler;
 import org.codemucker.jtest.ProjectLayout;
 import org.eclipse.jdt.core.dom.ASTNode;
 
@@ -45,14 +44,6 @@ public interface JMutateContext {
 	 */
 	JAstParser getParser();
 	
-	/**
-	 * Get hold of the compiler used. Shortcut for {@link #obtain(JCompiler.class)}
-	 * @return
-	 */
-	JCompiler getCompiler();
-	
-	JAnnotationCompiler getAnnotationCompiler();
-    
 	ToSourceConverter getNodeToSourceConverter();
 	
 	/**
@@ -74,9 +65,9 @@ public interface JMutateContext {
 	/**
 	 * Register the given source as being modified or created
 	 * 
-	 * @param source
+	 * @param provider
 	 */
-	void trackChanges(JSourceFile source);
+	void trackChanges(IProvideCompilationUnit provider);
 
 
 	/**

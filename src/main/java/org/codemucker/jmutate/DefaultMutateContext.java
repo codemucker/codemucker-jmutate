@@ -20,7 +20,6 @@ import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.ToSourceConverter;
-import org.codemucker.jmutate.generate.JAnnotationCompiler;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jtest.MavenProjectLayout;
@@ -44,7 +43,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class DefaultMutateContext implements JMutateContext {
 
-    private static final Logger log = LogManager.getLogger(DefaultMutateContext.class);
+    private static final Logger LOG = LogManager.getLogger(DefaultMutateContext.class);
 
     private final ProjectLayout projectLayout;
     private final ProjectOptions projectOptons;
@@ -110,15 +109,23 @@ public class DefaultMutateContext implements JMutateContext {
 	@Override
 	public void trackChanges(ASTNode node) {
 		JSourceFile source = MutateUtil.getSource(node);
-		if( source != null){
+		if(source != null){
 			trackChanges(source);
 		}
 	}
 
 	@Override
-	public void trackChanges(JSourceFile source) {
-		log.debug("tracking changes for " + source.getResource().getFullPath());
-		getOrCreateTracker(source.getResource()).addSource(source);
+	public void trackChanges(IProvideCompilationUnit provider) {
+		JSourceFile source = null;
+		if (provider != null) {
+			source = provider.getCompilationUnit().getSource();
+		}
+		if (source != null) {
+			LOG.debug("tracking changes for " + source.getResource().getFullPath());
+			getOrCreateTracker(source.getResource()).addSource(source);
+		} else {
+			LOG.debug("no source file for provied supplier");
+		}
 	}
 
 	@Override
@@ -131,9 +138,9 @@ public class DefaultMutateContext implements JMutateContext {
 		if(source == null){
 			source = JSourceFile.fromResource(resource, getParser());
 			tracker.addSource(source);
-			log.debug("now tracking changes for " + source.getResource().getFullPath());
+			LOG.debug("now tracking changes for " + source.getResource().getFullPath());
 		} else {
-			log.debug("already tracking change for " + source.getResource().getFullPath());
+			LOG.debug("already tracking change for " + source.getResource().getFullPath());
 		}
 		return source;
 	}
@@ -154,16 +161,6 @@ public class DefaultMutateContext implements JMutateContext {
 	    return obtain(JAstParser.class);
     }
  
-	@Override
-    public JCompiler getCompiler() {
-        return obtain(JCompiler.class);
-    }
-	
-	@Override
-    public JAnnotationCompiler getAnnotationCompiler() {
-        return obtain(JAnnotationCompiler.class);
-    }
-    
 	@Override
     public ToSourceConverter getNodeToSourceConverter() {
 	    return obtain(ToSourceConverter.class);

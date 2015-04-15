@@ -9,6 +9,7 @@ import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmutate.IProvideCompilationUnit;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.MutateUtil;
@@ -22,7 +23,7 @@ import org.eclipse.jdt.core.dom.PackageDeclaration;
 
 import com.google.common.collect.Lists;
 
-public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
+public class JCompilationUnit implements AstNodeProvider<CompilationUnit>, IProvideCompilationUnit {
 
 	private final CompilationUnit compilationUnit;
 	
@@ -158,4 +159,9 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit> {
         newImport.setName(ast.newName(fullName));
         imports.add(newImport);
     }
+
+	@Override
+	public JCompilationUnit getCompilationUnit() {
+		return this;
+	}
 }

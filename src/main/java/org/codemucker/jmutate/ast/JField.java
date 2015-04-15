@@ -6,6 +6,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.List;
 
+import org.codemucker.jmutate.IProvideCompilationUnit;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -18,7 +19,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import com.google.common.base.Function;
 
-public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclaration> {
+public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclaration> , IProvideCompilationUnit {
 
 	public static final Function<FieldDeclaration, JField> TRANSFORMER = new Function<FieldDeclaration, JField>() {
 		@Override
@@ -178,6 +179,7 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 		return new JModifier(fieldNode.getAST(),fieldNode.modifiers());
 	}
 	
+	@Override
 	public JCompilationUnit getCompilationUnit(){
 		return JCompilationUnit.findCompilationUnit(getAstNode());
 	}
@@ -187,7 +189,6 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
         return annotable;
     }
 	
-
 	public static class SingleJField {
 		private final JField parent;
 		private final VariableDeclarationFragment frag;

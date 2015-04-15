@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmutate.IProvideCompilationUnit;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.util.NameUtil;
@@ -25,7 +26,7 @@ import org.eclipse.jdt.core.dom.TypeParameter;
 
 import com.google.common.base.Function;
 
-public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDeclaration> {
+public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDeclaration>,IProvideCompilationUnit {
 
 	private static final Function<MethodDeclaration, JMethod> TRANSFORMER = new Function<MethodDeclaration, JMethod>() {
 		public JMethod apply(MethodDeclaration node){
@@ -100,6 +101,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 		throw new JMutateException("Couldn't find parent type. Unexpected");
 	}
 	
+	@Override
 	public JCompilationUnit getCompilationUnit(){
 		return JCompilationUnit.findCompilationUnit(getAstNode());
 	}

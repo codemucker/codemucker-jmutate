@@ -205,14 +205,6 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		return Object.class.getName();
 	}
 
-	public RootResource getResource(){
-        return getSource().getResource();
-    }
-	
-	public JSourceFile  getSource(){
-        return MutateUtil.getSource(typeNode);
-    }
-	
 	@Override
 	public ASTNode getAstNode(){
 		return typeNode;

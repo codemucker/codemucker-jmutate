@@ -12,6 +12,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.RootResource;
+import org.codemucker.jmutate.IProvideCompilationUnit;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.JMutateParseException;
@@ -20,7 +21,7 @@ import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
-public class JSourceFileMutator {
+public class JSourceFileMutator implements IProvideCompilationUnit {
     
     private static final Logger log = LogManager.getLogger(JSourceFileMutator.class);
     
@@ -55,6 +56,7 @@ public class JSourceFileMutator {
 		return mutables;
 	}
 
+	@Override
 	public JCompilationUnit getCompilationUnit() {
 		return source.getCompilationUnit();
 	}

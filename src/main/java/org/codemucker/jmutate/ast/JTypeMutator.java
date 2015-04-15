@@ -4,6 +4,7 @@ import static org.codemucker.lang.Check.checkNotNull;
 
 import java.util.List;
 
+import org.codemucker.jmutate.IProvideCompilationUnit;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.PlacementStrategy;
@@ -25,8 +26,7 @@ import org.eclipse.jdt.core.dom.NameQualifiedType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-
-public class JTypeMutator {
+public class JTypeMutator implements IProvideCompilationUnit {
 	
 	private final JType jType;
 	private final JMutateContext ctxt;
@@ -163,6 +163,11 @@ public class JTypeMutator {
 	
 	private SourceTemplate newSourceTemplate(){
 		return ctxt.obtain(SourceTemplate.class);
+	}
+
+	@Override
+	public JCompilationUnit getCompilationUnit() {
+		return jType.getCompilationUnit();
 	}
 	
 }

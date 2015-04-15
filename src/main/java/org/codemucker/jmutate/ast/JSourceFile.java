@@ -17,6 +17,7 @@ import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmutate.IProvideCompilationUnit;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.matcher.AJSourceFile;
@@ -31,7 +32,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.MalformedTreeException;
 import org.eclipse.text.edits.TextEdit;
 
-public class JSourceFile implements AstNodeProvider<CompilationUnit> {
+public class JSourceFile implements AstNodeProvider<CompilationUnit>, IProvideCompilationUnit {
 	
 	//TODO:cache calculated fields, but clear on node modification
 	
@@ -300,6 +301,7 @@ public class JSourceFile implements AstNodeProvider<CompilationUnit> {
 		return getAstNode().types();
 	}
 
+	@Override
 	public JCompilationUnit getCompilationUnit() {
 		return JCompilationUnit.from(compilationUnitNode);
 	}
