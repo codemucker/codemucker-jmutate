@@ -10,7 +10,6 @@ import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
@@ -116,30 +115,6 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 		return singles;
 	}
 
-	public static class SingleJField {
-		private final JField parent;
-		private final VariableDeclarationFragment frag;
-
-		public SingleJField(final JField parent, final VariableDeclarationFragment frag) {
-	        super();
-	        this.parent = parent;
-	        this.frag = frag;
-        }
-
-		public String getName() {
-			return frag.getName().getIdentifier();
-		}
-
-		public Expression getInitilizer() {
-			return frag.getInitializer();
-		}
-
-		public Type getType() {
-			return parent.getType();
-		}
-	}
-
-
 	public JAccess getAccess(){
 		return getModifiers().asAccess();
 	}
@@ -211,5 +186,29 @@ public class JField implements AnnotationsProvider, AstNodeProvider<FieldDeclara
 	public Annotations getAnnotations(){
         return annotable;
     }
+	
+
+	public static class SingleJField {
+		private final JField parent;
+		private final VariableDeclarationFragment frag;
+
+		public SingleJField(final JField parent, final VariableDeclarationFragment frag) {
+	        super();
+	        this.parent = parent;
+	        this.frag = frag;
+        }
+
+		public String getName() {
+			return frag.getName().getIdentifier();
+		}
+
+		public Expression getInitilizer() {
+			return frag.getInitializer();
+		}
+
+		public Type getType() {
+			return parent.getType();
+		}
+	}
  
 }
