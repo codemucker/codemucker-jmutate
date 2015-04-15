@@ -133,6 +133,7 @@ public class SmartConfig {
 		String annotationName = NameUtil.compiledNameToSourceName(fromAnnotation);
 		return annotationName;
 	}
+
 			
 	@Override
 	public String toString(){
