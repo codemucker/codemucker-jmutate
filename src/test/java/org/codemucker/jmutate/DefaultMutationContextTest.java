@@ -10,7 +10,8 @@ public class DefaultMutationContextTest {
     @Test
     public void testCanCompileSource() {
         DefaultMutateContext ctxt = DefaultMutateContext.with().defaults().build();
-
+        JCompiler compiler = ctxt.obtain(JCompiler.class);
+        
         SourceTemplate t = ctxt.newSourceTemplate();
         t.pl("package com.mycompany;");
         t.pl("public class FooBar {");
@@ -21,7 +22,8 @@ public class DefaultMutationContextTest {
 
         JSourceFile source = t.asSourceFileSnippet().asMutator(ctxt).writeModificationsToDisk();
 
-        Class<?> sourceClass = ctxt.getCompiler().toCompiledClass(source);
+        
+        Class<?> sourceClass = compiler.toCompiledClass(source);
         
         Expect.that(sourceClass).is(AClass.that().isPublic().fullNameAntPattern("com.mycompany.FooBar"));
         

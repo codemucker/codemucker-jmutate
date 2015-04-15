@@ -8,6 +8,7 @@ import java.util.Map;
 import junit.framework.AssertionFailedError;
 
 import org.codemucker.jmutate.DefaultMutateContext;
+import org.codemucker.jmutate.JCompiler;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.TestSourceHelper;
 import org.codemucker.jmutate.ast.JAnnotation;
@@ -27,7 +28,8 @@ public class DefaultAnnotationCompilerTest {
 	@Test
 	public void canCompileAnnotation() {
 
-		DefaultAnnotationCompiler compiler = new DefaultAnnotationCompiler(ctxt);
+		JCompiler jcompiler = ctxt.obtain(JCompiler.class);
+		DefaultAnnotationCompiler compiler = new DefaultAnnotationCompiler(ctxt, jcompiler);
 		
 		JSourceFile source = TestSourceHelper.findSourceForClass(MyTestClass.class);
 		
