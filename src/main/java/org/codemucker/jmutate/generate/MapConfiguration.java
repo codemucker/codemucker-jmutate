@@ -8,14 +8,30 @@ import java.util.Map.Entry;
 import org.apache.commons.configuration.AbstractConfiguration;
 
 public class MapConfiguration extends AbstractConfiguration {
-	private final Map<String, Object> map;//
+	
+	/**
+	 * Debug/logging name to use for this configuration
+	 */
+	private String name = "default";
+	
+	private final Map<String, Object> map;
 
 	public MapConfiguration(){
-		this.map = new HashMap<>();
+		this((String)null);
 	}
 	
 	public MapConfiguration(Map<String,Object> map){
+		this(map,null);
+	}
+	
+	public MapConfiguration(String name){
+		this.map = new HashMap<>();
+		this.name = name;
+	}
+	
+	public MapConfiguration(Map<String,Object> map, String name){
 		this.map = new HashMap<>(map);
+		this.name = name;
 	}
 	
 	@Override
@@ -54,6 +70,7 @@ public class MapConfiguration extends AbstractConfiguration {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getClass().getSimpleName()).append('@').append(hashCode()).append('[');
+		sb.append("name=").append(name).append(",values=");
 		for(Entry<String, Object> entry:map.entrySet()){
 			sb.append("\n\t").append(entry.getKey()).append("=").append(entry.getValue());
 		}
@@ -61,5 +78,8 @@ public class MapConfiguration extends AbstractConfiguration {
 		return sb.toString();
 	}
 
-	
+	public String getName() {
+		return name;
+	}
+
 }

@@ -1,10 +1,11 @@
 package org.codemucker.jmutate.generate;
 
 import java.io.File;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.configuration.Configuration;
 import org.codemucker.jfind.DirectoryRoot;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
@@ -17,14 +18,15 @@ import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jpattern.generate.Access;
+import org.codemucker.jpattern.generate.IsGeneratorConfig;
+import org.codemucker.jpattern.generate.IsGeneratorTemplate;
 import org.codemucker.jtest.MavenProjectLayout;
-import org.eclipse.jdt.internal.core.search.BasicSearchEngine;
 import org.junit.Test;
 
 public class GeneratorRunnerTest {
 
     @Test
-    public void generatorInvoked() throws Exception {
+    public void generatorInvokedOnGenerationAnnotation() throws Exception {
         String pkg = GeneratorRunnerTest.class.getPackage().getName();
         File generateTo =  new MavenProjectLayout().newTmpSubDir("GenRoot");
 
@@ -49,8 +51,15 @@ public class GeneratorRunnerTest {
     public static class BeanOne {
     }
     
+    @Retention(RetentionPolicy.RUNTIME)
+    @IsGeneratorConfig(defaultGenerator="org.codemucker.jmutate.generate.GeneratorRunnerTest.MyCodeGeneratorOne")    
+    public static @interface GenerateOne {
+        String foo();
+        String bar() default "someDefault";
+        Access ensureWeImportTypesWhenCompilingAnnon() default Access.PUBLIC;
+    }
+    
     public static class MyCodeGeneratorOne extends AbstractCodeGenerator<GenerateOne> {
-        
         public static final List<JType> nodesInvoked = new ArrayList<>();
         public static final List<SmartConfig> configs = new ArrayList<>();
 
@@ -64,10 +73,9 @@ public class GeneratorRunnerTest {
             nodesInvoked.add(applyToNode);
         }
     }
-    
-    
+
     @Test
-    public void generatorTemplateInvoked() throws Exception {
+    public void generatorInvokedOnTemplate() throws Exception {
         String pkg = GeneratorRunnerTest.class.getPackage().getName();
         File generateTo =  new MavenProjectLayout().newTmpSubDir("GenRoot");
 
@@ -89,21 +97,12 @@ public class GeneratorRunnerTest {
         
         List<SmartConfig> cfgs = MyCodeGeneratorTwo.configs;
         Expect.that(cfgs).isNotNull();
-//        Expect
-//			.that(MyCodeGeneratorTwo.configs.get(0).getConfigFor(GenerateMyTemplate.class))
-//			.is(AConfig.with()
-//				//	.entry("att1", true)
-//				//	.entry("att2", "att2default")
-//					.entry("att3", "att3val")
-//					.entry("att4", true));
-//        
         Expect
 			.that(MyCodeGeneratorTwo.configs.get(0).getConfigFor(GenerateTwo.class))
 			.is(AConfig.with()
 					.entry("foo", string("my template"))
-					//.entry("someAtt", AnInt.equalTo(5))
-					
-					);
+					.entry("someAtt", AnInt.equalTo(5))
+					.numEntries(2));
         
         GenerateTwoOptions opts = MyCodeGeneratorTwo.configs.get(0).mapFromTo(GenerateTwo.class,GenerateTwoOptions.class);
         
@@ -116,7 +115,7 @@ public class GeneratorRunnerTest {
     private static Matcher<String> string(String s){
     	return AString.equalTo(s);
     }
-    
+ 
     private static class GenerateTwoOptions extends GenerateOptions<GenerateTwo>{
     	public String foo;
     	public String bar;
@@ -125,12 +124,27 @@ public class GeneratorRunnerTest {
 		public GenerateTwoOptions() {
 			super();
 		}
-    	
     }
    
     @GenerateMyTemplate(att3 = "att3val", att4 = true)
-    public static class BeanTwo {
+    public static class BeanTwo { }
+    
+    @IsGeneratorTemplate
+    @GenerateTwo(foo="my template", someAtt=5)
+    public static @interface GenerateMyTemplate {
+    	String att1() default "att1default";
+    	boolean att2() default false;
+    	String att3();
+    	boolean att4();
     	
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @IsGeneratorConfig(defaultGenerator="org.codemucker.jmutate.generate.GeneratorRunnerTest.MyCodeGeneratorTwo")
+    public static @interface GenerateTwo {
+        String foo();
+        String bar() default "barDefault";
+        int someAtt() default 0;
     }
     
     public static class MyCodeGeneratorTwo extends AbstractCodeGenerator<GenerateTwo> {

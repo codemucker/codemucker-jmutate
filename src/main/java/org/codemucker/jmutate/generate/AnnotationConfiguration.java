@@ -27,12 +27,12 @@ public class AnnotationConfiguration extends MapConfiguration {
 	}
 
 	public AnnotationConfiguration(JAnnotation a) {
-		//TODO:need to extract defaults!!
-		super(a.getAttributeMap());
+		//TODO:need to extract defaults!!?
+		super(a.getAttributeMap(),a.getFullName());
 	}
 
 	public AnnotationConfiguration(java.lang.annotation.Annotation a) {
-		super();
+		super(a.getClass().getName());
 		extractConfig(a);
 	}
 

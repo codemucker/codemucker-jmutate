@@ -39,7 +39,7 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 		JSourceFile source = declaredInType.getCompilationUnit().getSource();
 		String generateFor = options.generateFor;
 		if( generateFor == null || Object.class.getName().equals(generateFor)){
-			generateFor = findBean(declaredInType,options);
+			LOG.error("need to set the 'generateFor' in " + source.getResource().getFullPath() + " for annotation " + GenerateMatcher.class);
 		}
 		String superType = declaredInType.getSuperTypeFullName();
 		if(superType != Object.class.getName()){
@@ -61,7 +61,7 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
     	return null;
 	}
 
-	public class GenerateMatcherOptions extends AbstractMatcherModel<GenerateMatcher> {
+	public static class GenerateMatcherOptions extends AbstractMatcherModel<GenerateMatcher> {
 		public String generateFor;
     	public boolean oneTimeOnly;
     	public String matcherBaseClass;

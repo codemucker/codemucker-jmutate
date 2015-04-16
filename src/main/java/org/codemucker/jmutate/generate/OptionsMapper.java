@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConversionException;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jmutate.util.NameUtil;
@@ -269,6 +270,17 @@ public class OptionsMapper {
 			Class<Enum> enumType = (Class<Enum>) toType; 
 			return ModelUtils.toEnum(val, enumType);
 		}
+		if(val instanceof Class<?> && toType == String.class){
+			return NameUtil.compiledNameToSourceName((Class)val);
+		}
+		if(val instanceof String && toType instanceof Class && !Strings.isNullOrEmpty(val.toString())){
+			try {
+				return getClass().getClassLoader().loadClass(val.toString());
+			} catch (ClassNotFoundException e) {
+				throw new ConversionException("Could not load string value '" + val + "' as class for property '" + propertyName + "'", e);
+			}
+		}
+		
 		Object convertedVal = CONVERTER.convert(val, toType);
 		return convertedVal;
 	}

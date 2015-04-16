@@ -70,6 +70,10 @@ public class BeanGeneratorsTest {
 		
 	}
 	
+	//TODO:random bean fill!
+	
+	
+	
 	private <T extends Annotation> void assertCorrectGenerator(Class<T> genOptions,Class<? extends CodeGenerator<T>> generatorClass){
 		IsGeneratorConfig opts = genOptions.getAnnotation(IsGeneratorConfig.class);
 		Expect.that(opts).isNotNull();

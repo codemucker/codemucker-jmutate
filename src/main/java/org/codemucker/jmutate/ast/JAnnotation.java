@@ -18,7 +18,6 @@ import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.BooleanLiteral;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldAccess;
 import org.eclipse.jdt.core.dom.MemberValuePair;
@@ -35,7 +34,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 public class JAnnotation implements AstNodeProvider<Annotation> {
 
-	private static final Logger log = LogManager.getLogger(JAnnotation.class);
+	private static final Logger LOG = LogManager.getLogger(JAnnotation.class);
 
 	private final Annotation annotation;
 
@@ -154,7 +153,7 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 		if (exp instanceof StringLiteral) {
 			return ((StringLiteral) exp).getLiteralValue();
 		} else if (exp instanceof NumberLiteral) {
-			return ((NumberLiteral) exp).getToken();
+			return parseNumberLiteral(((NumberLiteral) exp).getToken());
 		} else if (exp instanceof NullLiteral) {
 			return null;
 		} else if (exp instanceof TypeLiteral) {
@@ -186,23 +185,77 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 				// Bar
 				String fieldName = fa.getName().toString();
 				String fullName = className + "." + fieldName;
-				System.out.println("fieldExpName=" + fieldExpName);
-				System.out.println("className=" + className);
-				System.out.println("fullName=" + fullName);
-				
-
 				Object val = findFieldValue(node, fullName, className, fieldName);
-				System.out.println("val=" + val);
-				
 				return val==null?fullName:val;
 			}
 		} else {
-			log.warn("couldn't extract annotation value from expression type " + exp.getClass().getName() + ", node "+ node);
+			LOG.warn("couldn't extract annotation value from expression type " + exp.getClass().getName() + ", node "+ node);
 
 		}
 		return null;
 	}
+	
+	private Object parseNumberLiteral(String s){
+		try {
+			boolean hasUnderscore = false;
+			boolean isHex = false;
+			for(int i = 0;i < s.length();i++){
+				char c = s.charAt(i);
+				if(c == '_'){
+					hasUnderscore = true;
+				} else if (c == '.'){
+					return Double.parseDouble(clean(s,hasUnderscore));
+				} else if (c == 'x' || c == 'X'){
+					isHex = true;
+				} else if(!Character.isDigit(c) && c != '+' && c != '-'){
+					s = clean(s,hasUnderscore);
+					switch(c){
+					case 'f':
+					case 'F':
+						return Float.parseFloat(s);
+					case 'd':
+					case 'D':
+						return Double.parseDouble(s);
+					case 'l':
+					case 'L':
+					case 'x':
+					case 'X':
+						return Long.parseLong(s,isHex?16:10);
+					case 's':
+					case 'S':
+						return Short.parseShort(s,isHex?16:10);
+					case 'b':
+					case 'B':
+						if(i ==1 && s.charAt(0) == '0'){ //e.g. 0b1000_1011  - > binary
+							return Integer.parseInt(clean(s, true),2);
+						}
+						return Long.parseLong(s,isHex?16:10);
+					default:
+						LOG.warn("unrecognized character '" + c + "' in number literal '" + s + "', not parsing");
+						return s;
+					}				
+				}
+			}
+			return Integer.parseInt(clean(s,hasUnderscore),isHex?16:10);
+		} catch(NumberFormatException e){
+			LOG.warn("couldn't parse '" + s + "' as a number");
+		}
+		return s;
+	}
 
+	private String clean(String s, boolean removeUnderscore){
+		if(removeUnderscore){
+			StringBuilder sb = new StringBuilder();
+			for( int i = 0; i < s.length();i++){
+				char c = s.charAt(i);
+				if(c != '_'){
+					sb.append(c);
+				}
+			}
+			return sb.toString();
+		}
+		return s;
+	}
 	private Object findFieldValue(ASTNode node, String fullName, String className,String fieldName) {
 		ResourceLoader loader = MutateUtil.getResourceLoader(node);
 		

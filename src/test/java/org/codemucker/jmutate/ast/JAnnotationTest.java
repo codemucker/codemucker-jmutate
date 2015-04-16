@@ -61,7 +61,12 @@ public class JAnnotationTest {
 	    
 		assertThat(annon.getAttributeValue("att2","mydefault").toString(),isEqualTo("mydefault"));
 		
-		Expect.that(annon.getAttributeMap()).is(AMap.ofStringObject().inAnyOrder().withOnly("att3", "abcd").and("att4","7").andKey("att5").and("att6","bar").and("att8","org.codemucker.jmutate.ast.JAnnotationTest.MyEnum.Bar"));
+		Expect.that(annon.getAttributeMap()).is(AMap.ofStringObject().inAnyOrder()
+				.withOnly("att3", "abcd")
+				.and("att4",7)
+				.andKey("att5")
+				.and("att6","bar")
+				.and("att8","org.codemucker.jmutate.ast.JAnnotationTest.MyEnum.Bar"));
 		
     }
 	
