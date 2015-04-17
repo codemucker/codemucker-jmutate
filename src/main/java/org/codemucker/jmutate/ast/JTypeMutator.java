@@ -7,14 +7,13 @@ import java.util.List;
 import org.codemucker.jmutate.IProvideCompilationUnit;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.PlacementStrategy;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ConfigurablePlacementStrategy;
 import org.codemucker.jmutate.transform.InsertCtorTransform;
 import org.codemucker.jmutate.transform.InsertFieldTransform;
 import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jmutate.transform.InsertTypeTransform;
 import org.codemucker.jmutate.util.NameUtil;
+import org.codemucker.jmutate.util.TypeUtils;
 import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
@@ -22,7 +21,6 @@ import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.NameQualifiedType;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
@@ -160,6 +158,24 @@ public class JTypeMutator implements IProvideCompilationUnit {
 		jType.getCompilationUnit().addImport(fullName);
 
     }
+	
+	public void setExtends (String expression){
+		if(!jType.isClass()){
+			//fail? or ignore?
+			throw new JMutateException("can't extend node of type:" + jType.getAstNode().getClass().getName());
+		}
+		TypeDeclaration t = jType.asTypeDecl();
+		if(expression == null){
+			Type supertype = t.getSuperclassType();
+			if(supertype != null){
+				t.delete();
+			}
+			return;
+		}
+		
+		t.setSuperclassType(TypeUtils.newType(jType.getAstNode().getAST(), expression));
+	}
+	
 	
 	private SourceTemplate newSourceTemplate(){
 		return ctxt.obtain(SourceTemplate.class);

@@ -63,7 +63,7 @@ public class CloneGenerator extends AbstractBeanGenerator<GenerateCloneMethod,Cl
 					.var("p.rawType",property.getType().getFullNameRaw())
 					.var("p.genericPart",property.getType().getGenericPartOrEmpty());
 				
-				if(property.getType().isPrimitive()){
+				if(property.getType().isValueType()){
 					if(property.hasSetter() || property.hasField()){
 						if(property.isSuperClassProperty()){
 							t.pl("	clone.${p.setter}(bean.${p.getter}());");

@@ -40,12 +40,12 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.String", "org.codemucker.jmatch.AString.equalTo");
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Integer", "org.codemucker.jmatch.AnInt.equalTo");
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Boolean", "org.codemucker.jmatch.ABool.equalTo");
-		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Short", "org.codemucker.jmatch.AShort.equalTo");
-		//MATCHER_BY_TYPE.put("java.lang.Character", "org.codemucker.jmatch.AChar.equalTo");
+		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Short", "org.codemucker.jmatch.AnInt.equalTo");
+		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Character", "org.codemucker.jmatch.AChar.equalTo");
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Float", "org.codemucker.jmatch.AFloat.equalTo");
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Double", "org.codemucker.jmatch.ADouble.equalTo");
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Long", "org.codemucker.jmatch.ALong.equalTo");
-		//MATCHER_BY_TYPE.put("java.lang.Byte", "org.codemucker.jmatch.AByte.equalTo");
+		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Byte", "org.codemucker.jmatch.AByte.equalTo");
 		//MATCHER_BY_TYPE.put("java.util.Date", "org.codemucker.jmatch.ADate.equalTo");
 	}
 
@@ -108,6 +108,14 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 		return new TypeModel(className, null);
     }
     
+
+	protected void generateDefaultConstructor(JType matcher, TypeModel forType) {
+		//add default ctor
+        SourceTemplate ctor= ctxt.newSourceTemplate();
+        ctor.pl("public " + matcher.getSimpleName() + "(){super(" + forType.getFullName() + ".class);}");
+        addMethod(matcher,ctor.asConstructorNodeSnippet());
+	}
+    
     /**
      * Assumes typ subclasses PropertyMatcher
      * @param options
@@ -128,12 +136,14 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 
 		for (PropertyModel property : model.getAllProperties()) {
 			//add default equals matchers for known types
-			String equalMatcherSnippet = getEqualToSnippetForTypeOrNull(property.getType());
+			TypeModel propertyType = property.getType();
+			
+			String equalMatcherSnippet = getEqualToSnippetForTypeOrNull(propertyType.getObjectTypeFullName());
 			if (equalMatcherSnippet != null) {
 				SourceTemplate equalsMethod = baseTemplate
 					.child()
 					.var("p.name", property.getName())
-					.var("p.type", property.getType().getObjectTypeFullName())
+					.var("p.type", propertyType.getFullName())
 					.var("matcher", equalMatcherSnippet)
 					
 					.pl("public ${selfType} ${p.name}(final ${p.type} val){")
@@ -145,17 +155,25 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 			//TODO:add automatic converter methods
 			//e.g. long -> date; boolean->isX,isNotX; obj->isNull,isNotNull, String->isBlank,isEmpty,isNull
 			
-			
+//			boolean isPrimitiveObject = NameUtil.isValueType(property.getType().getObjectTypeFullName());
+//			boolean isPrimitive= NameUtil.isPrimitive((property.getType().getFullName()));
+//			
 			//add the matcher method
+			
 			SourceTemplate matcherMethod = baseTemplate
 				.child()
 				.var("p.name", property.getName())
-				.var("p.type", property.getType().getObjectTypeFullName())
-				.var("p.type_raw", property.getType().getObjectTypeFullNameRaw())
-				.var("matcher", equalMatcherSnippet)
+				.var("p.type", propertyType.getObjectTypeFullName())
+				.var("p.type_raw", propertyType.getObjectTypeFullNameRaw())
+				.var("matcher", equalMatcherSnippet);
+			
+			if(propertyType.isPrimitive() || propertyType.isPrimitive() || propertyType.isString()){
+				matcherMethod.pl("public ${selfType} ${p.name}(final org.codemucker.jmatch.Matcher<${p.type}> matcher){");
+			} else {
+				matcherMethod.pl("public ${selfType} ${p.name}(final org.codemucker.jmatch.Matcher<? super ${p.type}> matcher){");
 				
-				.pl("public ${selfType} ${p.name}(final org.codemucker.jmatch.Matcher<? super ${p.type}> matcher){")
-				.pl("		matchProperty('${p.name}',${p.type_raw}.class, matcher); ")
+			}
+			matcherMethod.pl("		matchProperty('${p.name}',${p.type_raw}.class, matcher); ")
 				.pl("		return this;")
 				.pl("}")
 				.singleToDoubleQuotes();
@@ -171,14 +189,12 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 
 	
 	protected String getEqualToSnippetForTypeOrNull(String fullTypeName){
-		
 		String snippet = customEqualToMatchersByType.get(fullTypeName);
 		if(snippet==null){
 			snippet = EQUAL_TO_MATCHERS_BY_TYPE.get(fullTypeName);
 		}
 		return snippet;
 	}
-
 
 	protected void addGeneratedMarkers(SourceTemplate template) {
     	generatorMeta.addGeneratedMarkers(template);

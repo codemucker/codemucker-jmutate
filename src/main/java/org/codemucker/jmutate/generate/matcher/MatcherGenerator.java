@@ -2,7 +2,10 @@ package org.codemucker.jmutate.generate.matcher;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.codemucker.jfind.RootResource;
+import org.codemucker.jmatch.PropertyMatcher;
 import org.codemucker.jmutate.JMutateContext;
+import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.generate.SmartConfig;
@@ -35,31 +38,48 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 				.includeSuperClass(options.inheritParentProperties)
 				.build();
 		
-	  	PojoModel model = extractor.extractModel(declaredInType);
 		JSourceFile source = declaredInType.getCompilationUnit().getSource();
 		String generateFor = options.generateFor;
-		if( generateFor == null || Object.class.getName().equals(generateFor)){
-			LOG.error("need to set the 'generateFor' in " + source.getResource().getFullPath() + " for annotation " + GenerateMatcher.class);
+		if(generateFor == null || Object.class.getName().equals(generateFor)){
+			throw new JMutateException("need to set the 'generateFor' in " + source.getResource().getFullPath() + " for annotation " + GenerateMatcher.class + " other than blank or Object");
 		}
+		
+		PojoModel model = null;
+		RootResource resource = ctxt.getResourceLoader().getResourceOrNullFromClassName(generateFor);
+		if(resource != null){
+			//try class loader
+			JSourceFile pojoSource = ctxt.getOrLoadSource(resource);
+			if(pojoSource != null ){
+				JType pojoType = pojoSource.getTypeWithFullName(generateFor);
+				model = extractor.extractModel(pojoType);
+			}
+		}
+		//no source code found, let's try class
+		if(model == null){
+			Class<?> pojoClass = ctxt.getResourceLoader().loadClassOrNull(generateFor);
+			if(pojoClass != null){
+				model = extractor.extractModel(pojoClass);
+			}
+		}
+		
+		if(model == null){
+			throw new JMutateException("couldn't load source or class '" + generateFor + "' to generate matcher, set in 'generateFor' in " + source.getResource().getFullPath() + " for annotation " + GenerateMatcher.class);
+		}
+
 		String superType = declaredInType.getSuperTypeFullName();
 		if(superType != Object.class.getName()){
 			//TODO:check correct super class. 
-			
 		}
-		TypeModel matcherType = model.getType();//TODO:if 
+		
+		//TOO:if not exists super!
+		declaredInType.asMutator(ctxt).setExtends(PropertyMatcher.class.getName() + "<" + generateFor + ">");
+		
+		generateDefaultConstructor(source.getMainType(), new TypeModel(generateFor));
+    	
 		generateMatcher(options,model, declaredInType);
 		writeToDiskIfChanged(source);
 	}
 
-    private String findBean(JType declaredInType, GenerateMatcherOptions options) {
-    	//look in superclass generic type
-		//declaredInType.
-    			//if current class 'AFoo', try 'Foo'
-    			
-    			//else fail
-    	    	
-    	return null;
-	}
 
 	public static class GenerateMatcherOptions extends AbstractMatcherModel<GenerateMatcher> {
 		public String generateFor;

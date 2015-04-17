@@ -52,7 +52,7 @@ public final class JMethodGetterBuilder extends AbstractBuilder<JMethodGetterBui
 				.pl("\")");
 		}
 		template.p(access.toCode()).p(" ${fieldType} ${methodName}(){").pl();
-		boolean clone = cloneOnReturn && !NameUtil.isPrimitive(fieldType); 
+		boolean clone = cloneOnReturn && !NameUtil.isValueType(fieldType); 
 		if(clone){
     		template.pl("return this.${fieldName}==null?null:this.${fieldName}.clone();");
 		} else {

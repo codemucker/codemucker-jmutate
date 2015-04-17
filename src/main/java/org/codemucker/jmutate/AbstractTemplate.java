@@ -265,7 +265,11 @@ public abstract class AbstractTemplate<TSelf extends AbstractTemplate<TSelf>> im
     private TSelf self() {
         return (TSelf) this;
     }
-    
+
+    protected String interpolateTemplateAsString() {
+        return (String)interpolateTemplate();
+    }
+
     @Override
     public CharSequence interpolateTemplate() {
         CharSequence out = Interpolator.interpolate(buffer, vars);

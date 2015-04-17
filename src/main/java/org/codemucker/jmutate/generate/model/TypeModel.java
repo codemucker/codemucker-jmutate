@@ -57,9 +57,11 @@ public class TypeModel extends ModelObject {
 	private final boolean isMap;
 	private final boolean isArray;
 	private final boolean isKeyed;
-	private final boolean isPrimitive;
 	private final boolean isString;
 	private final boolean isGeneric;
+	private final boolean isPrimitive;
+	private final boolean isPrimitiveObject;
+	private final boolean isValueType;
 
 	public TypeModel(Class<?> type){
 		this(NameUtil.compiledNameToSourceName(type), null);
@@ -69,40 +71,43 @@ public class TypeModel extends ModelObject {
 		this(type.getFullGenericName(), type.getTypeBoundsExpressionOrNull());
 	}
 	
+	public TypeModel(String fullType) {
+		this(fullType,null);
+	}
+	
 	public TypeModel(String fullType, String typeBounds) {
 		this.typeBoundsOrNull = Strings.emptyToNull(typeBounds);
 		this.typeBoundsOrEmpty = Strings.nullToEmpty(typeBoundsOrNull);
 		this.typeBoundsNamesOrNull = getTypeBoundsOrNull() == null?null:Joiner.on(",").join(extractTypeNames(typeBoundsOrNull));
-		
-		this.isGeneric = fullType.contains("<");
-		
+		this.pkg = ClassNameUtil.extractPkgPartOrNull(fullType);
 		this.fullName = NameUtil.compiledNameToSourceName(fullType);
 		this.fullNameRaw = NameUtil.removeGenericOrArrayPart(fullName);
 		this.genericPartOrNull = NameUtil.extractGenericPartOrNull(fullType);
 		this.genericPartOrEmpty = Strings.nullToEmpty(genericPartOrNull);
+		
+		//TODO:integer flag for all?
 		this.isPrimitive = NameUtil.isPrimitive(fullName);
+		this.isPrimitiveObject = NameUtil.isPrimitiveObject(fullName);
+		this.isString = NameUtil.isString(fullName);
+		this.isValueType = NameUtil.isValueType(fullName);
 		
-		this.pkg = ClassNameUtil.extractPkgPartOrNull(fullType);
-		
-		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(fullNameRaw);
-		this.simpleName = getSimpleNameRaw() + (genericPartOrNull == null ? "" : genericPartOrNull);
-
-		this.objectTypeFullName = isPrimitive?NameUtil.primitiveToObjectType(fullName):fullName;
-		this.objectTypeFullNameRaw = isPrimitive?NameUtil.removeGenericOrArrayPart(objectTypeFullName):fullNameRaw;
-
-		this.isString = fullName.equals("String") || fullName.equals("java.lang.String");
+		this.isGeneric = fullType.contains("<");
 		this.isMap = REGISTRY.isMap(fullNameRaw);
 		this.isList = REGISTRY.isList(fullNameRaw);
 		this.isCollection = REGISTRY.isCollection(fullNameRaw);
 		this.isIndexed = isMap || isList;
-		// this.propertyConcreteType =
-		// REGISTRY.getConcreteTypeFor(propertyTypeRaw);
 		this.isArray = getFullName().endsWith("]");
 		this.isKeyed = isMap;
+		
 		this.indexedValueTypeNameOrNull = isCollection() ? BeanNameUtil.extractIndexedValueType(fullName) : null;
 		this.indexedValueTypeNameRaw = NameUtil.removeGenericOrArrayPart(indexedValueTypeNameOrNull);
 		this.indexedKeyTypeNameOrNull = isMap() ? BeanNameUtil.extractIndexedKeyType(fullName) : null;
 		this.indexedKeyTypeNameRaw = NameUtil.removeGenericOrArrayPart(indexedKeyTypeNameOrNull);
+		
+		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(fullNameRaw);
+		this.simpleName = getSimpleNameRaw() + (genericPartOrNull == null ? "" : genericPartOrNull);
+		this.objectTypeFullName = isPrimitive?NameUtil.toObjectVersionType(fullName):fullName;
+		this.objectTypeFullNameRaw = isPrimitive?NameUtil.removeGenericOrArrayPart(objectTypeFullName):fullNameRaw;
 	}
 
 	public List<String> getTypeParamNames(){
@@ -290,6 +295,18 @@ public class TypeModel extends ModelObject {
 
 	public boolean isGeneric() {
 		return isGeneric;
+	}
+
+	public boolean isNullable() {
+		return !isPrimitive;
+	}
+
+	public boolean isPrimitiveObject() {
+		return isPrimitiveObject;
+	}
+
+	public boolean isValueType() {
+		return isValueType;
 	}
 
 	static class IndexedTypeRegistry {

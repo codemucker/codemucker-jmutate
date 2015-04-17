@@ -109,13 +109,11 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
             source = t.asSourceFileSnippet();
     	}
     	
-    	//add default ctor
-        SourceTemplate ctor= ctxt.newSourceTemplate();
-        ctor.pl("public " + matcherType.getSimpleName() + "(){super(" + forType.getFullName() + ".class);}");
-        addMethod(source.getMainType(),ctor.asConstructorNodeSnippet());
+    	generateDefaultConstructor(source.getMainType(), forType);
     	
     	return source;
     }
+
     
     public class GenerateManyMatchersOptions extends AbstractMatcherModel<GenerateManyMatchers> {
     	

@@ -16,6 +16,7 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConversionException;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.bean.Property;
 import org.codemucker.lang.BeanNameUtil;
@@ -225,7 +226,7 @@ public class OptionsMapper {
 						f.setAccessible(true);
 					}
 					if(f.isAccessible() && !Modifier.isFinal(f.getModifiers())){
-						Object value = getValueFrom(propertyName, propertyType, map, defaults);
+						Object value = getValueFrom(propertyName, f.getType(), map, defaults);
 						
 						try {
 							f.set(mapToBean, value);
@@ -273,9 +274,9 @@ public class OptionsMapper {
 		if(val instanceof Class<?> && toType == String.class){
 			return NameUtil.compiledNameToSourceName((Class)val);
 		}
-		if(val instanceof String && toType instanceof Class && !Strings.isNullOrEmpty(val.toString())){
+		if(val instanceof String && toType == Class.class && !Strings.isNullOrEmpty(val.toString())){
 			try {
-				return getClass().getClassLoader().loadClass(val.toString());
+				return MutateUtil.getClassLoaderForResolving().loadClass(val.toString());
 			} catch (ClassNotFoundException e) {
 				throw new ConversionException("Could not load string value '" + val + "' as class for property '" + propertyName + "'", e);
 			}

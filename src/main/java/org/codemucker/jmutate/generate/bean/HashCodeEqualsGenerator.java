@@ -56,7 +56,7 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 						.child()
 						.var("p.accessor",property.getInternalAccessor());
 					
-					if(property.getType().isPrimitive() && !property.getType().isString()){
+					if(!property.getType().isNullable()){
 						t.pl("if (${p.accessor} != other.${p.accessor}) return false;");
 					} else {
 						t.pl("if(${p.accessor} == null) {")
@@ -94,7 +94,7 @@ public class HashCodeEqualsGenerator extends AbstractBeanGenerator<GenerateHashC
 						.child()
 						.var("p.accessor",property.getInternalAccessor());
 					
-					if(property.getType().isPrimitive() && !property.getType().isString()){
+					if(property.getType().isPrimitive()){
 						//from the book 'Effective Java'
 						if(property.getType().is("boolean")){
 							t.pl("result = prime * result + (${p.accessor} ? 1:0);");
