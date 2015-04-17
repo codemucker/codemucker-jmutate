@@ -5,6 +5,7 @@ import org.codemucker.jmutate.generate.model.TypeModel;
 import org.codemucker.jmutate.generate.util.IndexedTypeRegistry;
 import org.codemucker.jmutate.generate.util.PluralToSingularConverter;
 import org.codemucker.jmutate.util.NameUtil;
+import org.codemucker.jmutate.util.TypeUtils;
 import org.codemucker.lang.BeanNameUtil;
 
 public class PropertyModel extends ModelObject {
@@ -54,7 +55,7 @@ public class PropertyModel extends ModelObject {
     } 
     
     private void calculateNames(){
-    	this.calculatedGetterName = BeanNameUtil.toGetterName(name, NameUtil.isBoolean(type.getFullName()));
+    	this.calculatedGetterName = BeanNameUtil.toGetterName(name, TypeUtils.isBoolean(type.getFullName()));
         this.calculatedSetterName = BeanNameUtil.toSetterName(name);
         this.calculatedAddName = type.isIndexed()?BeanNameUtil.addPrefixName("add",nameSingular):null;
         this.calculatedRemoveName = type.isIndexed()?BeanNameUtil.addPrefixName("remove",nameSingular):null;

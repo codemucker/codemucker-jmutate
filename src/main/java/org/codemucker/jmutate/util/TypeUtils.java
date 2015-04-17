@@ -1,13 +1,104 @@
 package org.codemucker.jmutate.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ParameterizedType;
+import org.eclipse.jdt.core.dom.PrimitiveType;
 import org.eclipse.jdt.core.dom.PrimitiveType.Code;
 import org.eclipse.jdt.core.dom.Type;
 
 public class TypeUtils {
+
+
+	//none string primitives
+	private static Map<String,PrimitiveType.Code> PRIMITIVES_TO_CODE = new HashMap<>();
+	//all primitives including strings mapped to object type
+	private static Map<String,String> TO_OBJECT_TYPE = new HashMap<>();
+	//object versions of primitives
+	private static Collection<String> PRIMITIVE_OBJECTS = new ArrayList<>();
+	private static Collection<String> VALUE_TYPES = new ArrayList<>();
+
+	static {
+		addPrimitive(PrimitiveType.BOOLEAN,"Boolean");
+		addPrimitive(PrimitiveType.BYTE,"Byte");
+		addPrimitive(PrimitiveType.CHAR,"Character");
+		addPrimitive(PrimitiveType.DOUBLE,"Double");
+		addPrimitive(PrimitiveType.FLOAT,"Float");
+		addPrimitive(PrimitiveType.INT,"Integer");
+		addPrimitive(PrimitiveType.LONG,"Long");
+		addPrimitive(PrimitiveType.SHORT,"Short");
+		
+		TO_OBJECT_TYPE.put("String", "java.lang.String");
+		VALUE_TYPES.add("String");
+		VALUE_TYPES.add("java.lang.String");
+	}
+
+	private static void addPrimitive(PrimitiveType.Code code, String objectTypeShort){
+		PRIMITIVES_TO_CODE.put(code.toString(), code);
+		TO_OBJECT_TYPE.put(code.toString(), "java.lang." + objectTypeShort);
+		PRIMITIVE_OBJECTS.add("java.lang." + objectTypeShort);
+		
+		VALUE_TYPES.add(code.toString());
+		VALUE_TYPES.add(objectTypeShort);
+		VALUE_TYPES.add("java.lang." + objectTypeShort);
+	}
+
+	public static boolean isBoolean(final String shortOrFullTypeName) {
+	    return "boolean".equals(shortOrFullTypeName) || "java.lang.Boolean".equals(shortOrFullTypeName) || "Boolean".equals(shortOrFullTypeName);
+	}
+
+	/**
+	 * If this type is a boolean,char,int,etc.. (but not a String, Integer,...)
+	 * @param shortTypeName
+	 * @return
+	 */
+	public static boolean isPrimitive(final String shortTypeName) {
+		return PRIMITIVES_TO_CODE.containsKey(shortTypeName);
+	}
+
+	/**
+	 * If this type is a java.lang.Boolean,Boolean,java.lang.Character,Character,.... (but not a string)
+	 * @param shortOrFullTypeName
+	 * @return
+	 */
+	public static boolean isPrimitiveObject(final String shortOrFullTypeName) {
+		return PRIMITIVE_OBJECTS.contains(shortOrFullTypeName);
+	}
+
+	public static boolean isString(final String shortOrFullTypeName) {
+		return "java.lang.String".equals(shortOrFullTypeName) || "String".equals(shortOrFullTypeName);
+	}
+
+	public static boolean isValueType(final String shortOrFullTypeName) {
+		return VALUE_TYPES.contains(shortOrFullTypeName);
+	}
+
+	/**
+	 * Convert the primitive type to the object version. E.g. boolean --&gt;java.lang.Boolean
+	 * @param shortOrFullTypeName
+	 * @return
+	 */
+	public static String toObjectVersionType(final String shortOrFullTypeName){
+		String objectType = TO_OBJECT_TYPE.get(shortOrFullTypeName);
+		return objectType==null?shortOrFullTypeName:objectType;
+	}
+
+	/**
+	 * Return the primitive code (excludes string)
+	 * @param name
+	 * @return
+	 */
+	public static PrimitiveType.Code getPrimitiveCodeForOrNull(String name){
+		return PRIMITIVES_TO_CODE.get(name);
+	}
+	
+	
 	public static Type newType(AST ast,String fullName){
-		Code code = NameUtil.getPrimitiveCodeForOrNull(fullName);
+		Code code = getPrimitiveCodeForOrNull(fullName);
 		if(code != null){
 			return ast.newPrimitiveType(code);
 		}
@@ -60,4 +151,5 @@ public class TypeUtils {
 		}
 		return ptype;
 	}
+
 }

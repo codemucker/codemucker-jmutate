@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.NameUtil;
+import org.codemucker.jmutate.util.TypeUtils;
 import org.codemucker.lang.BeanNameUtil;
 import org.codemucker.lang.ClassNameUtil;
 
@@ -86,10 +87,10 @@ public class TypeModel extends ModelObject {
 		this.genericPartOrEmpty = Strings.nullToEmpty(genericPartOrNull);
 		
 		//TODO:integer flag for all?
-		this.isPrimitive = NameUtil.isPrimitive(fullName);
-		this.isPrimitiveObject = NameUtil.isPrimitiveObject(fullName);
-		this.isString = NameUtil.isString(fullName);
-		this.isValueType = NameUtil.isValueType(fullName);
+		this.isPrimitive = TypeUtils.isPrimitive(fullName);
+		this.isPrimitiveObject = TypeUtils.isPrimitiveObject(fullName);
+		this.isString = TypeUtils.isString(fullName);
+		this.isValueType = TypeUtils.isValueType(fullName);
 		
 		this.isGeneric = fullType.contains("<");
 		this.isMap = REGISTRY.isMap(fullNameRaw);
@@ -106,7 +107,7 @@ public class TypeModel extends ModelObject {
 		
 		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(fullNameRaw);
 		this.simpleName = getSimpleNameRaw() + (genericPartOrNull == null ? "" : genericPartOrNull);
-		this.objectTypeFullName = isPrimitive?NameUtil.toObjectVersionType(fullName):fullName;
+		this.objectTypeFullName = isPrimitive?TypeUtils.toObjectVersionType(fullName):fullName;
 		this.objectTypeFullNameRaw = isPrimitive?NameUtil.removeGenericOrArrayPart(objectTypeFullName):fullNameRaw;
 	}
 

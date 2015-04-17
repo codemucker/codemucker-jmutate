@@ -2,12 +2,8 @@ package org.codemucker.jmutate.util;
 
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ResourceLoader;
@@ -40,43 +36,7 @@ import com.google.common.base.Joiner;
  */
 public class NameUtil {
 	
-	//none string primitives
-	private static Map<String,PrimitiveType.Code> PRIMITIVES_TO_CODE = new HashMap<>();
-	
-	//all primitives including strings mapped to object type
-	private static Map<String,String> TO_OBJECT_TYPE = new HashMap<>();
-	
-	//object versions of primitives
-	private static Collection<String> PRIMITIVE_OBJECTS = new ArrayList<>();
-	
-	private static Collection<String> VALUE_TYPES = new ArrayList<>();
-	
-	static {
-		addPrimitive(PrimitiveType.BOOLEAN,"Boolean");
-		addPrimitive(PrimitiveType.BYTE,"Byte");
-		addPrimitive(PrimitiveType.CHAR,"Character");
-		addPrimitive(PrimitiveType.DOUBLE,"Double");
-		addPrimitive(PrimitiveType.FLOAT,"Float");
-		addPrimitive(PrimitiveType.INT,"Integer");
-		addPrimitive(PrimitiveType.LONG,"Long");
-		addPrimitive(PrimitiveType.SHORT,"Short");
-		
-		TO_OBJECT_TYPE.put("String", "java.lang.String");
-		VALUE_TYPES.add("String");
-		VALUE_TYPES.add("java.lang.String");
-	}
-	
-	private static void addPrimitive(PrimitiveType.Code code, String objectTypeShort){
-		PRIMITIVES_TO_CODE.put(code.toString(), code);
-		TO_OBJECT_TYPE.put(code.toString(), "java.lang." + objectTypeShort);
-		PRIMITIVE_OBJECTS.add("java.lang." + objectTypeShort);
-		
-		VALUE_TYPES.add(code.toString());
-		VALUE_TYPES.add(objectTypeShort);
-		VALUE_TYPES.add("java.lang." + objectTypeShort);
-	}
-	
-    public static String removeGenericOrArrayPart(String shortOrFullName){
+	public static String removeGenericOrArrayPart(String shortOrFullName){
     	if(shortOrFullName==null){
     		return null;
     	}
@@ -554,7 +514,7 @@ public class NameUtil {
      * @return
      */
     public static String toShortNameIfDefaultImport(String fullTypeName) {
-    	if(isValueType(fullTypeName) || fullTypeName.startsWith("java.lang.")){
+    	if(TypeUtils.isValueType(fullTypeName) || fullTypeName.startsWith("java.lang.")){
     		int idx = fullTypeName.lastIndexOf(".");
     		if( idx != -1){
     			return fullTypeName.substring(idx + 1);
@@ -563,55 +523,6 @@ public class NameUtil {
     	return fullTypeName;
     }
     
-    public static boolean isBoolean(final String shortOrFullTypeName) {
-        return "boolean".equals(shortOrFullTypeName) || "java.lang.Boolean".equals(shortOrFullTypeName) || "Boolean".equals(shortOrFullTypeName);
-    }
-    
-    /**
-     * If this type is a boolean,char,int,etc.. (but not a String, Integer,...)
-     * @param shortTypeName
-     * @return
-     */
-    public static boolean isPrimitive(final String shortTypeName) {
-    	return PRIMITIVES_TO_CODE.containsKey(shortTypeName);
-    }
-    
-    /**
-     * If this type is a java.lang.Boolean,Boolean,java.lang.Character,Character,.... (but not a string)
-     * @param shortOrFullTypeName
-     * @return
-     */
-    public static boolean isPrimitiveObject(final String shortOrFullTypeName) {
-    	return PRIMITIVE_OBJECTS.contains(shortOrFullTypeName);
-    }
-    
-    public static boolean isString(final String shortOrFullTypeName) {
-    	return "java.lang.String".equals(shortOrFullTypeName) || "String".equals(shortOrFullTypeName);
-    }
-    
-    public static boolean isValueType(final String shortOrFullTypeName) {
-    	return VALUE_TYPES.contains(shortOrFullTypeName);
-    }
-    
-    /**
-     * Convert the primitive type to the object version. E.g. boolean --&gt;java.lang.Boolean
-     * @param shortOrFullTypeName
-     * @return
-     */
-    public static String toObjectVersionType(final String shortOrFullTypeName){
-    	String objectType = TO_OBJECT_TYPE.get(shortOrFullTypeName);
-    	return objectType==null?shortOrFullTypeName:objectType;
-    }
-
-    /**
-     * Return the primitive code (excludes string)
-     * @param name
-     * @return
-     */
-    public static PrimitiveType.Code getPrimitiveCodeForOrNull(String name){
-    	return PRIMITIVES_TO_CODE.get(name);
-    }
-
     public static String insertBeforeClassName(String fqClassName, String shortClassNamePrefix) {
         return ClassNameUtil.extractPkgPartOrNull(fqClassName) + "." + shortClassNamePrefix + ClassNameUtil.extractSimpleClassNamePart(fqClassName);
     }
