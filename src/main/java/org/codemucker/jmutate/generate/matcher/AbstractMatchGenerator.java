@@ -46,7 +46,7 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Double", "org.codemucker.jmatch.ADouble.equalTo");
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Long", "org.codemucker.jmatch.ALong.equalTo");
 		EQUAL_TO_MATCHERS_BY_TYPE.put("java.lang.Byte", "org.codemucker.jmatch.AByte.equalTo");
-		//MATCHER_BY_TYPE.put("java.util.Date", "org.codemucker.jmatch.ADate.equalTo");
+		EQUAL_TO_MATCHERS_BY_TYPE.put("java.util.Date", "org.codemucker.jmatch.ADate.equalTo");
 	}
 
     protected final Matcher<Annotation> reflectedAnnotationIgnore = AnAnnotation.with().fullName(AString.matchingAntPattern("*.Ignore"));
