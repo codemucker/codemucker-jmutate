@@ -77,7 +77,7 @@ public class BuilderGeneratorTest {
 			RootResource resource = node.getCompilationUnit().getSource().getResource();
 			RootResource resourceCopy = makeCopy(resource,ctxt.getProjectLayout().newTmpSubDir("cloned_node"));
 			
-			JSourceFile source = ctxt.getOrLoadSource(resourceCopy);
+			JSourceFile source = ctxt.getSourceLoader().loadSourceFrom(resourceCopy);
 			List<JType> types = source.findTypesMatching(AJType.with().fullName(node.getFullName())).toList();
 			if(types.size() == 0){
 				throw new JMutateException("couldn't find node named '" + node.getFullName() + "' within source " + resource.getFullPath());

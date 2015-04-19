@@ -10,6 +10,7 @@ import junit.framework.ComparisonFailure;
 
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ast.AstNodeProvider;
+import org.codemucker.jmutate.ast.DefaultJAstParser;
 import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JAstMatcher;
 import org.codemucker.jmutate.ast.JAstParser;
@@ -81,7 +82,7 @@ public class SourceAsserts {
 	}
 
 	private static CompilationUnit getAstFromFileWithNoErrors(RootResource resource) {
-    	CompilationUnit cu = JSourceFile.fromResource(resource, JAstParser.newDefaultJParser()).getCompilationUnit().getAstNode();
+    	CompilationUnit cu = JSourceFile.fromResource(resource, DefaultJAstParser.newDefaultJParser()).getCompilationUnit().getAstNode();
     	return cu;
     }
 	

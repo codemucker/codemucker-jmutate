@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.PredicateToFindFilterAdapter;
-import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
@@ -114,9 +113,8 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		}
 		sourcePath = sourcePath.replace('.', '/') + ".java";
 		
-		RootResource resource = ctxt.getResourceLoader().getResourceOrNull(sourcePath);
-		JSourceFile source = ctxt.getOrLoadSource(resource);
-		if( source != null){
+		JSourceFile source = ctxt.getSourceLoader().loadSourceForClass(fullName);
+		if(source != null){
 			source.getMainType().findTypesMatching(AJType.with().fullName(AString.equalTo(NameUtil.compiledNameToSourceName(fullName)))).getFirstOrNull();
 		}
 		return null;

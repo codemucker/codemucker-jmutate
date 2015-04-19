@@ -22,6 +22,7 @@ import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.NullMatchContext;
 import org.codemucker.jmutate.ast.BaseSourceVisitor;
+import org.codemucker.jmutate.ast.DefaultJAstParser;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
@@ -308,7 +309,7 @@ public class SourceScanner {
             if (parser != null) {
                 return parser;
             }
-            return JAstParser.with()
+            return DefaultJAstParser.with()
                     .defaults()
                     .resourceLoader(Roots.with()
                         .roots(roots)

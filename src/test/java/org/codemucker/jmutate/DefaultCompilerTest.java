@@ -34,7 +34,7 @@ public class DefaultCompilerTest {
 
         JSourceFile source = t.asSourceFileSnippet().asMutator(ctxt).writeModificationsToDisk();
 
-        ResourceLoader resourceLoader = ctxt.getParser().getResourceLoader();
+        ResourceLoader resourceLoader = ctxt.getResourceLoader();
         
         SystemCompiler compiler = new SystemCompiler(resourceLoader, new DefaultProjectOptions());
         Class<?> sourceClassSystem = compiler.toCompiledClass(source.getResource());

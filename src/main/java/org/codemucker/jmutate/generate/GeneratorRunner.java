@@ -32,8 +32,8 @@ import org.codemucker.jmutate.JMutateException;
 import org.codemucker.jmutate.ProjectOptions;
 import org.codemucker.jmutate.SourceFilter;
 import org.codemucker.jmutate.SourceScanner;
+import org.codemucker.jmutate.ast.DefaultJAstParser;
 import org.codemucker.jmutate.ast.JAnnotation;
-import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJType;
@@ -45,7 +45,6 @@ import org.codemucker.jpattern.generate.IsGenerated;
 import org.codemucker.jpattern.generate.IsGeneratorConfig;
 import org.codemucker.jpattern.generate.IsGeneratorTemplate;
 import org.codemucker.lang.IBuilder;
-import org.codemucker.lang.StringUtil;
 import org.codemucker.lang.annotation.Optional;
 import org.codemucker.lang.annotation.Required;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -125,7 +124,7 @@ public class GeneratorRunner {
                     .roots(scanRoots)
                     .root(generationRoot)
                     .build())
-               .build();
+                .build();
         
         this.scanRoots = scanRoots;
         this.scanRootFilter = scanRootsFilter;
@@ -146,7 +145,7 @@ public class GeneratorRunner {
         this.ctxt = DefaultMutateContext.with()
                 .defaults()
                 .projectOptions(options)
-                .parser(JAstParser.with()
+                .parser(DefaultJAstParser.with()
                         .defaults()
                         .resourceLoader(resourceLoader)
                         .build())
@@ -165,7 +164,7 @@ public class GeneratorRunner {
         logDetails();
         
         MutateUtil.setClassLoader(generatorClassLoader);
-	    try {
+        try {
 	        List<Annotation> annotations = scanForGenerationAnnotations();
 	        if(annotations.size()==0){
 	            log.info("no generation annotations found");
@@ -174,23 +173,21 @@ public class GeneratorRunner {
 	        Set<ASTNode> nodes = configExtractor.processAnnotations(annotations);
 	        //run all generators per node
 	        //TODO:order generators by before/after requirements to make more deterministic
-	        for (ASTNode node: nodes) {	
+	        for (ASTNode node: nodes) {
 	        	SmartConfig sc = SmartConfig.get(node);
-	        	
 	        	for(String annotationType:sc.getAnnotations()){
 	        		CodeGenerator<?> generator = getGeneratorFor(annotationType);
 	        		if (generator != null) {
 	        			log.debug("processing annotation '" + annotationType + "' with generator " + generator.getClass().getName() + " for node " + StringUtils.abbreviate(node.toString(), 300));
-	                	invokeGenerator(generator,sc, node);        
+	                	invokeGenerator(generator,sc, node);
 	                }
 	        	}
 	        }
         } finally {
-        	MutateUtil.setClassLoader(null);  	
+        	MutateUtil.setClassLoader(null);
         }
     }
 
-    
 	private void logDetails() {
 		if (log.isDebugEnabled()) {
 			log.debug("Details:");
@@ -303,34 +300,36 @@ public class GeneratorRunner {
             }
         }
         
-        Class<?> generatorClass;
-        try {
-            generatorClass = generatorClassLoader.loadClass(NameUtil.sourceNameToCompiledName(generatorClassName));
+        String generatorClassNameCompiled = NameUtil.sourceNameToCompiledName(generatorClassName);
+    	Class<?> generatorClass;
+        try {	
+            generatorClass = generatorClassLoader.loadClass(generatorClassNameCompiled);
         } catch (ClassNotFoundException e) {
-            throw new JMutateException("Registered generator class %s for annotation %s does not exist", generatorClassName, annotationType);
+            throw new JMutateException("Registered generator class %s for annotation %s does not exist", generatorClassNameCompiled, annotationType);
         }
         if (!CodeGenerator.class.isAssignableFrom(generatorClass)) {
-            throw new JMutateException("Registered generator class %s for annotation %s does not implement %s", generatorClassName, annotationType,
+            throw new JMutateException("Registered generator class %s for annotation %s does not implement %s", generatorClassNameCompiled, annotationType,
                     CodeGenerator.class.getName());
         }
         //ensure we inject all the generator dependencies
-        CodeGenerator<?> gen = (CodeGenerator<?>) ctxt.obtain(generatorClass);
+        CodeGenerator<?> generator = (CodeGenerator<?>) ctxt.obtain(generatorClass);
 
-        return gen;
+        return generator;
     }
 	
     private void autoRegisterGeneratorFor(String annotationType) {
+    	String className = NameUtil.sourceNameToCompiledName(annotationType);
         try {
-            Class<?> annotation = ctxt.getResourceLoader().loadClass(NameUtil.sourceNameToCompiledName(annotationType));
+        	Class<?> annotation = generatorClassLoader.loadClass(className);//ctxt.getResourceLoader().loadClass(className);
             IsGeneratorConfig generatorConfig = annotation.getAnnotation(IsGeneratorConfig.class);
             if(generatorConfig!=null){
-                log.info("auto registering generator '" + generatorConfig.defaultGenerator() + "' for annotation '" + annotationType + "'");
+                log.info("auto registering generator '" + generatorConfig.defaultGenerator() + "' for annotation '" + className + "'");
                 generators.put(annotationType, generatorConfig.defaultGenerator());
             } else {
-                log.warn("skipping auto registering generator for annotation '" + annotationType + "' as no default generator supplied");    
+                log.warn("skipping auto registering generator for annotation '" + className + "' as no default generator supplied");    
             }
         } catch (ClassNotFoundException e) {
-            log.warn(String.format("couldn't load annotation class %s, using roots:%n%s",annotationType,Joiner.on("\n").join(ctxt.getResourceLoader().getAllRoots())), e);
+            log.warn(String.format("couldn't load annotation class %s, using roots:%n%s",className,Joiner.on("\n").join(ctxt.getResourceLoader().getAllRoots())), e);
         }
     }
  

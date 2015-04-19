@@ -9,10 +9,9 @@ import java.util.Map;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ResourceLoader;
+import org.codemucker.jmutate.SourceLoader;
 import org.codemucker.jmutate.ast.matcher.AJField;
-import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -257,52 +256,39 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 		return s;
 	}
 	private Object findFieldValue(ASTNode node, String fullName, String className,String fieldName) {
-		ResourceLoader loader = MutateUtil.getResourceLoader(node);
-		
-		if (loader.canLoadClassOrSource(className)) {
-			// find it in the referenced source
-			RootResource file = loader.getResourceOrNullFromClassName(className);
-			if (file!= null) {
-				// now parse it
-				//read generator field value
-				JAstParser parser = MutateUtil.getParser(node);
-				JSourceFile source = JSourceFile.fromResource(file, parser);
-				//handle internal classes (com.mycompany.Foo.Bar), find internal class bits
-				JType type = source.findTypesMatching(AJType.with().fullName(className)).getFirstOrNull();
-				if( type != null){
-					JField field = type.findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();
-					if(field != null){
-						List<VariableDeclarationFragment> frags = field.getAstNode().fragments();
-						if(frags.size() == 1){
-							VariableDeclarationFragment val = frags.get(0);
-							Expression varExp = val.getInitializer();
-							Object fieldVal = extractExpressionValue(field.getAstNode(),varExp);
-							return fieldVal;
-						} else {
-							//can't extract value!
-						}
-					} else {
-						//can't find field!
-					}
+		SourceLoader loader = MutateUtil.getSourceLoader(node);
+		JType type = loader.loadTypeForClass(className);
+		if(type != null){
+			JField field = type.findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();
+			if(field != null){
+				List<VariableDeclarationFragment> frags = field.getAstNode().fragments();
+				if(frags.size() == 1){
+					VariableDeclarationFragment val = frags.get(0);
+					Expression varExp = val.getInitializer();
+					Object fieldVal = extractExpressionValue(field.getAstNode(),varExp);
+					return fieldVal;
 				} else {
-					//can't find type!
+					//can't extract value!
 				}
-			} else { //try the compiled class
-				Class<?> loadedClass = loader.loadClassOrNull(className);
-				if (loadedClass != null) {
-					// find field
-					// TODO:and parent fields?
-					try {
-						Field f = loadedClass.getDeclaredField(fieldName);
-						if (Modifier.isStatic(f.getModifiers())) {
-							return f.get(null);
-						}
-					} catch (SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-						throw new IllegalArgumentException("Couldn't access " + fullName, e);
-					}
+			} else {
+				//can't find field!
+			}
+		}	
+		//try the compiled class
+		Class<?> loadedClass = loader.loadClassOrNull(className);
+		if (loadedClass != null) {
+			// find field
+			// TODO:and parent fields?
+			try {
+				Field f = loadedClass.getDeclaredField(fieldName);
+				if (Modifier.isStatic(f.getModifiers())) {
+					return f.get(null);
 				}
+			} catch (SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
+				throw new IllegalArgumentException("Couldn't access " + fullName, e);
 			}
 		}
+	
 		return null;
 	}
 

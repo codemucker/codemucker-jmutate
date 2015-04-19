@@ -1,5 +1,7 @@
 package org.codemucker.jmutate.pattern;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Matcher;
@@ -14,6 +16,8 @@ import org.junit.Test;
 
 public class BeanBuilderPatternFinderTest {
 
+	private static final Logger LOG = LogManager.getLogger(BeanBuilderPatternFinderTest.class);
+	
 	@Test
 	public void testFindBuilders() {
 		//find classes with the name 'Builder' - confidence 90%
@@ -33,7 +37,7 @@ public class BeanBuilderPatternFinderTest {
 		//System.out.println("found potential builders:\n" + Joiner.on("\n================================================").join(foundBuilders) );
 	
 		for (JType type : foundBuilders) {
-			System.out.println( type.getFullName());
+			LOG.trace( type.getFullName());
 			
 			//builds what???
 			FindResult<JMethod> methods = type.findMethodsMatching(AJMethod.with().nameMatchingAntPattern("build*"));
@@ -41,7 +45,7 @@ public class BeanBuilderPatternFinderTest {
 				//could do checks on the build method here. COntains args? maybe not good?
 				//return null? another warning
 				//no build methods? another errors
-				System.out.println("\t--> " + method.getAstNode().getReturnType2());
+				LOG.trace("\t--> " + method.getAstNode().getReturnType2());
 			}	
 		}
 	}
@@ -64,8 +68,9 @@ public class BeanBuilderPatternFinderTest {
 			.findMethods();
 
 		for (JMethod method : found) {
-			System.out.print( method.getAstNode().parameters().size());
-			System.out.println( " " + method.getClashDetectionSignature());	
+		
+			LOG.trace( method.getAstNode().parameters().size());
+			LOG.trace( " " + method.getClashDetectionSignature());	
 		}
 	}
 	

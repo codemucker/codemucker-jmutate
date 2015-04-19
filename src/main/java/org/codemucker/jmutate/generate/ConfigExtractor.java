@@ -8,17 +8,13 @@ import java.util.Set;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.JMutateException;
-import org.codemucker.jmutate.ResourceLoader;
+import org.codemucker.jmutate.SourceLoader;
 import org.codemucker.jmutate.ast.JAnnotation;
-import org.codemucker.jmutate.ast.JAstParser;
-import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
-import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jpattern.generate.IsGeneratorConfig;
 import org.codemucker.jpattern.generate.IsGeneratorTemplate;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -35,8 +31,8 @@ class ConfigExtractor {
 
 	private static final Logger LOG = LogManager.getLogger(ConfigExtractor.class);
 	
-	private final ResourceLoader resourceLoader;
-	private final JAstParser parser;
+	private final SourceLoader sourceLoader;
+	
 	/**
 	 * Used to prevent constant scanning of already found template nodes
 	 */
@@ -55,10 +51,9 @@ class ConfigExtractor {
 	private final Matcher<JAnnotation> AST_CONTAINS_GENERATOR_CONFIG_ANNOTATION = AJAnnotation.with().annotationPresent(IsGeneratorConfig.class);
 	
 	@Inject
-	public ConfigExtractor(ResourceLoader resourceLoader,JAstParser parser) {
+	public ConfigExtractor(SourceLoader sourceLoader) {
 		super();
-		this.resourceLoader = resourceLoader;
-		this.parser = parser;
+		this.sourceLoader = sourceLoader;
 	}
 
 	/**
@@ -120,7 +115,7 @@ class ConfigExtractor {
     	
     	String templateFullName = templateAnnon.getFullName();
     	
-    	JType templateType = loadTypeForOrNull(templateFullName);
+    	JType templateType = sourceLoader.loadTypeForClass(templateFullName);
     	if(templateType != null){
     		for(JAnnotation a:templateType.getAnnotations().getAllDirect()){
     			extractIt(a,templateConfig);
@@ -177,19 +172,6 @@ class ConfigExtractor {
 			return true;
 		}
 		return false;
-	}
-	
-	private JType loadTypeForOrNull(String fullName){
-		JType type = null;
-		RootResource resource = resourceLoader.getResourceOrNullFromClassName(fullName);
-		if (resource != null && resource.exists()) {
-			JSourceFile source = JSourceFile.fromResource(resource,parser);
-			type = source.findTypesMatching(AJType.with().fullName(fullName)).getFirstOrNull();		
-			if(type == null){
-				LOG.warn("Can't find type '" + fullName + "' in " + source.getResource().getFullPath());
-			}
-		}
-		return type;
 	}
 
 }

@@ -301,7 +301,7 @@ public class CleanImportsTransform implements Transform {
 			if(SYSOUT_DEBUG){
 				System.out.println(getClass().getSimpleName() + ":" + msg);
 			}
-			log.debug(msg);
+			log.trace(msg);
 		}
 	}
 	

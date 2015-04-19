@@ -16,7 +16,7 @@ public class JSearchEngineTest {
 			.scanRoots(Roots.with()
 				.mainSrcDir(true)
 				.testSrcDir(true))
-			.parser(JAstParser.with()
+			.parser(DefaultJAstParser.with()
 				.resolveBindings(true)
 				.checkParse(true)
 				.resourceLoader(Roots.with().all()))

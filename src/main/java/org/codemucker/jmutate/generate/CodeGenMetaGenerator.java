@@ -159,21 +159,17 @@ public class CodeGenMetaGenerator {
 	
 	private String resolveFieldValue(ASTNode fromNode,String className, String fieldName){
 		String fieldValue = null;
-		ResourceLoader loader = MutateUtil.getResourceLoader(fromNode);
-		if(loader.canLoadClassOrSource(className)){
-			RootResource file = loader.getResourceOrNullFromClassName(className);
-			if(file.exists()){
-				//read generator field value
-				JSourceFile source = JSourceFile.fromResource(file, ctxt.getParser());
-				JField field = source.getMainType().findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();
-				if(field != null){
-					List<VariableDeclarationFragment> frags = field.getAstNode().fragments();
-					if(frags.size() == 1){
-						VariableDeclarationFragment val = frags.get(0);
-						Expression varExp = val.getInitializer();
-						if(varExp instanceof StringLiteral){
-							fieldValue = ((StringLiteral)varExp).getLiteralValue();
-						}
+		JType type = MutateUtil.getSourceLoader(fromNode).loadTypeForClass(className);
+		
+		if(type!=null){
+			JField field = type.findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();
+			if(field != null){
+				List<VariableDeclarationFragment> frags = field.getAstNode().fragments();
+				if(frags.size() == 1){
+					VariableDeclarationFragment val = frags.get(0);
+					Expression varExp = val.getInitializer();
+					if(varExp instanceof StringLiteral){
+						fieldValue = ((StringLiteral)varExp).getLiteralValue();
 					}
 				}
 			}
@@ -255,7 +251,7 @@ public class CodeGenMetaGenerator {
     	JSourceFile source;
         if (resource.exists()) {
         	log.debug("source " + resource.getRelPath() + " exists, loading" );
-        	source = ctxt.getOrLoadSource(resource);
+        	source = ctxt.getSourceLoader().loadSourceFrom(resource);
         } else {
         	log.debug("source " + resource.getRelPath() + " does not exist, creating" );
         	source = ctxt.newSourceTemplate()
@@ -265,7 +261,7 @@ public class CodeGenMetaGenerator {
                 .pl("public class ${className} {}")
                 .asSourceFileSnippet(root);
            //TODO:maybe track automatically via template create method?
-           ctxt.trackChanges(source);
+           ctxt.getSourceLoader().trackChanges(source);
         }
         JField field = ctxt.newSourceTemplate()
                 .pl("public static final String " + getConstantFieldName() + "=\"" + JMutateAppInfo.all + ";generator=" + generator.getName() + "\";")

@@ -63,7 +63,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	private void extractAllProperties(JType optionsDeclaredInNode,BuilderModel model) {
 		LOG.debug("adding properties to Builder for " + model.getPojoType().getFullName());
 		
-		PropertyModelExtractor extractor = PropertyModelExtractor.with(ctxt.getResourceLoader(), ctxt.getParser())
+		PropertyModelExtractor extractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
 			.includeCompiledClasses(true)
 			.propertyNameMatching(model.getFieldNames())
 			.includeSuperClass(model.isInheritSuperBeanBuilder())

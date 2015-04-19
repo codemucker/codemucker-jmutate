@@ -6,6 +6,7 @@ import java.util.List;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jfind.FindResult;
+import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.PropertyMatcher;
 import org.codemucker.jmutate.JMutateContext;
@@ -35,8 +36,10 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
 
 	@Override
 	public void generate(JType optionsDeclaredInNode, SmartConfig config,GenerateManyMatchersOptions options) {
+		Root root = optionsDeclaredInNode.getCompilationUnit().getSource().getResource().getRoot();
+		
 		findAndAddModels(optionsDeclaredInNode,options);
-		generateMatchers(options);
+		generateMatchers(options, root);
 	}
 
 	private void findAndAddModels(JType optionsDeclaredInNode,GenerateManyMatchersOptions options) {
@@ -46,7 +49,7 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
 				options.getPojoNames(),
 				options.getPojoTypes());
 	    
-		PropertyModelExtractor extractor = PropertyModelExtractor.with(ctxt.getResourceLoader(), ctxt.getParser())
+		PropertyModelExtractor extractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
 				.includeSuperClass(options.inheritParentProperties)
 				.build();
 		
@@ -71,28 +74,26 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
     	
     }
 
-	private void generateMatchers(GenerateManyMatchersOptions options) {
+	private void generateMatchers(GenerateManyMatchersOptions options,Root generateTo) {
 		for (PojoModel pojo: options.getPojoModels()) {
-			generateMatcher(options,pojo);
+			generateMatcherForPojo(options,pojo,generateTo);
 		}
 	}
 	
-	private void generateMatcher(GenerateManyMatchersOptions options,PojoModel model) {
-		JSourceFile source = newOrExistingMatcherSourceFile(options,model.getType());
-		if(source!= null){
-			ctxt.trackChanges(source);
-			JType matcher = source.getMainType();
+	private void generateMatcherForPojo(GenerateManyMatchersOptions options,PojoModel model,Root generateTo) {
+		JType matcher = newOrExistingMatcherType(options,generateTo,model.getType());
+		if(matcher!= null){
 			generateMatcher(options, model,matcher);
-			writeToDiskIfChanged(source);
+			writeToDiskIfChanged(matcher.getCompilationUnit().getSource());	
 		}
 	}
 
-    protected JSourceFile newOrExistingMatcherSourceFile(GenerateManyMatchersOptions options,TypeModel forType) {
+    protected JType newOrExistingMatcherType(GenerateManyMatchersOptions options,Root generateTo,TypeModel forType) {
     	TypeModel matcherType = toMatcherType(forType);
     	LOG.debug("checking for source file for " + matcherType.getFullName() + "");
-    	
+    	//Hmm, TODO, sourceLoader???
     	String path = matcherType.getFullName().replace('.', '/') + ".java";
-    	RootResource sourceFile = ctxt.getDefaultGenerationRoot().getResource(path);
+    	RootResource sourceFile = generateTo.getResource(path);
     	JSourceFile  source;
     	if(sourceFile.exists()){
     		if(!options.isKeepInSync()){
@@ -111,7 +112,7 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
     	
     	generateDefaultConstructor(source.getMainType(), forType);
     	
-    	return source;
+    	return source.getMainType();
     }
 
     

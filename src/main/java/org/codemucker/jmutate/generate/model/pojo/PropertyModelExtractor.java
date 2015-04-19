@@ -14,25 +14,23 @@ import org.codemucker.jfind.AbstractReflectedObject;
 import org.codemucker.jfind.ReflectedClass;
 import org.codemucker.jfind.ReflectedField;
 import org.codemucker.jfind.ReflectedMethod;
-import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.matcher.AField;
 import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.ResourceLoader;
+import org.codemucker.jmutate.SourceLoader;
 import org.codemucker.jmutate.ast.AnnotationsProvider;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
-import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
-import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.generate.model.TypeModel;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.bean.NotAProperty;
@@ -99,7 +97,7 @@ public class PropertyModelExtractor {
 						.isVoidReturn()));
 	
 	private static final Matcher<String> ignoreNames = any(AString.startingWith("_"),AString.startingWith("$"),AString.equalToAny("hashCode","toString", "equals", "clone"));
-	private final ResourceLoader resourceLoader;
+	private final SourceLoader sourceLoader;
 	private final JAstParser parser;
 
 	private final boolean includeSuperClass;
@@ -110,11 +108,11 @@ public class PropertyModelExtractor {
 
 	private final Matcher<String> propertyNameMatcher;
 
-	private PropertyModelExtractor(ResourceLoader resourceLoader,
+	private PropertyModelExtractor(SourceLoader sourceLoader,
 			JAstParser parser, boolean includeSuperClass,
 			boolean includeCompiledClasses, Matcher<String> propertyNameMatcher, boolean includeFields, boolean includeGetters, boolean includeSetters) {
 		super();
-		this.resourceLoader = resourceLoader;
+		this.sourceLoader = sourceLoader;
 		this.parser = parser;
 		this.includeSuperClass = includeSuperClass;
 		this.includeCompiledClasses = includeCompiledClasses;
@@ -137,15 +135,12 @@ public class PropertyModelExtractor {
 			String superType = pojoType.getSuperTypeFullName();
 
 			if (superType != null && !Object.class.getName().equals(superType)) {
-				RootResource r = resourceLoader.getResourceOrNullFromClassName(superType);
-				if (r != null) {
-					JSourceFile source = JSourceFile.fromResource(r, parser);
-					JType parent = source.findTypesMatching(
-							AJType.with().fullName(superType)).getFirstOrNull();
+				JType parent = sourceLoader.loadTypeForClass(superType);
+				if (parent != null) {
 					parentModel = extractModel(parent, level+1);
 				} else {
 					if (includeCompiledClasses) {
-						Class<?> k = resourceLoader.loadClassOrNull(superType);
+						Class<?> k = sourceLoader.loadClassOrNull(superType);
 						if (k != null) {
 							parentModel = extractModel(k);
 						}
@@ -394,13 +389,13 @@ public class PropertyModelExtractor {
 	}
 
 	
-	public static Builder with(ResourceLoader resourceLoader, JAstParser parser) {
-		return new Builder(resourceLoader, parser);
+	public static Builder with(SourceLoader sourceLoader, JAstParser parser) {
+		return new Builder(sourceLoader, parser);
 	}
 
 	public static class Builder {
 
-		private ResourceLoader resourceLoader;
+		private SourceLoader sourceLoader;
 		private JAstParser parser;
 
 		private boolean includeSuperClass = true;
@@ -412,22 +407,24 @@ public class PropertyModelExtractor {
 		private Matcher<String> propertyNameMatcher;
 
 		@Inject
-		public Builder(ResourceLoader resourceLoader, JAstParser parser) {
-			this.resourceLoader = resourceLoader;
+		public Builder(SourceLoader sourceLoader, JAstParser parser) {
+			this.sourceLoader = sourceLoader;
 			this.parser = parser;
 		}
 
 		public PropertyModelExtractor build() {
-			return new PropertyModelExtractor(resourceLoader, parser,
+			return new PropertyModelExtractor(sourceLoader, parser,
 					includeSuperClass, includeCompiledClasses,
 					propertyNameMatcher, includeFields, includeGetters, includeSetters);
 		}
 
-		public Builder resourceLoader(ResourceLoader resourceLoader) {
-			this.resourceLoader = resourceLoader;
+		@Inject
+		public Builder sourceLoader(SourceLoader sourceLoader) {
+			this.sourceLoader = sourceLoader;
 			return this;
 		}
-
+		
+		@Inject
 		public Builder parser(JAstParser parser) {
 			this.parser = parser;
 			return this;

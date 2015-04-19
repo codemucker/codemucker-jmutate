@@ -90,7 +90,7 @@ public abstract class AbstractBeanGenerator<T extends Annotation,TOptions extend
 	}
 	
     private PojoModel extractPropertiesModelFrom(JType node, AbstractBeanOptions<?> options){
-    	PropertyModelExtractor extractor = PropertyModelExtractor.with(ctxt.getResourceLoader(), ctxt.getParser())
+    	PropertyModelExtractor extractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
     		.includeCompiledClasses(true)
     		.propertyNameMatching(options.getFieldNames())
     		.includeSuperClass(options.isInheritParentProperties())

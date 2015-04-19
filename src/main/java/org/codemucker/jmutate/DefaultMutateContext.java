@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -13,20 +11,19 @@ import org.codemucker.jfind.DirectoryRoot;
 import org.codemucker.jfind.Root;
 import org.codemucker.jfind.Root.RootContentType;
 import org.codemucker.jfind.Root.RootType;
-import org.codemucker.jfind.RootResource;
 import org.codemucker.jfind.Roots;
+import org.codemucker.jmutate.ast.DefaultJAstParser;
 import org.codemucker.jmutate.ast.DefaultToSourceConverter;
 import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JAstParser;
-import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.ToSourceConverter;
 import org.codemucker.jmutate.util.MutateUtil;
+import org.codemucker.jmutate.util.MutateUtil.NodeParser;
 import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.codemucker.jtest.ProjectLayout;
 import org.codemucker.lang.PathUtil;
 import org.codemucker.lang.annotation.Optional;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
 import org.eclipse.jdt.internal.formatter.DefaultCodeFormatter;
@@ -43,7 +40,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class DefaultMutateContext implements JMutateContext {
 
-    private static final Logger LOG = LogManager.getLogger(DefaultMutateContext.class);
+    static final Logger LOG = LogManager.getLogger(DefaultMutateContext.class);
 
     private final ProjectLayout projectLayout;
     private final ProjectOptions projectOptons;
@@ -54,13 +51,14 @@ public class DefaultMutateContext implements JMutateContext {
 	 */
 	private final Root generationRoot;
 	private final JAstParser parser;
+	
 	private final DefaultCodeFormatterOptions formattingOptions;
+	
+	private final SourceLoader sourceLoader;
 	/**
 	 * If set, generated classes will be marked as such
 	 */
 	private final boolean markGenerated;
-	
-	private Map<String	, ResourceTracker> sourceTrackers = new HashMap<>();
 	
 	private final ClashStrategy defaultClashStrategy;
 	
@@ -72,19 +70,20 @@ public class DefaultMutateContext implements JMutateContext {
 		return new Builder();
 	}
 	
-	private DefaultMutateContext(ProjectLayout layout, ProjectOptions options, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategy placementStrategy, ClashStrategy defaultClashStrategy) {
+	private DefaultMutateContext(ProjectLayout layout, ProjectOptions options, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategy placementStrategy, ClashStrategy defaultClashStrategy,ResourceLoader resourceLoader, SourceLoader sourceLoader) {
         super();
         this.projectLayout = layout;
         this.projectOptons = options;
         this.formattingOptions = formatterOptions;
         this.generationRoot = generationRoot;
-        this.parser = parser;
         this.markGenerated = markGenerated;
         this.placementStrategy = placementStrategy;
-        this.resourceLoader = parser.getResourceLoader();
+        this.resourceLoader = resourceLoader;
         this.defaultClashStrategy = defaultClashStrategy;
+        this.sourceLoader = sourceLoader;
         
-        injector = Guice.createInjector(Stage.PRODUCTION, new DefaultMutationModule());
+        this.parser = parser;
+        this.injector = Guice.createInjector(Stage.PRODUCTION, new DefaultMutationModule());
     }
 
 	@Override
@@ -106,56 +105,6 @@ public class DefaultMutateContext implements JMutateContext {
         }
 	 }
 
-	@Override
-	public void trackChanges(ASTNode node) {
-		JSourceFile source = MutateUtil.getSource(node);
-		if(source != null){
-			trackChanges(source);
-		}
-	}
-
-	@Override
-	public void trackChanges(IProvideCompilationUnit provider) {
-		JSourceFile source = null;
-		if (provider != null) {
-			source = provider.getCompilationUnit().getSource();
-		}
-		if (source != null) {
-			LOG.debug("tracking changes for " + source.getResource().getFullPath());
-			getOrCreateTracker(source.getResource()).addSource(source);
-		} else {
-			LOG.debug("no source file for provied supplier");
-		}
-	}
-
-	@Override
-	public JSourceFile getOrLoadSource(RootResource resource) {
-		if(resource == null){
-			return null;
-		}
-		ResourceTracker tracker = getOrCreateTracker(resource);
-		JSourceFile source = tracker.getSource(resource);
-		if(source == null){
-			source = JSourceFile.fromResource(resource, getParser());
-			tracker.addSource(source);
-			LOG.debug("now tracking changes for " + source.getResource().getFullPath());
-		} else {
-			LOG.debug("already tracking change for " + source.getResource().getFullPath());
-		}
-		return source;
-	}
-	
-	private ResourceTracker getOrCreateTracker(RootResource resource){
-		Root root = resource.getRoot();
-		String key = root.getFullPath();
-		ResourceTracker tracker = sourceTrackers.get(key);
-		if(tracker == null){
-			tracker = new ResourceTracker(key);
-			sourceTrackers.put(key,tracker);
-		}
-		return tracker;
-	}
-		
 	@Override
     public JAstParser getParser() {
 	    return obtain(JAstParser.class);
@@ -179,6 +128,11 @@ public class DefaultMutateContext implements JMutateContext {
 	@Override
 	public ResourceLoader getResourceLoader() {
 	    return resourceLoader;
+	}
+	
+	@Override
+	public SourceLoader getSourceLoader() {
+	    return sourceLoader;
 	}
 	
 	@Override
@@ -266,32 +220,17 @@ public class DefaultMutateContext implements JMutateContext {
         
         @Provides
         @Singleton
+        public SourceLoader provideSourceLoader() {
+            return sourceLoader;
+        }
+        
+        @Provides
+        @Singleton
         public ProjectLayout provideProjectResolver() {
             return projectLayout;
         }
     }
     
-    static class ResourceTracker {
-    	private final String rootPath;
-    	private final Map<String, JSourceFile> sources = new HashMap<>();
-    	
-		public ResourceTracker(String rootPath) {
-			super();
-			this.rootPath = rootPath;
-		}
-		
-		public JSourceFile getSource(RootResource resource){
-			String key = resource.getRelPath();
-			JSourceFile source = sources.get(key);
-			return source;
-		}
-		
-		public void addSource(JSourceFile source){
-			String key = source.getResource().getRelPath();
-			sources.put(key, source);
-		}
-    }
-	
 	public static class Builder {
 	
 		private boolean markGenerated = false;
@@ -314,21 +253,26 @@ public class DefaultMutateContext implements JMutateContext {
         public DefaultMutateContext build() {
             ProjectLayout layout = getProjectLayoutOrDefault();
             Root generateTo = getGenerationRootOrDefault(layout);
+            
             ResourceLoader resourceLoader = getResourceLoaderOrDefault(generateTo, layout);
             JAstParser parser = getParserOrDefault(resourceLoader);
+            NodeParser wrappedParser = MutateUtil.wrapParser(resourceLoader, parser);            
+            SourceLoader sourceLoader = new DefaultSourceLoader(resourceLoader, wrappedParser);
+			wrappedParser.setSourceLoader(sourceLoader);
+            
             DefaultCodeFormatterOptions formatter = getFormatterOptionsOrDefault();
             PlacementStrategy placementStrategy = getPlacementStrategyOrDefault();
             ProjectOptions options = getProjectOptionsOrDefault();
-            
-            return new DefaultMutateContext(layout, options, generateTo, parser, markGenerated, formatter, placementStrategy, clashStrategy);
+
+            return new DefaultMutateContext(layout, options, generateTo, wrappedParser, markGenerated, formatter, placementStrategy, clashStrategy, resourceLoader, sourceLoader);
         }
-		
+
         private JAstParser getParserOrDefault(ResourceLoader loader) {
             return parser == null ? newDefaultAstParser(loader) : parser;
         }
 
 		private JAstParser newDefaultAstParser(ResourceLoader loader){
-            return JAstParser.with()
+            return DefaultJAstParser.with()
                     .defaults()
                     .resourceLoader(loader)
                     .build();

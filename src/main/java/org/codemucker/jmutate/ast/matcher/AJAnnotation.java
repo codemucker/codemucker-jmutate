@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractNotNullMatcher;
 import org.codemucker.jmatch.Description;
@@ -12,10 +11,7 @@ import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.MatchDiagnostics;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
-import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.ast.JAnnotation;
-import org.codemucker.jmutate.ast.JAstParser;
-import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.NameUtil;
@@ -52,45 +48,38 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
         return new AbstractNotNullMatcher<JAnnotation>() {
             //let's not needlessly recheck classes we've already tested
             private Map<String,Boolean> cachedClassNameToMatch = new HashMap<>();
+            //TODO:use resourceLoader class loader!
             private ClassLoader classLoader = MutateUtil.getClassLoaderForResolving();
             
             private final Object lock = new Object();
             
             @Override
             public boolean matchesSafely(JAnnotation found, MatchDiagnostics diag) {
-            	String name = found.getFullName();
-                
-            	
-            	//String fullCompiledName = NameUtil.sourceNameToCompiledName(found.getQualifiedName());
+            	String foundFullName = found.getFullName();
                 Boolean isMatch = null;
                 
                 synchronized (lock) {
-                	isMatch = cachedClassNameToMatch.get(name);
+                	isMatch = cachedClassNameToMatch.get(foundFullName);
                 }
                 if (isMatch != null) {
                     return isMatch.booleanValue();
                 }
-                ResourceLoader resourceLoader = MutateUtil.getResourceLoader(found.getAstNode());
-                RootResource resource = resourceLoader.getResourceOrNullFromClassName(name);
-                
-            	if(resource != null){
-            		JAstParser parser = MutateUtil.getParser(found.getAstNode());
-                    
-            		JType type = JSourceFile.fromResource(resource, parser).getTypeWithFullName(name);
+                JType type = MutateUtil.getSourceLoader(found.getAstNode()).loadTypeForClass(foundFullName); 
+            	if(type != null){
             		if(type.getAnnotations().contains(AJAnnotation.with().fullName(nameMatcher))){
-            			cacheResult(name, true);
+            			cacheResult(foundFullName, true);
                         return true;
             		}
-            		cacheResult(name, false);
+            		cacheResult(foundFullName, false);
                     return false;
             	}
                 try {
-                    Class<?> annotationClass = classLoader.loadClass(NameUtil.sourceNameToCompiledName(name));
+                    Class<?> annotationClass = classLoader.loadClass(NameUtil.sourceNameToCompiledName(foundFullName));
                     for (Annotation a : annotationClass.getAnnotations()) {
                         //System.out.println("annotation " + a.getClass().getName()  + " on " + fullCompiledName + " loaded");
                         
                         if (diag.tryMatch(this, NameUtil.compiledNameToSourceName(a.annotationType()), nameMatcher)) {
-                        	cacheResult(name, true);
+                        	cacheResult(foundFullName, true);
                             return true;
                         }
                     }
@@ -99,9 +88,9 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
 //                    System.out.println("couldn't load annotation " + fullCompiledName + " for " + found.getJCompilationUnit().getResource().getFullPath() + ",ignoring");
 //                    e.printStackTrace();
 //                    
-                    diag.mismatched("couldn't load annotation " + name + " for " + found.getJCompilationUnit().getResource().getFullPath() + ",ignoring");
+                    diag.mismatched("couldn't load annotation " + foundFullName + " for " + found.getJCompilationUnit().getResource().getFullPath() + ",ignoring");
                 }
-                cacheResult(name, false);
+                cacheResult(foundFullName, false);
                 return false;
             }
             

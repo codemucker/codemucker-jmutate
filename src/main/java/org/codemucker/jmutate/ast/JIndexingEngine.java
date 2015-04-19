@@ -117,7 +117,7 @@ public class JIndexingEngine implements Closeable {
 		}
 		
 		public Builder useDefaultParser(){
-			parser(JAstParser.with().defaults().build());
+			parser(DefaultJAstParser.with().defaults().build());
 			return this;
 		}
 

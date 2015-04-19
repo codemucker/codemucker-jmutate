@@ -14,14 +14,6 @@ public interface ResourceLoader {
     
     boolean containsResource(String relPath);
 
-    /**
-     * Find the resource for the given classpath. Converts full stops '.' into slashes '/'. Handles '$' which denote internal classes. If the classname is an internal class
-     * of the form com.mycompany.Foo.Bar, then it will look for com/mycompany/Foo/Bar.java, then com/mycompany/Foo.java, com/mycompany.java etc 
-     * @param fullClassName
-     * @return
-     */
-    RootResource getResourceOrNullFromClassName(String fullClassName);
-    
     RootResource getResourceOrNull(String relPath);
     
 
@@ -43,6 +35,4 @@ public interface ResourceLoader {
     Class<?> loadClassOrNull(String fullClassName);
     
     ClassLoader getClassLoader();
-
-	
 }

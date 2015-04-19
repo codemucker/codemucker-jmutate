@@ -2,7 +2,6 @@ package org.codemucker.jmutate.generate.matcher;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.PropertyMatcher;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.JMutateException;
@@ -34,7 +33,7 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 //		if(!options.keepInSync){
 //			return;
 //		}
-		PropertyModelExtractor extractor = PropertyModelExtractor.with(ctxt.getResourceLoader(), ctxt.getParser())
+		PropertyModelExtractor extractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
 				.includeSuperClass(options.inheritParentProperties)
 				.build();
 		
@@ -45,14 +44,9 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 		}
 		
 		PojoModel model = null;
-		RootResource resource = ctxt.getResourceLoader().getResourceOrNullFromClassName(generateFor);
-		if(resource != null){
-			//try class loader
-			JSourceFile pojoSource = ctxt.getOrLoadSource(resource);
-			if(pojoSource != null ){
-				JType pojoType = pojoSource.getTypeWithFullName(generateFor);
-				model = extractor.extractModel(pojoType);
-			}
+		JType pojoType = ctxt.getSourceLoader().loadTypeForClass(generateFor);
+		if(pojoType!= null){
+			model = extractor.extractModel(pojoType);
 		}
 		//no source code found, let's try class
 		if(model == null){
