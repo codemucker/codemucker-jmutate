@@ -27,6 +27,11 @@ public class PropertyModel extends ModelObject {
 	private String calculatedSetterName;
     private String calculatedAddName;
     private String calculatedRemoveName;
+    /**
+     * If a bean has a 'static final String PROP_FOO = "foo"; field, set this to 'PROP_FOO'. 
+     */
+    private String staticPropertyNameFieldName;
+    
     
 	public final PojoModel definedIn;
 	
@@ -203,6 +208,15 @@ public class PropertyModel extends ModelObject {
 		sb.append(", calculatedPropertySetterName=").append(calculatedSetterName);
 		sb.append(", calculatedPropertyAddName=").append(calculatedAddName);
 		sb.append(", calculatedPropertyRemoveName=").append(calculatedRemoveName);
+	}
+
+	public String getStaticPropertyNameFieldName() {
+		return staticPropertyNameFieldName;
+	}
+
+	public void setStaticPropertyNameFieldName(
+			String staticPropertyNameFieldName) {
+		this.staticPropertyNameFieldName = staticPropertyNameFieldName;
 	}
 
 }

@@ -74,6 +74,11 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			if(p.getRemoveName() == null && options.generateSetters && options.generateAddRemoveMethods){
 				p.setRemoveName(p.getCalculatedAddName());
 			}
+			if(p.getStaticPropertyNameFieldName() == null && options.generateStaticPropertyNameFields){
+				p.setStaticPropertyNameFieldName("PROP_" + p.getName().toUpperCase());
+			}
+			
+			ext.vetoPropertyNameAccessor = p.getStaticPropertyNameFieldName()==null?("\"" + p.getName() + "\""):p.getStaticPropertyNameFieldName();
 
 			p.set(PropertyExtension.class, ext);
 		}
@@ -116,7 +121,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			for (PropertyModel property : model.getAllProperties()) {
 				JField staticField = getCtxt()
 					.newSourceTemplate()
-					.pl("public static final String PROP_" + property.getName().toUpperCase() + " = \"" + property.getName() +"\";")
+					.pl("public static final String " + property.getStaticPropertyNameFieldName() + " = \"" + property.getName() +"\";")
 					.asJFieldSnippet();
 				addField(bean, staticField.getAstNode(), options.isMarkGenerated());
 			}	
@@ -233,6 +238,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			SourceTemplate setter = newSourceTemplate()
 				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getName())
+				.var("p.vetoName", pExtension.vetoPropertyNameAccessor)
 				.var("p.setterName", property.getSetterName())
 				.var("p.type", property.getType().getFullName())
 				.var("support.bind.name", options.propertyChangeSupportFieldName)
@@ -249,7 +255,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 				
 				if(pExtension.vetoable){
 					vetoString = setter.child()
-					.pl("   this.${support.veto.name}.fireVetoableChange(\"${p.name}\",this.${p.fieldName},val);")
+					.pl("   this.${support.veto.name}.fireVetoableChange(${p.vetoName},this.${p.fieldName},val);")
 					.interpolateTemplate();
 				}
 				if(pExtension.bindable){
@@ -257,7 +263,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 						.pl("	${p.type} oldVal = this.${p.fieldName};")
 						.p(vetoString)
 						.pl("	this.${p.fieldName} = val;")
-						.pl("   this.${support.bind.name}.firePropertyChange(\"${p.name}\",oldVal,val);");
+						.pl("   this.${support.bind.name}.firePropertyChange(${p.vetoName},oldVal,val);");
 				} else {
 					setter
 						.p(vetoString)
@@ -278,6 +284,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			SourceTemplate add = newSourceTemplate()
 				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getName())
+				.var("p.vetoName", pExtension.vetoPropertyNameAccessor)
 				.var("p.addName", property.getAddName())
 				.var("p.type", property.getType().getFullName())
 				.var("p.newType", property.getConcreteType())
@@ -334,6 +341,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			SourceTemplate add = newSourceTemplate()
 				.var("p.fieldName", property.getFieldName())
 				.var("p.name", property.getName())
+				.var("p.vetoName", pExtension.vetoPropertyNameAccessor)
 				.var("p.addName", property.getAddName())
 				.var("p.type", property.getType().getFullName())
 				.var("p.newType", property.getConcreteType())
@@ -364,7 +372,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 				
 				if(pExtension.vetoable){
 					vetoString = add.child()
-					.pl("   this.${support.veto.name}.fireIndexedVetoableChange(\"${p.name}\",this.${p.fieldName}.size(),this.${p.fieldName},val);")
+					.pl("   this.${support.veto.name}.fireIndexedVetoableChange(${p.vetoName},this.${p.fieldName}.size(),this.${p.fieldName},val);")
 					.interpolateTemplate();
 				}
 				if(pExtension.bindable){
@@ -372,7 +380,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 						.pl("	${p.type} oldVal = this.${p.fieldName};")
 						.p(vetoString)
 						.pl("	this.${p.fieldName}.add(val);")
-						.pl("   this.${support.bind.name}.fireIndexedPropertyChange(\"${p.name}\",this.${p.fieldName}.size()-1,oldVal,val);");
+						.pl("   this.${support.bind.name}.fireIndexedPropertyChange(${p.vetoName},this.${p.fieldName}.size()-1,oldVal,val);");
 				} else {
 					add
 						.p(vetoString)
@@ -389,6 +397,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 				SourceTemplate remove = newSourceTemplate()
 					.var("p.fieldName", property.getFieldName())
 					.var("p.name", property.getName())
+					.var("p.vetoName", pExtension.vetoPropertyNameAccessor)
 					.var("p.removeName", property.getRemoveName())
 					.var("p.type", property.getType().getFullName())
 					.var("p.newType", property.getConcreteType())
@@ -415,7 +424,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 				}
 				if(pExtension.vetoable){
 					vetoString = remove.child()
-					.pl("   this.${support.veto.name}.fireIndexedVetoableChange(\"${p.name}\",index,val,null);")
+					.pl("   this.${support.veto.name}.fireIndexedVetoableChange(${p.vetoName},index,val,null);")
 					.interpolateTemplate();
 				}
 				if(pExtension.bindable){
@@ -423,7 +432,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 						.p(indexString)
 						.p(vetoString)
 						.pl("	this.${p.fieldName}.remove(val);")
-						.pl("   this.${support.bind.name}.fireIndexedPropertyChange(\"${p.name}\",index,val,null);");
+						.pl("   this.${support.bind.name}.fireIndexedPropertyChange(${p.vetoName},index,val,null);");
 				} else {
 					remove
 						.p(indexString)
@@ -464,6 +473,8 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 		public boolean bindable;
 		public boolean vetoable;
 		public boolean chainedSetters;
+		public boolean copyOnSet;
+		public boolean copyOnGet;
 
 		public PropertiesOptions(Configuration config,JType pojoType) {
 			super(config,GenerateProperties.class,pojoType);
@@ -481,7 +492,9 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 		
 		boolean vetoable;
 		boolean bindable;
-
-
+		
+		String vetoPropertyNameAccessor;
+		
+		
 	}
 }
