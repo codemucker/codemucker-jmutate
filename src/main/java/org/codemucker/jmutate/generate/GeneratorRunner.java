@@ -115,16 +115,17 @@ public class GeneratorRunner {
 
     public GeneratorRunner(Iterable<Root> roots, Iterable<Root> scanRoots, Matcher<Root> scanRootsFilter, boolean scanSubtypes,Root generationRoot, String searchPkg,
     		Map<String, String> generators, boolean failOnParseError,ClashStrategy defaultClashStrategy, Matcher<String> filterAnnotations, Matcher<String> filterGenerators,
-    		ProjectOptions options) {
+    		ProjectOptions options,ClassLoader classloader) {
         super();
         this.resourceLoader = DefaultResourceLoader.with()
-                .parentLoader(DefaultResourceLoader.with().classLoader(Thread.currentThread().getContextClassLoader()).build())
+                .classLoader(classloader)
                 .roots(Roots.with()
                     .roots(roots)
                     .roots(scanRoots)
                     .root(generationRoot)
                     .build())
                 .build();
+        this.generatorClassLoader = resourceLoader.getClassLoader();
         
         this.scanRoots = scanRoots;
         this.scanRootFilter = scanRootsFilter;
@@ -133,7 +134,7 @@ public class GeneratorRunner {
         
         this.failOnParseError = failOnParseError;
         this.generators = Maps.newLinkedHashMap(generators);
-        this.generatorClassLoader = resourceLoader.getClassLoader();
+        
         this.autoRegisterDefaultGenerators = true;
 
         this.filterGenerators = filterGenerators;
@@ -343,6 +344,9 @@ public class GeneratorRunner {
         private Iterable<Root> roots;
         
         @Optional
+        private ClassLoader classloader;
+        
+        @Optional
         private Iterable<Root> scanRoots;
         
         @Optional
@@ -382,8 +386,8 @@ public class GeneratorRunner {
             String scanPkg = this.scanPackages == null ? "" : this.scanPackages;
             Matcher<String> annotationsMatcher = this.annotationNameMatcher != null ? this.annotationNameMatcher : AString.equalToAnything();
             Matcher<String> generatorMatcher = this.generatorNameMatcher != null ? this.generatorNameMatcher : AString.equalToAnything();
-            
-            return new GeneratorRunner(roots,scanRoots, scanRootsFilter, scanSubTypes, defaultGenerateTo, scanPkg, generators, failOnParseError,defaultClashStrategy, annotationsMatcher, generatorMatcher, projectOptions);
+            ClassLoader classloader = this.classloader==null?Thread.currentThread().getContextClassLoader():this.classloader;
+            return new GeneratorRunner(roots,scanRoots, scanRootsFilter, scanSubTypes, defaultGenerateTo, scanPkg, generators, failOnParseError,defaultClashStrategy, annotationsMatcher, generatorMatcher, projectOptions, classloader);
         }
         
         private Iterable<Root> getRootsOrDefault(){
@@ -417,6 +421,12 @@ public class GeneratorRunner {
             return this;
         }
 
+        @Optional
+        public Builder classloader(ClassLoader classloader) {
+            this.classloader = classloader;
+            return this;
+        }
+        
         @Optional
         public Builder scanRoots(IBuilder<? extends Iterable<Root>> builder) {
             scanRoots(builder.build());

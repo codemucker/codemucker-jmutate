@@ -37,29 +37,21 @@ public class ModelUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T extends Enum<T>> T getEnum(Configuration cfg,String key, T def){
-    	Object val = cfg.getProperty(key);
-    	Class<T> enumType = (Class<T>) def.getClass();
-    	T enumVal = toEnum(val,enumType);
-    	return enumVal == null?def:enumVal;
-    }
-	
-	@SuppressWarnings("unchecked")
-	public static <T extends Enum<T>> T toEnum(Object val, Class<T> enumType){
+	public static <T extends Enum<T>> T toEnum(Object val, Class<T> toEnumType){
     	if(val == null){
     		return null;
     	}
-		if(enumType.isAssignableFrom(val.getClass())){
+		if(toEnumType.isAssignableFrom(val.getClass())){
 			return (T)val;
 		}
 		if(!(val instanceof String)){
-    		throw new RuntimeException("expected type of String or " + enumType.getName() + ", but got " + val.getClass().getName());
+    		throw new RuntimeException("expected type of String or " + toEnumType.getName() + ", but got " + val.getClass().getName() + ",classloader for value :" + val.getClass().getClassLoader() +", using classloader " + toEnumType.getClassLoader());
     	}
 		String s = (String)val;
 		int lastDot = s.lastIndexOf('.');
-		if(lastDot != -1 && s.startsWith(enumType.getName().replace('$', '.'))){
+		if(lastDot != -1 && s.startsWith(toEnumType.getName().replace('$', '.'))){
 			s = s.substring(lastDot + 1);
 		} 
-		return (T) Enum.valueOf(enumType,s);
+		return (T) Enum.valueOf(toEnumType,s);
     }
 }

@@ -224,14 +224,22 @@ public class DefaultResourceLoader implements ResourceLoader {
         }
         
         private ClassLoader getClassLoaderOrDefault(ResourceLoader parent){
-            if (this.classLoader != null) {
-                return this.classLoader;
-            }
+        	if(this.classLoader !=null){
+        		return this.classLoader;
+        	}
+            ClassLoader newClassLoader = Thread.currentThread().getContextClassLoader();
+            
+			if (parent != null) {
+				ClassLoader parentClassLoader = parent.getClassLoader();
+				if (parentClassLoader != null && parentClassLoader != newClassLoader) {
+					newClassLoader = new URLClassLoader(new URL[] {},parentClassLoader);
+				}
+			}
             Set<URL> urls = new LinkedHashSet<>();
             for (Root r : additionalRoots) {
                 urls.add(r.toURL());
             }
-            ClassLoader newClassLoader = new URLClassLoader(urls.toArray(new URL[]{}), parent==null?null:parent.getClassLoader());
+            newClassLoader = new URLClassLoader(urls.toArray(new URL[]{}), newClassLoader);
             return newClassLoader; 
         }
         

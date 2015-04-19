@@ -255,9 +255,9 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 		}
 		return s;
 	}
-	private Object findFieldValue(ASTNode node, String fullName, String className,String fieldName) {
-		SourceLoader loader = MutateUtil.getSourceLoader(node);
-		JType type = loader.loadTypeForClass(className);
+	private Object findFieldValue(ASTNode node, String fullNameOfClassAndField, String fullClassName,String fieldName) {
+		SourceLoader sourceLoader = MutateUtil.getSourceLoader(node);
+		JType type = sourceLoader.loadTypeForClass(fullClassName);
 		if(type != null){
 			JField field = type.findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();
 			if(field != null){
@@ -275,7 +275,7 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 			}
 		}	
 		//try the compiled class
-		Class<?> loadedClass = loader.loadClassOrNull(className);
+		Class<?> loadedClass = sourceLoader.loadClassOrNull(fullClassName);
 		if (loadedClass != null) {
 			// find field
 			// TODO:and parent fields?
@@ -285,7 +285,7 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 					return f.get(null);
 				}
 			} catch (SecurityException | NoSuchFieldException | IllegalArgumentException | IllegalAccessException e) {
-				throw new IllegalArgumentException("Couldn't access " + fullName, e);
+				throw new IllegalArgumentException("Couldn't access " + fullNameOfClassAndField, e);
 			}
 		}
 	
