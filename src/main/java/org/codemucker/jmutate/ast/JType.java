@@ -499,24 +499,25 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	public JType getSuperTypeOrNull(){
 		JType parentType = null;
 		String superType = getSuperTypeFullName();
-		if (superType != null && !Object.class.getName().equals(superType)) {
+		if (superType != null) {
 			parentType = getCompilationUnit().getSourceLoader().loadTypeForClass(superType);
 		}
 		return parentType;
 	}
 	
 	/**
-	 * Return the super class full type name, or if none is present (for interfaces, enums, annotations) just return java.lang.Object
+	 * Return the super class full type name, or if none is present (for interfaces, enums, annotations) just return null
 	 * @return
 	 */
 	public String getSuperTypeFullName() {
 		if (typeNode instanceof TypeDeclaration) {
 			Type st = ((TypeDeclaration) typeNode).getSuperclassType();
 			if (st != null) {
-				return NameUtil.resolveQualifiedName(st);
+				String fn = NameUtil.resolveQualifiedName(st);
+				return Object.class.getName().equals(fn)?null:fn;
 			}
 		}
-		return Object.class.getName();
+		return null;
 	}
 
 	public JCompilationUnit getCompilationUnit(){

@@ -19,7 +19,6 @@ import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jfind.matcher.AnAnnotation;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Matcher;
-import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.SourceLoader;
 import org.codemucker.jmutate.ast.AnnotationsProvider;
 import org.codemucker.jmutate.ast.JAnnotation;
@@ -136,15 +135,14 @@ public class PropertyModelExtractor {
 
 		PojoModel parentModel = null;
 		if (includeSuperClass) {
-			String superType = pojoType.getSuperTypeFullName();
-
-			if (superType != null && !Object.class.getName().equals(superType)) {
-				JType parent = sourceLoader.loadTypeForClass(superType);
-				if (parent != null) {
-					parentModel = extractModel(parent, level+1);
+			String superTypeFullName = pojoType.getSuperTypeFullName();
+			if(superTypeFullName != null){
+				JType superType = pojoType.getSuperTypeOrNull();
+				if (superType != null) {
+					parentModel = extractModel(superType, level+1);
 				} else {
 					if (includeCompiledClasses) {
-						Class<?> k = sourceLoader.loadClassOrNull(superType);
+						Class<?> k = sourceLoader.loadClassOrNull(superTypeFullName);
 						if (k != null) {
 							parentModel = extractModel(k);
 						}

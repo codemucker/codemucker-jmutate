@@ -61,7 +61,7 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 		}
 
 		String superType = declaredInType.getSuperTypeFullName();
-		if(superType != Object.class.getName()){
+		if(superType != null){
 			//TODO:check correct super class. 
 		}
 		
