@@ -256,7 +256,7 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 		return s;
 	}
 	private Object findFieldValue(ASTNode node, String fullNameOfClassAndField, String fullClassName,String fieldName) {
-		SourceLoader sourceLoader = MutateUtil.getSourceLoader(node);
+		SourceLoader sourceLoader = MutateUtil.getSourceLoaderOrFail(node);
 		JType type = sourceLoader.loadTypeForClass(fullClassName);
 		if(type != null){
 			JField field = type.findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();

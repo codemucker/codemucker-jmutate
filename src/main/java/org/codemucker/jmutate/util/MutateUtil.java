@@ -24,7 +24,7 @@ public class MutateUtil  {
         return (ResourceLoader) node.getRoot().getProperty(NODE_PROPERTY_RESOURCE_LOADER);
     }
     
-    public static SourceLoader getSourceLoader(ASTNode node){
+    public static SourceLoader getSourceLoaderOrFail(ASTNode node){
        SourceLoader loader = (SourceLoader) node.getRoot().getProperty(NODE_PROPERTY_SOURCE_LOADER);
        if(loader == null){
     	   throw new IllegalStateException("no source loader attached to node");

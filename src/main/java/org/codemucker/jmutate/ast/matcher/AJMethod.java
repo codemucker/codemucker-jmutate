@@ -17,6 +17,7 @@ import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifier;
+import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -408,6 +409,21 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 			@Override
             public void describeTo(Description desc) {
                 desc.value("with signature:", matcher);
+            }
+		});
+		return this;
+	}
+	
+	public AJMethod declaringType(final Matcher<JType> typeMatcher){
+		addMatcher(new AbstractNotNullMatcher<JMethod>() {
+			@Override
+			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
+				return diag.tryMatch(this, found.getEnclosingJType(), typeMatcher);
+			}
+			
+			@Override
+            public void describeTo(Description desc) {
+                desc.value("with declaring type:", typeMatcher);
             }
 		});
 		return this;

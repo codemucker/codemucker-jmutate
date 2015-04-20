@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
@@ -20,6 +22,8 @@ import com.google.inject.Inject;
 
 public class DefaultSourceLoader implements SourceLoader {
 
+	private static final Logger LOG = LogManager.getLogger(DefaultSourceLoader.class);
+	
 	private final Map<String, ResourceTracker> sourceTrackersByRootPath = new HashMap<>();
 	private final Map<String, RootResource> resourcesByClassName = new HashMap<>();
 	
@@ -54,10 +58,9 @@ public class DefaultSourceLoader implements SourceLoader {
 			source = provider.getCompilationUnit().getSource();
 		}
 		if (source != null) {
-			DefaultMutateContext.LOG.debug("tracking changes for " + source.getResource().getFullPath());
 			getOrCreateTrackerFor(source.getResource()).addSource(source);
 		} else {
-			DefaultMutateContext.LOG.debug("no source file for provied supplier");
+			LOG.debug("no source file for provied supplier");
 		}
 	}
 	
@@ -75,7 +78,7 @@ public class DefaultSourceLoader implements SourceLoader {
 			String cleanFullName = NameUtil.compiledNameToSourceName(fullName);
 			type = source.findTypesMatching(AJType.with().fullName(cleanFullName)).getFirstOrNull();		
 			if(type == null){
-				DefaultMutateContext.LOG.warn("Can't find type '" + cleanFullName + "' in " + source.getResource().getFullPath() + ", using resource loader " + resourceLoader);
+				LOG.warn("Can't find type '" + cleanFullName + "' in " + source.getResource().getFullPath() + ", using resource loader " + resourceLoader);
 			}
 		}
 		if(type == null && failOnNotFind){
@@ -112,9 +115,8 @@ public class DefaultSourceLoader implements SourceLoader {
 		if(source == null){
 			source = JSourceFile.fromResource(resource, parser);
 			tracker.addSource(source);
-			DefaultMutateContext.LOG.debug("now tracking changes for " + source.getResource().getFullPath());
 		} else {
-			DefaultMutateContext.LOG.debug("already tracking change for " + source.getResource().getFullPath());
+			LOG.debug("already have chaneg tracker for " + source.getResource().getFullPath());
 		}
 		
 		return source;
@@ -124,6 +126,7 @@ public class DefaultSourceLoader implements SourceLoader {
 		String rootPath = resource.getRoot().getFullPath();
 		ResourceTracker tracker = sourceTrackersByRootPath.get(rootPath);			
 		if(tracker == null){
+			LOG.debug("created tracker for " + resource.getFullPath());
 			tracker = new ResourceTracker(rootPath);
 			sourceTrackersByRootPath.put(rootPath,tracker);
 		}

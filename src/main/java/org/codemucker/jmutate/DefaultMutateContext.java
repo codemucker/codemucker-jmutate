@@ -40,7 +40,7 @@ import com.google.inject.name.Named;
 @Singleton
 public class DefaultMutateContext implements JMutateContext {
 
-    static final Logger LOG = LogManager.getLogger(DefaultMutateContext.class);
+    private static final Logger LOG = LogManager.getLogger(DefaultMutateContext.class);
 
     private final ProjectLayout projectLayout;
     private final ProjectOptions projectOptons;

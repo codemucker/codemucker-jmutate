@@ -47,7 +47,7 @@ public class InsertNodeTransform {
 
 	public InsertNodeTransform target(JType javaType) {
     	this.nodesToInsertInto = javaType.getBodyDeclarations();
-    	this.ast = javaType.getAst();
+    	this.ast = javaType.getAstNode().getAST();
     	return this;
 	}
 

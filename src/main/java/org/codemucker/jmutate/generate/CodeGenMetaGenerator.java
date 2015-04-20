@@ -159,7 +159,7 @@ public class CodeGenMetaGenerator {
 	
 	private String resolveFieldValue(ASTNode fromNode,String className, String fieldName){
 		String fieldValue = null;
-		JType type = MutateUtil.getSourceLoader(fromNode).loadTypeForClass(className);
+		JType type = MutateUtil.getSourceLoaderOrFail(fromNode).loadTypeForClass(className);
 		
 		if(type!=null){
 			JField field = type.findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();

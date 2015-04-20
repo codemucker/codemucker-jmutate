@@ -4,7 +4,7 @@ public class SearchDepth {
     
     public final int max;
     
-    public static final SearchDepth  DIRECT = new SearchDepth(0);
+    public static final SearchDepth DIRECT = new SearchDepth(0);
     public static final SearchDepth DIRECT_CHILDREN = new SearchDepth(1);
     public static final SearchDepth ANY = new SearchDepth(-1);
     

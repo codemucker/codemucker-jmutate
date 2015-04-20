@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
-import org.codemucker.jfind.matcher.AClass;
 import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AbstractMatcher;
@@ -23,11 +22,11 @@ import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmatch.expression.AbstractMatchBuilderCallback;
 import org.codemucker.jmatch.expression.ExpressionParser;
-import org.codemucker.jmutate.ast.SearchDepth;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
+import org.codemucker.jmutate.ast.SearchDepth;
 import org.codemucker.jmutate.util.NameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 

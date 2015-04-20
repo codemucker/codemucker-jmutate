@@ -11,6 +11,8 @@ import org.codemucker.jfind.RootResource;
 import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.IProvideCompilationUnit;
 import org.codemucker.jmutate.JMutateException;
+import org.codemucker.jmutate.ResourceLoader;
+import org.codemucker.jmutate.SourceLoader;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.eclipse.jdt.core.dom.AST;
@@ -163,5 +165,9 @@ public class JCompilationUnit implements AstNodeProvider<CompilationUnit>, IProv
 	@Override
 	public JCompilationUnit getCompilationUnit() {
 		return this;
+	}
+	
+	public SourceLoader getSourceLoader(){
+		return MutateUtil.getSourceLoaderOrFail(compilationUnit);
 	}
 }

@@ -52,7 +52,7 @@ public class JTypeMutator implements IProvideCompilationUnit {
 	}
 	
 	public ImportDeclaration newImport(String fqn){
-		AST ast = jType.getAst();
+		AST ast = jType.getAstNode().getAST();
 		Name name = ast.newName(fqn);
 		ImportDeclaration imprt = ast.newImportDeclaration();
 		imprt.setName(name);
@@ -141,7 +141,7 @@ public class JTypeMutator implements IProvideCompilationUnit {
 	                return;//lets not add it more than once
 	            }
 	        }
-	        AST ast = jType.getAst();
+	        AST ast = jType.getAstNode().getAST();
 	        String pkgPart = ClassNameUtil.extractPkgPartOrNull(fullName);
 	        String classPart = ClassNameUtil.extractSimpleClassNamePart(fullName);
 	        Type newType;

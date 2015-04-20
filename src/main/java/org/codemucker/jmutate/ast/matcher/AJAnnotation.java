@@ -64,7 +64,7 @@ public class AJAnnotation extends ObjectMatcher<JAnnotation>{
                 if (isMatch != null) {
                     return isMatch.booleanValue();
                 }
-                JType type = MutateUtil.getSourceLoader(found.getAstNode()).loadTypeForClass(foundFullName); 
+                JType type = MutateUtil.getSourceLoaderOrFail(found.getAstNode()).loadTypeForClass(foundFullName); 
             	if(type != null){
             		if(type.getAnnotations().contains(AJAnnotation.with().fullName(nameMatcher))){
             			cacheResult(foundFullName, true);

@@ -13,9 +13,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
+import org.apache.tools.ant.taskdefs.optional.javah.Kaffeh;
 import org.codemucker.jfind.DefaultFindResult;
 import org.codemucker.jfind.FindResult;
 import org.codemucker.jfind.PredicateToFindFilterAdapter;
+import org.codemucker.jfind.SearchScope;
 import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.Logical;
 import org.codemucker.jmatch.Matcher;
@@ -43,6 +45,7 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.TypeParameter;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
@@ -189,20 +192,6 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	public abstract boolean isInnerClass();
 	public abstract boolean isTopLevelClass();
 
-	/**
-	 * Return the super class full type name, or if none is present (for interfaces, enums, annotations) just return java.lang.Object
-	 * @return
-	 */
-	public String getSuperTypeFullName() {
-		if (typeNode instanceof TypeDeclaration) {
-			Type st = ((TypeDeclaration) typeNode).getSuperclassType();
-			if (st != null) {
-				return NameUtil.resolveQualifiedName(st);
-			}
-		}
-		return Object.class.getName();
-	}
-
 	@Override
 	public ASTNode getAstNode(){
 		return typeNode;
@@ -286,34 +275,39 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 
 	public FindResult<JField> findFields(){
-		return findDirectMatching(AJField.any(),Include.DIRECT_ONLY);
+		return findFieldsMatching(AJField.any(),SearchScope.DIRECT);
 	}
 	
 	public FindResult<JField> findNestedFields(){
-		return findDirectMatching(AJField.any(),Include.CHILDREN_ALSO);
+		return findFieldsMatching(AJField.any(),SearchScope.DIRECT_AND_CHILDREN);
 	}
 	
 	public FindResult<JField> findFieldsMatching(final Matcher<JField> matcher) {
-		return findDirectMatching(matcher, Include.DIRECT_ONLY);
+		return findFieldsMatching(matcher, SearchScope.DIRECT);
 	}
 	
 	public FindResult<JField> findNestedFieldsMatching(final Matcher<JField> matcher) {
-		return findDirectMatching(matcher, Include.CHILDREN_ALSO);
+		return findFieldsMatching(matcher, SearchScope.DIRECT_AND_CHILDREN);
 	}
 	
-	private FindResult<JField> findDirectMatching(final Matcher<JField> matcher,final Include include) {
-		final Collection<JField> found = Lists.newArrayList();
+	public FindResult<JField> findFieldsMatching(final Matcher<JField> matcher,final SearchScope scope) {
+		List<JField> collected = Lists.newArrayList();
+		collectFieldsMatching(collected, matcher, scope);
+		return DefaultFindResult.from(collected);
+	}
+	
+	private void collectFieldsMatching(final List<JField> collected, final Matcher<JField> matcher,final SearchScope scope) {
 		//use visitor as anonymous class does not contain a fields property 
 		ASTVisitor visitor = new BaseASTVisitor() {
 			@Override
 			protected boolean visitNode(ASTNode node) {
 				//skip child types
-				if(include == Include.DIRECT_ONLY && isTypeNode(node)){
+				if(!SearchScope.CHILDREN.isSet(scope) && isTypeNode(node)){
 					return false;
-				} else if( node instanceof FieldDeclaration){
+				} else if(node instanceof FieldDeclaration){
 					JField field = JField.from((FieldDeclaration)node);
-					if( matcher.matches(field)) {
-						found.add(field);
+					if(matcher.matches(field)) {
+						collected.add(field);
 					}
 					return false;
 				} 
@@ -321,7 +315,13 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 			}
 		};
 		visitChildren(visitor);
-		return DefaultFindResult.from(found);
+		
+		if (SearchScope.PARENT.isSet(scope)) {
+			JType superType = JType.this.getSuperTypeOrNull();
+			if (superType != null) {
+				superType.collectFieldsMatching(collected, matcher, scope.not(SearchScope.CHILDREN));
+			}
+		}
 	}
 	
 	/**
@@ -332,11 +332,11 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 * @return
 	 */
 	public FindResult<JMethod> findMethods() {
-		return findMethodsMatching(AJMethod.any(),Include.DIRECT_ONLY);		
+		return findMethodsMatching(AJMethod.any(),SearchScope.DIRECT);		
 	}
 	
 	public FindResult<JMethod> findNestedMethods() {
-		return findMethodsMatching(AJMethod.any(),Include.CHILDREN_ALSO);		
+		return findMethodsMatching(AJMethod.any(),SearchScope.DIRECT_AND_CHILDREN);		
 	}
 	
 	/**
@@ -347,27 +347,32 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 * @return
 	 */
 	public FindResult<JMethod> findMethodsMatching(final Matcher<JMethod> matcher) {
-		return findMethodsMatching(matcher,Include.DIRECT_ONLY);
+		return findMethodsMatching(matcher,SearchScope.DIRECT);
 	}
 	
 	public FindResult<JMethod> findNestedMethodsMatching(final Matcher<JMethod> matcher) {
-		return findMethodsMatching(matcher,Include.CHILDREN_ALSO);
+		return findMethodsMatching(matcher,SearchScope.DIRECT_AND_CHILDREN);
 	}
 	
-	private FindResult<JMethod> findMethodsMatching(final Matcher<JMethod> matcher, final Include include) {
-		final List<JMethod> found = newArrayList();
+	public FindResult<JMethod> findMethodsMatching(final Matcher<JMethod> matcher, final SearchScope scope) {
+		List<JMethod> collected = newArrayList();
+		collectMethodsMatching(collected,matcher,scope);
+		return DefaultFindResult.from(collected);
+		
+	}
+	private void collectMethodsMatching(final List<JMethod> collected,final Matcher<JMethod> matcher, final SearchScope scope) {
 		//use a visitor as the anonymous type does not have a 'methods' field
 		ASTVisitor visitor = new BaseASTVisitor(){
 			@Override
 			protected boolean visitNode(ASTNode node) {
 				//ignore child types
-				if(include == Include.DIRECT_ONLY && isTypeNode(node)){
+				if(!SearchScope.CHILDREN.isSet(scope)&& isTypeNode(node)){
 					return false;
 				}
 				if(JMethod.isMethodNode(node)){
 					JMethod m = JMethod.from(node);
 					if(matcher.matches(m)){
-						found.add(m);
+						collected.add(m);
 					}
 					return false;//no need to go deeper
 				}
@@ -375,12 +380,15 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 			}
 		};
 		visitChildren(visitor);
-		return DefaultFindResult.from(found);
+		
+		if(SearchScope.PARENT.isSet(scope)) {
+			JType superType = JType.this.getSuperTypeOrNull();
+			if (superType != null) {
+				superType.collectMethodsMatching(collected, matcher, scope.not(SearchScope.CHILDREN));
+			}
+		}
 	}
 	
-	private enum Include {
-		DIRECT_ONLY,CHILDREN_ALSO
-	}
 
 	/**
 	 * Determine if there are any top level methods matching the given matcher
@@ -416,21 +424,21 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	}
 	
 	public FindResult<JType> findChildTypes(){
-		return findTypesMatching(AJType.any(),Include.DIRECT_ONLY);
+		return findTypesMatching(AJType.any(),SearchScope.DIRECT);
 	}
 	
 	/**
 	 * Find direct child types which match the given matcher. This is not recursive.
 	 */
 	public FindResult<JType> findTypesMatching(final Matcher<JType> matcher){
-		return findTypesMatching(matcher, Include.DIRECT_ONLY);
+		return findTypesMatching(matcher, SearchScope.DIRECT);
 	}
 	
 	/**
 	 * Recursively find all child types
 	 */
 	public FindResult<JType> findNestedTypes() {
-		return findTypesMatching(AJType.any(),Include.CHILDREN_ALSO);
+		return findTypesMatching(AJType.any(),SearchScope.DIRECT_AND_CHILDREN);
 	}
 	
 	/**
@@ -438,19 +446,24 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 * types, and types within types
 	 */
 	public FindResult<JType> findNestedTypesMatching(final Matcher<JType> matcher){
-		return findTypesMatching(matcher,Include.CHILDREN_ALSO);
+		return findTypesMatching(matcher,SearchScope.DIRECT_AND_CHILDREN);
 	}
 	
-	private FindResult<JType> findTypesMatching(final Matcher<JType> matcher, Include include){
-		final List<JType> found = Lists.newArrayList();
-		final boolean walkChildren = include == Include.CHILDREN_ALSO;
+	public FindResult<JType> findTypesMatching(final Matcher<JType> matcher, SearchScope scope){
+		List<JType> collected = Lists.newArrayList();
+		collectTypesMatching(collected, matcher, scope);
+		return DefaultFindResult.from(collected);
+	}
+	
+	private void collectTypesMatching(final List<JType> collected, final Matcher<JType> matcher, SearchScope scope){
+		final boolean walkChildren = SearchScope.CHILDREN.isSet(scope);
 		ASTVisitor visitor = new BaseASTVisitor(){
 			@Override
 			public boolean visitNode(ASTNode node) {
 				if(JType.isTypeNode(node)){
 					JType t = JType.from(node);
 					if(matcher.matches(t)){
-						found.add(t);	
+						collected.add(t);	
 					}
 					return walkChildren;
 				}
@@ -461,7 +474,13 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 			}
 		};
 		visitChildren(visitor);
-		return DefaultFindResult.from(found);
+		
+		if (SearchScope.PARENT.isSet(scope)) {
+			JType superType = JType.this.getSuperTypeOrNull();
+			if (superType != null) {
+				superType.collectTypesMatching(collected, matcher, scope.not(SearchScope.CHILDREN));
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -477,8 +496,27 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 		}
 	}
 
-	public AST getAst() {
-		return typeNode.getAST();
+	public JType getSuperTypeOrNull(){
+		JType parentType = null;
+		String superType = getSuperTypeFullName();
+		if (superType != null && !Object.class.getName().equals(superType)) {
+			parentType = getCompilationUnit().getSourceLoader().loadTypeForClass(superType);
+		}
+		return parentType;
+	}
+	
+	/**
+	 * Return the super class full type name, or if none is present (for interfaces, enums, annotations) just return java.lang.Object
+	 * @return
+	 */
+	public String getSuperTypeFullName() {
+		if (typeNode instanceof TypeDeclaration) {
+			Type st = ((TypeDeclaration) typeNode).getSuperclassType();
+			if (st != null) {
+				return NameUtil.resolveQualifiedName(st);
+			}
+		}
+		return Object.class.getName();
 	}
 
 	public JCompilationUnit getCompilationUnit(){

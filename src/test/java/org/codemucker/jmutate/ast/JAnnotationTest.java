@@ -109,7 +109,7 @@ public class JAnnotationTest {
 		Expect
 			.that(annon.getAttributeMap())
 			.is(AMap.ofStringObject()
-					.withOnly("att", EnumFromOtherPackage.class.getName() + ".TWO"));
+					.withOnly("att", EnumFromOtherPackage.TWO));
 
 		
     }
