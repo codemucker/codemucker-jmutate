@@ -60,6 +60,8 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			ext.setterReturnType = options.chainedSetters?options.getType().getFullNameRaw():"void";
 			ext.generateGetter = options.generateGetters;
 			ext.generateSetter = options.generateSetters && !options.makeFinal &&  (p.hasField() && !p.isFinalField());
+			ext.copyOnGet = options.copyOnGet;
+			ext.copyOnSet = options.copyOnSet;
 			
 			if(p.getGetterName() == null && options.generateGetters){
 				p.setGetterName(p.getCalculatedGetterName());
@@ -79,7 +81,7 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 			}
 			
 			ext.vetoPropertyNameAccessor = p.getStaticPropertyNameFieldName()==null?("\"" + p.getName() + "\""):p.getStaticPropertyNameFieldName();
-
+			
 			p.set(PropertyExtension.class, ext);
 		}
 	}
@@ -222,9 +224,14 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 				.var("p.getterName", property.getGetterName())
 				.var("p.type", property.getType().getFullName())
 				
-				.pl("public ${p.type} ${p.getterName}(){")
-				.pl("		return ${p.fieldName};")
-				.pl("}");
+				.pl("public ${p.type} ${p.getterName}(){");
+			if(pExtension.copyOnGet && !property.getType().isValueType()){
+				getter.pl("		return ${p.fieldName};");
+						
+			} else {
+				getter.pl("		return ${p.fieldName};");
+			}
+			getter.pl("}");
 				
 			addMethod(bean, getter.asMethodNodeSnippet(),options.isMarkGenerated());
 		}
@@ -492,6 +499,9 @@ public class PropertiesGenerator extends AbstractBeanGenerator<GeneratePropertie
 		
 		boolean vetoable;
 		boolean bindable;
+		boolean copyOnSet;
+		boolean copyOnGet;
+
 		
 		String vetoPropertyNameAccessor;
 		

@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.codemucker.jmutate.generate.model.MethodModel;
 import org.codemucker.jmutate.generate.model.ModelObject;
 import org.codemucker.jmutate.generate.model.TypeModel;
+import org.codemucker.lang.annotation.Immutable;
 
 import com.google.common.collect.Lists;
 
@@ -39,7 +41,8 @@ public class PojoModel extends ModelObject {
 	 */
 	private final int level;
 	private final TypeModel type;
-
+	private MethodModel cloneMethod;
+	
 	public PojoModel(TypeModel type,int level) {
 		this(type, level, null);
 	}
@@ -109,6 +112,14 @@ public class PojoModel extends ModelObject {
 			}
 		}
 		return false;
+	}
+
+	public MethodModel getCloneMethod() {
+		return cloneMethod;
+	}
+
+	public void setCloneMethod(MethodModel cloneMethod) {
+		this.cloneMethod = cloneMethod;
 	}
 
 

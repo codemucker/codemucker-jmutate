@@ -31,6 +31,7 @@ import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
+import org.codemucker.jmutate.generate.model.MethodModel;
 import org.codemucker.jmutate.generate.model.TypeModel;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.bean.NotAProperty;
@@ -96,6 +97,8 @@ public class PropertyModelExtractor {
 						.isPublic()
 						.isVoidReturn()));
 	
+	private static final CloneMethodExtractor cloneMethodExtractor = new CloneMethodExtractor();
+	
 	private static final Matcher<String> ignoreNames = any(AString.startingWith("_"),AString.startingWith("$"),AString.equalToAny("hashCode","toString", "equals", "clone"));
 	private final SourceLoader sourceLoader;
 	private final JAstParser parser;
@@ -105,6 +108,7 @@ public class PropertyModelExtractor {
 	private final boolean includeFields;
 	private final boolean includeSetters;
 	private final boolean includeGetters;
+	private final boolean includeMagicMethods = true;
 
 	private final Matcher<String> propertyNameMatcher;
 
@@ -160,6 +164,11 @@ public class PropertyModelExtractor {
 		if(includeSetters){
 			extractSetters(pojoType, model);
 		}
+		
+		if(includeMagicMethods){
+			extractMagicMethods(pojoType, model);
+		}
+		
 		return model;
 	}
 
@@ -256,6 +265,9 @@ public class PropertyModelExtractor {
 		if (includeSetters) {
 			extractSetters(pojoType, model);
 		}
+		if(includeMagicMethods){
+			extractMagicMethods(pojoType, model);
+		}
 		return model;
 	}
 
@@ -326,6 +338,21 @@ public class PropertyModelExtractor {
 			count++;
 		}
 		LOG.trace("added " + count + " compiled setters");
+	}
+	
+
+	private void extractMagicMethods(JType pojoType, PojoModel model) {
+		JMethod clone = cloneMethodExtractor.extractCloneMethodOrNull(pojoType);
+		if(clone != null){
+			model.setCloneMethod(new MethodModel(clone));
+		}
+	}
+
+	private void extractMagicMethods(ReflectedClass pojoType, PojoModel model) {
+		Method clone = cloneMethodExtractor.extractCloneMethodOrNull(pojoType);
+		if(clone != null){
+			model.setCloneMethod(new MethodModel(clone));
+		}
 	}
 
 	private boolean isInclude(AnnotationsProvider provider, String name) {

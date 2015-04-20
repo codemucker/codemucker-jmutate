@@ -10,6 +10,7 @@ import org.codemucker.jmutate.generate.SmartConfig;
 import org.codemucker.jmutate.generate.bean.CloneGenerator.CloneOptions;
 import org.codemucker.jmutate.generate.model.pojo.PojoModel;
 import org.codemucker.jmutate.generate.model.pojo.PropertyModel;
+import org.codemucker.jpattern.bean.CloneMethod;
 import org.codemucker.jpattern.generate.GenerateCloneMethod;
 
 import com.google.inject.Inject;
@@ -40,6 +41,7 @@ public class CloneGenerator extends AbstractBeanGenerator<GenerateCloneMethod,Cl
 				.var("b.typeBounds", options.getType().getTypeBoundsOrEmpty())
 				
 				
+				.pl("@" + CloneMethod.class.getName())
 				.pl("public static ${b.typeBounds} ${b.type} ${method.name}(${b.type} bean){")
 				.pl("if(bean == null){ return null;}")
 				.pl("final ${b.type} clone = new ${b.type}();");
