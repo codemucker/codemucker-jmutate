@@ -11,6 +11,7 @@ import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jmutate.util.TypeUtils;
 import org.codemucker.lang.BeanNameUtil;
 import org.codemucker.lang.ClassNameUtil;
+import org.codemucker.lang.annotation.Immutable;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
@@ -62,21 +63,25 @@ public class TypeModel extends ModelObject {
 	private final boolean isGeneric;
 	private final boolean isPrimitive;
 	private final boolean isPrimitiveObject;
-	private final boolean isValueType;
+	private final boolean isImmutable;
 
 	public TypeModel(Class<?> type){
-		this(NameUtil.compiledNameToSourceName(type), null);
+		this(NameUtil.compiledNameToSourceName(type), null, type.isEnum()  || type.isAnnotationPresent(Immutable.class));
 	}
 	
 	public TypeModel(JType type){
-		this(type.getFullGenericName(), type.getTypeBoundsExpressionOrNull());
+		this(type.getFullGenericName(), type.getTypeBoundsExpressionOrNull(), type.isEnum() || type.getAnnotations().contains(Immutable.class));
 	}
 	
 	public TypeModel(String fullType) {
-		this(fullType,null);
+		this(fullType,null, false /*??? load type?*/);
 	}
 	
 	public TypeModel(String fullType, String typeBounds) {
+		this(fullType,typeBounds, false);
+	}
+	
+	private TypeModel(String fullType, String typeBounds, boolean immutable) {
 		this.typeBoundsOrNull = Strings.emptyToNull(typeBounds);
 		this.typeBoundsOrEmpty = Strings.nullToEmpty(typeBoundsOrNull);
 		this.typeBoundsNamesOrNull = getTypeBoundsOrNull() == null?null:Joiner.on(",").join(extractTypeNames(typeBoundsOrNull));
@@ -90,7 +95,7 @@ public class TypeModel extends ModelObject {
 		this.isPrimitive = TypeUtils.isPrimitive(fullName);
 		this.isPrimitiveObject = TypeUtils.isPrimitiveObject(fullName);
 		this.isString = TypeUtils.isString(fullName);
-		this.isValueType = TypeUtils.isValueType(fullName);
+		this.isImmutable = immutable || TypeUtils.isValueType(fullName);
 		
 		this.isGeneric = fullType.contains("<");
 		this.isMap = REGISTRY.isMap(fullNameRaw);
@@ -306,8 +311,8 @@ public class TypeModel extends ModelObject {
 		return isPrimitiveObject;
 	}
 
-	public boolean isValueType() {
-		return isValueType;
+	public boolean isImmutable() {
+		return isImmutable;
 	}
 
 	static class IndexedTypeRegistry {

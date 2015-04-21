@@ -17,7 +17,7 @@ import org.codemucker.jpattern.generate.matcher.GenerateMatcher;
 import com.google.inject.Inject;
 
 /**
- * Generates the matchers for pojos
+ * Generates the matcher for a single pojo
  */
 public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,GenerateMatcherOptions> {
 
@@ -50,7 +50,7 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 		}
 		//no source code found, let's try class
 		if(model == null){
-			Class<?> pojoClass = ctxt.getResourceLoader().loadClassOrNull(generateFor);
+			Class<?> pojoClass = ctxt.getSourceLoader().loadClassOrNull(generateFor);
 			if(pojoClass != null){
 				model = extractor.extractModel(pojoClass);
 			}
