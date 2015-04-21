@@ -64,24 +64,25 @@ public class TypeModel extends ModelObject {
 	private final boolean isPrimitive;
 	private final boolean isPrimitiveObject;
 	private final boolean isImmutable;
+	private final boolean isInterface;
 
 	public TypeModel(Class<?> type){
-		this(NameUtil.compiledNameToSourceName(type), null, type.isEnum()  || type.isAnnotationPresent(Immutable.class));
+		this(NameUtil.compiledNameToSourceName(type), null, type.isInterface(), type.isEnum()  || type.isAnnotationPresent(Immutable.class));
 	}
 	
 	public TypeModel(JType type){
-		this(type.getFullGenericName(), type.getTypeBoundsExpressionOrNull(), type.isEnum() || type.getAnnotations().contains(Immutable.class));
+		this(type.getFullGenericName(), type.getTypeBoundsExpressionOrNull(),type.isInterface(), type.isEnum() || type.getAnnotations().contains(Immutable.class));
 	}
 	
 	public TypeModel(String fullType) {
-		this(fullType,null, false /*??? load type?*/);
+		this(fullType,null, false,false /*??? load type?*/);
 	}
 	
 	public TypeModel(String fullType, String typeBounds) {
-		this(fullType,typeBounds, false);
+		this(fullType,typeBounds, false, false);
 	}
 	
-	private TypeModel(String fullType, String typeBounds, boolean immutable) {
+	private TypeModel(String fullType, String typeBounds, boolean isInterface,boolean immutable) {
 		this.typeBoundsOrNull = Strings.emptyToNull(typeBounds);
 		this.typeBoundsOrEmpty = Strings.nullToEmpty(typeBoundsOrNull);
 		this.typeBoundsNamesOrNull = getTypeBoundsOrNull() == null?null:Joiner.on(",").join(extractTypeNames(typeBoundsOrNull));
@@ -96,6 +97,7 @@ public class TypeModel extends ModelObject {
 		this.isPrimitiveObject = TypeUtils.isPrimitiveObject(fullName);
 		this.isString = TypeUtils.isString(fullName);
 		this.isImmutable = immutable || TypeUtils.isValueType(fullName);
+		this.isInterface = isInterface;
 		
 		this.isGeneric = fullType.contains("<");
 		this.isMap = REGISTRY.isMap(fullNameRaw);
@@ -313,6 +315,10 @@ public class TypeModel extends ModelObject {
 
 	public boolean isImmutable() {
 		return isImmutable;
+	}
+
+	public boolean isInterface() {
+		return isInterface;
 	}
 
 	static class IndexedTypeRegistry {

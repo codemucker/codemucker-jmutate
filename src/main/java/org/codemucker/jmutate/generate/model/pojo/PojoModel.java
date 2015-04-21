@@ -9,7 +9,6 @@ import java.util.TreeMap;
 import org.codemucker.jmutate.generate.model.MethodModel;
 import org.codemucker.jmutate.generate.model.ModelObject;
 import org.codemucker.jmutate.generate.model.TypeModel;
-import org.codemucker.lang.annotation.Immutable;
 
 import com.google.common.collect.Lists;
 

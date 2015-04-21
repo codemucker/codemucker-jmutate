@@ -57,7 +57,7 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
             FindResult<JType> pojos = pojoScanner.scanSources();
             // add the appropriate methods and types for each request bean
             for (JType pojo : pojos) {
-            	PojoModel model = extractor.extractModel(pojo);
+            	PojoModel model = extractor.extractModelFromClass(pojo);
             	options.addMatcher(model);
             }
         }
@@ -66,7 +66,7 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
             FindResult<Class<?>> pojos = pojoScanner.scanForReflectedClasses();
             // add the appropriate methods and types for each request bean
             for (Class<?> pojo : pojos) {
-             	PojoModel model = extractor.extractModel(pojo);
+             	PojoModel model = extractor.extractModelFromClass(pojo);
             	options.addMatcher(model);
             }
         }

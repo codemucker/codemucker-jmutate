@@ -22,7 +22,6 @@ import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmutate.SourceLoader;
 import org.codemucker.jmutate.ast.AnnotationsProvider;
 import org.codemucker.jmutate.ast.JAnnotation;
-import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JField;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
@@ -31,6 +30,8 @@ import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
 import org.codemucker.jmutate.generate.model.MethodModel;
+import org.codemucker.jmutate.generate.model.ModelExtractor;
+import org.codemucker.jmutate.generate.model.ModelRegistry;
 import org.codemucker.jmutate.generate.model.TypeModel;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.bean.NotAProperty;
@@ -43,7 +44,8 @@ import com.google.inject.Inject;
 /**
  * I find source and compiled properties
  */
-public class PropertyModelExtractor {
+public class PropertyModelExtractor implements ModelExtractor<PojoModel> {
+	
 	private static final Logger LOG = LogManager.getLogger(PropertyModelExtractor.class);
 
 	private static final Matcher<Annotation> annotationIgnoreCompiled = 
@@ -100,7 +102,6 @@ public class PropertyModelExtractor {
 	
 	private static final Matcher<String> ignoreNames = any(AString.startingWith("_"),AString.startingWith("$"),AString.equalToAny("hashCode","toString", "equals", "clone"));
 	private final SourceLoader sourceLoader;
-	private final JAstParser parser;
 
 	private final boolean includeSuperClass;
 	private final boolean includeCompiledClasses;
@@ -111,12 +112,10 @@ public class PropertyModelExtractor {
 
 	private final Matcher<String> propertyNameMatcher;
 
-	private PropertyModelExtractor(SourceLoader sourceLoader,
-			JAstParser parser, boolean includeSuperClass,
+	private PropertyModelExtractor(SourceLoader sourceLoader,boolean includeSuperClass,
 			boolean includeCompiledClasses, Matcher<String> propertyNameMatcher, boolean includeFields, boolean includeGetters, boolean includeSetters) {
 		super();
 		this.sourceLoader = sourceLoader;
-		this.parser = parser;
 		this.includeSuperClass = includeSuperClass;
 		this.includeCompiledClasses = includeCompiledClasses;
 		this.propertyNameMatcher = propertyNameMatcher;
@@ -126,25 +125,37 @@ public class PropertyModelExtractor {
 		this.includeSetters = includeSetters;
 	}
 
-	public PojoModel extractModel(JType pojoType) {
-		return extractModel(pojoType, 0);
+
+	@Override
+	public Class<PojoModel> getModelClass() {
+		return PojoModel.class;
+	}
+
+	@Override
+	public PojoModel extractModelFromClass(String fullName) {
+		//can't do anything with this! No model
+		return null;
+	}
+
+	
+	@Override
+	public PojoModel extractModelFromClass(JType pojoType) {
+		return extractModelFromClass(pojoType, 0);
 	}
 	
-	private PojoModel extractModel(JType pojoType, int level) {
-		// call request builder methods for each field/method exposed
-
+	private PojoModel extractModelFromClass(JType pojoType, int level) {
 		PojoModel parentModel = null;
 		if (includeSuperClass) {
 			String superTypeFullName = pojoType.getSuperTypeFullName();
 			if(superTypeFullName != null){
 				JType superType = pojoType.getSuperTypeOrNull();
 				if (superType != null) {
-					parentModel = extractModel(superType, level+1);
+					parentModel = extractModelFromClass(superType, level+1);
 				} else {
 					if (includeCompiledClasses) {
 						Class<?> k = sourceLoader.loadClassOrNull(superTypeFullName);
 						if (k != null) {
-							parentModel = extractModel(k);
+							parentModel = extractModelFromClass(k);
 						}
 					}
 				}
@@ -238,17 +249,18 @@ public class PropertyModelExtractor {
 		LOG.debug("added " + count + " source setters");
 	}
 
-	public PojoModel extractModel(Class<?> pojoClass) {
-		return extractModel(pojoClass,0);
+	@Override
+	public PojoModel extractModelFromClass(Class<?> pojoClass) {
+		return extractModelFromClass(pojoClass,0);
 	}
 	
-	private PojoModel extractModel(Class<?> pojoClass, int level) {
+	private PojoModel extractModelFromClass(Class<?> pojoClass, int level) {
 
 		PojoModel parentModel = null;
 		if (includeSuperClass) {
 			Class<?> parent = pojoClass.getSuperclass();
 			if (parent != null && parent != Object.class) {
-				parentModel = extractModel(pojoClass, level+1);
+				parentModel = extractModelFromClass(pojoClass, level+1);
 			}
 		}
 		PojoModel model = new PojoModel(new TypeModel(NameUtil.compiledNameToSourceName(pojoClass),null),level,parentModel);
@@ -413,15 +425,13 @@ public class PropertyModelExtractor {
 		return null;
 	}
 
-	
-	public static Builder with(SourceLoader sourceLoader, JAstParser parser) {
-		return new Builder(sourceLoader, parser);
+	public static Builder with(SourceLoader sourceLoader) {
+		return new Builder(sourceLoader);
 	}
 
 	public static class Builder {
 
 		private SourceLoader sourceLoader;
-		private JAstParser parser;
 
 		private boolean includeSuperClass = true;
 		private boolean includeCompiledClasses = true;
@@ -432,13 +442,12 @@ public class PropertyModelExtractor {
 		private Matcher<String> propertyNameMatcher;
 
 		@Inject
-		public Builder(SourceLoader sourceLoader, JAstParser parser) {
+		public Builder(SourceLoader sourceLoader) {
 			this.sourceLoader = sourceLoader;
-			this.parser = parser;
 		}
 
 		public PropertyModelExtractor build() {
-			return new PropertyModelExtractor(sourceLoader, parser,
+			return new PropertyModelExtractor(sourceLoader,
 					includeSuperClass, includeCompiledClasses,
 					propertyNameMatcher, includeFields, includeGetters, includeSetters);
 		}
@@ -446,12 +455,6 @@ public class PropertyModelExtractor {
 		@Inject
 		public Builder sourceLoader(SourceLoader sourceLoader) {
 			this.sourceLoader = sourceLoader;
-			return this;
-		}
-		
-		@Inject
-		public Builder parser(JAstParser parser) {
-			this.parser = parser;
 			return this;
 		}
 

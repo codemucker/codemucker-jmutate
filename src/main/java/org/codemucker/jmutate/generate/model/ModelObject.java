@@ -10,11 +10,12 @@ import java.util.NoSuchElementException;
 
 import com.google.common.base.Joiner;
 
-public class ModelObject {
+public class ModelObject implements IModel {
 
 	private Map<Object, Object> properties;
 
 	
+	@Override
 	public void set(Object key,Object val){
 		if(properties == null){
 			properties = new HashMap<Object, Object>();
@@ -22,6 +23,7 @@ public class ModelObject {
 		properties.put(key,val);
 	}
 	
+	@Override
 	public boolean has(Object key){
 		return properties != null && properties.containsKey(key);
 	}
@@ -31,6 +33,7 @@ public class ModelObject {
 	 * @param key
 	 * @return
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T getOrFail(Class<T> key){
 		return (T)getOrFail((Object)key);
@@ -42,6 +45,7 @@ public class ModelObject {
 	 * @return
 	 * @throws NoSuchElementException if no element with the given key exists
 	 */
+	@Override
 	public Object getOrFail(Object key) throws NoSuchElementException {
 		Object val = getOrNull(key);
 		if(val == null){
@@ -51,11 +55,13 @@ public class ModelObject {
 		return val;
 	}
 	
+	@Override
 	@SuppressWarnings("unchecked")
 	public <T> T getOrNull(Class<T> key){
 		return (T)getOrNull((Object)key);
 	}
 	
+	@Override
 	public Object getOrNull(Object key){
 		return properties==null?null:properties.get(key);
 	}

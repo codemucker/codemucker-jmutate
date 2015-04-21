@@ -69,7 +69,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			.includeSuperClass(model.isInheritSuperBeanBuilder())
 			.build();
 		
-		PojoModel pojo = extractor.extractModel(optionsDeclaredInNode);
+		PojoModel pojo = extractor.extractModelFromClass(optionsDeclaredInNode);
 		
 		boolean fromSuper = false;
 		while(pojo != null){	

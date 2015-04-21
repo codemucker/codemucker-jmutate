@@ -96,7 +96,7 @@ public abstract class AbstractBeanGenerator<T extends Annotation,TOptions extend
     		.includeSuperClass(options.isInheritParentProperties())
     		.build();
     		
-    	PojoModel pojo = extractor.extractModel(node);
+    	PojoModel pojo = extractor.extractModelFromClass(node);
 
     	return pojo;
     }
@@ -123,6 +123,7 @@ public abstract class AbstractBeanGenerator<T extends Annotation,TOptions extend
 				.target(type)
 				.method(m)
 				.transform();
+		
 	}
 
 	private void writeToDiskIfChanged(JSourceFile source) {

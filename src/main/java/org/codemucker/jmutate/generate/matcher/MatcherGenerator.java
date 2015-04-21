@@ -46,13 +46,13 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 		PojoModel model = null;
 		JType pojoType = ctxt.getSourceLoader().loadTypeForClass(generateFor);
 		if(pojoType!= null){
-			model = extractor.extractModel(pojoType);
+			model = extractor.extractModelFromClass(pojoType);
 		}
 		//no source code found, let's try class
 		if(model == null){
 			Class<?> pojoClass = ctxt.getSourceLoader().loadClassOrNull(generateFor);
 			if(pojoClass != null){
-				model = extractor.extractModel(pojoClass);
+				model = extractor.extractModelFromClass(pojoClass);
 			}
 		}
 		
