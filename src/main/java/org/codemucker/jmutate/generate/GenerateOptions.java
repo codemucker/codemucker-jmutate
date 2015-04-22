@@ -6,6 +6,9 @@ import org.apache.commons.configuration.Configuration;
 
 public class GenerateOptions<T extends Annotation> {
 
+	private boolean enabled;
+	private boolean markGenerated;
+
 	public GenerateOptions() {
 	}
 	
@@ -16,4 +19,21 @@ public class GenerateOptions<T extends Annotation> {
 	public GenerateOptions(Configuration config,Class<T> annotationClass) {
 		OptionsMapper.INSTANCE.mapFromTo(config, annotationClass, this);
 	}
+
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	public boolean isMarkGenerated() {
+		return markGenerated;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+
+	public void setMarkGenerated(boolean markGenerated) {
+		this.markGenerated = markGenerated;
+	}
+
 }

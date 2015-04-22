@@ -16,7 +16,7 @@ import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJAnnotation;
-import org.codemucker.jmutate.generate.AbstractCodeGenerator;
+import org.codemucker.jmutate.generate.AbstractGenerator;
 import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
 import org.codemucker.jmutate.generate.ReplaceOnlyOwnedNodesResolver;
 import org.codemucker.jmutate.generate.SmartConfig;
@@ -28,7 +28,7 @@ import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 
-public abstract class AbstractMatchGenerator<T extends Annotation,TOptions extends AbstractMatcherModel<T>> extends AbstractCodeGenerator<T>  {
+public abstract class AbstractMatchGenerator<T extends Annotation,TOptions extends AbstractMatcherModel<T>> extends AbstractGenerator<T>  {
 
 	private static final Logger LOG = LogManager.getLogger(AbstractMatchGenerator.class);	
     static final String VOWELS_UPPER = "AEIOU";
@@ -51,11 +51,6 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 
     protected final Matcher<Annotation> reflectedAnnotationIgnore = AnAnnotation.with().fullName(AString.matchingAntPattern("*.Ignore"));
     protected final Matcher<JAnnotation> sourceAnnotationIgnore = AJAnnotation.with().fullName(AString.matchingAntPattern("*.Ignore"));
-    
-    protected final JMutateContext ctxt;
-    protected ClashStrategyResolver methodClashResolver;
-
-	protected final CodeGenMetaGenerator generatorMeta;
 
 	private final Class<TOptions> optionsClass;
 	private final Class<T> annotationType;
@@ -63,8 +58,7 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 	private TOptions options;
 	
     protected AbstractMatchGenerator(JMutateContext ctxt,Class<T> annotationType,Class<TOptions> optionsClass) {
-        this.ctxt = ctxt;
-        this.generatorMeta = new CodeGenMetaGenerator(ctxt,getClass());
+        super(ctxt);
         this.annotationType = annotationType;
         this.optionsClass = optionsClass;
     }
@@ -76,8 +70,8 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 			LOG.info("generator annotation marked as disabled, not running generation");
 			return;
 		}
-    	methodClashResolver = new ReplaceOnlyOwnedNodesResolver(generatorMeta,options.clashStrategy);
-		
+    	setClashStrategy(options.clashStrategy);
+    	
     	generate(declaredInType,config,options);
     }
 	
@@ -111,9 +105,9 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 
 	protected void generateDefaultConstructor(JType matcher, TypeModel forType) {
 		//add default ctor
-        SourceTemplate ctor= ctxt.newSourceTemplate();
+        SourceTemplate ctor= newSourceTemplate();
         ctor.pl("public " + matcher.getSimpleName() + "(){super(" + forType.getFullName() + ".class);}");
-        addMethod(matcher,ctor.asConstructorNodeSnippet());
+        addMethod(matcher,ctor.asConstructorNodeSnippet(),options.isMarkGenerated());
 	}
     
     /**
@@ -123,16 +117,16 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
      * @param matcher
      */
 	protected void generateMatcher(TOptions options,PojoModel model,JType matcher){
-		SourceTemplate baseTemplate = ctxt.newSourceTemplate().var("selfType", matcher.getSimpleName());
+		SourceTemplate baseTemplate = newSourceTemplate().var("selfType", matcher.getSimpleName());
 		// custom user builder factory methods
 		for (String name : options.staticBuilderMethodNames) {
 			if(name != "with"){
-				addMethod(matcher,baseTemplate.child().pl("public static ${selfType} " + name + " (){ return with(); }").asMethodNodeSnippet());
+				addMethod(matcher,baseTemplate.child().pl("public static ${selfType} " + name + " (){ return with(); }").asMethodNodeSnippet(),options.isMarkGenerated());
 			}
 		}
 
 		// standard builder factory method
-		addMethod(matcher,baseTemplate.child().pl("public static ${selfType} with(){ return new ${selfType}(); }").asMethodNodeSnippet());
+		addMethod(matcher,baseTemplate.child().pl("public static ${selfType} with(){ return new ${selfType}(); }").asMethodNodeSnippet(),options.isMarkGenerated());
 
 		for (PropertyModel property : model.getAllProperties()) {
 			//add default equals matchers for known types
@@ -150,7 +144,7 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 					.pl("		${p.name}(${matcher}(val)); ")
 					.pl("		return this;")
 					.pl("}");
-				addMethod(matcher, equalsMethod.asMethodNodeSnippet());
+				addMethod(matcher, equalsMethod.asMethodNodeSnippet(), options.isMarkGenerated());
 			}
 			//TODO:add automatic converter methods
 			//e.g. long -> date; boolean->isX,isNotX; obj->isNull,isNotNull, String->isBlank,isEmpty,isNull
@@ -178,7 +172,7 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 				.pl("}")
 				.singleToDoubleQuotes();
 				
-			addMethod(matcher, matcherMethod.asMethodNodeSnippet());
+			addMethod(matcher, matcherMethod.asMethodNodeSnippet(),options.isMarkGenerated());
 		}	
 	}
 	
@@ -197,34 +191,7 @@ public abstract class AbstractMatchGenerator<T extends Annotation,TOptions exten
 	}
 
 	protected void addGeneratedMarkers(SourceTemplate template) {
-    	generatorMeta.addGeneratedMarkers(template);
-    }
-
-    protected void writeToDiskIfChanged(JSourceFile source) {
-        if (source != null) {
-            cleanupImports(source.getAstNode());
-            source = source.asMutator(ctxt).writeModificationsToDisk();
-        }
-    }
-
-	protected void addMethod(JType matcher, MethodDeclaration m) {
-		if(this.options.markGenerated){
-			generatorMeta.addGeneratedMarkers(m);
-		}
-		ctxt
-			.obtain(InsertMethodTransform.class)
-			.clashStrategy(methodClashResolver)
-			.target(matcher)
-			.method(m)
-			
-			.transform();
-	}
-
-    protected void cleanupImports(ASTNode node) {
-        ctxt.obtain(CleanImportsTransform.class)
-            .addMissingImports(true)
-            .nodeToClean(node)
-            .transform();
+    	getGeneratorMeta().addGeneratedMarkers(template);
     }
 
 

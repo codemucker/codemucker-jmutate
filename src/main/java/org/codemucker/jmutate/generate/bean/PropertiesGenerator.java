@@ -117,7 +117,7 @@ public class PropertiesGenerator extends
 		if (options.generateNoArgCtor && !model.hasDirectFinalProperties()) {
 
 			LOG.debug("generating no arg constructor");
-			JMethod ctor = getCtxt()
+			JMethod ctor = getContext()
 					.newSourceTemplate()
 					.pl("public " + options.getType().getSimpleNameRaw()
 							+ "(){}").asConstructorSnippet();
@@ -129,7 +129,7 @@ public class PropertiesGenerator extends
 		// static property names
 		if (options.generateStaticPropertyNameFields) {
 			for (PropertyModel property : model.getAllProperties()) {
-				JField staticField = getCtxt()
+				JField staticField = getContext()
 						.newSourceTemplate()
 						.pl("public static final String "
 								+ property.getStaticPropertyNameFieldName()

@@ -2,27 +2,17 @@ package org.codemucker.jmutate.generate.builder;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jmutate.ClashStrategyResolver;
 import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.SourceTemplate;
-import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JSourceFile;
 import org.codemucker.jmutate.ast.JType;
-import org.codemucker.jmutate.generate.AbstractCodeGenerator;
-import org.codemucker.jmutate.generate.CodeGenMetaGenerator;
+import org.codemucker.jmutate.generate.AbstractGenerator;
 import org.codemucker.jmutate.generate.SmartConfig;
 import org.codemucker.jmutate.generate.model.pojo.PojoModel;
 import org.codemucker.jmutate.generate.model.pojo.PropertyModel;
 import org.codemucker.jmutate.generate.model.pojo.PropertyModelExtractor;
-import org.codemucker.jmutate.transform.CleanImportsTransform;
-import org.codemucker.jmutate.transform.InsertFieldTransform;
-import org.codemucker.jmutate.transform.InsertMethodTransform;
 import org.codemucker.jpattern.bean.Property;
-import org.codemucker.jpattern.generate.ClashStrategy;
 import org.codemucker.jpattern.generate.GenerateBuilder;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.FieldDeclaration;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
@@ -30,19 +20,13 @@ import com.google.inject.Inject;
 /**
  * Generates per class builders
  */
-public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
+public class BuilderGenerator extends AbstractGenerator<GenerateBuilder> {
 
     private static final Logger LOG = LogManager.getLogger(BuilderGenerator.class);
 
-    private final JMutateContext ctxt;
-    private ClashStrategyResolver methodClashResolver;
-
-	private final CodeGenMetaGenerator genInfo;
-
     @Inject
     public BuilderGenerator(JMutateContext ctxt) {
-        this.ctxt = ctxt;
-        this.genInfo = new CodeGenMetaGenerator(ctxt,getClass());
+        super(ctxt);
     }
 
 	@Override
@@ -50,9 +34,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		BuilderOptions opts = config.mapFromTo(GenerateBuilder.class, BuilderOptions.class);
 		BuilderModel model = new BuilderModel(optionsDeclaredInNode, opts);
         
-		
-		ClashStrategy methodClashDefaultStrategy = model.getClashStrategy();
-		methodClashResolver = new OnlyReplaceMyManagedMethodsResolver(methodClashDefaultStrategy);
+		setClashStrategy(model.getClashStrategy());
 		
         extractAllProperties(optionsDeclaredInNode, model);
         
@@ -63,7 +45,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	private void extractAllProperties(JType optionsDeclaredInNode,BuilderModel model) {
 		LOG.debug("adding properties to Builder for " + model.getPojoType().getFullName());
 		
-		PropertyModelExtractor extractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
+		PropertyModelExtractor extractor = getContext().obtain(PropertyModelExtractor.Builder.class)
 			.includeCompiledClasses(true)
 			.propertyNameMatching(model.getFieldNames())
 			.includeSuperClass(model.isInheritSuperBeanBuilder())
@@ -100,16 +82,16 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		} else{
 			builder = pojo.getChildTypeWithNameOrNull(model.getBuilderTypeSimpleRaw());
 			if(builder == null){
-				SourceTemplate t = ctxt.newSourceTemplate()
+				SourceTemplate t = newSourceTemplate()
 					.var("typeBounds", model.getPojoType().getTypeBoundsOrNull())
 					.var("type", model.getBuilderTypeSimpleRaw() + Strings.nullToEmpty(model.getBuilderTypeBoundsOrNull()))
 					.var("modifier", (isAbstract ?"abstract":""))
 					.pl("public static ${modifier} class ${type} { }")
 				;
 				
-				pojo.asMutator(ctxt).addType(t.asResolvedTypeNodeNamed(null));
+				pojo.asMutator(getContext()).addType(t.asResolvedTypeNodeNamed(null));
 				builder = pojo.getChildTypeWithName(model.getBuilderTypeSimpleRaw());
-				genInfo.addGeneratedMarkers(builder.asAbstractTypeDecl());
+				getGeneratorMeta().addGeneratedMarkers(builder.asAbstractTypeDecl());
 			}
 		}
 		//generate the with() method and aliases
@@ -119,7 +101,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 		
 		//add the self() method
 		if(!"this".equals(model.getBuilderSelfAccessor())){
-			SourceTemplate selfMethod = ctxt.newSourceTemplate()
+			SourceTemplate selfMethod = newSourceTemplate()
 				.var("selfType", model.getBuilderSelfType())
 				.var("selfGetter", model.getBuilderSelfAccessor())
 				
@@ -145,7 +127,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 
 	private void generateSetter(BuilderModel model, boolean markGenerated,JType builder, BuilderPropertyModel property) {
 
-		SourceTemplate setterMethod = ctxt.newSourceTemplate()
+		SourceTemplate setterMethod = newSourceTemplate()
 			.var("p.name", property.getPropertyName())
 			.var("p.type", property.getType().getFullName())
 			.var("p.type_raw", property.getType().getFullNameRaw())
@@ -161,7 +143,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	}
 
 	private void generateField(boolean markGenerated, JType builder,BuilderPropertyModel property) {
-		SourceTemplate field = ctxt.newSourceTemplate()
+		SourceTemplate field = newSourceTemplate()
 			.var("p.name", property.getPropertyName())
 			.var("p.type", property.getType().getFullName())
 			.pl("private ${p.type} ${p.name};");
@@ -172,8 +154,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	
 	private void generateStaticBuilderCreateMethods(BuilderModel model,JType beanType) {
 		if(model.isGenerateStaticBuilderMethod()){
-			SourceTemplate t = ctxt
-					.newSourceTemplate()
+			SourceTemplate t = newSourceTemplate()
 					.var("self.type", model.getBuilderTypeSimple())
 					.var("typeBounds", model.getPojoType().getTypeBoundsOrEmpty());
 		
@@ -185,8 +166,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	
 	private void generateCollectionAddRemove(JType bean, BuilderModel model,BuilderPropertyModel property) {
 		if(property.getType().isCollection() && model.isGenerateAddRemoveMethodsForIndexedProperties()){
-			SourceTemplate add = ctxt
-				.newSourceTemplate()
+			SourceTemplate add = newSourceTemplate()
 				.var("p.name", property.getPropertyName())
 				.var("p.addName", property.getPropertyAddName())
 				.var("p.type", property.getType().getObjectTypeFullName())
@@ -206,8 +186,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				
 			addMethod(bean, add.asMethodNodeSnippet(),model.isMarkGenerated());
 			
-			SourceTemplate remove = ctxt
-				.newSourceTemplate()
+			SourceTemplate remove = newSourceTemplate()
 				.var("p.name", property.getPropertyName())
 				.var("p.removeName", property.getPropertyRemoveName())
 				.var("p.type", property.getType().getObjectTypeFullName())
@@ -229,8 +208,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 	
 	private void generateMapAddRemove(JType bean, BuilderModel model,BuilderPropertyModel property) {
 		if(property.getType().isMap() && model.isGenerateAddRemoveMethodsForIndexedProperties()){
-			SourceTemplate add = ctxt
-				.newSourceTemplate()
+			SourceTemplate add = newSourceTemplate()
 				.var("p.name", property.getPropertyName())
 				.var("p.addName", property.getPropertyAddName())
 				.var("p.type", property.getType().getObjectTypeFullName())
@@ -249,8 +227,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 				
 			addMethod(bean, add.asMethodNodeSnippet(),model.isMarkGenerated());
 			
-			SourceTemplate remove = ctxt
-				.newSourceTemplate()
+			SourceTemplate remove = newSourceTemplate()
 				.var("p.name", property.getPropertyName())
 				.var("p.removeName", property.getPropertyRemoveName())
 				.var("p.type", property.getType().getObjectTypeFullName())
@@ -272,8 +249,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 
 	private void generateBuildMethod(JType builder,BuilderModel model) {
 		if(!model.isSupportSubclassing()){
-			SourceTemplate buildMethod = ctxt
-				.newSourceTemplate()
+			SourceTemplate buildMethod = newSourceTemplate()
 				.var("b.type", model.getPojoType().getSimpleName())
 				.var("buildName", model.getBuildPojoMethodName())	
 				.pl("public ${b.type} ${buildName}(){")
@@ -298,8 +274,7 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 
 	private void generateAllArgCtor(JType beanType, BuilderModel model) {
 		if(!beanType.isAbstract()){
-			SourceTemplate beanCtor = ctxt
-					.newSourceTemplate()
+			SourceTemplate beanCtor = newSourceTemplate()
 					.var("b.name", model.getPojoType().getSimpleNameRaw())
 					.pl("private ${b.name} (");
 			
@@ -338,63 +313,5 @@ public class BuilderGenerator extends AbstractCodeGenerator<GenerateBuilder> {
 			addMethod(beanType, beanCtor.asConstructorNodeSnippet(),model.isMarkGenerated());
 		}
 	}
-	
-	private void addField(JType type, FieldDeclaration f, boolean markGenerated) {
-		if(markGenerated){
-			genInfo.addGeneratedMarkers(f);
-		}
-		ctxt
-			.obtain(InsertFieldTransform.class)
-			.clashStrategy(ClashStrategy.REPLACE)
-			.target(type)
-			.field(f)
-			.transform();
-	}
-	
-	private void addMethod(JType type, MethodDeclaration m,boolean markGenerated) {
-		if(markGenerated){
-			genInfo.addGeneratedMarkers(m);
-		}
-		ctxt
-			.obtain(InsertMethodTransform.class)
-			.clashStrategy(methodClashResolver)
-			.target(type)
-			.method(m)
-			.transform();
-	}
-
-    private void writeToDiskIfChanged(JSourceFile source) {
-        if (source != null) {
-            cleanupImports(source.getAstNode());
-            source = source.asMutator(ctxt).writeModificationsToDisk();
-        }
-    }
-
-    private void cleanupImports(ASTNode node) {
-        ctxt.obtain(CleanImportsTransform.class)
-            .addMissingImports(true)
-            .nodeToClean(node)
-            .transform();
-    }
-
-	private class OnlyReplaceMyManagedMethodsResolver implements ClashStrategyResolver{
-
-		private final ClashStrategy fallbackStrategy;
-		
-		public OnlyReplaceMyManagedMethodsResolver(ClashStrategy fallbackStrategy) {
-			super();
-			this.fallbackStrategy = fallbackStrategy;
-		}
-
-		@Override
-		public ClashStrategy resolveClash(ASTNode existingNode,ASTNode newNode) {
-			if(genInfo.isManagedByThis(JMethod.from(existingNode).getAnnotations())){
-				return ClashStrategy.REPLACE;
-			}
-			return fallbackStrategy;
-		}
-		
-	}
-
 
 }

@@ -48,7 +48,7 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 		
 		TypeModel generateForType = typeExtractor.extractModelFromClass(options.generateFor);
 		
-		PropertyModelExtractor propertyExtractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
+		PropertyModelExtractor propertyExtractor = getContext().obtain(PropertyModelExtractor.Builder.class)
 				.includeSuperClass(options.inheritParentProperties)
 				.build();
 		
@@ -65,7 +65,7 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 		}
 		
 		//TOO:if not exists super!
-		declaredInType.asMutator(ctxt).setExtends(PropertyMatcher.class.getName() + "<" + generateForType.getFullName() + ">");
+		declaredInType.asMutator(getContext()).setExtends(PropertyMatcher.class.getName() + "<" + generateForType.getFullName() + ">");
 		
 		generateDefaultConstructor(source.getMainType(), generateForType);
 		generateMatcher(options,generateForPropertyModel, declaredInType);

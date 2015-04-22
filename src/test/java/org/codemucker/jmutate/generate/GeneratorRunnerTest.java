@@ -15,6 +15,7 @@ import org.codemucker.jmatch.AString;
 import org.codemucker.jmatch.AnInt;
 import org.codemucker.jmatch.Expect;
 import org.codemucker.jmatch.Matcher;
+import org.codemucker.jmutate.JMutateContext;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.ast.matcher.AJType;
 import org.codemucker.jpattern.generate.Access;
@@ -22,6 +23,8 @@ import org.codemucker.jpattern.generate.IsGeneratorConfig;
 import org.codemucker.jpattern.generate.IsGeneratorTemplate;
 import org.codemucker.jtest.MavenProjectLayout;
 import org.junit.Test;
+
+import com.google.inject.Inject;
 
 public class GeneratorRunnerTest {
 
@@ -59,8 +62,14 @@ public class GeneratorRunnerTest {
         Access ensureWeImportTypesWhenCompilingAnnon() default Access.PUBLIC;
     }
     
-    public static class MyCodeGeneratorOne extends AbstractCodeGenerator<GenerateOne> {
-        public static final List<JType> nodesInvoked = new ArrayList<>();
+    public static class MyCodeGeneratorOne extends AbstractGenerator<GenerateOne> {
+        
+    	@Inject
+    	public MyCodeGeneratorOne(JMutateContext ctxt) {
+			super(ctxt);
+		}
+
+		public static final List<JType> nodesInvoked = new ArrayList<>();
         public static final List<SmartConfig> configs = new ArrayList<>();
 
         public static void reset(){
@@ -147,9 +156,14 @@ public class GeneratorRunnerTest {
         int someAtt() default 0;
     }
     
-    public static class MyCodeGeneratorTwo extends AbstractCodeGenerator<GenerateTwo> {
+    public static class MyCodeGeneratorTwo extends AbstractGenerator<GenerateTwo> {
         
-        public static final List<JType> nodesInvoked = new ArrayList<>();
+    	@Inject
+        public MyCodeGeneratorTwo(JMutateContext ctxt) {
+			super(ctxt);
+		}
+
+		public static final List<JType> nodesInvoked = new ArrayList<>();
         public static final List<SmartConfig> configs = new ArrayList<>();
 
         public static void reset(){

@@ -5,6 +5,8 @@ import org.codemucker.jmutate.JMutateContext;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.google.inject.Inject;
+
 public class CodeGenMetaGeneratorTest {
 
 	private JMutateContext ctxt = DefaultMutateContext.with().defaults()
@@ -18,7 +20,12 @@ public class CodeGenMetaGeneratorTest {
 		Assert.assertEquals("org.codemucker.jmutate.generate.CodeGenMeta.codeGenMetaGeneratorTest$MyCodeGenerator",info.getFullConstantFieldPath());
 	}
 
-	private static class MyCodeGenerator extends AbstractCodeGenerator<MyAnnotation> {
+	private static class MyCodeGenerator extends AbstractGenerator<MyAnnotation> {
+
+		@Inject
+		public MyCodeGenerator(JMutateContext ctxt) {
+			super(ctxt);
+		}
 	}
 	
 	private static @interface MyAnnotation {}

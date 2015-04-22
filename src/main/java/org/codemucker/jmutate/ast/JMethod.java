@@ -61,7 +61,7 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
 		if(node instanceof MethodDeclaration){
 			return from((MethodDeclaration)node);
 		}
-		throw new IllegalArgumentException(String.format("Expect a {0} but was {1}",
+		throw new IllegalArgumentException(String.format("Expect a %s but was %",
 			MethodDeclaration.class.getName(),
 			node.getClass().getName()
 		));

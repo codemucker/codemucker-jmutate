@@ -44,12 +44,12 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
 
 	private void findAndAddModels(JType optionsDeclaredInNode,GenerateManyMatchersOptions options) {
 		PojoSourceAndClassScanner pojoScanner = new PojoSourceAndClassScanner(
-				ctxt.getResourceLoader(), 
+				getContext().getResourceLoader(), 
 				options.getPojoDependencies(), 
 				options.getPojoNames(),
 				options.getPojoTypes());
 	    
-		PropertyModelExtractor extractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
+		PropertyModelExtractor extractor = getContext().obtain(PropertyModelExtractor.Builder.class)
 				.includeSuperClass(options.inheritParentProperties)
 				.build();
 		
@@ -101,10 +101,10 @@ public class ManyMatchersGenerator extends AbstractMatchGenerator<GenerateManyMa
     			return null;//skip this generation
 			}
     		LOG.debug("matcher source file " + path + " exists, loading");
-    		source = JSourceFile.fromResource(sourceFile, ctxt.getParser());    
+    		source = JSourceFile.fromResource(sourceFile, getContext().getParser());    
     	} else {
     		LOG.debug("creating new matcher source file " + path + "");
-    		SourceTemplate t = ctxt.newSourceTemplate().pl("package " + matcherType.getPkg() + ";").pl("");
+    		SourceTemplate t = newSourceTemplate().pl("package " + matcherType.getPkg() + ";").pl("");
             addGeneratedMarkers(t);
             t.pl("public class " + matcherType.getSimpleName() + " extends  " + PropertyMatcher.class.getName() + "<" + forType.getFullName() + ">{}");
             source = t.asSourceFileSnippet();

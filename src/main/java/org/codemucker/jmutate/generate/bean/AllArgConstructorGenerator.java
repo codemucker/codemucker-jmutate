@@ -28,7 +28,7 @@ public class AllArgConstructorGenerator extends AbstractBeanGenerator<GenerateAl
 	@Override
 	protected void generate(JType beanType, SmartConfig config, PojoModel model, AllArgOptions options) {
 		if(options.isEnabled()){
-			SourceTemplate beanCtor = getCtxt()
+			SourceTemplate beanCtor = getContext()
 					.newSourceTemplate()
 					.var("b.name", options.getType().getSimpleNameRaw());
 			

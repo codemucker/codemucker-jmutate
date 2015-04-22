@@ -20,8 +20,6 @@ public abstract class AbstractBeanOptions<T extends Annotation> extends Generate
 
 	private final TypeModel type;
 
-	private boolean enabled;
-	private boolean markGenerated;
 	private boolean inheritParentProperties;
 	private ClashStrategy clashStrategy;
 	private String fieldNames;
@@ -45,28 +43,12 @@ public abstract class AbstractBeanOptions<T extends Annotation> extends Generate
 		return fieldNames;
 	}
 
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	public boolean isMarkGenerated() {
-		return markGenerated;
-	}
-
 	public boolean isInheritParentProperties() {
 		return inheritParentProperties;
 	}
 
 	public TypeModel getType() {
 		return type;
-	}
-
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
-	}
-
-	public void setMarkGenerated(boolean markGenerated) {
-		this.markGenerated = markGenerated;
 	}
 
 	public void setInheritParentProperties(boolean inheritParentProperties) {
