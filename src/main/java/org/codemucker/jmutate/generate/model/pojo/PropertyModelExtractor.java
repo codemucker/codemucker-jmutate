@@ -157,7 +157,7 @@ public class PropertyModelExtractor extends AbstractModelExtractor<PojoModel> {
 			}
 		}
 
-		PojoModel model = new PojoModel(new TypeModel(pojoType.getFullGenericName(), pojoType.getTypeBoundsExpressionOrNull()),level,parentModel);
+		PojoModel model = new PojoModel(new TypeModel(pojoType.getFullNameGeneric(), pojoType.getTypeBoundsExpressionOrNull()),level,parentModel);
 
 		if(includeFields){
 			extractFields(pojoType, model);

@@ -139,7 +139,7 @@ public abstract class JType implements AnnotationsProvider, AstNodeProvider<ASTN
 	 * 
 	 * @return
 	 */
-	public String getFullGenericName(){
+	public String getFullNameGeneric(){
 		List<TypeParameter> types = this.findGenericTypes().toList();
 		if(!types.isEmpty()){
 			StringBuilder sb = new StringBuilder(getFullName());

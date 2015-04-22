@@ -74,7 +74,7 @@ public class TypeModel extends ModelObject {
 	}
 	
 	public TypeModel(JType type){
-		this(type.getFullGenericName(), type.getTypeBoundsExpressionOrNull(),type.isInterface(), type.isEnum() || type.getAnnotations().contains(Immutable.class));
+		this(type.getFullNameGeneric(), type.getTypeBoundsExpressionOrNull(),type.isInterface(), type.isEnum() || type.getAnnotations().contains(Immutable.class));
 	}
 	
 	public TypeModel(String fullType) {
