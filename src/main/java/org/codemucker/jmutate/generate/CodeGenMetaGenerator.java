@@ -14,7 +14,6 @@ import org.codemucker.jfind.Root.RootType;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.JMutateAppInfo;
 import org.codemucker.jmutate.JMutateContext;
-import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.SourceTemplate;
 import org.codemucker.jmutate.ast.Annotations;
 import org.codemucker.jmutate.ast.JAnnotation;
@@ -49,6 +48,10 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
+/**
+ * Used to generate the code generation meta data class. This provides a single place to capture all code generation meta data and reference 
+this from all the generated code.
+ */
 @NotThreadSafe
 public class CodeGenMetaGenerator {
 
@@ -68,25 +71,23 @@ public class CodeGenMetaGenerator {
 	public CodeGenMetaGenerator(JMutateContext ctxt,Class<? extends CodeGenerator> generator){
 		this.ctxt = ctxt;
 		this.generator = generator;
-		this.constantField = extractGenName(generator.getName());
+		this.constantField = calculateGenerateFieldName(generator.getName());
 	}
 	
-	private String extractGenName(String name) {
+	/**
+	 * Return the name to use for the public static filed referenced by the IsGenerated annotations. E.g.
+	 * 
+	 * <pre>
+	 * @IsGenerated(by=CodeGenMeta.myGenerator)
+	 * </pre>
+	 * 
+	 * The field name is lower case rather than the recommended uppercase for constants as this is less intrusive when reading the code
+	 * @param name
+	 * @return
+	 */
+	private String calculateGenerateFieldName(String name) {
 		String className = ClassNameUtil.extractSimpleClassNamePart(name);
 		name = Character.toLowerCase(className.charAt(0)) + className.substring(1);
-//		
-//		StringBuilder sb = new StringBuilder();
-//		boolean previousCharUpper = false;
-//		for(int i = 0; i < className.length();i++){
-//			char c = className.charAt(i);
-//			boolean isUpper = Character.isUpperCase(c);
-//			if(isUpper && i > 0 && !previousCharUpper){
-//				sb.append("_");
-//			}
-//			sb.append(Character.toUpperCase(c));
-//			previousCharUpper = isUpper;
-//		}
-//		return sb.toString();
 		return name;
 	}
 
@@ -175,11 +176,6 @@ public class CodeGenMetaGenerator {
 			}
 		}
 		return fieldValue;
-	}
-	
-	private static void log(String msg){
-		log.debug(msg);
-		//System.out.println(CodeGenMetaGenerator.class.getName() + " : " + msg);
 	}
 
 	private boolean isGeneratorMatch(String generator) {
