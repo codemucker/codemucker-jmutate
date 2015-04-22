@@ -418,7 +418,7 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		addMatcher(new AbstractNotNullMatcher<JMethod>() {
 			@Override
 			public boolean matchesSafely(JMethod found, MatchDiagnostics diag) {
-				return diag.tryMatch(this, found.getEnclosingJType(), typeMatcher);
+				return diag.tryMatch(this, found.getDeclaringType(), typeMatcher);
 			}
 			
 			@Override

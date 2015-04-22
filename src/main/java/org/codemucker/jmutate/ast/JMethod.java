@@ -86,11 +86,11 @@ public class JMethod implements AnnotationsProvider, AstNodeProvider<MethodDecla
         return annotable;
     }
     
-	public JType getEnclosingJType(){
-		return JType.from(getEnclosingType());
+	public JType getDeclaringType(){
+		return JType.from(getDeclaringTypeNode());
 	}
 	
-	public AbstractTypeDeclaration getEnclosingType(){
+	public AbstractTypeDeclaration getDeclaringTypeNode(){
 		ASTNode node = getAstNode();
 		while( node != null ){
 			if(node instanceof AbstractTypeDeclaration){

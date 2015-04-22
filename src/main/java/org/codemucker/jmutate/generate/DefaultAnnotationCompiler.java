@@ -273,7 +273,7 @@ public class DefaultAnnotationCompiler  implements JAnnotationCompiler {
                 return new NodeInfo(AnnotationType.FIELD, path);
             } else if (parent instanceof MethodDeclaration) {
             	JMethod m = JMethod.from(parent);
-            	String path = getTypePath(m.getEnclosingType()) + "." + m.getClashDetectionSignature();
+            	String path = getTypePath(m.getDeclaringTypeNode()) + "." + m.getClashDetectionSignature();
                 if (((MethodDeclaration) parent).isConstructor()) {
                     return new NodeInfo(AnnotationType.CTOR, path);
                 }

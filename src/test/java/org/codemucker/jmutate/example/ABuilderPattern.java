@@ -103,10 +103,10 @@ class ABuilderPattern extends AbstractMatcher<JType>{
                 desc.text("expect builder method to return the builder");
                 desc.value("expect return type:",holder.builderTypeFullName);
                 desc.value("got return type:",builderMethod.getAstNode().getReturnType2().toString());
-                desc.value("builder class:",builderMethod.getEnclosingJType().getFullName());
+                desc.value("builder class:",builderMethod.getDeclaringType().getFullName());
                 desc.value("method:",builderMethod.getFullSignature());
                 desc.value("method body:",builderMethod.getAstNode());
-                desc.value("enclosing class:",builderMethod.getEnclosingType());
+                desc.value("enclosing class:",builderMethod.getDeclaringTypeNode());
                 
                 diag.mismatched(desc);
             }
