@@ -16,11 +16,4 @@ public interface JAstParser {
 	CompilationUnit parseCompilationUnit(CharSequence src, RootResource resource);
 
 	ASTNode parseNode(CharSequence src, int kind, RootResource resource);
-
-//	/**
-//	 * Return the underlying ASTParser
-//	 * @return
-//	 */
-//	ASTParser getASTParser();
-
 }

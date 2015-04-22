@@ -308,51 +308,6 @@ public class DefaultJAstParser implements JAstParser {
         	this.parser = parser;
         	return this;
         }
-		
-//		/**
-//		 * Add a root to use to use in resolving bindings
-//		 * 
-//		 * @param builder
-//		 * @return
-//		 */
-//		public Builder addRoots(IBuilder<? extends Iterable<Root>> builder){
-//			for(Root root:builder.build()){
-//			    root(root);
-//			}
-//			return this;
-//		}
-//		
-//	      /**
-//         * Add a root to use to use in resolving bindings
-//         * @param root
-//         * @return
-//         */
-//        public Builder root(Root root){
-//            this.roots.add(root);
-//            return this;
-//        }
-//
-//        /**
-//         * Set all the roots to use in resolving bindings. Replaces existing roots.
-//         * 
-//         * @param builder
-//         * @return
-//         */
-//        public Builder roots(IBuilder<? extends Iterable<Root>> builder){
-//            roots(builder.build());
-//            return this;
-//        }
-        
-//		/**
-//		 * Set all the roots to use in resolving bindings. Replaces existing roots.
-//		 * 
-//		 * @param roots
-//		 * @return
-//		 */
-//		public Builder roots(Iterable<Root> roots){
-//			this.roots = newArrayList(roots);
-//			return this;
-//		}
 
 		@Required
 		public Builder resourceLoader(IBuilder<? extends Iterable<Root>> builder) {
