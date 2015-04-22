@@ -1,5 +1,7 @@
 package org.codemucker.jmutate.generate.matcher;
 
+import java.util.NoSuchElementException;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.codemucker.jmatch.PropertyMatcher;
@@ -10,6 +12,7 @@ import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.generate.SmartConfig;
 import org.codemucker.jmutate.generate.matcher.MatcherGenerator.GenerateMatcherOptions;
 import org.codemucker.jmutate.generate.model.TypeModel;
+import org.codemucker.jmutate.generate.model.TypeModelExtractor;
 import org.codemucker.jmutate.generate.model.pojo.PojoModel;
 import org.codemucker.jmutate.generate.model.pojo.PropertyModelExtractor;
 import org.codemucker.jpattern.generate.matcher.GenerateMatcher;
@@ -22,10 +25,13 @@ import com.google.inject.Inject;
 public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,GenerateMatcherOptions> {
 
     private static final Logger LOG = LogManager.getLogger(MatcherGenerator.class);
+    
+	private final TypeModelExtractor typeExtractor;
 
     @Inject
-    public MatcherGenerator(JMutateContext ctxt) {
+    public MatcherGenerator(JMutateContext ctxt,TypeModelExtractor typeExtractor) {
     	super(ctxt,GenerateMatcher.class,GenerateMatcherOptions.class);
+    	this.typeExtractor = typeExtractor;
     }
 
 	@Override
@@ -33,9 +39,6 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 //		if(!options.keepInSync){
 //			return;
 //		}
-		PropertyModelExtractor extractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
-				.includeSuperClass(options.inheritParentProperties)
-				.build();
 		
 		JSourceFile source = declaredInType.getCompilationUnit().getSource();
 		String generateFor = options.generateFor;
@@ -43,21 +46,17 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 			throw new JMutateException("need to set the 'generateFor' in " + source.getResource().getFullPath() + " for annotation " + GenerateMatcher.class + " other than blank or Object");
 		}
 		
-		PojoModel model = null;
-		JType pojoType = ctxt.getSourceLoader().loadTypeForClass(generateFor);
-		if(pojoType!= null){
-			model = extractor.extractModelFromClass(pojoType);
-		}
-		//no source code found, let's try class
-		if(model == null){
-			Class<?> pojoClass = ctxt.getSourceLoader().loadClassOrNull(generateFor);
-			if(pojoClass != null){
-				model = extractor.extractModelFromClass(pojoClass);
-			}
-		}
+		TypeModel generateForType = typeExtractor.extractModelFromClass(options.generateFor);
 		
-		if(model == null){
-			throw new JMutateException("couldn't load source or class '" + generateFor + "' to generate matcher, set in 'generateFor' in " + source.getResource().getFullPath() + " for annotation " + GenerateMatcher.class);
+		PropertyModelExtractor propertyExtractor = ctxt.obtain(PropertyModelExtractor.Builder.class)
+				.includeSuperClass(options.inheritParentProperties)
+				.build();
+		
+		PojoModel generateForPropertyModel = null;
+		try {
+			generateForPropertyModel = propertyExtractor.extractModelFromClass(options.generateFor);
+		} catch(NoSuchElementException e){
+			throw new JMutateException("couldn't load source or class '" + generateFor + "' to generate matcher, set in 'generateFor' in " + source.getResource().getFullPath() + " for annotation " + GenerateMatcher.class);		
 		}
 
 		String superType = declaredInType.getSuperTypeFullName();
@@ -66,11 +65,10 @@ public class MatcherGenerator extends AbstractMatchGenerator<GenerateMatcher,Gen
 		}
 		
 		//TOO:if not exists super!
-		declaredInType.asMutator(ctxt).setExtends(PropertyMatcher.class.getName() + "<" + generateFor + ">");
+		declaredInType.asMutator(ctxt).setExtends(PropertyMatcher.class.getName() + "<" + generateForType.getFullName() + ">");
 		
-		generateDefaultConstructor(source.getMainType(), new TypeModel(generateFor));
-    	
-		generateMatcher(options,model, declaredInType);
+		generateDefaultConstructor(source.getMainType(), generateForType);
+		generateMatcher(options,generateForPropertyModel, declaredInType);
 		writeToDiskIfChanged(source);
 	}
 

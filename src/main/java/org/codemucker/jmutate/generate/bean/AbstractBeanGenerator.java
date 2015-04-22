@@ -82,7 +82,7 @@ public abstract class AbstractBeanGenerator<T extends Annotation,TOptions extend
 		ClashStrategy methodClashDefaultStrategy = options.getClashStrategy();
 		methodClashResolver = new ReplaceOnlyOwnedNodesResolver(generatorMeta,methodClashDefaultStrategy);
 		
-		LOG.debug("found " + model.getAllProperties().size() + " bean properties for "  + options.getType().getFullNameRaw());
+		LOG.debug("found " + model.getAllProperties().toList().size() + " bean properties for "  + options.getType().getFullNameRaw());
 		
 		JSourceFile source = node.getCompilationUnit().getSource();
 		generate(node, config, model, options);	

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.codemucker.jfind.DefaultFindResult;
+import org.codemucker.jfind.FindResult;
 import org.codemucker.jmutate.generate.model.MethodModel;
 import org.codemucker.jmutate.generate.model.ModelObject;
 import org.codemucker.jmutate.generate.model.TypeModel;
@@ -87,17 +89,16 @@ public class PojoModel extends ModelObject {
 		return properties.get(name);
 	}
 
-	public List<PropertyModel> getAllProperties() {
-		List<PropertyModel> list = getDeclaredProperties();
+	public FindResult<PropertyModel> getAllProperties() {
+		FindResult<PropertyModel> list = getDeclaredProperties();
 		if (parent != null) {
-			list.addAll(parent.getAllProperties());
+			list.add(parent.getAllProperties());
 		}
-		Collections.sort(list, PROP_COMPARATOR);
-		return list;
+		return list.sort(PROP_COMPARATOR);
 	}
 
-	public List<PropertyModel> getDeclaredProperties() {
-		return Lists.newArrayList(properties.values());
+	public FindResult<PropertyModel> getDeclaredProperties() {
+		return new DefaultFindResult<PropertyModel>(properties.values());
 	}
 
 	public PojoModel getParent() {

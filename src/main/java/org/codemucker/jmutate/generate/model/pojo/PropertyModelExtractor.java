@@ -29,6 +29,8 @@ import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
+import org.codemucker.jmutate.generate.model.AbstractCachingModelExtractor;
+import org.codemucker.jmutate.generate.model.AbstractModelExtractor;
 import org.codemucker.jmutate.generate.model.MethodModel;
 import org.codemucker.jmutate.generate.model.ModelExtractor;
 import org.codemucker.jmutate.generate.model.ModelRegistry;
@@ -44,7 +46,7 @@ import com.google.inject.Inject;
 /**
  * I find source and compiled properties
  */
-public class PropertyModelExtractor implements ModelExtractor<PojoModel> {
+public class PropertyModelExtractor extends AbstractModelExtractor<PojoModel> {
 	
 	private static final Logger LOG = LogManager.getLogger(PropertyModelExtractor.class);
 
@@ -114,7 +116,7 @@ public class PropertyModelExtractor implements ModelExtractor<PojoModel> {
 
 	private PropertyModelExtractor(SourceLoader sourceLoader,boolean includeSuperClass,
 			boolean includeCompiledClasses, Matcher<String> propertyNameMatcher, boolean includeFields, boolean includeGetters, boolean includeSetters) {
-		super();
+		super(sourceLoader);
 		this.sourceLoader = sourceLoader;
 		this.includeSuperClass = includeSuperClass;
 		this.includeCompiledClasses = includeCompiledClasses;
@@ -131,13 +133,6 @@ public class PropertyModelExtractor implements ModelExtractor<PojoModel> {
 		return PojoModel.class;
 	}
 
-	@Override
-	public PojoModel extractModelFromClass(String fullName) {
-		//can't do anything with this! No model
-		return null;
-	}
-
-	
 	@Override
 	public PojoModel extractModelFromClass(JType pojoType) {
 		return extractModelFromClass(pojoType, 0);

@@ -2,11 +2,19 @@ package org.codemucker.jmutate.generate.model;
 
 import java.lang.reflect.Method;
 
+import org.codemucker.jmutate.SourceLoader;
 import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.generate.model.pojo.CloneMethodExtractor;
 
-public class TypeModelExtractor implements ModelExtractor<TypeModel> {
+import com.google.inject.Inject;
+
+public class TypeModelExtractor extends AbstractCachingModelExtractor<TypeModel> {
+
+	@Inject
+	public TypeModelExtractor(SourceLoader sourceLoader) {
+		super(sourceLoader);
+	}
 
 	private CloneMethodExtractor cloneExtractor = new CloneMethodExtractor();
 	
@@ -18,12 +26,12 @@ public class TypeModelExtractor implements ModelExtractor<TypeModel> {
 	}
 	
 	@Override
-	public TypeModel extractModelFromClass(String fullName) {
+	protected TypeModel createModel(String fullName) {
 		return new TypeModel(fullName);
 	}
 
 	@Override
-	public TypeModel extractModelFromClass(JType type) {
+	protected TypeModel createModel(JType type) {
 		TypeModel model = new TypeModel(type);
 		JMethod cloneMethod = cloneExtractor.extractCloneMethodOrNull(type);
 		if(cloneMethod != null){
@@ -33,7 +41,7 @@ public class TypeModelExtractor implements ModelExtractor<TypeModel> {
 	}
 
 	@Override
-	public TypeModel extractModelFromClass(Class<?> type) {
+	protected TypeModel createModel(Class<?> type) {
 		TypeModel model = new TypeModel(type);
 		Method cloneMethod = cloneExtractor.extractCloneMethodOrNull(type);
 		if(cloneMethod != null){

@@ -1,5 +1,6 @@
 package org.codemucker.jmutate.generate.bean;
 
+import java.beans.ConstructorProperties;
 import java.util.List;
 
 import org.apache.commons.configuration.Configuration;
@@ -13,6 +14,7 @@ import org.codemucker.jmutate.generate.model.pojo.PropertyModel;
 import org.codemucker.jpattern.bean.Property;
 import org.codemucker.jpattern.generate.GenerateAllArgsCtor;
 
+import com.google.common.base.Predicate;
 import com.google.inject.Inject;
 
 public class AllArgConstructorGenerator extends AbstractBeanGenerator<GenerateAllArgsCtor,AllArgOptions> {
@@ -28,17 +30,31 @@ public class AllArgConstructorGenerator extends AbstractBeanGenerator<GenerateAl
 		if(options.isEnabled()){
 			SourceTemplate beanCtor = getCtxt()
 					.newSourceTemplate()
-					.var("b.name", options.getType().getSimpleNameRaw())
-					.pl("private ${b.name} (");
+					.var("b.name", options.getType().getSimpleNameRaw());
+			
+			
+			List<PropertyModel> props = model.getAllProperties().filter(new Predicate<PropertyModel>() {
+				@Override
+				public boolean apply(PropertyModel property) {
+					return property.hasField() || property.hasSetter();
+				}
+			}).toList();
 			
 			boolean comma = false;
-			//args
-			List<PropertyModel> props = model.getAllProperties();
-			
+			//ctor annotation
+			beanCtor.pl("@" + ConstructorProperties.class.getName() +"({");
 			for (PropertyModel property : props) {
-				if(!property.hasField()){
-					continue;
+				if(comma){
+					beanCtor.p(",");
 				}
+				beanCtor.p('"').p(property.getName()).p('"');	
+				comma = true;
+			}
+			beanCtor.pl("})");
+			beanCtor.pl("private ${b.name} (");
+			//args
+			comma = false;
+			for (PropertyModel property : props) {
 				if(comma){
 					beanCtor.p(",");
 				}
@@ -55,7 +71,7 @@ public class AllArgConstructorGenerator extends AbstractBeanGenerator<GenerateAl
 				if(property.isSuperClassProperty()){
 					beanCtor.pl(property.getSetterName() + "(" + property.getName() + ");");
 				} else {
-					beanCtor.pl("this." + property.getName() + "=" + property.getName() + ";");
+					beanCtor.pl("this." + property.getFieldName() + "=" + property.getName() + ";");
 				}
 			}
 			beanCtor.pl("}");

@@ -289,7 +289,8 @@ public class PropertiesGenerator extends
 							options.vetoableChangeSupportFieldName)
 					.var("return.type", pExtension.setterReturnType)
 					.var("p.makeCopyExpression", pExtension.makeCopyExpression)
-
+					.var("return", options.chainedSetters?"return this":"return")
+						
 					.p("public ${return.type} ${p.setterName}(final ${p.type} val)");
 
 			if (pExtension.vetoable) {
@@ -305,24 +306,22 @@ public class PropertiesGenerator extends
 						.interpolateTemplate();
 			}
 			if (pExtension.bindable) {
-				setter.pl("	${p.type} oldVal = this.${p.fieldName};").p(
-						vetoString);
+				setter.pl("	${p.type} oldVal = this.${p.fieldName};").p(vetoString);
 				if (property.getType().isImmutable() || !pExtension.copyOnSet || pExtension.makeCopyExpression == null) {
 					setter.pl("	this.${p.fieldName} = val;");	
 				} else {
-					setter.pl("	this.${p.fieldName} = ${p.makeCopyExpression}(val)");
+					setter.pl("	this.${p.fieldName} = ${p.makeCopyExpression}(val);");
 				}
 				setter.pl("   this.${support.bind.name}.firePropertyChange(${p.vetoName},oldVal,val);");
 			} else {
 				setter.p(vetoString).pl("		this.${p.fieldName} = val;");
 			}
 			if (options.chainedSetters) {
-				setter.pl("	return this;");
+				setter.pl("${return};");
 			}
 			setter.pl("}");
 
-			addMethod(bean, setter.asMethodNodeSnippet(),
-					options.isMarkGenerated());
+			addMethod(bean, setter.asMethodNodeSnippet(),options.isMarkGenerated());
 		}
 	}
 
@@ -332,6 +331,9 @@ public class PropertiesGenerator extends
 		if (!property.isSuperClassProperty() && !property.isReadOnly()
 				&& property.hasField() && property.getType().isKeyed()
 				&& options.generateAddRemoveMethods) {
+			String keyType = wildcardToObject(property.getType().getIndexedKeyTypeNameOrNull());
+			String valueType = wildcardToObject(property.getType().getIndexedValueTypeNameOrNull());
+
 			SourceTemplate add = newSourceTemplate()
 					.var("p.fieldName", property.getFieldName())
 					.var("p.name", property.getName())
@@ -340,10 +342,11 @@ public class PropertiesGenerator extends
 					.var("p.type", property.getType().getFullName())
 					.var("p.newType", property.getConcreteType())
 					.var("p.genericPart",property.getType().getGenericPartOrEmpty())
-					.var("p.keyType",property.getType().getIndexedKeyTypeNameOrNull())
-					.var("p.valueType",property.getType().getIndexedValueTypeNameOrNull())
+					.var("p.keyType",keyType)
+					.var("p.valueType",valueType)
 					.var("return.type", pExtension.setterReturnType)
-
+					.var("return", options.chainedSetters?"return this":"return")
+						
 					.pl("public ${return.type} ${p.addName}(final ${p.keyType} key,final ${p.valueType} val){");
 
 			if (!property.isFinalField()) {
@@ -352,7 +355,7 @@ public class PropertiesGenerator extends
 			add.pl("	this.${p.fieldName}.put(key, val);");
 
 			if (options.chainedSetters) {
-				add.pl("	return this;");
+				add.pl("${return};");
 			}
 			add.pl("}");
 
@@ -365,15 +368,17 @@ public class PropertiesGenerator extends
 					.var("p.removeName", property.getRemoveName())
 					.var("p.type", property.getType().getFullName())
 					.var("p.newType", property.getConcreteType())
-					.var("p.keyType", property.getType().getIndexedKeyTypeNameOrNull())
+					.var("p.keyType", keyType)
 					.var("return.type", pExtension.setterReturnType)
-
+					.var("return", options.chainedSetters?"return this":"return")
+						
 					.pl("public ${return.type} ${p.removeName}(final ${p.keyType} key){")
 					.pl("	if(this.${p.fieldName} != null){ ")
-					.pl("		this.${p.fieldName}.remove(key);");
+					.pl("		this.${p.fieldName}.remove(key);")
+					.pl("	}");
 
 			if (options.chainedSetters) {
-				remove.pl("	return this;");
+				remove.pl("${return};");
 			}
 			remove.pl("}");
 
@@ -383,8 +388,10 @@ public class PropertiesGenerator extends
 	}
 
 	private void generateCollectionAddRemove(PropertyModel property) {
-		PropertyExtension pExtension = property
-				.getOrFail(PropertyExtension.class);
+		PropertyExtension pExtension = property.getOrFail(PropertyExtension.class);
+		
+		String valueType = wildcardToObject(property.getType().getIndexedValueTypeNameOrNull());
+
 		if (!property.isSuperClassProperty() && !property.isReadOnly()
 				&& property.hasField() && property.getType().isCollection()
 				&& options.generateAddRemoveMethods) {
@@ -408,7 +415,8 @@ public class PropertiesGenerator extends
 						.var("p.type", property.getType().getFullName())
 						.var("p.newType", property.getConcreteType())
 						.var("p.genericPart",property.getType().getGenericPartOrEmpty())
-						.var("p.valueType",property.getType().getIndexedValueTypeNameOrNull())
+						.var("p.valueType",valueType)
+						.var("return", options.chainedSetters?"return this":"return")
 						.var("support.bind.name",options.propertyChangeSupportFieldName)
 						.var("support.veto.name",options.vetoableChangeSupportFieldName)
 						.var("return.type", pExtension.setterReturnType)
@@ -434,7 +442,7 @@ public class PropertiesGenerator extends
 				if (pExtension.vetoable) {
 					vetoString = add
 							.child()
-							.pl("   this.${support.veto.name}.fireIndexedVetoableChange(${p.vetoName},this.${p.fieldName}.size(),this.${p.fieldName},val);")
+							.pl("   this.${support.veto.name}.fireVetoableChange(${p.vetoName},this.${p.fieldName},val);")
 							.interpolateTemplate();
 				}
 				if (pExtension.bindable) {
@@ -446,7 +454,7 @@ public class PropertiesGenerator extends
 					add.p(vetoString).pl("		this.${p.fieldName}.add(val);");
 				}
 				if (options.chainedSetters) {
-					add.pl("	return this;");
+					add.pl("${return};");
 				}
 				add.pl("}");
 
@@ -461,18 +469,19 @@ public class PropertiesGenerator extends
 						.var("p.removeName", property.getRemoveName())
 						.var("p.type", property.getType().getFullName())
 						.var("p.newType", property.getConcreteType())
-						.var("p.valueType", property.getType().getIndexedValueTypeNameOrNull())
+						.var("p.valueType", valueType)
+						.var("return", options.chainedSetters?"return this":"return")
 						.var("support.bind.name",options.propertyChangeSupportFieldName)
 						.var("support.veto.name",options.vetoableChangeSupportFieldName)
 						.var("return.type", pExtension.setterReturnType)
-
+			
 						.p("public ${return.type} ${p.removeName}(final ${p.valueType} val)");
 
 				if (pExtension.vetoable) {
 					remove.p(" throws java.beans.PropertyVetoException ");
 				}
 				remove.pl("{");
-				remove.pl("	if(this.${p.fieldName} != null){ ");
+				remove.pl("	if(this.${p.fieldName} == null){ ${return}; }");
 
 				CharSequence vetoString = "";
 				CharSequence indexString = "";
@@ -480,26 +489,26 @@ public class PropertiesGenerator extends
 					indexString = remove
 							.child()
 							.pl("int index = this.${p.fieldName}.indexOf(val);")
-							.pl("if( index < 0 ){ return; }")
+							.pl("if( index < 0 ){ ${return}; }")
 							.interpolateTemplate();
 				}
 				if (pExtension.vetoable) {
 					vetoString = remove
 							.child()
-							.pl("   this.${support.veto.name}.fireIndexedVetoableChange(${p.vetoName},index,val,null);")
+							.pl("this.${support.veto.name}.fireVetoableChange(${p.vetoName},val,null);")
 							.interpolateTemplate();
 				}
 				if (pExtension.bindable) {
 					remove.p(indexString)
 							.p(vetoString)
-							.pl("	this.${p.fieldName}.remove(val);")
-							.pl("   this.${support.bind.name}.fireIndexedPropertyChange(${p.vetoName},index,val,null);");
+							.pl("this.${p.fieldName}.remove(val);")
+							.pl("this.${support.bind.name}.fireIndexedPropertyChange(${p.vetoName},index,val,null);");
 				} else {
 					remove.p(indexString).p(vetoString)
-							.pl("	this.${p.fieldName}.remove(val);");
+							.pl("this.${p.fieldName}.remove(val);");
 				}
 				if (options.chainedSetters) {
-					remove.pl("	return this;");
+					remove.pl("${return};");
 				}
 				remove.pl("}");
 
@@ -507,6 +516,10 @@ public class PropertiesGenerator extends
 						options.isMarkGenerated());
 			}
 		}
+	}
+	
+	private static String wildcardToObject(String s){
+		return s == null?null:("?".equals(s)?"java.lang.Object":s);
 	}
 
 	@Override

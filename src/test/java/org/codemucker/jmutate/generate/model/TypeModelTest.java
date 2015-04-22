@@ -33,4 +33,30 @@ public class TypeModelTest {
     	
     }
     
+    @Test
+    public void mapValuesSet(){
+    	for(String type: new String[]{"java.util.Map<K,V>", "java.util.HashMap<K,V>","java.util.TreeMap<K,V>"}){
+	    	TypeModel t = new TypeModel(type);
+	    	Expect.that(t.isMap()).isTrue();
+	    	Expect.that(t.isKeyed()).isTrue();
+	    	Expect.that(t.isCollection()).isFalse();
+	    	Expect.that(t.isArray()).isFalse();
+	    	Expect.that(t.getIndexedKeyTypeNameOrNull()).isEqualTo("K");
+	    	Expect.that(t.getIndexedValueTypeNameOrNull()).isEqualTo("V");
+	    }
+    }
+    
+    
+    @Test
+    public void collectionValueSet(){
+    	for(String type: new String[]{"java.util.List<V>","java.util.ArrayList<V>","java.util.HashSet<V>"}){
+	    	TypeModel t = new TypeModel(type);
+	    	Expect.that(t.isMap()).isFalse();
+	    	Expect.that(t.isCollection()).isTrue();
+	    	Expect.that(t.isArray()).isFalse();
+	    	Expect.that(t.isKeyed()).isFalse();
+	    	Expect.that(t.getIndexedKeyTypeNameOrNull()).isNull();
+	    	Expect.with().failureMessage(type).that(t.getIndexedValueTypeNameOrNull()).isEqualTo("V");
+	    }
+    }
 }

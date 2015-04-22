@@ -3,8 +3,10 @@ package org.codemucker.jmutate.generate.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.NameUtil;
@@ -57,6 +59,7 @@ public class TypeModel extends ModelObject {
 	private final boolean isCollection;
 	private final boolean isList;
 	private final boolean isMap;
+	private final boolean isSet;
 	private final boolean isArray;
 	private final boolean isKeyed;
 	private final boolean isString;
@@ -100,24 +103,29 @@ public class TypeModel extends ModelObject {
 		this.isInterface = isInterface;
 		
 		this.isGeneric = fullType.contains("<");
-		this.isMap = REGISTRY.isMap(fullNameRaw);
+		this.isSet = REGISTRY.isSet(fullNameRaw);
 		this.isList = REGISTRY.isList(fullNameRaw);
-		this.isCollection = REGISTRY.isCollection(fullNameRaw);
+		this.isMap = REGISTRY.isMap(fullNameRaw);
+		this.isCollection = isSet || isList ||  REGISTRY.isCollection(fullNameRaw);
+		this.isKeyed = isMap;
 		this.isIndexed = isMap || isList;
 		this.isArray = getFullName().endsWith("]");
-		this.isKeyed = isMap;
 		
-		this.indexedValueTypeNameOrNull = isCollection() ? BeanNameUtil.extractIndexedValueType(fullName) : null;
-		this.indexedValueTypeNameRaw = NameUtil.removeGenericOrArrayPart(indexedValueTypeNameOrNull);
-		this.indexedKeyTypeNameOrNull = isMap() ? BeanNameUtil.extractIndexedKeyType(fullName) : null;
-		this.indexedKeyTypeNameRaw = NameUtil.removeGenericOrArrayPart(indexedKeyTypeNameOrNull);
+		this.indexedKeyTypeNameOrNull = wildcardToObject(isMap ? BeanNameUtil.extractIndexedKeyType(fullName) : null);
+		this.indexedKeyTypeNameRaw = wildcardToObject(isMap ? NameUtil.removeGenericOrArrayPart(indexedKeyTypeNameOrNull) : null);
+		this.indexedValueTypeNameOrNull = wildcardToObject(isCollection || isMap ? BeanNameUtil.extractIndexedValueType(fullName) : null);
+		this.indexedValueTypeNameRaw = wildcardToObject(isCollection || isMap ? NameUtil.removeGenericOrArrayPart(indexedValueTypeNameOrNull) : null);
 		
 		this.simpleNameRaw = ClassNameUtil.extractSimpleClassNamePart(fullNameRaw);
 		this.simpleName = getSimpleNameRaw() + (genericPartOrNull == null ? "" : genericPartOrNull);
-		this.objectTypeFullName = isPrimitive?TypeUtils.toObjectVersionType(fullName):fullName;
-		this.objectTypeFullNameRaw = isPrimitive?NameUtil.removeGenericOrArrayPart(objectTypeFullName):fullNameRaw;
+		this.objectTypeFullName = isPrimitive ? TypeUtils.toObjectVersionType(fullName):fullName;
+		this.objectTypeFullNameRaw = isPrimitive ? NameUtil.removeGenericOrArrayPart(objectTypeFullName):fullNameRaw;
 	}
 
+	private static String wildcardToObject(String s){
+		return s == null?null:("?".equals(s)?"java.lang.Object":s);
+	}
+	
 	public List<String> getTypeParamNames(){
 		return extractTypeNames(typeBoundsOrNull);
 	}
@@ -205,14 +213,6 @@ public class TypeModel extends ModelObject {
 		return objectTypeFullNameRaw;
 	}
 
-	public String getGenericPart() {
-		return getGenericPartOrNull();
-	}
-
-	public String getTypeBounds() {
-		return getTypeBoundsOrNull();
-	}
-
 	public String getSimpleName() {
 		return simpleName;
 	}
@@ -221,20 +221,12 @@ public class TypeModel extends ModelObject {
 		return simpleNameRaw;
 	}
 
-	public String getIndexedKeyTypeName() {
-		return getIndexedKeyTypeNameOrNull();
-	}
-
 	public boolean isIndexed() {
 		return isIndexed;
 	}
 
 	public String getIndexedKeyTypeNameRaw() {
 		return indexedKeyTypeNameRaw;
-	}
-
-	public String getIndexedValueTypeName() {
-		return getIndexedValueTypeNameOrNull();
 	}
 
 	public String getIndexedValueTypeNameRaw() {
@@ -249,6 +241,10 @@ public class TypeModel extends ModelObject {
 		return isMap;
 	}
 
+	public boolean isSet() {
+		return isSet;
+	}
+	
 	public boolean isArray() {
 		return isArray;
 	}
@@ -324,9 +320,10 @@ public class TypeModel extends ModelObject {
 	static class IndexedTypeRegistry {
 		private Map<String, String> defaultTypes = new HashMap<>();
 
-		private static final List<String> collectionTypes = new ArrayList<>();
-		private static final List<String> listTypes = new ArrayList<>();
-		private static final List<String> mapTypes = new ArrayList<>();
+		private static final Set<String> collectionTypes = new HashSet<>();
+		private static final Set<String> listTypes = new HashSet<>();
+		private static final Set<String> setTypes = new HashSet<>();
+		private static final Set<String> mapTypes = new HashSet<>();
 
 		public IndexedTypeRegistry() {
 			addList("java.util.List", "java.util.ArrayList");
@@ -335,16 +332,28 @@ public class TypeModel extends ModelObject {
 
 			addCollection("java.util.Collection", "java.util.ArrayList");
 			addCollection("java.util.Vector");
+			addCollection("java.util.ArrayList");
 
-			addMap("java.util.TreeSet");
-			addMap("java.util.Set", "java.util.HashSet");
-			addMap("java.util.HashSet");
+			addSet("java.util.Set", "java.util.HashSet");
+			addSet("java.util.TreeSet");
+			addSet("java.util.HashSet");
+			
 			addMap("java.util.Map", "java.util.HashMap");
 			addMap("java.util.HashMap");
+			addMap("java.util.TreeMap");
 			addMap("java.util.Hashtable");
-
 		}
 
+		private void addSet(String fullName) {
+			addSet(fullName, fullName);
+		}
+
+		private void addSet(String fullName, String defaultType) {
+			setTypes.add(fullName);
+			setTypes.add(defaultType);
+			addCollection(fullName, defaultType);
+		}
+		
 		private void addList(String fullName) {
 			addList(fullName, fullName);
 		}
@@ -355,11 +364,13 @@ public class TypeModel extends ModelObject {
 		
 		private void addList(String fullName, String defaultType) {
 			listTypes.add(fullName);
+			listTypes.add(defaultType);
 			addCollection(fullName, defaultType);
 		}
 
 		private void addCollection(String fullName, String defaultType) {
 			collectionTypes.add(fullName);
+			collectionTypes.add(defaultType);			
 			defaultTypes.put(fullName, defaultType);
 		}
 		
@@ -369,6 +380,7 @@ public class TypeModel extends ModelObject {
 
 		private void addMap(String fullName, String defaultType) {
 			mapTypes.add(fullName);
+			mapTypes.add(defaultType);
 			defaultTypes.put(fullName, defaultType);
 		}
 
@@ -380,10 +392,14 @@ public class TypeModel extends ModelObject {
 			return listTypes.contains(fullName);
 		}
 
+		public boolean isSet(String fullName) {
+			return setTypes.contains(fullName);
+		}
+
 		public boolean isMap(String fullName) {
 			return mapTypes.contains(fullName);
 		}
-
+		
 		public String getConcreteTypeFor(String fullName) {
 			return defaultTypes.get(fullName);
 		}

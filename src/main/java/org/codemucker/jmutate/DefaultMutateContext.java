@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -17,6 +18,7 @@ import org.codemucker.jmutate.ast.DefaultToSourceConverter;
 import org.codemucker.jmutate.ast.JAstFlattener;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.ToSourceConverter;
+import org.codemucker.jmutate.generate.model.TypeModelExtractor;
 import org.codemucker.jmutate.util.MutateUtil;
 import org.codemucker.jmutate.util.MutateUtil.NodeParser;
 import org.codemucker.jpattern.generate.ClashStrategy;
@@ -65,12 +67,14 @@ public class DefaultMutateContext implements JMutateContext {
 	//internally created
     private final Injector injector;
     //private final ClassLoader classLoader;
+
+	private final TypeModelExtractor typeExtractor;
     
 	public static Builder with(){
 		return new Builder();
 	}
 	
-	private DefaultMutateContext(ProjectLayout layout, ProjectOptions options, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategy placementStrategy, ClashStrategy defaultClashStrategy,ResourceLoader resourceLoader, SourceLoader sourceLoader) {
+	private DefaultMutateContext(ProjectLayout layout, ProjectOptions options, Root generationRoot, JAstParser parser, boolean markGenerated, DefaultCodeFormatterOptions formatterOptions,PlacementStrategy placementStrategy, ClashStrategy defaultClashStrategy,ResourceLoader resourceLoader, SourceLoader sourceLoader, TypeModelExtractor typeExtractor) {
         super();
         this.projectLayout = layout;
         this.projectOptons = options;
@@ -81,6 +85,7 @@ public class DefaultMutateContext implements JMutateContext {
         this.resourceLoader = resourceLoader;
         this.defaultClashStrategy = defaultClashStrategy;
         this.sourceLoader = sourceLoader;
+        this.typeExtractor = typeExtractor;
         
         this.parser = parser;
         this.injector = Guice.createInjector(Stage.PRODUCTION, new DefaultMutationModule());
@@ -229,6 +234,12 @@ public class DefaultMutateContext implements JMutateContext {
         public ProjectLayout provideProjectResolver() {
             return projectLayout;
         }
+        
+        @Provides
+        @Singleton
+        public TypeModelExtractor provideTypeModelExtractor() {
+            return typeExtractor;
+        }
     }
     
 	public static class Builder {
@@ -242,6 +253,7 @@ public class DefaultMutateContext implements JMutateContext {
 		private ProjectOptions projectOptions;
 		private PlacementStrategy placementStrategy;
 		private ClashStrategy clashStrategy = ClashStrategy.ERROR;
+		private TypeModelExtractor typeModelExtractor;
 		
 		private Builder(){
 		}
@@ -259,12 +271,14 @@ public class DefaultMutateContext implements JMutateContext {
             NodeParser wrappedParser = MutateUtil.wrapParser(resourceLoader, parser);            
             SourceLoader sourceLoader = new DefaultSourceLoader(resourceLoader, wrappedParser);
 			wrappedParser.setSourceLoader(sourceLoader);
-            
+            TypeModelExtractor typeModelExtractor = this.typeModelExtractor ==null?new TypeModelExtractor(sourceLoader):this.typeModelExtractor;
+			
             DefaultCodeFormatterOptions formatter = getFormatterOptionsOrDefault();
             PlacementStrategy placementStrategy = getPlacementStrategyOrDefault();
             ProjectOptions options = getProjectOptionsOrDefault();
 
-            return new DefaultMutateContext(layout, options, generateTo, wrappedParser, markGenerated, formatter, placementStrategy, clashStrategy, resourceLoader, sourceLoader);
+            
+            return new DefaultMutateContext(layout, options, generateTo, wrappedParser, markGenerated, formatter, placementStrategy, clashStrategy, resourceLoader, sourceLoader, typeModelExtractor);
         }
 
         private JAstParser getParserOrDefault(ResourceLoader loader) {
@@ -302,7 +316,13 @@ public class DefaultMutateContext implements JMutateContext {
 		}
 		
 		private DefaultCodeFormatterOptions newDefaultFormatter(){
-            return new DefaultCodeFormatterOptions(DefaultCodeFormatterConstants.getJavaConventionsSettings());
+			
+			Map settings = DefaultCodeFormatterConstants.getJavaConventionsSettings();
+			
+			settings.put(DefaultCodeFormatterConstants.FORMATTER_KEEP_SIMPLE_IF_ON_ONE_LINE, true);
+			settings.put(DefaultCodeFormatterConstants.FORMATTER_KEEP_THEN_STATEMENT_ON_SAME_LINE, 160);
+			
+            return new DefaultCodeFormatterOptions(settings);
         }
 		
 		private Root getGenerationRootOrDefault(ProjectLayout project){
