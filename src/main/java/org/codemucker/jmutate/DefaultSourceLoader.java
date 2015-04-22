@@ -1,6 +1,7 @@
 package org.codemucker.jmutate;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.NoSuchElementException;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
@@ -24,7 +26,7 @@ public class DefaultSourceLoader implements SourceLoader {
 
 	private static final Logger LOG = LogManager.getLogger(DefaultSourceLoader.class);
 	
-	private final Map<String, ResourceTracker> sourceTrackersByRootPath = new HashMap<>();
+	private final Map<String, LoadedSourceTracker> sourceTrackersByRootPath = new HashMap<>();
 	private final Map<String, RootResource> resourcesByClassName = new HashMap<>();
 	
 	private final JAstParser parser;
@@ -110,7 +112,7 @@ public class DefaultSourceLoader implements SourceLoader {
 		if(resource == null){
 			return null;
 		}
-		ResourceTracker tracker = getOrCreateTrackerFor(resource);
+		LoadedSourceTracker tracker = getOrCreateTrackerFor(resource);
 		JSourceFile source = tracker.getSource(resource);
 		if(source == null){
 			source = JSourceFile.fromResource(resource, parser);
@@ -122,12 +124,12 @@ public class DefaultSourceLoader implements SourceLoader {
 		return source;
 	}
 
-	private ResourceTracker getOrCreateTrackerFor(RootResource resource){
+	private LoadedSourceTracker getOrCreateTrackerFor(RootResource resource){
 		String rootPath = resource.getRoot().getFullPath();
-		ResourceTracker tracker = sourceTrackersByRootPath.get(rootPath);			
+		LoadedSourceTracker tracker = sourceTrackersByRootPath.get(rootPath);			
 		if(tracker == null){
 			LOG.debug("created tracker for " + resource.getFullPath());
-			tracker = new ResourceTracker(rootPath);
+			tracker = new LoadedSourceTracker(rootPath);
 			sourceTrackersByRootPath.put(rootPath,tracker);
 		}
 		return tracker;
@@ -168,26 +170,16 @@ public class DefaultSourceLoader implements SourceLoader {
     	return r;
     };
     
-	
-	public boolean canLoadClassOrSource(String fullClassName) {
-		return resourceLoader.canLoadClassOrSource(fullClassName);
+    @Override
+	public ResourceLoader getResourceLoader() {
+		return resourceLoader;
 	}
 
-	public Class<?> loadClass(String fullClassName)
-			throws ClassNotFoundException {
-		return resourceLoader.loadClass(fullClassName);
-	}
-
-	public Class<?> loadClassOrNull(String fullClassName) {
-		return resourceLoader.loadClassOrNull(fullClassName);
-	}
-
-
-	private static class ResourceTracker {
+	private static class LoadedSourceTracker {
     	private final String rootPath;
     	private final Map<String, JSourceFile> sourcesByResourcePath = new HashMap<>();
     	
-		public ResourceTracker(String rootPath) {
+		public LoadedSourceTracker(String rootPath) {
 			super();
 			this.rootPath = rootPath;
 		}
@@ -203,5 +195,5 @@ public class DefaultSourceLoader implements SourceLoader {
 			sourcesByResourcePath.put(key, source);
 		}
     }
-	
+
 }

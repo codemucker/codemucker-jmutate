@@ -92,8 +92,8 @@ public class DefaultResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public boolean canLoadClassOrSource(final String fullClassName) {
-        if (parent != null && parent.canLoadClassOrSource(fullClassName)) {
+    public boolean classOrResourceExistsForClass(final String fullClassName) {
+        if (parent != null && parent.classOrResourceExistsForClass(fullClassName)) {
             return true;
         }
         try {

@@ -264,7 +264,7 @@ public class CleanImportsTransform implements Transform {
 				return false;
 			}
 			
-			if(resourceLoader.canLoadClassOrSource(localName)){
+			if(resourceLoader.classOrResourceExistsForClass(localName)){
 				
 				//local name the same and doesn't resolve to the same qualified type
 				addIgnoreShortName(shortClassName);
@@ -465,7 +465,7 @@ public class CleanImportsTransform implements Transform {
         
         private boolean isExistingClass(String fullName){
 			ResourceLoader loader = ctxt.getResourceLoader();
-			return loader.canLoadClassOrSource(fullName);
+			return loader.classOrResourceExistsForClass(fullName);
         }
 
 		private void collectFullName(String fullName) {

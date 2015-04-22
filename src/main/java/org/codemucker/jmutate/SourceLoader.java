@@ -11,8 +11,6 @@ public interface SourceLoader {
 
 	void trackChanges(IProvideCompilationUnit provider);
 
-    boolean canLoadClassOrSource(String fullClassName);
-
     JType loadTypeForClass(Class<?> klass);
 
 	/**
@@ -28,9 +26,7 @@ public interface SourceLoader {
 	JSourceFile loadSourceForClass(String fullName);
 
 	JSourceFile loadSourceFrom(RootResource resource);
-    
-    public Class<?> loadClass(String fullClassName) throws ClassNotFoundException;
-    
-    Class<?> loadClassOrNull(String fullClassName);
+	
+	ResourceLoader getResourceLoader();
     
 }

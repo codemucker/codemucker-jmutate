@@ -28,7 +28,7 @@ public interface ResourceLoader {
      * @param fullClassName
      * @return
      */
-    public boolean canLoadClassOrSource(String fullClassName);
+    public boolean classOrResourceExistsForClass(String fullClassName);
     
     public Class<?> loadClass(String fullClassName) throws ClassNotFoundException;
     

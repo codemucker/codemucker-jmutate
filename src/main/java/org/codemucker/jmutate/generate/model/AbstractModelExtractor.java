@@ -29,7 +29,7 @@ public abstract class AbstractModelExtractor<M> implements ModelExtractor<M> {
 		if (type != null) {
 			return extractModelFromClass(type);
 		}
-		Class<?> klass = sourceLoader.loadClassOrNull(fullName);
+		Class<?> klass = sourceLoader.getResourceLoader().loadClassOrNull(fullName);
 		if (klass != null) {
 			return extractModelFromClass(klass);
 		}

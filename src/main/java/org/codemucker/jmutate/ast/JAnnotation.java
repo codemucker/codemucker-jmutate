@@ -9,7 +9,6 @@ import java.util.Map;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jmutate.ResourceLoader;
 import org.codemucker.jmutate.SourceLoader;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.util.MutateUtil;
@@ -257,6 +256,7 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 	}
 	private Object findFieldValue(ASTNode node, String fullNameOfClassAndField, String fullClassName,String fieldName) {
 		SourceLoader sourceLoader = MutateUtil.getSourceLoaderOrFail(node);
+		
 		JType type = sourceLoader.loadTypeForClass(fullClassName);
 		if(type != null){
 			JField field = type.findFieldsMatching(AJField.with().name(fieldName).isStatic()).getFirstOrNull();
@@ -275,7 +275,7 @@ public class JAnnotation implements AstNodeProvider<Annotation> {
 			}
 		}	
 		//try the compiled class
-		Class<?> loadedClass = sourceLoader.loadClassOrNull(fullClassName);
+		Class<?> loadedClass = sourceLoader.getResourceLoader().loadClassOrNull(fullClassName);
 		if (loadedClass != null) {
 			// find field
 			// TODO:and parent fields?

@@ -20,8 +20,12 @@ public class MutateUtil  {
 
     private static ClassLoader classLoader;
     
-    public static ResourceLoader getResourceLoader(ASTNode node){
-        return (ResourceLoader) node.getRoot().getProperty(NODE_PROPERTY_RESOURCE_LOADER);
+    public static ResourceLoader getResourceLoaderOrFail(ASTNode node){
+        ResourceLoader loader = (ResourceLoader) node.getRoot().getProperty(NODE_PROPERTY_RESOURCE_LOADER);
+        if(loader == null){
+     	   throw new IllegalStateException("no resource loader attached to node");
+        }
+        return loader;
     }
     
     public static SourceLoader getSourceLoaderOrFail(ASTNode node){

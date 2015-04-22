@@ -258,7 +258,7 @@ public class NameUtil {
 			if( imprt.isOnDemand()) {//aka foo.bar.*
 				String pkgName = imprt.getName().getFullyQualifiedName();
 				String className = pkgName + nameWithDot;
-				if(loader.canLoadClassOrSource(className)){
+				if(loader.classOrResourceExistsForClass(className)){
 				    return className;
 				}
 				/*if(ClassUtil.canLoadClass(cl, className)){
@@ -271,7 +271,7 @@ public class NameUtil {
 	}
 	
 	private static ResourceLoader getLoaderFor(ASTNode node){
-	    return MutateUtil.getResourceLoader(node);
+	    return MutateUtil.getResourceLoaderOrFail(node);
 	}
 	
 	private static String resolveQualifiedNameFromClassLoaderOrNull(SimpleName name) {
@@ -287,7 +287,7 @@ public class NameUtil {
 		for (String prefix : packagePrefixes) {
 			prefix = prefix == null ? "" : prefix;
 			String className = prefix + name.getIdentifier();
-			if(loader.canLoadClassOrSource(className)){
+			if(loader.classOrResourceExistsForClass(className)){
 			    return className;
 			}
 //			if(ClassUtil.canLoadClass(cl, className)){

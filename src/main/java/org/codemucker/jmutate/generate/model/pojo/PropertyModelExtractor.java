@@ -29,11 +29,8 @@ import org.codemucker.jmutate.ast.matcher.AJAnnotation;
 import org.codemucker.jmutate.ast.matcher.AJField;
 import org.codemucker.jmutate.ast.matcher.AJMethod;
 import org.codemucker.jmutate.ast.matcher.AJModifier;
-import org.codemucker.jmutate.generate.model.AbstractCachingModelExtractor;
 import org.codemucker.jmutate.generate.model.AbstractModelExtractor;
 import org.codemucker.jmutate.generate.model.MethodModel;
-import org.codemucker.jmutate.generate.model.ModelExtractor;
-import org.codemucker.jmutate.generate.model.ModelRegistry;
 import org.codemucker.jmutate.generate.model.TypeModel;
 import org.codemucker.jmutate.util.NameUtil;
 import org.codemucker.jpattern.bean.NotAProperty;
@@ -148,7 +145,7 @@ public class PropertyModelExtractor extends AbstractModelExtractor<PojoModel> {
 					parentModel = extractModelFromClass(superType, level+1);
 				} else {
 					if (includeCompiledClasses) {
-						Class<?> k = sourceLoader.loadClassOrNull(superTypeFullName);
+						Class<?> k = sourceLoader.getResourceLoader().loadClassOrNull(superTypeFullName);
 						if (k != null) {
 							parentModel = extractModelFromClass(k);
 						}
