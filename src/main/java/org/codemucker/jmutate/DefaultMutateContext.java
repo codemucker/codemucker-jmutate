@@ -26,6 +26,7 @@ import org.codemucker.jtest.MavenProjectLayout;
 import org.codemucker.jtest.ProjectLayout;
 import org.codemucker.lang.PathUtil;
 import org.codemucker.lang.annotation.Optional;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.formatter.DefaultCodeFormatterConstants;
 import org.eclipse.jdt.internal.formatter.DefaultCodeFormatter;
@@ -321,7 +322,9 @@ public class DefaultMutateContext implements JMutateContext {
 			
 			settings.put(DefaultCodeFormatterConstants.FORMATTER_KEEP_SIMPLE_IF_ON_ONE_LINE, true);
 			settings.put(DefaultCodeFormatterConstants.FORMATTER_KEEP_THEN_STATEMENT_ON_SAME_LINE, 160);
-			
+			settings.put(DefaultCodeFormatterConstants.FORMATTER_TAB_CHAR, JavaCore.SPACE);
+			settings.put(DefaultCodeFormatterConstants.FORMATTER_TAB_SIZE, 4);
+				
             return new DefaultCodeFormatterOptions(settings);
         }
 		
