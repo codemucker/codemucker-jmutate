@@ -67,11 +67,22 @@ public class CodeGenMetaGenerator {
 	private boolean exists;
 	private final String constantField;
 	private final Map<String,Boolean> cachedFieldValueMatchResults = new HashMap<>();
+	private final Root generateTo;
 	
 	public CodeGenMetaGenerator(JMutateContext ctxt,Class<? extends CodeGenerator> generator){
 		this.ctxt = ctxt;
 		this.generator = generator;
 		this.constantField = calculateGenerateFieldName(generator.getName());
+		this.generateTo = getGenerateToRoot(ctxt);
+	}
+	
+	private Root getGenerateToRoot(JMutateContext ctxt){
+		if (!ctxt.getProjectLayout().getMainSrcDirs().isEmpty()) {
+			File dir = ctxt.getProjectLayout().getMainSrcDirs().iterator().next();
+			return new DirectoryRoot(dir, RootType.MAIN, RootContentType.SRC);
+		} else {
+			return ctxt.getDefaultGenerationRoot();
+		}
 	}
 	
 	/**
@@ -235,15 +246,9 @@ public class CodeGenMetaGenerator {
     	if(exists){
     		return;
     	}
-		Root root;
-		if (!ctxt.getProjectLayout().getMainSrcDirs().isEmpty()) {
-			File dir = ctxt.getProjectLayout().getMainSrcDirs().iterator().next();
-			root = new DirectoryRoot(dir, RootType.MAIN, RootContentType.SRC);
-		} else {
-			root = ctxt.getDefaultGenerationRoot();
-		}
+		
 		String resourcePath =  CODE_GEN_INFO_CLASS_FULLNAME .replace('.', '/') + ".java";
-    	RootResource resource = root.getResource(resourcePath);
+    	RootResource resource = generateTo.getResource(resourcePath);
     	JSourceFile source;
         if (resource.exists()) {
         	log.debug("source " + resource.getRelPath() + " exists, loading" );
@@ -255,7 +260,7 @@ public class CodeGenMetaGenerator {
                 .var("className", CODE_GEN_INFO_CLASS_NAME)
                 .pl("package ${pkg};")
                 .pl("public class ${className} {}")
-                .asSourceFileSnippet(root);
+                .asSourceFileSnippet(generateTo);
            //TODO:maybe track automatically via template create method?
            ctxt.getSourceLoader().trackChanges(source);
         }
