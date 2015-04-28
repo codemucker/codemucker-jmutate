@@ -202,9 +202,27 @@ public class DefaultResourceLoader implements ResourceLoader {
 			sb.append(root);
 			comma = true;
 		}
-		sb.append("], parent=");
+		sb.append("], classloader=");
+		if(classLoader != null && classLoader instanceof URLClassLoader){
+			URLClassLoader ucl = (URLClassLoader)classLoader;
+			sb.append( ucl.getClass().getName() + "@" + ucl.hashCode() + "[URLS=");
+			boolean urlComma = false;
+			for(URL url:ucl.getURLs()){
+				if(urlComma){
+					sb.append(",");
+				}
+				urlComma = true;
+				sb.append("\n\t");
+				sb.append(url.toString());
+			}
+			sb.append("]");
+		} else {
+			sb.append(classLoader);
+		}
+		sb.append(", parent=");
 		sb.append(parent);
 		sb.append("]");
+		
 		return sb.toString();
 	}
 

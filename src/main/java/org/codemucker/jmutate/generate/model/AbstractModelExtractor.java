@@ -38,6 +38,6 @@ public abstract class AbstractModelExtractor<M> implements ModelExtractor<M> {
 	}
 	
 	protected M extractModelFromClassNoSourceOrCompiled(String fullName){
-		throw new RuntimeException("could not load source or compiled class for '" + fullName + "'");
+		throw new RuntimeException("could not load source or compiled class for '" + fullName + "' for extractor " + getClass().getName() + ", using sourceLoader " + sourceLoader);
 	}
 }
