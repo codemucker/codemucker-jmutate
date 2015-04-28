@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.codemucker</groupId>
 		<artifactId>codemucker-parent</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<version>0.2-SNAPSHOT</version>
 		<relativePath>../codemucker-parent/pom.xml</relativePath>
 	</parent>
 	<artifactId>codemucker-jmutate</artifactId>
@@ -17,8 +17,9 @@
 		<build.timestamp>${maven.build.timestamp}</build.timestamp>
 	</properties>
 	<scm>
-       <developerConnection>scm:git:git@github.com/codemucker/codemucker-jmutate.git</developerConnection>
-    </scm>
+       <developerConnection>scm:git:git@github.com:codemucker/codemucker-jmutate.git</developerConnection>
+      <tag>v0.1</tag>
+  </scm>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
