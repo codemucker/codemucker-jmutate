@@ -4,8 +4,11 @@ import static org.codemucker.jmatch.Logical.all;
 import static org.codemucker.jmatch.Logical.not;
 
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,8 +106,8 @@ public class GeneratorRunner {
      */
     private final boolean autoRegisterDefaultGenerators;
     private final boolean scanSubtypes;
-    private final DefaultResourceLoader resourceLoader;
 	private final Matcher<String> filterGenerators;
+	private final DefaultResourceLoader resourceLoader;
 	private final Matcher<JAnnotation> annotationFilter;
 	
 	private final ConfigExtractor configExtractor;
@@ -113,17 +116,26 @@ public class GeneratorRunner {
         return new Builder();
     }
 
-    public GeneratorRunner(Iterable<Root> roots, Iterable<Root> scanRoots, Matcher<Root> scanRootsFilter, boolean scanSubtypes,Root generationRoot, String searchPkg,
-    		Map<String, String> generators, boolean failOnParseError,ClashStrategy defaultClashStrategy, Matcher<String> filterAnnotations, Matcher<String> filterGenerators,
-    		ProjectOptions options,ClassLoader classloader) {
+    public GeneratorRunner(Iterable<Root> roots, 
+    		Iterable<Root> scanRoots, 
+    		Matcher<Root> scanRootsFilter, 
+    		boolean scanSubtypes,
+    		Root generationRoot, 
+    		String searchPkg,
+    		Map<String, String> generators, 
+    		boolean failOnParseError,
+    		ClashStrategy defaultClashStrategy, 
+    		Matcher<String> filterAnnotations, 
+    		Matcher<String> filterGenerators,
+    		ProjectOptions options,
+    		ClassLoader classloader) {
         super();
         this.resourceLoader = DefaultResourceLoader.with()
                 .classLoader(classloader)
                 .roots(Roots.with()
                     .roots(roots)
                     .roots(scanRoots)
-                    .root(generationRoot)
-                    .build())
+                    .root(generationRoot))
                 .build();
         this.generatorClassLoader = resourceLoader.getClassLoader();
         
@@ -150,6 +162,7 @@ public class GeneratorRunner {
                         .defaults()
                         .resourceLoader(resourceLoader)
                         .build())
+                .resourceLoader(resourceLoader)
                 .generationRoot(generationRoot)
                 .clashStrategy(defaultClashStrategy)
                 .build();
@@ -192,7 +205,9 @@ public class GeneratorRunner {
 	private void logDetails() {
 		if (log.isDebugEnabled()) {
 			log.debug("Details:");
-            //log.debug("filtering roots to " + scanRootMatcher);
+			log.debug("defaultGenerateTo: " + ctxt.getDefaultGenerationRoot());
+            
+			//log.debug("filtering roots to " + scanRootMatcher);
             log.debug("filtering packages " + scanPackagesAntPattern);
             log.debug("scanning roots: ");
             for (Root root : scanRoots) {
@@ -386,7 +401,7 @@ public class GeneratorRunner {
             String scanPkg = this.scanPackages == null ? "" : this.scanPackages;
             Matcher<String> annotationsMatcher = this.annotationNameMatcher != null ? this.annotationNameMatcher : AString.equalToAnything();
             Matcher<String> generatorMatcher = this.generatorNameMatcher != null ? this.generatorNameMatcher : AString.equalToAnything();
-            ClassLoader classloader = this.classloader==null?Thread.currentThread().getContextClassLoader():this.classloader;
+            ClassLoader classloader = getClassLoaderOrDefault(roots);
             return new GeneratorRunner(roots,scanRoots, scanRootsFilter, scanSubTypes, defaultGenerateTo, scanPkg, generators, failOnParseError,defaultClashStrategy, annotationsMatcher, generatorMatcher, projectOptions, classloader);
         }
         
@@ -404,6 +419,19 @@ public class GeneratorRunner {
             return Roots.with().srcDirsOnly().build();
         }
 
+        private ClassLoader getClassLoaderOrDefault(Iterable<Root> roots){
+            if(this.classloader!= null){
+                return this.classloader;
+            }
+            Set<URL> urls = new HashSet<>();
+            for(Root root:roots){
+            	urls.add(root.toURL());
+            }
+            
+            URLClassLoader ucl  = new URLClassLoader(urls.toArray(new URL[0]),Thread.currentThread().getContextClassLoader());
+            return ucl;
+        }
+        
         @Optional
         public Builder defaults(){
             return this;

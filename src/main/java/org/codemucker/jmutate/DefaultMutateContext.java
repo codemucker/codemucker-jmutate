@@ -255,6 +255,7 @@ public class DefaultMutateContext implements JMutateContext {
 		private PlacementStrategy placementStrategy;
 		private ClashStrategy clashStrategy = ClashStrategy.ERROR;
 		private TypeModelExtractor typeModelExtractor;
+		private ResourceLoader resourceLoader;
 		
 		private Builder(){
 		}
@@ -264,6 +265,8 @@ public class DefaultMutateContext implements JMutateContext {
 		}
 
         public DefaultMutateContext build() {
+        	//This mess is where all dependencies are created for the whole app
+        	
             ProjectLayout layout = getProjectLayoutOrDefault();
             Root generateTo = getGenerationRootOrDefault(layout);
             
@@ -294,6 +297,13 @@ public class DefaultMutateContext implements JMutateContext {
         }
 		
 		private ResourceLoader getResourceLoaderOrDefault(Root generateTo,ProjectLayout layout){
+			if(resourceLoader != null){
+				return resourceLoader;
+			}
+			return newDefaultResourceLoader(generateTo,layout);
+		}
+		
+		private ResourceLoader newDefaultResourceLoader(Root generateTo,ProjectLayout layout){
 		    Collection<Root> roots = new ArrayList<>();
 		    roots.add(generateTo);
 		    if(!this.roots.isEmpty()){
@@ -372,6 +382,12 @@ public class DefaultMutateContext implements JMutateContext {
         	return this;
 		}
 
+	    @Optional
+        public Builder resourceLoader(ResourceLoader resourceLoader) {
+            this.resourceLoader = resourceLoader;
+            return this;
+        }
+	    
 	    @Optional
         public Builder parser(JAstParser parser) {
             this.parser = parser;
