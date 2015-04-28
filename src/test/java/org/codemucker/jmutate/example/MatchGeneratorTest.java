@@ -172,7 +172,7 @@ public class MatchGeneratorTest {
 			t.pl("<artifactId>${project.artifactId}</artifactId>");
 			t.pl("<version>${project.version}</version>");
 			t.pl("<packaging>${project.packaging}</packaging>");
-			t.pl("<name>TestProject</name>");
+			t.pl("<name>" + MavenTestProject.class.getName() + "-Internal-TestProject</name>");
 			t.pl("<description>UnitTestProject</description>");
 			if(properties.size() > 0){
 				t.pl("<properties>");
@@ -238,6 +238,10 @@ public class MatchGeneratorTest {
 			
 			String pomXml = singleToDoubleQuotes(t.interpolateTemplate());
 			File pom = new File(projectLayout.getBaseDir(),"pom.xml");
+			//in case we've stuffed up and try overwriting our real project's pom.xml
+			if(pom.exists()){
+				throw new IllegalArgumentException("pom file " + pom.getAbsolutePath() + " already exists. Not overwriting");
+			}
 			try(FileOutputStream fos= new FileOutputStream(pom)){
 				IOUtils.write(pomXml,fos);
 			}
