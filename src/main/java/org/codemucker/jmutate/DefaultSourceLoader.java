@@ -1,7 +1,6 @@
 package org.codemucker.jmutate;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.NoSuchElementException;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.codemucker.jfind.Root;
 import org.codemucker.jfind.RootResource;
 import org.codemucker.jmutate.ast.JAstParser;
 import org.codemucker.jmutate.ast.JSourceFile;
@@ -174,6 +172,11 @@ public class DefaultSourceLoader implements SourceLoader {
 	public ResourceLoader getResourceLoader() {
 		return resourceLoader;
 	}
+    
+    @Override
+    public String toString() {
+    	return getClass().getName() + "@" + hashCode() + "[resourceLoader:" + resourceLoader + "]";
+    }
 
 	private static class LoadedSourceTracker {
     	private final String rootPath;
