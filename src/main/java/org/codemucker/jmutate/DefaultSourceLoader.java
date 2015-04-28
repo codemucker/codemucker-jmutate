@@ -60,7 +60,7 @@ public class DefaultSourceLoader implements SourceLoader {
 		if (source != null) {
 			getOrCreateTrackerFor(source.getResource()).addSource(source);
 		} else {
-			LOG.debug("no source file for provied supplier");
+			LOG.debug("no source file for provided compilation unit supplier");
 		}
 	}
 	
@@ -82,7 +82,7 @@ public class DefaultSourceLoader implements SourceLoader {
 			}
 		}
 		if(type == null && failOnNotFind){
-			throw new NoSuchElementException("could not find typenode for " + fullName + ", using resource loader " + resourceLoader);		
+			throw new NoSuchElementException("could not find type-node for " + fullName + ", using resource loader " + resourceLoader);		
 		}
 		return type;
 	}
@@ -116,7 +116,7 @@ public class DefaultSourceLoader implements SourceLoader {
 			source = JSourceFile.fromResource(resource, parser);
 			tracker.addSource(source);
 		} else {
-			LOG.debug("already have chaneg tracker for " + source.getResource().getFullPath());
+			LOG.debug("already have change tracker for " + source.getResource().getFullPath());
 		}
 		
 		return source;
