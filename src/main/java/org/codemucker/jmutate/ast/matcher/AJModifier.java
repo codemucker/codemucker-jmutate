@@ -81,6 +81,30 @@ public class AJModifier extends ObjectMatcher<JModifier> {
         return this;
     }
 
+    public AJModifier isAbstract() {
+    	isAbstract(true);
+        return this;
+    }
+
+    public AJModifier isNotAbstract() {
+    	isAbstract(false);
+        return this;
+    }
+    
+    public AJModifier isAbstract(final boolean b) {
+        addMatcher(new AbstractNotNullMatcher<JModifier>() {
+            @Override
+            public boolean matchesSafely(JModifier found, MatchDiagnostics diag) {
+                return found.isAbstract(b);
+            }
+
+            @Override
+            public void describeTo(Description desc) {
+                desc.text("is" + (b ? "" : " not") + " abstract");
+            }
+        });
+        return this;
+    }
     
     public AJModifier isStatic() {
         isStatic(true);

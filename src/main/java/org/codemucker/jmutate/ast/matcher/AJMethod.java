@@ -2,6 +2,8 @@ package org.codemucker.jmutate.ast.matcher;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.codemucker.jfind.matcher.AMethod;
 import org.codemucker.jmatch.AString;
@@ -19,6 +21,7 @@ import org.codemucker.jmutate.ast.JMethod;
 import org.codemucker.jmutate.ast.JModifier;
 import org.codemucker.jmutate.ast.JType;
 import org.codemucker.jmutate.util.NameUtil;
+import org.codemucker.jpattern.bean.Property;
 import org.codemucker.lang.ClassNameUtil;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.PrimitiveType;
@@ -28,6 +31,16 @@ import com.google.common.base.Predicate;
 
 
 public class AJMethod extends ObjectMatcher<JMethod> {
+	
+	private static final Matcher<String> OBJECT_METHOD_NAMES;
+
+	static {
+		Set<String> names = new HashSet<>();
+		for(Method m : Object.class.getMethods()){
+			names.add(m.getName());
+		}
+		OBJECT_METHOD_NAMES = AString.equalToAny(names);
+	}
 	
 	/**
 	 * synonym for with()
@@ -59,6 +72,46 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 			}
 		};
 	}
+	
+	public AJMethod isNotObjectMethod() {
+		name(Logical.not(OBJECT_METHOD_NAMES));
+		return this;
+	}
+	
+	public AJMethod isObjectMethod() {
+		name(OBJECT_METHOD_NAMES);
+		return this;
+	}
+	
+	public AJMethod isGetter() {
+		numArgs(0).modifier(AJModifier.that().isNotStatic().isNotNative());
+		
+		Matcher<JMethod> nameMatcher = Logical.atLeastOne(
+					AJMethod.with().annotation(Property.class), 
+					AJMethod.with()
+						.name(AString.matchingExpression("get?*"))
+						.isPublic(),
+					AJMethod.with()
+						.name(AString.matchingExpression("is?*||has?*"))
+						.isPublic()
+						.returnType(AString.equalToAny("boolean","java.lang.Boolean")));
+		addMatcher(nameMatcher);
+		return this;
+	}
+	
+	public AJMethod isSetter() {
+		numArgs(1).modifier(AJModifier.that().isNotStatic().isNotNative());
+		
+		Matcher<JMethod> nameMatcher = Logical.atLeastOne(
+					AJMethod.with().annotation(Property.class), 
+				    AJMethod.with()
+						.name(AString.matchingExpression("set?*"))
+						.isPublic()
+						.isVoidReturn());
+		addMatcher(nameMatcher);
+		return this;
+	}
+	
 	
 	public AJMethod method(Predicate<JMethod> predicate){
 		predicate(predicate);
@@ -298,6 +351,11 @@ public class AJMethod extends ObjectMatcher<JMethod> {
                 desc.text("is " + (isStatic?"":" not ")+ " static");
             }
 		});
+		return this;
+	}
+	
+	public AJMethod isAbstract(boolean b){
+		modifier(AJModifier.that().isAbstract(b));
 		return this;
 	}
 	
