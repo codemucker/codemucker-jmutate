@@ -259,7 +259,7 @@ public class GeneratorRunner {
              log.debug("match resource " + resourceFilter);
         }
         Matcher<JType> typeMatcher= all(
-        		AJType.with().annotation(annotationFilter).expression(scanSubtypes?null:"notInnerClass"),
+        		AJType.with().annotation(annotationFilter).expression(scanSubtypes?null:"!innerClass"),
         		not(AJType.with().annotation(AJAnnotation.with().fullName(IsGeneratorTemplate.class))),
         		not(AJType.with().annotation(AJAnnotation.with().fullName(DontGenerate.class))));
 				
