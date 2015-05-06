@@ -58,6 +58,11 @@ public class AJField extends ObjectMatcher<JField>{
 		};
 	}
 	
+	public AJField expression(String expression){
+		withExpression(expression);
+		return this;
+	}
+	
 	public AJField field(Predicate<JField> predicate){
 		predicate(predicate);
 		return this;

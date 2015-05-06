@@ -22,6 +22,7 @@ import org.codemucker.jmatch.Matcher;
 import org.codemucker.jmatch.ObjectMatcher;
 import org.codemucker.jmatch.expression.AbstractMatchBuilderCallback;
 import org.codemucker.jmatch.expression.ExpressionParser;
+import org.codemucker.jmatch.expression.ParseException;
 import org.codemucker.jmutate.ast.JAccess;
 import org.codemucker.jmutate.ast.JAnnotation;
 import org.codemucker.jmutate.ast.JMethod;
@@ -144,40 +145,11 @@ public class AJType extends ObjectMatcher<JType> {
 		};
 	}
 	
-	  /**
-     * Converts a logical expression using {@link ExpressionParser}} into a matcher. The names in the expression are converted into no arg 
-     * method calls on this matcher as in X,isX ==&gt; isX()  (case insensitive) 
-     * 
-     *  <p>
-     * E.g.
-     *  <ul>
-     *  <li> 
-     *  <li>Abstract==&gt; isAbstract()
-     *  <li>IsAstract ==&gt; isAbstract()
-     *  <li>Anonymous,isAnonymous==&gt; isAnonymous()
-     *  
-     *  </ul>
-     *  </p>
-     * @return
-     */
     public AJType expression(String expression){
-		if (!isBlank(expression)) {
-			Matcher<JType> matcher = ExpressionParser.parse(expression,new JTypeMatchBuilderCallback());
-	    	if( matcher instanceof AJType){ //make the matching are bit faster by directly running the matchers directly
-	    		for(Matcher<JType> m:((AJType)matcher).getMatchers()){
-	    			addMatcher(m);
-	    		}
-	    	} else {
-	    		addMatcher(matcher);
-	    	}
-		}
+		withExpression(expression);
     	return this;
     }
-    
-    private boolean isBlank(String s){
-    	return s==null || s.trim().length() == 0;
-    }
-    
+
     public AJType type(Predicate<JType> predicate){
 		predicate(predicate);
 		return this;
@@ -498,10 +470,10 @@ public class AJType extends ObjectMatcher<JType> {
 				m.invoke(matcher, NO_ARGS);
 			} catch (IllegalAccessException | IllegalArgumentException e) {
 				//should never be thrown
-				throw new ExpressionParser.ParseException("Error calling " + AJType.class.getName() + "." + m.getName() + "() from expression '" + expression + "'",e);
+				throw new ParseException("Error calling " + AJType.class.getName() + "." + m.getName() + "() from expression '" + expression + "'",e);
 			}catch (InvocationTargetException e) {
 				//should never be thrown
-				throw new ExpressionParser.ParseException("Error calling " + AJType.class.getName() + "." + m.getName() + "() from expression '" + expression + "'",e.getTargetException());
+				throw new ParseException("Error calling " + AJType.class.getName() + "." + m.getName() + "() from expression '" + expression + "'",e.getTargetException());
 			}
 			return matcher;
 		}

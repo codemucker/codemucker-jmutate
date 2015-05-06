@@ -28,6 +28,11 @@ public class AType extends ObjectMatcher<Type>{
 	    super(Type.class);
 	}
 	
+	public AType expression(String expression){
+		withExpression(expression);
+		return this;
+	}
+	
 	public AType isEqualTo(JType t){
 		fullName(t.getFullName());
 		return this;

@@ -73,6 +73,11 @@ public class AJMethod extends ObjectMatcher<JMethod> {
 		};
 	}
 	
+	public AJMethod expression(String expression){
+		withExpression(expression);
+		return this;
+	}
+	
 	public AJMethod isNotObjectMethod() {
 		name(Logical.not(OBJECT_METHOD_NAMES));
 		return this;
